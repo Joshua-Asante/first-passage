@@ -391,7 +391,7 @@ gap.
 - Q-RANGECOND-1 and Q-ORBCUSH-1 are FALSIFIED.
 - Any differences between v7 and the ORB-MNQ-1 that was tested.
 
-Clearance is read on the intraday-honest clock with `headline_bust`. The pre-registration freezes by **2026-10-23**, and the dated re-MC runs by **2026-10-30**, so a verdict exists before the 2026-11-08 hard date. Evidence: existing technical owners, under Codex's integration and dispatch.
+Clearance is read on the intraday-honest clock with `headline_bust`. The pre-registration freezes by **2026-10-23**, and the dated re-MC runs by **2026-10-30**, so a verdict exists before the 2026-11-08 hard date. Evidence: existing technical owners, under Codex's integration and dispatch. *(2026-10-25 pointer: this schedule is overtaken. ORB v7 is paused by Joshua, not closed ([checklist 10-19](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-19--no-book-lineage-configuration-has-an-evidence-case-for-the-tradeify-evaluation)), and S4 stays stopped ([campaign §62](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#62--aegis-capture-cost-basis-zero-slippage-2026-10-20)). No rule changed.)*
 
 **3. FXIFY Futures Flex registration.** FXIFY Futures Flex is added to the program's firm set and directed into `AUTOMATION_FRIENDLY_PROP_FIRMS`. This is FXIFY's futures program. It is distinct from the retired FX/CFD `FXIFY` substrate ([2026-07-22 retirement](2026-07-22-challenge-era-substrate-retirement.md)), so it takes its own registry key and never `ACTIVE_FIRM="FXIFY"`.
 - **Eligibility basis, recorded as it stands:** a generic, platform-scoped automation permission ([venue note 2026-10-14](../notes/2026-10-14-funded-venue-alternatives-assessment.md) §§1, 5, 12). It was read from search excerpts because direct reads were blocked. No written, clause-cited confirmation exists. The secondary (eligibility) trigger of §4 applies to this family.
@@ -405,6 +405,39 @@ Clearance is read on the intraday-honest clock with `headline_bust`. The pre-reg
 - **Wording:** "the four `FRIENDLY` firm tiers" in §4 H now reads as the `AUTOMATION_FRIENDLY_PROP_FIRMS` families, five once FXIFY Futures counts. The revert trigger already says "any" tier.
 
 **Not changed:** the hard date (2026-11-08), the demotion rule, S1 (a non-incumbent venue still needs its venue admission before any execution), and the native experiment's separate admissions.
+
+## Addendum 2026-10-28 — scope of the §4 bust ceiling (Accepted)
+
+**Ruling:** Joshua, 2026-10-28, in chat with Claude, verbatim:
+- "I think that self imposing unnecessary rules, like passing with 63 days or keeping bust rate lower than 5%, makes the challenge harder than it needs to be. We should eliminate these self imposed rules to have a better idea of the levers we have at our disposal to make this book as profitable as possible"
+- after being shown this addendum's draft: "Four-firm PR".
+
+**Scope.** The §4 5.0% bust ceiling is the clearance criterion of this program's falsifier. It decides only whether a candidate discharges §4. It does **not** bind:
+- an individual account's operating objective;
+- the owned Tradeify Select 100K evaluation, whose objective is held in its private owner record;
+- any evaluation run for positive expected net cash under the firm's own rules.
+
+**Not changed:** the 5.0% value, the 50% pass floor, `trailing_locking`, the intraday-honest clock, the inactivity-barrier-OFF convention, the 2026-11-08 hard date and the demotion rule. Falsifiers do not move (AGENTS.md Rule 28); this addendum states the ceiling's scope only.
+
+**Why:** with repeated paid attempts, an account can have positive expected net cash at bust rates well above 5% when a reset costs little relative to a payout. The falsifier asks a different question — whether a low-bust candidate exists across the families — and keeps its own ceiling.
+
+## Addendum 2026-10-29 — one program: the multi-firm operation (Accepted)
+
+**Ruling:** Joshua, 2026-10-29, in the repository cleanup assessment, verbatim: "remove the personal account objective altogether. The Select 100k challenge is the first step in the four firm program, it is one program which is the multi firm operation".
+
+**Effect.**
+
+- This program is the project's single operating objective: the multi-firm operation across the automation-friendly firms in [`core/firm_rules.py`](../../core/firm_rules.py).
+- The owned Tradeify Select 100K evaluation is its first step. Work toward it is program work; today that is the ORB+Aegis native route, [STATE](../../STATE.md) queue item 1.
+- **Order of expansion** (Joshua, 2026-10-30, verbatim: "we will start with scaling within Tradeify, and we can research other strategies to expand to other firms"). Tradeify support's guidance of 2026-10-24 bars running a strategy at another prop firm while it trades at Tradeify, and allows one strategy across several of the trader's own Tradeify accounts ([route record](../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md)). The program therefore scales first by adding Tradeify accounts for the released strategy. Later firms need distinct strategies, sourced through research. Whether a current §4 candidate counts as the same strategy as one released at Tradeify is not settled here.
+- The self-funded lane is closed ([lane closure](2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed)). No personal-account objective competes with this program.
+
+**Not changed:**
+
+- §4 and its falsifier, the 5.0% ceiling and its [scope](#addendum-2026-10-28--scope-of-the-4-bust-ceiling-accepted). The ceiling still does not bind the Select 100K evaluation's own objective, which is held in its private owner record.
+- The 2026-11-08 hard date, the demotion rule and the firm set.
+- Every candidate, evidence, qualification and authorization boundary recorded at its owner.
+- Nothing is armed, deployed or authorized by this addendum.
 
 ---
 
@@ -420,3 +453,7 @@ Clearance is read on the intraday-honest clock with `headline_bust`. The pre-reg
 | 2026-10-02 | §4 status pointer only: the operator withdrew the 2026-09-03 EOD-clock discharge and requires an intraday-honest clear, recorded at the status owner ([withdrawal ADR Addendum 2026-10-02](2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-10-02--the-2026-09-03-discharge-withdrawn-an-intraday-honest-clear-is-required-accepted)). Its exactly-one-tier clause bears on Addendum 2026-08-22 above, which stays `Proposed`. No §2/§4 text edited. | Joshua (ruling) + Claude Code (record) |
 | 2026-10-16 | Addendum (Accepted, operator rulings): §4 ceiling 5.0%; fresh §4 candidate ORB MNQ v7 authorized with prior-failure disclosure; FXIFY Futures Flex registration directed (counts toward §4 only once its firm_rules row, pre-flight and re-verified facts exist) | Joshua + Claude |
 | 2026-10-17 | Pointer only: by Joshua's 2026-10-17 instruction, the 2026-10-16 addendum's "under Codex" owner wording now reads as the Claude coordinator for integration and dispatch; Codex owners keep technical execution ([ledger](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-transfer--claude-deployment-coordinator-2026-10-17)). No rule changed. | Claude coordinator |
+| 2026-10-25 | Pointer only: the 2026-10-16 addendum's ORB v7 schedule (freeze 10-23, re-MC 10-30) is overtaken; ORB v7 is paused, not closed, and S4 stays stopped. No rule changed. | Claude Code |
+| 2026-10-28 | Addendum (Accepted, operator ruling): the §4 5.0% bust ceiling is scoped to this program's falsifier and does not bind account operating objectives; no value or §4 text changed | Joshua (ruling) + Claude Code (record) |
+| 2026-10-29 | Addendum (Accepted, operator ruling): one program, the multi-firm operation; the owned Select 100K evaluation is its first step; the personal-account objective is removed. §4, its ceiling and scope, and the 11-08 date are unchanged | Joshua + Claude Code |
+| 2026-10-30 | Same addendum, operator ruling added: scale first within Tradeify; later firms need distinct strategies sourced through research. §4 unchanged | Joshua + Claude Code |

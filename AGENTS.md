@@ -37,14 +37,14 @@ records resolve through the [legacy citation map](docs/operational_rules.md#lega
 
 **Authority, review and orientation**
 
-- **Rule 0 — Audit first.** Read the source or primary artifact before any claim, brief, decision or edit; verify premises and returned work. [→](docs/operational_rules.md#rule-0--audit-first)
+- **Rule 0 — Audit first.** Read the source or primary artifact before any claim, brief, decision or edit; verify premises and returned work; no review round on an unobserved, unnamed external fact. [→](docs/operational_rules.md#rule-0--audit-first)
 - **Rule 1 — Small-cell variance prior.** Small samples and streaks are variance: no change, override or regime overlay on them. [→](docs/operational_rules.md#rule-1--small-cell-variance-prior)
-- **Rule 2 — Budget before acting.** Budget substantial work in one line (iterations, plus $ and K); stop structurally at the bound. [→](docs/operational_rules.md#rule-2--budget-before-acting)
-- **Rule 3 — The operator decides; grants are literal.** Operator instructions govern; grants are literal; operator acts need direction or a named standing GO; refusals are reported. [→](docs/operational_rules.md#rule-3--the-operator-decides-grants-are-literal)
+- **Rule 2 — Budget before acting.** Budget substantial work in one line (iterations including review rounds, plus $ and K); stop structurally at the bound. [→](docs/operational_rules.md#rule-2--budget-before-acting)
+- **Rule 3 — The operator decides; grants are literal.** Operator instructions govern; grants are literal; operator acts need direction or a named standing GO; refusals are reported; scope cuts, new assumptions, evidence-claim changes and account permissions are his. [→](docs/operational_rules.md#rule-3--the-operator-decides-grants-are-literal)
 - **Rule 4 — Seats, action classes and cards.** Act within seat grants and the card's authority block; cards only narrow; frozen cards return contradictions. [→](docs/operational_rules.md#rule-4--seats-action-classes-and-cards)
-- **Rule 5 — A separate reviewer.** Claude does not review its own work; Codex reviews, including the pre-ratification adjudication. [→](docs/operational_rules.md#rule-5--a-separate-reviewer)
-- **Rule 6 — PRs and merges.** Land by PR; merge pinned to a head Codex reviewed clean (within three, or a clean fourth) with all checks green. [→](docs/operational_rules.md#rule-6--prs-and-merges)
-- **Rule 7 — Stop after two failed corrections.** After two failed corrections, stop and restart cleaner on the escalation lane. [→](docs/operational_rules.md#rule-7--stop-after-two-failed-corrections)
+- **Rule 5 — A separate reviewer.** Codex reviews Claude's work and Claude reviews Codex's; neither reviews its own, including the pre-ratification adjudication. [→](docs/operational_rules.md#rule-5--a-separate-reviewer)
+- **Rule 6 — PRs and merges.** Land by PR; merge pinned to a head the other agent reviewed clean (within three, or a clean fourth, counted per reviewer) with all checks green. [→](docs/operational_rules.md#rule-6--prs-and-merges)
+- **Rule 7 — Stop after two failed corrections.** After two failed corrections of one failure family, stop and restart cleaner in a fresh coordinator session; at a review stop, ship only reviewer-marked non-blocking residuals, or ask the operator. [→](docs/operational_rules.md#rule-7--stop-after-two-failed-corrections)
 - **Rule 8 — Orient and dedup first.** Orient from STATE and the owner; dedup with pasted search output before new work. [→](docs/operational_rules.md#rule-8--orient-and-dedup-first)
 - **Rule 9 — Name the question; pick the loop.** Name the question and the decision it changes; pick the loop tier by reversibility. [→](docs/operational_rules.md#rule-9--name-the-question-pick-the-loop)
 
@@ -53,7 +53,7 @@ records resolve through the [legacy citation map](docs/operational_rules.md#lega
 - **Rule 10 — Live-execution gates.** Arm, spend, trade, deploy and reach hosts only as the gates and operator direction allow. [→](docs/operational_rules.md#rule-10--live-execution-gates)
 - **Rule 11 — Rail operating invariants.** Fresh tags, sends are not fills, IN_DOUBT reconciled, protective actions never wait, attended only. [→](docs/operational_rules.md#rule-11--rail-operating-invariants)
 - **Rule 12 — Credentials.** Own scoped credentials only; no operator tokens, no Fly or broker credentials; never embed secrets. [→](docs/operational_rules.md#rule-12--credentials)
-- **Rule 13 — Private data and the public clone.** No account data, locked figures, vendor CSVs, Pine or ports in commits; private surface read in place only. [→](docs/operational_rules.md#rule-13--private-data-and-the-public-clone)
+- **Rule 13 — Private data and the public clone.** No account data, locked figures, vendor CSVs, Pine or ports in commits; private surface read in place only; data moves by class, and Codex never receives Pine, ports or account data. [→](docs/operational_rules.md#rule-13--private-data-and-the-public-clone)
 - **Rule 14 — Locked parameters and protection.** Locked parameters, allocations and Pine are immutable; protection changes only through its gate chain. [→](docs/operational_rules.md#rule-14--locked-parameters-and-protection)
 - **Rule 15 — Capital authorization is separate and revocable.** Lock, capital authorization and deployment are separate axes; authorization moves down only; nothing grants capital. [→](docs/operational_rules.md#rule-15--capital-authorization-is-separate-and-revocable)
 
@@ -107,7 +107,7 @@ records resolve through the [legacy citation map](docs/operational_rules.md#lega
 - `dry_run=false` requires M1 `RESOLVED`: the gate's object is the **arm**, not the send.
 - Disarm **before** absolute `armed_until` expiry; lapse-while-armed previously caused a host crash-loop.
 - Live spend requires M1 `RESOLVED` **and** separate operator GO; every armed session needs its own GO.
-- **Agents may place orders, exit positions and cancel orders when directed by the operator**, including through computer use ([operator amendment 2026-09-30](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b)); arming, live-spend and per-session operator GO requirements still apply. Weekly account-preservation trades may be operator- or agent-placed at the operator's direction; deadline in [STATE](STATE.md#scheduled-forward-triggers).
+- **Agents may place orders, exit positions and cancel orders when directed by the operator**, including through computer use ([operator amendment 2026-09-30](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b)); arming, live-spend and per-session operator GO requirements still apply. Weekly account-preservation trades may be operator- or agent-placed; under the operator's standing, revocable GO (2026-10-25, same addendum) an agent needs no per-trade direction for them; deadline in [STATE](STATE.md#scheduled-forward-triggers).
 - The arming interlock (`ops/c1_rail/c1_rail_arm.py` calling `validate_c1_monitoring_acceptance.validate(require_resolved=True)`) gates only the arm helper. It checks structure, `RESOLVED` status and `operator_signoff` presence, not a signature: a status-only file fails; a complete forged `RESOLVED` file passes. The rail host's boot gate (`c1_rail_http_server.load_config`) does not check M1, so editing the `/data` config bypasses it; the host-side activation gate is owed ([self-funded lane ADR item 8](docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-25--owed-item-8-host-side-activation-gate-from-tb-i3), from TB-I3). `--acknowledge-m1-unresolved` overrides a structurally valid unresolved artifact (operator-ratified discretion; writes an `arming_deviation` record); agents may invoke it only through the operator-act prompt ([ruling 2026-09-26](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-26)).
 
 **Account:** used, not pristine; canned-payload and weekly token trades have filled, but no strategy-signal fill has occurred. `order_id` idempotency is **DISPROVEN**; every payload gets a fresh tag. Private account figures stay private.
@@ -120,7 +120,7 @@ records resolve through the [legacy citation map](docs/operational_rules.md#lega
 | Rail build/account registration GO; spend ceiling $700 | [rail GO](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) |
 | Licensed test strategy can discharge M1 item 5 / B7 Stage 1 independently of strategy selection | [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) |
 | Four-firm program falsifier remains dated 2026-11-08; Tradeify counts again | [program](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md), [F1 reversal](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-09-01--f1-reversed-a-tradeify-resting-discharge-now-counts-toward-4) |
-| Tradeify eval accounts: strategy logic must be native, with no external engine, bridge or direct API (support, 2026-10-12); Track B superseded for Tradeify 2026-10-16; the weekly trade (supported platform only, never CrossTrade or the API) and the personal lane continue | [route record](docs/briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12-later--tradeify-support-strategy-logic-must-be-native-for-evaluation-accounts), [supersession](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify) |
+| Tradeify eval accounts: strategy logic must be native, with no external engine, bridge or direct API (support, 2026-10-12); Track B superseded for Tradeify 2026-10-16; the weekly trade (supported platform only, never CrossTrade or the API) and the personal lane continue, with Q-SFCLEAR-3 dispatch paused (2026-10-19) | [route record](docs/briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12-later--tradeify-support-strategy-logic-must-be-native-for-evaluation-accounts), [supersession](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify), [pause](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-19--no-book-lineage-configuration-has-an-evidence-case-for-the-tradeify-evaluation) |
 
 ## Strategy Reference (LOCKED legacy book — do not modify)
 
@@ -218,6 +218,31 @@ or pass them to any external service
 ([campaign §60](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25)).
 The single exception covers the ports and `effective_inputs.json` (not Pine), copied to the Joshua-controlled Windows VM only for the runs, and on the terms, that the [§60 VM addenda](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25) (2026-10-07 onward) admit; the [VM policy](docs/governance/azure-compute-vm-policy.md) owns the standing host rules.
 
+**Data movement (Joshua, 2026-10-28).** These rules apply by data class, whatever the
+source: a private local area, the archive, the VM or this repository.
+
+- *Providers.* Whatever an agent may read may reach that agent's own provider (Anthropic
+  for Claude, OpenAI for Codex). Handing data to another agent or service follows that
+  recipient's permissions.
+- *Codex.* Codex never receives Pine, runtime ports, `effective_inputs.json` or account
+  data, and does not read them in place. Public research figures in PRs it reviews are exempt.
+- *Archive.* Claude may read `first-passage-archive`. Anything extracted from it follows
+  these class rules, and a Codex ticket carries only identities, hashes, windows and counts.
+- *Research backtest dollars.* Allowed in lab `RESULTS` files only, never in PR text, cards,
+  STATE or briefs; elsewhere cite the RESULTS file or a hash.
+- *Account data.* Agents read it only for a task that names it, and never quote it or hand it off.
+- *Private inputs.* An input a frozen run binds lives in a registered location with a hash
+  index (`SHA256SUMS`, `BOOK_SOURCES.sha256` or `docs/evidence/PRIVATE_EVIDENCE.sha256`).
+  New public text cites private inputs by repo-relative path and hash, never by an absolute
+  home path. Archive links in public docs are fine.
+- *Derived outputs (Joshua, 2026-10-28).* A figure derived from a private export keeps that
+  export's class, except these fields, which lab analysis files may publish with the source
+  hash: the hash match, trade count, date window, and aggregate counts of venue-rule breaches
+  (e.g. trades held past a flat deadline or over a weekend). Never prices, P&L, sizes,
+  parameter values, per-trade timestamps or trade lists.
+- *Existing text.* These rules apply from now on. Editing a file does not remove the content
+  from git history, and rewriting history is a separate operator decision.
+
 ### Gate composition authority
 
 [scripts/gates.yml](scripts/gates.yml) and its runner own gate composition,
@@ -225,7 +250,7 @@ The single exception covers the ports and `effective_inputs.json` (not Pine), co
 parallel gate list. `main` requires a PR and the `skills (3.12)` status ([Q-GATESTACK-1's addendum](docs/briefs/closures/Q-GATESTACK-1-closure-falsified.md)
 records the ruleset); other path-filtered checks are not required merge checks.
 
-**Merges and credentials (Joshua, 2026-10-24).** An agent may merge a PR, pinned to its head SHA, once a Codex review at that head comes back clean and every CI check is completed and green; auto-merge stays forbidden. After fixing Codex findings, push and comment `@codex review` for a fresh review of the new head. A PR may merge only if a review is clean within three Codex reviews, or on a clean fourth (amended 2026-10-25); otherwise stop fixing and return it to its original owner for a rewrite. Claude does not review its own work: a separate reviewer, here Codex, reviews it ([ruling 2026-10-25](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-25--operator-ruling-claude-does-not-review-its-own-work)). Agents act under their own scoped credentials (a repo-scoped GitHub PAT), never the operator's tokens, and hold no Fly or broker credential ([Addendum 2026-10-24b](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody)).
+**Merges and credentials (Joshua, 2026-10-24).** An agent may merge a PR, pinned to its head SHA, once the other agent's review at that head (Codex for Claude's PRs, Claude for Codex's) comes back clean and every CI check is completed and green; auto-merge stays forbidden. After fixing Codex findings, push and comment `@codex review` for a fresh review of the new head. A PR may merge only if a review is clean within three reviews, or on a clean fourth (amended 2026-10-25); Claude reviews count toward that limit as Codex reviews do, and on a mixed-author PR each agent's reviews have their own count (rulings 2026-10-29: [Claude reviews](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-26--operator-ruling-cross-agent-review), [mixed-author PRs](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-29--operator-ruling-mixed-author-prs)); otherwise stop fixing and return it to its original owner for a rewrite. Review is cross-agent: Codex reviews Claude's work and Claude reviews Codex's ([ruling 2026-10-25](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-25--operator-ruling-claude-does-not-review-its-own-work), [2026-10-26](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-26--operator-ruling-cross-agent-review)). Agents act under their own scoped credentials (a repo-scoped GitHub PAT), never the operator's tokens, and hold no Fly or broker credential ([Addendum 2026-10-24b](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody)).
 
 ## Python environment and local checks
 

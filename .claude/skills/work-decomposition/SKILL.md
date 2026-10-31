@@ -15,15 +15,9 @@ into children that each fit one session or one packet) and **input-shaped** (cut
 the input does not fit one context). It produces sized units and a manifest; it does not build,
 dispatch implementation workers, or adjudicate; the input-shaped protocol below does run read-only
 sub-agent waves inside the session, which is evidence gathering, not work dispatch. Worker surfaces
-are Claude Code sessions and Codex tasks; Cursor was retired as a worker surface by operator
-instruction on 2026-09-15. The record is the
-[surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md)'s
-2026-09-15 revision, whose §Decision clause "Orchestrating more than one worker at a time" now
-owns the surviving fleet-orchestration rules — claim manifest, disjoint footprints (single-writer
-rule), dispatch-time Phase-0 re-check, review-round-as-freeze, frozen-SHA dispatch pointer —
-surface-agnostically. The `cursor-fleet` skill that stated them is deleted by that revision;
-[TOMBSTONES](../../../docs/adr/TOMBSTONES.md) pins its body and names where each surviving
-clause now lives.
+are Claude Code sessions and Codex tasks, dispatched by the coordinator (`coordinator` skill) under the
+[surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md)'s §Decision
+clause "Orchestrating more than one worker at a time".
 
 Provenance: adapted 2026-09-15 from three external drafts — `troykelly/claude-skills`
 issue-decomposition (oversize thresholds, child-quality checklist, dependency status),
@@ -95,7 +89,7 @@ That umbrella is the reference shape for this skill's work-shaped output.
    explicit *depends-on* edge that makes it sequential. `docs/SESSIONS.md`, `STATE.md`, boards and
    index files are reserved to the parent's integration commit.
 6. **Frozen, or explicitly judgment-owned** — a child that needs a judgment call mid-build stays
-   with the orchestrating Claude session; a child on a locked surface (core anchor code, Pine,
+   with the coordinator; a child on a locked surface (core anchor code, Pine,
    ADRs / pre-registrations / `AGENTS.md` / `STATE.md`) stays there regardless of size. The
    [surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md) tests 1–2
    record the rule; its Cursor lane is retired (2026-09-15 revision), the rule is not. Never launder a judgment task into
@@ -123,7 +117,7 @@ inline under the session's own checklist (fable-method Step 4.4).
    cycles — a cycle means one boundary is wrong. Sequence for **incremental integration**: merge in
    dependency order with the fast gates between merges, never one end-of-track consolidation.
 4. **Write the parent manifest** before anything is dispatched — one row per child:
-   `child · owner/lane · branch · footprint · depends-on · budget · status`. Lifecycle statuses
+   `child · owner/lane · branch · card @ frozen hash | head SHA · footprint · depends-on · budget · status`. Lifecycle statuses
    `STUB / QUEUED / DISPATCHED / RETURNED / MERGED / OVERTAKEN / WITHDRAWN` (`STUB` = not yet
    freezable; nothing is dispatched from a stub). `RETURNED` always carries the four-state return
    and its disposition — `RETURNED (DONE)`, `RETURNED (DONE_WITH_CONCERNS — <concern>)`,
@@ -141,8 +135,8 @@ inline under the session's own checklist (fable-method Step 4.4).
    per the surface-allocation ADR's §Decision clause "Orchestrating more than one worker at a
    time"; one frozen build above the handoff-overhead
    threshold → a single `cc_handoff` brief for a Claude Code session, or a Codex task carrying the
-   same §0 / §0.5 / §0.75 / §5 / §6 content; judgment or locked-surface work → the orchestrating Claude
-   session; work that still fits one session but needs ordering → the session's own checklist.
+   same §0 / §0.5 / §0.75 / §5 / §6 content; judgment or locked-surface work → the
+   coordinator; work that still fits one session but needs ordering → the session's own checklist.
    Environment per child → the local-only checklist in `task-routing`.
 6. **Hand the children off.** Packet authoring is `brief-authoring` (cc_handoff template),
    pre-dispatch verification is `handoff-verify`, returns are adjudicated by `handoff-verify` post-execution judging. This
@@ -264,7 +258,7 @@ fits the question; author an ad-hoc wave only when none does.
 | "The parent's acceptance list is good enough for the children." | Copied-wholesale criteria are the top anti-pattern: no child can pass or fail alone, so nothing is verifiable until everything is. |
 | "Just read all the files first for context." | That is the input-shaped tell. Size, filter, batch. |
 | "The merge looks thin — spawn another level." | Depth 2 is never the fix; re-read the disputed span. |
-| "This packet is small, it can carry a judgment call." | Size does not move a judgment task off CC — surface-allocation test 2, no exception. |
+| "This packet is small, it can carry a judgment call." | Size does not move a judgment task off the coordinator — surface-allocation test 2, no exception. |
 | "I'll keep the manifest in my head." | The manifest is the anti-duplication device; unwritten means two sessions answer the same question (the Q-SFRISK-1 collision, pinned in [TOMBSTONES](../../../docs/adr/TOMBSTONES.md)). |
 
 ## Red flags
@@ -282,8 +276,7 @@ fits the question; author an ad-hoc wave only when none does.
 
 | Skill | Boundary with this one |
 |---|---|
-| `refine-question` (contested-question decomposition) | A question with too many axes → that skill; work with too many parts → this one. A bundled question inside an oversize brief goes there first — the cut lines often follow the axes. |
-| `refine-question` | If the parent's done cannot be stated in two sentences, refine before decomposing. |
+| `refine-question` (contested-question decomposition) | A question with too many axes → that skill; work with too many parts → this one. A bundled question inside an oversize brief goes there first — the cut lines often follow the axes. If the parent's done cannot be stated in two sentences, refine before decomposing. |
 | [surface-allocation ADR](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md) §Decision "Orchestrating more than one worker at a time" | Owns the orchestration rules that consume this skill's manifest and children when 2+ packets are frozen implementation — claim manifest, disjoint footprints (single-writer rule), dispatch-time Phase-0 re-check, review-round-as-freeze, frozen-SHA dispatch pointer. Its disjoint-footprints rule is the atomic test's point 5 applied at dispatch. Worker surfaces are Claude Code sessions and Codex tasks. |
 | `brief-authoring` | Authors each child as a `cc_handoff` brief; check 8's `BLOCKED — scope-problem` sub-case sends the packet back here for re-cutting. |
 | `handoff-verify` / `handoff-verify-panel` | Pre-dispatch verification of a child; the panel is the input-shaped protocol applied to a many-claim packet. |

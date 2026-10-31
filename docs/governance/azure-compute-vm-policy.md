@@ -40,7 +40,7 @@ Agent Azure roles are restricted and granted case by case (2026-10-25): each
 grant names the identity, the actions and the scope (VM or resource group). Only
 Joshua grants roles. Current grants on the VM: the backstop's `FP compute VM
 backstop` role, and the VM's own identity's `Offline compute self-deallocate` role
-from the PR #746 runner work.
+(left from the closed PR #746 runner; see Open).
 
 ## Private data and teardown
 
@@ -54,5 +54,6 @@ from the PR #746 runner work.
 ## Open
 
 Where Docker/Linux runs go; a standing admission rule for public-only runs;
-whether PR #746's runner is resumed or closed; removal of the existing smoke-test
-debris (retained Run Command, storage account).
+removal of the existing smoke-test debris (retained Run Command, storage account);
+whether the VM identity's `Offline compute self-deallocate` role, left from the
+closed PR #746 runner (closed 2026-10-28), is revoked.

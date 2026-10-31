@@ -13,7 +13,7 @@ A concrete, reviewable **measurement-and-margin rule** for the Part A phase ceil
 3. **Capture method.**
    - What is measured: CPU as cumulative user plus system time, including children; wall time; peak memory (peak RSS and/or cgroup `memory.peak` on Linux).
    - Repeats and the statistic reported, and how nondeterminism or noise is handled.
-   - The exact commands. Use existing harnesses where they apply: `benchmark_part_a.py`, and the [2026-09-24 representative measurement](../../notes/2026-09-24-t10-step4-representative-measurement.md) and its harness.
+   - The exact commands. Use existing harnesses where they apply: `benchmark_part_a.py`, and the [2026-09-24 representative measurement](https://github.com/Joshua-Asante/first-passage/blob/128989543d94d38d0962ee2d3c37eac7384efa8a/docs/notes/2026-09-24-t10-step4-representative-measurement.md) and its harness.
    - The evidence record format.
 4. **Proposed margin rule.** A concrete formula with **proposed numeric parameters, marked PROPOSED — not approved**. Include the reasoning, the sensitivity, and what triggers re-measurement.
 5. **Budget feasibility.** Show that the resulting PART_A ceiling fits the campaign cap together with the other phases. That is the `bind_budget` Σ-feasibility check (`execution/campaign_budget.py`, `campaign_store.py`), including the orchestration bound. Include the S5 draft's D2 falsifier: if maximum-expansion CPU cannot be bounded ahead of time, revisit the uniform model.

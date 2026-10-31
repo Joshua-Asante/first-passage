@@ -119,7 +119,7 @@ This is a gated program plan. Fully design the next independently deliverable sl
 
 ### Packet 1 — Accept the seven bundles and shared session inputs
 
-**Execution checkpoint:** [intake progress and bounded emulator correction](../../notes/2026-09-15-tradeify-packet1-intake-progress.md). Corrected O-N collected under Joshua's decision to preserve the pinned source; seven diagnostic comparisons match. Formal admission/shared-law parity and calendar/settlement acceptance remain open.
+**Execution checkpoint:** [intake progress and bounded emulator correction](https://github.com/Joshua-Asante/first-passage/blob/128989543d94d38d0962ee2d3c37eac7384efa8a/docs/notes/2026-09-15-tradeify-packet1-intake-progress.md). Corrected O-N collected under Joshua's decision to preserve the pinned source; seven diagnostic comparisons match. Formal admission/shared-law parity and calendar/settlement acceptance remain open.
 
 **Continuation:** [execution domain and evidence status](../../notes/2026-09-15-packet1-execution-domain.md)
 records the unchanged-source attestation, September 30 forward horizon, shared-law

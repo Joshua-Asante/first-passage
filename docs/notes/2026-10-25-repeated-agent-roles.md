@@ -1,6 +1,6 @@
 # Repeated agent roles: codify, fold or retire (2026-10-25)
 
-**Status:** research and recommendations for Joshua. No role is changed by this note; each fold or retirement below needs his call (seat changes run through the surface-allocation ADR's seat table).
+**Status:** historical research. Joshua ruled on it 2026-10-28 ([surface-allocation ADR Addendum 2026-10-28](../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-28--operator-rulings-executive-folded-into-the-coordinator-consistency-only-delegation)); the `coordinator` and `merge-train` skills hold the procedures.
 **Question:** which agent roles keep being rebuilt by hand across sessions, and which of them should become a skill, fold into another role, or retire?
 **Method:** four independent sweeps: live and archived Claude memory, `docs/SESSIONS.md`, and the governance seats (surface-allocation ADR, `scripts/seat_authority.yml`, STATE, campaign §58). Then a merge, then an adversarial check of each row's status and recommendation. Statuses below are the checked ones as of 2026-10-25.
 **Policy applied:** the operator's "boundaries only where necessary; simplify by subtraction; one home per rule". Codify only an active role, rebuilt at least twice, whose procedure no repo skill or script holds; otherwise fold or retire.

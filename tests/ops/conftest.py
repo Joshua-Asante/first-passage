@@ -1,20 +1,19 @@
-"""Keep signed qualification inventories separate from legacy import aliases.
+"""Leave the retired qualification suite out of whole-suite runs.
 
-Unfiltered ancestor-directory runs execute qualification in one clean child.
-Explicit qualification selections retain ordinary pytest collection and behavior.
+The c1 rail is retired (rail ADR addendum 2026-10-29). Unfiltered
+ancestor-directory runs skip the qualification package and its provenance file;
+explicit selections still collect them normally.
 """
 from pathlib import Path
 
 
 _QUALIFICATION = Path(__file__).resolve().parent / "qualification"
 _PROVENANCE = Path(__file__).resolve().parent / "test_phase3_provenance_acceptance.py"
-_BRIDGE = Path(__file__).resolve().parent / "test_qualification_isolation.py"
 
 
 def _isolate_qualification(config):
     options = config.option
-    # A filter could deselect the bridge after suppressing qualification tests.
-    # Focused runs therefore retain normal collection, including alias failures.
+    # Focused runs retain normal collection, including alias failures.
     if any(getattr(options, name, None) for name in (
             "keyword", "markexpr", "deselect", "ignore", "ignore_glob",
             "lf", "ff", "stepwise", "pyargs")):
@@ -27,7 +26,7 @@ def _isolate_qualification(config):
         if not path.is_absolute():
             path = Path(config.invocation_params.dir) / path
         selections.append(path.resolve())
-    # Do not substitute a child when qualification was explicitly requested.
+    # Explicitly requested qualification runs as ordinary tests.
     if any(path == _QUALIFICATION or path.is_relative_to(_QUALIFICATION)
            for path in selections):
         return False
@@ -40,9 +39,3 @@ def pytest_ignore_collect(collection_path, config):
         return True
     return None
 
-
-def pytest_collection_modifyitems(config, items):
-    if not _isolate_qualification(config):
-        # The bridge is a replacement only for whole-suite collection, not an
-        # extra skipped test on explicitly selected qualification/legacy runs.
-        items[:] = [item for item in items if Path(item.path).resolve() != _BRIDGE]

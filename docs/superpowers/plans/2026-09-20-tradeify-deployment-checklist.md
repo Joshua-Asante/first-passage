@@ -1,16 +1,40 @@
 # Tradeify Deployment Checklist Implementation Plan
 
-> **Proposed roadmap refresh:** [2026-10-08 viability-to-release amendment](#proposed-amendment-2026-10-08--viability-diagnosis-to-an-exact-deployable-release). Existing owner records remain authoritative; this proposal grants no execution authority.
+## Current routing — 2026-10-29 (derived mirror)
 
-> **For agentic workers:** Execute with superpowers:executing-plans; use superpowers:subagent-driven-development when bounded delegation is useful and authorized. Preserve the behavioral contract and integration owner. Steps use checkbox (`- [ ]`) syntax for tracking.
+This checklist retains Track B's dated sequence and decisions. **Track B is
+superseded for Tradeify**, not the current delivery plan. The
+[10-16 ruling](#addendum-2026-10-16--track-b-superseded-for-tradeify) governs;
+[shared obligations](../../adr/2026-09-12-tradeify-book-protection-instance-admission.md#addendum-2026-10-25--d4-tradeify-scoped-supersession-and-where-preserved-items-live)
+remain with their recorded owners. The retained evaluation and weekly
+preservation trade continue under their existing conditions; the personal lane's
+Q-SFCLEAR-3 dispatch preparation remains paused under the
+[10-19 ruling](#addendum-2026-10-19--no-book-lineage-configuration-has-an-evidence-case-for-the-tradeify-evaluation).
 
-**Goal:** Deliver the fixed four-strategy Tradeify portfolio as an authorized attended release, with bounded execution assignments and evidence-backed acceptance.
+| Record | Read as | Remaining boundary |
+|---|---|---|
+| [Native NinjaScript plan](2026-10-21-tradeify-native-ninjascript-strategy-plan-DRAFT.md) | DRAFT sequence for the separate native lane | Its expanded P1 assessment and later phase GOs are not supplied by this checklist |
+| [ORB/Aegis workshop](../specs/2026-10-28-orb-aegis-workshop-design.md#evidence-and-ownership-boundary) | Research workflow and identity boundary | Workshop ORB, O-N portfolio ORB and O-0 native solo ORB do not inherit each other's evidence or acceptance |
+| [Branch (b) rulings](#addendum-2026-10-28--branch-b-ruled-ahead-of-the-11-08-sitting), merged in [#959](https://github.com/Joshua-Asante/first-passage/pull/959) and [#965](https://github.com/Joshua-Asante/first-passage/pull/965) | Read-only stage 1 covers ORB and Aegis together as one candidate; this does not grant the native plan's expanded P1 | The pair's own evidence case and exclusivity remain owed. [Runbook §5](../../notes/2026-10-18-native-protection-recovery-pilot-runbook.md#5-decisions) records SM-1–SM-3 as ruled 10-29; native evidence, including U-18, remains owed |
+| [Qualification framework](../../briefs/pre-registration/2026-10-26-tradeify-native-lane-prereg-DRAFT.md), merged in [#961](https://github.com/Joshua-Asante/first-passage/pull/961) | Successor to #941; document remains DRAFT after merge | Pre-ratification adjudication, operator values and ratification remain owed; its formal nomination and exact account binding are open. It is not an approved replacement for an existing objective |
 
-**Architecture:** Retain the protected qualification service selected by B0. Complete synthetic E1 engineering while progressing settlement, route feasibility, source preparation and attended operations independently. Freeze only after behavior and launch feasibility are settled; production qualification, final binding and activation remain separate decisions.
+The [four-firm ceiling scope ruling](../../adr/2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-10-28--scope-of-the-4-bust-ceiling-accepted)
+keeps the program falsifier separate from the owned Select 100K operating
+objective. The historical 5% references below establish no new account ceiling.
+The [10-19 finding](#addendum-2026-10-19--no-book-lineage-configuration-has-an-evidence-case-for-the-tradeify-evaluation)
+still governs its book-lineage scope; whether an exact ORB/Aegis pairing falls
+inside it is an owner decision, not settled by a shared label. No candidate,
+account, sizing, evidence gate or deployment approval is ratified by this routing
+note. Recheck the linked owners before use.
 
-**Tech Stack:** Existing Python replay/qualification service, Linux execution harness, durable account owner/settlement verifier, production feed and broker adapters, signed release/configuration evidence.
+## Historical Track B delivery plan (superseded for Tradeify)
 
-**Spec:** Existing full-E1 S1-S8 specification/roadmap, Phase 3/4 completion handoffs, Phase 5 attended operations and Phase 6 exact-release launch. This checklist organizes those requirements; it changes no portfolio, statistical criterion, authority or source-evidence requirement.
+The original goal was delivery of the fixed four-strategy Tradeify portfolio via
+the protected Python qualification service, feed and broker adapters, followed by
+production qualification, binding and activation. The T01–T17 packets, audits and
+[10-08 proposed roadmap refresh](#proposed-amendment-2026-10-08--viability-diagnosis-to-an-exact-deployable-release)
+below retain that history; they are not a native-lane dispatch sequence. Their
+acceptances and outstanding evidence remain at the linked owners.
 
 ## Current state — September 26, 2026 (refreshed from the acceptance ledger)
 
@@ -982,5 +1006,20 @@ operational controls or standing instructions.
 **Not changed:**
 - the incumbent evaluation stays retained and disarmed, and the weekly preservation trade continues;
 - Tradeify remains an optional separate native lane for a strategy run only at Tradeify;
-- Q-SFCLEAR-3 (personal lane) stays frozen, and its dispatch preparation stays paused (Joshua, 2026-10-19; run proposal in [PR #873](https://github.com/Joshua-Asante/first-passage/pull/873), open).
+- Q-SFCLEAR-3 (personal lane) stays frozen, and its dispatch preparation stays paused (Joshua, 2026-10-19; run proposal [PR #873](https://github.com/Joshua-Asante/first-passage/pull/873), auto-closed unmerged 2026-10-19 by a closing keyword in commit `4355887`, not by a ruling; reopening it is Joshua's call).
 
+
+## Addendum 2026-10-28 — branch (b) ruled ahead of the 11-08 sitting
+
+**Ruling (Joshua, 2026-10-28, in the Claude session adjudicating #882):** branch (b) of the draft 11-08 rules, and a rewrite of the native runbook's order rules as one state model. He expects ORB and Aegis to share one native Tradeify account.
+
+**Effect:**
+- **Granted, literally:** #807 stage 1, a read-only native toolchain assessment, as branch (b) defines it. Nothing else: no strategy code, build, connection, order or spend. The native strategy plan's P1 asks that a branch (b) GO state its repurposed single-candidate scope; this ruling does not, so that scope is not granted.
+- **Branches (a), (c) and (d)** are not ruled here; (a) stays withdrawn (10-16). The rest of the draft 11-08 rules stays a draft for the sitting.
+- **Runbook:** the [native protection and recovery runbook](../../notes/2026-10-18-native-protection-recovery-pilot-runbook.md) carries A2 (D-N10 to D-N16) and proposes the order state model (§6.10, SM-1 to SM-3, ruled 2026-10-29). #882 is closed as superseded.
+
+**Owed before ORB and Aegis can share that account:**
+- **Evidence case.** The 10-19 ruling (above) found no evidence case for any book-lineage configuration on this evaluation, and its composition grid shows Select books adding ORB legs to the Aegis cell busting more. Whether a pairing of ORB MNQ v7 (paused, outside that finding) with Aegis falls inside the finding is not ruled. Either way the pair needs its own evidence case, and Q-TFYNATIVE-1 (#941, draft) would gate it.
+- **Exclusivity.** Tradeify bars the same bot across firms; both strategies must be run only at Tradeify.
+
+**Ruling (Joshua, 2026-10-28, ~23:58Z, given directly to the merge-train coordinator session, relayed; confirmed in the session that recorded the addendum above):** "ORB joins stage 1; the pair counts as one candidate". #807 stage 1's read-only toolchain assessment covers ORB as well as Aegis, and ORB and Aegis together are one candidate. Stage 1 remains read-only; the evidence case and exclusivity above are still owed.

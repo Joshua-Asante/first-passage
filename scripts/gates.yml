@@ -69,6 +69,13 @@ gates:
       - scripts/check_pine_manifest.py
       - --check-pin-provenance
 
+  - id: card-pins
+    tier: always
+    cmd:
+      - python
+      - scripts/check_pine_manifest.py
+      - --check-card-pins
+
   # Durability invariant for the rail's authoritative SQLite stores. The regex
   # is deliberately the whole of ops/: the scanner's registry check fires on a
   # NEW connect site anywhere under ops/, so narrowing it to the six known store

@@ -16,10 +16,12 @@ i.i.d. Gaussian daily edge at annualised Sharpe `S` and daily σ `sd`, with intr
 |---|---|
 | `payout_sim.py` | General simulator: eval → funded → first payout, with resets and re-buys |
 | `programs.py` | Tradeify (50/100/150K) and other firms' 50K rule sets |
-| `eval_barrier_sim.py`, `run_funded_sweep.py`, `run_resets.py` | Tradeify Select 100K single-attempt, funded and resets runs (metrics memo §3) |
+| `eval_barrier_sim.py`, `run_funded_sweep.py`, `run_resets.py` | Tradeify Select 100K single-attempt, funded and resets runs (metrics memo §3). The memo's §3.1 single-attempt table combines `eval_barrier_sim.py`'s sweep (its only source for SR 0.7) with `run_funded_sweep.py`'s "eval finer grid" (its $300 rows) |
 | `run_tradeify.py` → `tradeify_output.txt` | Tradeify program grid (payout memo, early pass) |
 | `run_ranking.py` → `ranking_output.txt`, `ranking_results.json` | Cross-firm 50K ranking, first payout ≥ $1,000 net within 120 trading days (payout memo §2) |
 | `run_zero_edge.py` | Zero/low-edge calibration (payout memo §2) |
+| `pass63_check.py` → [`PASS63_CHECK.md`](PASS63_CHECK.md) | Independent check of the Select 100K pass-within-63-days curve, plus 126 days and 200 days against metrics memo §3 |
+| `pass63_followups.py` | Follow-ups in `PASS63_CHECK.md`: 90-day 80% pass, resets 100K vs 50K, fee vs time optimum, time to first payout (Gaussian and fat-tailed) |
 
 Reproduce: `python -I lab/analysis/_inbox/prop_payout_geometry_2026-10/run_ranking.py` (about 5 minutes; fixed seeds).
 

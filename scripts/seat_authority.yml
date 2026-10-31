@@ -47,12 +47,11 @@ capabilities:
   handoff.dispatch:     {risk: medium}   # opening a worker session against a frozen card
   governance.author:    {risk: medium}   # drafting ADRs/briefs/STATE/campaign records (routing test 1)
   core_anchor.edit:     {risk: medium}   # edits to routing test 1's core/ anchor paths
-  pr.merge:             {risk: high}     # operator act — GitHub merge; standing-GO exception (ADR Addendum 2026-10-24b):
-                                       # an agent may merge a PR pinned to its head SHA once a
-                                       # Codex review at that head is clean (within three reviews,
-                                       # or a clean fourth; Rule 6) and every CI check is COMPLETED
-                                       # and green at that head; never grantable in a card;
-                                       # auto-merge stays forbidden.
+  pr.merge:             {risk: high}     # operator act — GitHub merge; standing-GO exception: Rule 6
+                                       # (ADR Addendum 2026-10-24b A), run by the merge-train
+                                       # conductor; never grantable in a card.
+  pr.merge_admin:       {risk: high}     # operator act — `gh pr merge --admin` (past unmet requirements);
+                                       # outside pr.merge's standing GO; never grantable in a card.
   governance.ratify:    {risk: high}     # operator act — ratifying an ADR/prereg/closure
   spend:                {risk: high}     # operator act — any paid service or subscription
   rail.deploy:          {risk: high}     # operator act — fly deploy of c1-rail
@@ -97,6 +96,8 @@ acceptance_required_for: [worktree.write, research.run]
 # The capabilities a card may grant to each seat. High-risk capabilities appear nowhere
 # here: the operator seat is never the subject of a card.
 seats:
+  # executive: folded into the coordinator (surface-allocation ADR Addendum 2026-10-28).
+  # Kept because historical cards and tests name it; grant it on no new card.
   executive:
     max_risk: medium
     grantable: [repository.read, tests.run, pr.review, governance.author]

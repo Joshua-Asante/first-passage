@@ -454,3 +454,28 @@ Refundable deposits and minimum balances **stay under the cap**, as clarified ab
 **Source.** Operator ruling 2026-10-02 (sitting 2), D-Q5 (Joshua, "all recommended"); the amount was set by Joshua's follow-up at 2026-10-03T03:16Z ("go with your best recommendations"). It answers the open decision in the 2026-10-01 addendum.
 
 **Effect.** Refundable deposits and minimum balances required for data access are exempt from the $700 ceiling, up to **$500**. Anything above $500 stays under the cap. This exemption is separate from the qualification-host cap above. Feed signup and spend still require D-feed (a)+(b) and CP-7.
+
+## Addendum 2026-10-29 — c1 retired as an execution route; staged decommission
+
+**Ruling** (Joshua, 2026-10-29, in the repository cleanup assessment): "Retire the personal Python route. That is the biggest simplification decision. Keeping a future personal-account option does not necessarily require maintaining this particular implementation." To the follow-up questions he answered "Whole stack, staged" (scope), "Keep frozen and paused" (Q-SFCLEAR-3) and "Staged" (hosts). Later the same day he confirmed: "Anything that is tied to the Python rail is retired." He then removed the personal-account objective altogether ([lane closure](2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed)).
+
+**Why the whole stack.** The personal lane was this rail's last consumer, and it is now closed. Tradeify bars external routes for evaluation accounts (support reply 2026-10-12; Track B [superseded for Tradeify](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify) 2026-10-16), and no other objective names the rail.
+
+**Effect.**
+
+1. c1 is retired as an execution route. That covers the signal daemon ([S2](2026-08-07-loop-s2-signal-host-fork.md), [S2b build](2026-08-08-s2b-signal-daemon-build.md)), the listener and sizing host, the CrossTrade route, the Track B book modules and the qualification service. Nothing is rebuilt, redeployed, armed or bound to an account under this ADR. The hosts stay disarmed until they stop.
+2. Decommission is staged:
+   - **Stage 1 (operator).** Confirm both Fly apps, `c1-rail` and `c1-signal-daemon`, are disarmed (`dry_run=true`, `emit_enabled=false`), then stop them (scale to zero). Keep the apps for about two weeks as rollback.
+   - **Stage 2 (operator).** Once the code and CI assessment confirms no remaining consumer, destroy both apps and cancel CrossTrade at its next renewal. The [subscription ledger](../pursuits/SUBSCRIPTION_LEDGER.md) records both.
+   - **Stage 3 (agents, by PR).** Reduce code, tests, CI, deployment files and documentation in stages. Each PR carries its own consumer evidence and a retrieval row in [`docs/ltm/README.md`](../ltm/README.md). Shared libraries, reference models, fixtures and evidence producers stay until their consumers are shown.
+3. [Q-SFCLEAR-3](../briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md) is not run; see the [lane closure](2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed). Its frozen pre-registration stays as evidence.
+4. Any future route to a broker needs its own build decision. It inherits none of this rail's B-gates, M1 acceptance or test evidence.
+
+**Not changed.**
+
+- The incumbent Tradeify Select 100K evaluation and the weekly preservation trade (placed natively, never through CrossTrade).
+- The native lane.
+- `dd_protection` constants and the frozen controls in AGENTS.md. Arming rules apply to the hosts until Stage 2.
+- The [M1 acceptance](../notes/rail_build/M1_MONITORING_ACCEPTANCE.json) and its validator stay as evidence and gates until Stage 3 decides them. M1 acceptance never transfers to another instance.
+- The spend ceiling and its exemptions stay as recorded.
+- The lane closure is in the [self-funded lane ADR](2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed), and the single program is in the [four-firm program ADR](2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-10-29--one-program-the-multi-firm-operation-accepted).

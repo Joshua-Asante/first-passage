@@ -25,7 +25,7 @@ $env:PYTHONDONTWRITEBYTECODE = '1'
 ```
 
 The recorded calculation used the identical library functions through
-[prepare_compute.py](../../../../ops/c1_rail/qualification/prepare_compute.py); CLI help was checked, and CLI behavior
+[prepare_compute.py](https://github.com/Joshua-Asante/first-passage/blob/4e14a198946bd80f1e3e6214ae8c355d01187229/ops/c1_rail/qualification/prepare_compute.py); CLI help was checked, and CLI behavior
 was exercised by the existing tests. The exact command lines above are reproduction
 instructions, not a claim that both were separately timed.
 
@@ -102,7 +102,7 @@ See [tooling-review.md](tooling-review.md) for checkpoint acceptance and
 
 ## Historical component benchmark
 
-Code: [prepare_compute.py](../../../../ops/c1_rail/qualification/prepare_compute.py), SHA-256 recorded in
+Code: [prepare_compute.py](https://github.com/Joshua-Asante/first-passage/blob/4e14a198946bd80f1e3e6214ae8c355d01187229/ops/c1_rail/qualification/prepare_compute.py), SHA-256 recorded in
 [compute-observation.json](compute-observation.json). Refreshed2026-09-16T00:14:14Z after moving executable code into the ops layer;
 CPython3.12.14, Windows11 build26200, single process. Executable hash and all
 observed source pins are in the observation. This historical refresh superseded

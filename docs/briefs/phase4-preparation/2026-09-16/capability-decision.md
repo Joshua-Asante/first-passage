@@ -547,7 +547,7 @@ Documents and Desktop folders. Exactly one store has the `SettlementStore` schem
 `producer-qualification-2026-09-15/qualification-output/qualification-store.sqlite`,
 SHA-256 `77a03f874149ce618be4fb31c20bc226aef68360b0a7a971682440c32274b83e`, mtime
 2026-09-15, `quick_check=ok`, two chain rows labelled `B7`/`ACCOUNT_CLOSE`. That is the
-rehearsal store the [feasibility decision](../../../notes/2026-09-16-tradeify-production-feasibility-decision.md)
+rehearsal store the [feasibility decision](https://github.com/Joshua-Asante/first-passage/blob/128989543d94d38d0962ee2d3c37eac7384efa8a/docs/notes/2026-09-16-tradeify-production-feasibility-decision.md)
 already ruled not a production chain, and it is unchanged since. The filename matches
 found (`b7-ict-line.md`, test fixtures, qualification boundary objects) are not
 acceptance locations.

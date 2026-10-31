@@ -34,12 +34,8 @@ with a supported Python and install `requirements-ops.lock` with `--require-hash
 if an environment is missing. Select it with `--env` or `FP_OPS_ENV`. Full test runs
 (`test`, `test-ops`) also need the shared verification supplements in
 `tools/local_verification/requirements-extra.txt`, which CI's `tests.yml` installs on
-top of the lock. Without its `cryptography`, signed settlement tests skip, but the
-qualification bridge (`tests/ops/test_qualification_isolation.py`) fails by design:
-it requires the signed composition cases to pass, not skip. Debian/Ubuntu system
-interpreters ship their own `sitecustomize.py` in the standard library, which shadows
-the one `tests/ops/qualification/test_p7_evidence.py` plants for its control run, so
-that test fails on them; CI uses an `actions/setup-python` interpreter.
+top of the lock. Without its `cryptography`, signed settlement tests skip. Whole-suite
+runs leave out the retired qualification suite (`tests/ops/conftest.py`).
 
 Before each command, the launcher checks that the interpreter starts, the venv
 excludes system site-packages, and all locked distribution versions match this
@@ -597,11 +593,17 @@ semantic completeness, or successor authorization.
 
 ## Independent review
 
+Review is cross-agent: Codex reviews Claude's work and Claude reviews Codex's (Rule 5;
+[surface-allocation ADR Addendum 2026-10-26](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-26--operator-ruling-cross-agent-review)).
+The merge rule and review limit are
+[Addendum 2026-10-24b A](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody),
+applied by `merge_train.py gate`; requesting reviews is [merge-train](../.claude/skills/merge-train/SKILL.md) step 3.
+
 [The pre-ratification workflow](../.claude/workflows/pre-ratification-adversarial-panel.js)
 owns its review mechanics. Reviewers assess the source independently of the proposer's
 reasoning; synthesis is advisory and cannot supply operator ratification or execution
 authority. A Claude panel on Claude work is optional author input, not the independent
-review: Codex owns that (Rule 5). Reviewer/delegate assignment never grants permission to edit locked surfaces.
+review: the other agent owns that (Rule 5). Reviewer/delegate assignment never grants permission to edit locked surfaces.
 
 Its existing GRAND-only safety scan reads committed target text. A safety-invariant
 citation flags a hard block on synthesis; missing text flags a coverage failure, also
@@ -719,20 +721,3 @@ pytest's precedence, into the validated recorded command. The launcher clears
 pytest's later implicit addopts expansion to prevent hidden file selections.
 JUnit paths use pytest's variable/home expansion. Existing `--log-file` values
 are treated as outputs too, with the same source-overlap rejection.
-
-### Disposable qualification host
-
-[The disposable Linux host tooling](../tools/qualification_verification/README.md)
-provides administrator-owned TEST_ONLY installations, real role-access probes and
-manifest-scoped cleanup. `qualification_boundary_environment.py` owns prerequisite
-inspection; `qualification_boundary_verification.py` reuses RunRecord and rejects
-critical skips. Its mutually exclusive mode flags select the boundary file set:
-`--s2`, `--s3`, `--s4`, `--s5` and `--r1` (the H9 checkpoint R1 combined selection,
-S5 plus the result/seal and C′ Linux files, which refuses within seconds while any
-R1 file or its manifest row is still missing). `s2_run_evidence.py` reads a run's
-artifact back under the matching `--expect-scope`, `T05_R1_COMBINED` for an `r1`
-run, which also requires the frozen `--expect-selection` document;
-`guard_s2_runs.py` reads the `[s2]`–`[s5]` and `[r1]` run-name tags to keep a
-definitive same-mode dispatch from re-rolling. Host readiness is separate from
-launch-to-G5 acceptance, which remains blocked on the boundary implementation and
-its approved fixture producer.

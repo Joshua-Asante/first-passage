@@ -71,24 +71,8 @@ _UNVERIFIED_REGIME_TAG = re.compile(r"^\|\s*20\d{2}.*\|\s*\[([ML])\]\s*\|?\s*$")
 
 # Registry of "retraction skews": a canonical claim whose source-of-truth has
 # superseded/retracted it but whose canonical line carries no caveat token.
-# v1 ships the one proven case (C1); add entries here (<=6) as new skews are found.
-_RETRACTION_CHECKS = (
-    {
-        "id": "SKEW-headroom-fixed1r",
-        "canonical_needle": "p99 DD 0.63pp headroom",
-        "history_needles": ("provisionally retracted", "fixed-1R"),
-        "caveat_token": "fixed-1R",
-        "summary": (
-            "AGENTS.md asserts 'p99 DD 0.63pp headroom' with no fixed-1R caveat, but "
-            "docs/mc_anchor_history.md (Q-SWAP-2) provisionally retracted that margin to "
-            "0.45pp under fixed-1R modeling (M-SWAP-1). Lock criterion still passes (4.55% < 5%)."
-        ),
-        "next_step": (
-            "Append a fixed-1R caveat + Q-SWAP-2 cross-ref to the headroom line at AGENTS.md, "
-            "mirroring the regime and gross-of-swap caveats already inline."
-        ),
-    },
-)
+# Add entries here (<=6) as new skews are found.
+_RETRACTION_CHECKS = ()
 
 
 def skew_scan(root: Path) -> list[Finding]:

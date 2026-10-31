@@ -10,15 +10,16 @@ best-effort, ruleset as enforcement"). This hook reads the common ways a Claude 
 session writes an operator act and puts the call in front of the operator (``ask``) or
 refuses it (``deny``). It reads command text, so a determined or unusual form gets past
 it (see *Not read* below). What enforces is server-side or in the rail itself, verified
-read-only on 2026-09-25:
+read-only on 2026-09-25 (ruleset re-read 2026-10-25):
 
   * GitHub ruleset 21071355 ``main-protection`` (active on ``refs/heads/main``, empty
     bypass list, ``current_user_can_bypass: never``): a pull request is required, the
-    ``skills (3.12)`` status is required and strict, and non-fast-forward updates and
-    deletion are blocked. It stops a direct or forced push to ``main`` from any
-    credential. It does **not** stop a credential with write access from merging a PR
-    whose status is green: the merge prompt below is best effort, and an agent without a
-    merge-capable credential is the real limit.
+    ``skills (3.12)`` status is required (not strict: the PR need not be up to date with
+    ``main``), and non-fast-forward updates and deletion are blocked. It stops a direct
+    or forced push to ``main`` from any credential. It does **not** stop a credential
+    with write access from merging a PR whose required status is green: the merge checks
+    below are best effort, and an agent without a merge-capable credential is the real
+    limit.
   * The repository setting ``allow_auto_merge: false``: GitHub refuses to enable
     auto-merge on any PR, whoever asks.
   * The arming interlock in `ops/c1_rail/c1_rail_arm.py`
@@ -44,7 +45,7 @@ call, because one answer approves all of them.
                        argument is a SHA literal or a variable the call supplies as one (a
                        SHA in a comment or a string pins nothing, and every merge in the
                        mutation must be pinned). GitHub refuses the merge if the head moved,
-                       so the operator's answer approves exactly the bytes the prompt names.
+                       so the merge lands exactly the head the review and CI cleared.
                        An unpinned merge is denied with the pinned form to use
                        (``pr.merge_unpinned``), and so is a ``gh api`` call whose body the
                        hook cannot read (``--input``, or a ``-F`` field read from a file): it
@@ -114,8 +115,11 @@ call, because one answer approves all of them.
                        unresolved artifact and that it writes an ``arming_deviation`` record.
                        ``--disarm`` and ``--status`` never ask:
                        disarming is a risk-reducing exit and must never wait on a prompt.
-  * ``gh pr merge --admin`` stays askable when pinned (operator ruling 2026-09-26: record
-    only, no change).
+  * ``pr.merge_admin`` — ask: a pinned ``gh pr merge --admin`` (unless its last value is
+                       one of pflag's false spellings). ``--admin`` asks GitHub to merge
+                       past unmet requirements, which the standing GO does not cover
+                       (operator ruling 2026-09-26: "askable admin merges"; the merge-train
+                       skill forbids it to agents). Unpinned, it is ``pr.merge_unpinned``.
 
 **Scope — what this hook is not.** It covers the Claude Code harness only (Codex sessions
 are not hooked). It adds a prompt where an agent session holds a
@@ -195,7 +199,8 @@ SHELL_TOOLS = frozenset({"Bash", "PowerShell"})
 _SHA = re.compile(r"[0-9a-fA-F]{40}")
 
 # Every capability id the hook emits and its decision. A deny is a registry `forbidden:`
-# entry (or the unpinned form of `pr.merge`); an ask is a registry `high` capability. A
+# entry (or the unpinned form of `pr.merge`); an ask is a registry `high` capability
+# (`pr.merge_admin` is `pr.merge` outside its standing GO). A
 # pass emits no permission decision (normal permission evaluation still runs, so the
 # rest of a compound call is never pre-approved) and only adds agent context. A
 # pinned merge passes under the operator's conditioned standing GO (surface-allocation
@@ -203,29 +208,42 @@ _SHA = re.compile(r"[0-9a-fA-F]{40}")
 # CI is green at the pinned head; the pin keeps the merge to that exact head.
 DECISION = {
     "pr.merge": PASS,
+    "pr.merge_admin": ASK,
     "pr.merge_unpinned": DENY,
     "pr.auto_merge": DENY,
     "main.direct_push": DENY,
     "rail.deploy": ASK,
     "rail.arm": ASK,
 }
+_PINNED = frozenset({"pr.merge", "pr.merge_admin"})  # caps whose detail is the head SHA
 
 MESSAGES = {
     "pr.merge_unpinned": ("Merge refused: not pinned to a head SHA (pr.merge). Re-issue it "
-                          "pinned so the approval covers exact bytes.",
-                          "An operator approval must bind to the exact head. Re-issue the "
-                          "merge pinned to the full 40-hex head SHA the operator reviewed: MCP "
-                          "`expectedHeadSha`, `gh pr merge --match-head-commit <sha>`, a REST "
-                          "`sha` field, or GraphQL `expectedHeadOid`."),
+                          "pinned so the merge covers exact bytes.",
+                          "A merge, and any approval of it, must bind to the exact head. "
+                          "Re-issue the merge pinned to the full 40-hex head SHA that was "
+                          "reviewed: MCP `expectedHeadSha`, `gh pr merge --match-head-commit "
+                          "<sha>`, a REST `sha` field, or GraphQL `expectedHeadOid`."),
     "pr.merge": ("Merge under the operator's standing GO (pr.merge).",
-                 "Standing GO (surface-allocation ADR, Addendum 2026-10-24b): merge only if "
-                 "an independent review (a Codex review clean at this head, within three "
-                 "reviews) has passed and every CI check is COMPLETED and green at the pinned "
-                 "head; after three reviews with findings, return the PR to its owner for a "
-                 "rewrite; otherwise report the PR as ready and stop."),
+                 "Standing GO (surface-allocation ADR, Addendum 2026-10-24b A, amended "
+                 "2026-10-25): merge only if an independent review has passed and every CI "
+                 "check is COMPLETED and green at the pinned head. For a Claude-authored PR "
+                 "that is a Codex review clean at this head, within three reviews or on a "
+                 "clean fourth (`scripts/merge_train.py gate` applies the count); if none is "
+                 "clean by the fourth, return the PR to its owner for a rewrite. For a "
+                 "Codex-authored PR it is a Claude review clean at this head, checked by hand "
+                 "(the gate counts Codex reviews only), within three reviews or on a clean "
+                 "fourth, counted by hand. Otherwise report the PR as ready and stop."),
+    "pr.merge_admin": ("Admin merge (pr.merge_admin): --admin asks GitHub to merge past "
+                       "unmet requirements, outside the agents' standing GO. Confirm only if "
+                       "you, the operator, are making this merge.",
+                       "`--admin` is outside the standing GO (Addendum 2026-10-24b A; the "
+                       "merge-train skill forbids it). Drop `--admin` and merge only when the "
+                       "GO's conditions hold; otherwise report the PR as ready and stop."),
     "pr.auto_merge": ("Auto-merge is forbidden to agents (pr.auto_merge).",
-                      "Auto-merge is retired: merge authority is the operator's with no "
-                      "automated exception. Report the PR as ready instead."),
+                      "Auto-merge is retired: an agent merges only by a pinned merge under "
+                      "the standing GO (Addendum 2026-10-24b A). Report the PR as ready "
+                      "instead."),
     "main.direct_push": ("Pushing to main is forbidden (main.direct_push): main takes PRs "
                          "only.",
                          "`main` requires a PR and the required status; a direct push "
@@ -309,7 +327,7 @@ class Hit(NamedTuple):
     """One operator or forbidden act found in a call."""
 
     cap: str
-    detail: str | None = None  # the pinned head SHA for pr.merge; a message detail otherwise
+    detail: str | None = None  # the pinned head SHA for `_PINNED`; a message detail otherwise
     readings: tuple[_Deploy, ...] = ()  # rail.deploy: the command's readings, unresolved
 
     @property
@@ -542,7 +560,10 @@ def _judge_pr_merge(args: list[str]) -> list[Hit]:
         return [Hit("pr.merge_unpinned", UNREAD)]
     if value.get("help") in _GH_TRUE or value.get("disable-auto") in _GH_TRUE:
         return []  # gh prints help, or disables auto-merge and returns before merging
-    return [_merge_hit(value.get("match-head-commit"))]
+    hit = _merge_hit(value.get("match-head-commit"))
+    if hit.cap == "pr.merge" and value.get("admin", "false") not in _GH_FALSE:
+        return [Hit("pr.merge_admin", hit.detail)]  # past unmet requirements: outside the GO
+    return [hit]
 
 
 def _api_fields(parsed: _Parsed) -> tuple[dict[str, str], bool]:
@@ -1368,13 +1389,13 @@ def _reasons(hits: list[Hit], first: Hit) -> tuple[str, str]:
         return _message(first)
     users, agents, seen = [], [], set()
     for hit in hits:
-        key = (hit.cap, None if hit.cap == "pr.merge" else hit.detail)
+        key = (hit.cap, None if hit.cap in _PINNED else hit.detail)
         if key not in seen:
             seen.add(key)
             user, agent = _message(hit)
             users.append(user)
             agents.append(agent)
-    shas = list(dict.fromkeys(h.detail for h in hits if h.cap == "pr.merge" and h.detail))
+    shas = list(dict.fromkeys(h.detail for h in hits if h.cap in _PINNED and h.detail))
     if shas:
         label = "Head SHA" if len(shas) == 1 else "Head SHAs"
         users.append(f"{label} being approved: {', '.join(shas)}.")

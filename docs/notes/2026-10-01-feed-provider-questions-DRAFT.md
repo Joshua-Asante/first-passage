@@ -353,6 +353,16 @@ Recorded 2026-10-10 from Joshua's Gmail at his request. Originals are kept priva
 
 **Sent 2026-10-12 (later)** on Joshua's instruction: the narrowed C1 follow-up on ticket #04738415 (to marketdata@, cc cmedatasales@), asking separately for the personal Python/API configuration and the Tradeify native NinjaScript configuration: licence route and classification, internal 15-minute bars and retention, and all exchange fees. The narrowed P6 follow-up to NinjaTrader API Support was sent by Joshua at 23:12Z, asking the Tradovate-side steps and subscriptions to enable real-time API data for 6J, MNQ, MYM and MGC on the personal account, and who confirms the data service and subscriber agreement for native NinjaScript on Tradeify-issued credentials.
 
+**Update 2026-10-30** (recorded by the coordinating Claude session from Joshua's Gmail, from a read-only Codex mailbox check that Claude spot-checked):
+- **C1 / CME-LIC, ticket #04738415.**
+  - CME Data Sales replied on 2026-10-14 at 21:26Z: "Please loop in the vendor that you are working with. We can assist you once we have confirmation on the feed you are looking to access." It pointed to the January 2027 fee list. It gave no classification, category or fee determination.
+  - On the same thread, Tradeify's Compliance Manager wrote on 2026-10-26 at 16:35Z: "Market data is provided through CQG. NinjaTrader owns the clearing firm, and they handle the remaining arrangements." For the Tradeify native configuration this is a **partial answer**: it names the data provider, but not the legal distributor entity or the subscriber agreement and its version. The same message asked for complete strategy source, which is recorded in the [route record](../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-30--tradeify-answers-on-native-ownership-exclusivity-and-source-review).
+- **P6 / Tradovate.** Joshua asked on 2026-10-22 at 15:21Z for the distributor and subscriber agreement. AI support redirected him to authenticated live chat, and he asked for a human agent (18:30Z). No answer is recorded.
+- **Still open:**
+  - the legal distributor and the subscriber agreement;
+  - the CME licence category and fees for a native strategy on an evaluation account;
+  - whether the trader needs a licence of his own.
+
 **P5d** is a variant the reply introduced: a direct Rithmic subscription to its Paper Trading simulator, with live data and no FCM (R1). It is screened separately from P5 (data through an FCM).
 
 **Answers**

@@ -1,20 +1,14 @@
 name: Tests
 
 # A: pull_request + push-to-main only (no feature-branch push).
-# D: skip markdown / .claude-only PRs (keep in sync with pylint.yml).
-#    A mixed docs+code PR still runs — paths-ignore skips only when
-#    every changed file matches.
+# Markdown / .claude-only changes run docs-readers; any other path runs pytest.
+# Classification preserves the former paths-ignore globs: **/*.md, .claude/**.
+# An unavailable diff falls back to the full suite.
 on:
   pull_request:
-    paths-ignore:
-      - "**/*.md"
-      - ".claude/**"
   push:
     branches:
       - main
-    paths-ignore:
-      - "**/*.md"
-      - ".claude/**"
 
 # A new push to a PR supersedes that PR's earlier runs, which only occupy the shared
 # runner pool: cancel them. Runs for any other event (push to main, dispatch) get a
@@ -27,10 +21,53 @@ permissions:
   contents: read
 
 jobs:
-  pytest:
+  classify:
     runs-on: ubuntu-latest
-    # Hang bound, not a performance gate. Serial runs took 46-74 min (2026-10-13);
-    # without this the job inherits GitHub's 360 min default.
+    outputs:
+      docs-only: ${{ steps.diff.outputs.docs-only }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+      - name: Classify changed paths
+        id: diff
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python - <<'PY'
+          import os
+          import subprocess
+
+          docs_only = False
+          try:
+              base, head = os.environ["BASE_SHA"], os.environ["HEAD_SHA"]
+              # PRs use their merge base; pushes compare the before/after trees.
+              revisions = [f"{base}...{head}"] if os.environ["EVENT_NAME"] == "pull_request" else [base, head]
+              diff = subprocess.run(
+                  ["git", "diff", "--no-renames", "--name-only", "-z", *revisions, "--"],
+                  check=True, capture_output=True,
+              )
+              paths = [path for path in diff.stdout.split(b"\0") if path]
+              # **/*.md includes root markdown; .claude/** includes every descendant.
+              # NUL delimiters and disabled rename detection cover unusual names
+              # and renames from code into the docs-only namespace.
+              docs_only = bool(paths) and all(
+                  path.endswith(b".md") or path.startswith(b".claude/") for path in paths
+              )
+          except (OSError, subprocess.CalledProcessError):
+              print("::warning::Cannot compute changed paths; running the full pytest suite")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"docs-only={str(docs_only).lower()}\n")
+          PY
+
+  pytest:
+    needs: classify
+    if: ${{ !cancelled() && needs.classify.outputs.docs-only != 'true' }}
+    runs-on: ubuntu-latest
+    # Hang bound, not a performance gate; without it the job inherits GitHub's
+    # 360 min default.
     timeout-minutes: 90
     strategy:
       matrix:
@@ -49,21 +86,12 @@ jobs:
         run: python -m pip install -r tools/local_verification/requirements-extra.txt
       # check_boundaries.py lives in scripts/gates.yml (always) and runs via
       # gate-manifest.yml --tier check (W5 H6 land). Do not re-list it here.
-      # --junitxml keeps per-test timings for the parent run; the qualification
-      # bridge (tests/ops/test_qualification_isolation.py) derives its child's
-      # report root from the parent's xmlpath, so the child's junit.xml and
-      # output.log land beside it. Before 2026-09-19 both were discarded and CI
-      # had no per-test evidence for the 18-25 min child.
-      # -n 3 runs the bridge's two shard cases (~85% of serial test time) in
-      # parallel with each other and the rest of the suite. Both cases are
-      # adjacent items of one module: loadscope pins a module to one worker,
-      # and plain load hands each worker a block of consecutive items, so
-      # either runs them serially (run 38435226409: 58.4 min).
-      # --maxschedchunk 1 schedules one item at a time, so a busy worker
-      # never holds the second case.
+      # --junitxml keeps per-test timings. tests/ops/conftest.py leaves the
+      # retired qualification suite out of this whole-suite run (c1 rail
+      # retired 2026-10-29).
       - name: Run pytest
-        run: pytest tests/ -v -n 3 --dist load --maxschedchunk 1 --junitxml="$RUNNER_TEMP/pytest-evidence/junit.xml"
-      - name: Retain pytest evidence (parent junit, qualification child junit/output)
+        run: pytest tests/ -v -n 3 --dist load --junitxml="$RUNNER_TEMP/pytest-evidence/junit.xml"
+      - name: Retain pytest evidence (junit)
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -71,6 +99,80 @@ jobs:
           path: ${{ runner.temp }}/pytest-evidence/
           if-no-files-found: warn
           retention-days: 14
+
+  docs-readers:
+    needs: classify
+    if: ${{ needs.classify.outputs.docs-only == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python 3.11 + locked deps
+        uses: ./.github/actions/setup-locked-python
+        with:
+          python-version: "3.11"
+          ripgrep: "true"
+      - name: Install shared verification dependencies
+        run: python -m pip install -r tools/local_verification/requirements-extra.txt
+      - name: Run docs readers
+        # Canonical list: tests that consume tracked markdown or .claude files.
+        run: >-
+          pytest
+          tests/test_state_roll.py
+          tests/test_state_currency.py
+          tests/test_sessions_queue_bind.py
+          tests/test_find_owner.py
+          tests/governance/test_private_pine_read_in_place.py
+          tests/test_check_skill_refs.py
+          tests/test_check_skill_refs_navdirs.py
+          tests/scripts/test_check_handoff_brief_form.py
+          tests/test_claude_review_workflows.py
+          tests/test_validate_c1_monitoring_acceptance.py
+          tests/ops/test_c1_rail_arm.py
+          tests/test_check_adr_graph.py
+          tests/test_lessons_index.py
+          tests/governance/test_sentinel_cli.py
+          tests/test_check_skills_no_constants.py
+          tests/core/test_mc_mode_switching.py
+          tests/governance/test_supersession_placement.py
+          tests/ops/test_recall_guard.py
+          tests/ops/test_recall_index.py
+          tests/scripts/test_check_pursuit_records.py
+          tests/scripts/test_check_skill_deploy_sync.py
+          tests/scripts/test_guard_operator_acts.py
+          tests/scripts/test_guard_shell_command.py
+          tests/scripts/test_guard_worktree_evidence.py
+          tests/test_book_score.py
+          tests/test_check_brief.py
+          tests/test_check_brief_skill.py
+          tests/test_check_lifecycle_consistency.py
+          tests/test_coldstore_phase_b.py
+          tests/test_four_firm_remc_runner.py
+          tests/test_harness_guards_acceptance.py
+          tests/test_lifecycle_call1.py
+          tests/test_msl_score.py
+          tests/test_nsurv_channel.py
+          tests/test_pine_manifest_guard.py
+          tests/test_prop_survivor_intraday_channel.py
+          tests/test_prop_survivor_score_candidate_intraday.py
+          tests/test_prop_survivor_scoring.py
+          tests/test_reconcile_skill_schema.py
+          tests/test_register_search_prereg.py
+          tests/test_repo_map_scripts_table.py
+          tests/test_score_candidate_per_tier.py
+          tests/test_size_feasibility.py
+          tests/test_sync_skills.py
+          tests/test_tradeify_phase1_runner.py
+          tests/test_check_boundaries.py
+          tests/test_discovery_register_search.py
+          tests/test_discovery_register_search_deep_lane.py
+          tests/test_orb_solo_release.py
+          tests/test_register_search_admission.py
+          tests/test_register_search_burned.py
+          tests/test_register_search_params_file.py
+          -v -n 3 --dist load
 
   # lab/ research-guardrail job moved to validation-controls.yml
   # (path-filtered to lab/ and its shared core/metadata/ops-lock dependencies).
