@@ -54,6 +54,10 @@ EXPECTED_ALWAYS = {
     # secret-shaped artifact still fails a commit even though normal
     # deployed-vs-main drift does not.
     "m1-artifact-structure",
+    # Org cleanup P1.1: a link breaks when its target moves, and a cap can be
+    # exceeded by any edit, so neither has a staged_regex that scopes it.
+    "md-anchors",
+    "doc-budgets",
 }
 
 EXPECTED_PATH_CONDITIONAL = {

@@ -1,0 +1,18 @@
+# Byte caps for orientation documents, read by scripts/check_doc_budgets.py
+# (gate `doc-budgets`). Sizes are measured after CRLF/CR -> LF normalisation.
+# Caps only fall: a content leg lowers its own caps in the same diff
+# (org cleanup programme spec, D4(b) and §3.1). docs/SESSIONS.md is uncapped
+# until P1.9 rolls it and adds its own cap (Joshua, 2026-10-31).
+version: 1
+
+files:
+  AGENTS.md: 30468
+  STATE.md: 34625
+  PIPELINES.md: 10313
+  docs/operational_rules.md: 88431
+
+# T0: read in full at every session start; the 1,024 B is the SessionStart
+# hook output allowance (spec §3.1).
+t0:
+  files: [AGENTS.md, STATE.md]
+  cap: 66117
