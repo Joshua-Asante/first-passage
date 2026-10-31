@@ -41,9 +41,11 @@ BP_PER_UNIT = 10_000.0
 # Applying it to products without a row is the rates_ev_zf_recon defect shape.
 COMMISSION_BINDINGS: dict[str, str] = {
     **dict.fromkeys(("MES", "MNQ", "MYM", "M2K"), "index_micro"),
-    **dict.fromkeys(("ZN", "ZB", "ZF", "CL", "NG", "6E", "MGC", "MCL", "ES", "NQ",
+    "MCL": "firm_symbol_row",  # FIRM_RULES[firm]["cost_per_side_usd_by_symbol"]["MCL"] where sourced
+    **dict.fromkeys(("ZN", "ZB", "ZF", "CL", "NG", "6E", "MGC", "ES", "NQ",
                      "YM", "RTY", "GC", "MNG"), "unavailable"),
 }
+CATEGORIES = frozenset({"index_micro", "firm_symbol_row", "unavailable"})
 # Compatibility views, never a second authored classification.
 INDEX_MICRO_COMMISSION_INSTRUMENTS = frozenset(
     s for s, category in COMMISSION_BINDINGS.items() if category == "index_micro")
@@ -110,21 +112,22 @@ def closed_world_findings() -> list[str]:
     specs = set(INSTRUMENT_SPECS)
     index_micro = {s for s, c in COMMISSION_BINDINGS.items() if c == "index_micro"}
     no_row = {s for s, c in COMMISSION_BINDINGS.items() if c == "unavailable"}
+    symbol_row = {s for s, c in COMMISSION_BINDINGS.items() if c == "firm_symbol_row"}
     findings: list[str] = []
-    missing_specs = sorted(index_micro - specs)
+    missing_specs = sorted((index_micro | symbol_row) - specs)
     if missing_specs:
         findings.append(
             "INDEX_MICRO_COMMISSION_INSTRUMENTS notsubseteq INSTRUMENT_SPECS: "
             + ", ".join(missing_specs)
         )
-    unclassified = sorted(specs - index_micro - no_row)
+    unclassified = sorted(specs - index_micro - no_row - symbol_row)
     if unclassified:
         findings.append(
             "INSTRUMENT_SPECS key(s) in neither INDEX_MICRO nor "
             "NO_COMMISSION: " + ", ".join(unclassified)
         )
     for symbol, category in COMMISSION_BINDINGS.items():
-        if category not in {"index_micro", "unavailable"}:
+        if category not in CATEGORIES:
             findings.append(f"invalid commission category for {symbol}: {category!r}")
     return findings
 
@@ -146,7 +149,7 @@ def resolve_commission(firm_key: str, instrument: str) -> float:
             f"unknown firm_key {firm_key!r}; not in FIRM_RULES"
         )
     category = COMMISSION_BINDINGS.get(instrument, "unavailable")
-    if category not in {"index_micro", "unavailable"}:
+    if category not in CATEGORIES:
         raise ValueError(f"invalid commission category for {instrument}: {category!r}")
     if category == "unavailable":
         raise ValueError(
@@ -154,6 +157,12 @@ def resolve_commission(firm_key: str, instrument: str) -> float:
             f"FIRM_RULES cost_per_side_usd is the index-micro row only; "
             f"do not substitute it for {instrument}"
         )
+    if category == "firm_symbol_row":
+        cps = FIRM_RULES[firm_key].get("cost_per_side_usd_by_symbol", {}).get(instrument)
+        if cps is None:
+            raise ValueError(f"no commission row for {instrument} at {firm_key}: "
+                             f"no sourced cost_per_side_usd_by_symbol entry")
+        return float(cps)
     cps = FIRM_RULES[firm_key].get("cost_per_side_usd")
     if cps is None:
         raise ValueError(

@@ -63,8 +63,10 @@ def test_cost_per_trade_is_commission_plus_one_tick_each_side():
 
 def test_firm_costs_come_from_firm_rules_and_refuse_missing_rows():
     assert gates.Costs.for_firm("Tradeify_Select_100K", "M2K").commission_per_side == 0.91
+    assert gates.Costs.for_firm("Tradeify_Select_100K", "MCL").commission_per_side == 1.06
+    assert gates.Costs.for_firm("MFFU_Rapid_100K", "MCL").commission_per_side == 0.58
     with pytest.raises(ValueError, match="no commission row for MCL"):
-        gates.Costs.for_firm("Tradeify_Select_100K", "MCL")
+        gates.Costs.for_firm("Bulenox_100K", "MCL")
 
 
 def test_clean_edge_survives_every_gate_and_report_is_traceable(tmp_path):
@@ -113,6 +115,7 @@ def test_book_gate_fails_when_card_loses_with_the_book(tmp_path):
     book = {d: (-500.0 if i % 2 else 100.0) for i, d in enumerate(dates)}
     shadow = gates._book(dates, -np.abs(x), book)  # a card that loses every day it trades
     assert shadow["shared_loss_share"] == pytest.approx(0.5, abs=0.05) and shadow["mean_on_book_losing_days"] < 0
+    assert shadow["book_losing_share_on_active_days"] == pytest.approx(0.5, abs=0.05)
 
 
 def test_empty_book_passes_5g(tmp_path):

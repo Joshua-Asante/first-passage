@@ -28,7 +28,7 @@ THRESHOLDS = {
     "5e_placebo_runs": 1000,
     "5e_seed": 20261030,
     "5f_min_dsr": 0.95,
-    "5g_max_shared_loss_share": 0.50,  # share of the card's losing days that are also book losing days
+    "5g_max_shared_loss_share": 0.50,  # backstop: share of the card's losing days that are also book losing days
     "8_min_pf": 1.0,
 }
 
@@ -180,14 +180,17 @@ def _book(dev: list[str], x: np.ndarray, book: dict[str, float] | None) -> dict:
     return {"sessions": len(common), "book_s": sharpe(b), "book_s_with_card": sharpe(b + c),
             "corr": float(np.corrcoef(b, c)[0, 1]) if c.std() > 0 and b.std() > 0 else 0.0,
             "mean_on_book_losing_days": float(c[lose].mean()) if lose.any() else 0.0,
-            "shared_loss_share": float((closs & lose).sum() / closs.sum()) if closs.any() else 0.0}
+            "shared_loss_share": float((closs & lose).sum() / closs.sum()) if closs.any() else 0.0,
+            # independence baseline: the book's losing-day share on the card's active days
+            "book_losing_share_on_active_days": float(lose[c != 0].mean()) if (c != 0).any() else 0.0}
 
 
 def _book_gate(g, b: dict) -> bool:
     if not b["sessions"]:
         return _gate(g, "5g book", "book empty", "passes while the book is empty", True)
     ok = b["mean_on_book_losing_days"] > 0 and b["shared_loss_share"] <= THRESHOLDS["5g_max_shared_loss_share"]
-    return _gate(g, "5g book", {k: b[k] for k in ("mean_on_book_losing_days", "shared_loss_share")},
+    keys = ("mean_on_book_losing_days", "shared_loss_share", "book_losing_share_on_active_days")
+    return _gate(g, "5g book", {k: b[k] for k in keys},
                  {"mean_on_book_losing_days": "> 0", "shared_loss_share": THRESHOLDS["5g_max_shared_loss_share"]}, ok)
 
 
