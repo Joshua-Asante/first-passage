@@ -1,6 +1,6 @@
 ---
 name: strategy-validation
-description: Plan, reproduce or assess First Passage backtests across TradingView inspection and offline/native-oriented research. Use for execution and fill assumptions, cost sensitivity, panel integrity, rerun design, chronological evaluation, robustness, selection bias, overfitting, trial counts and statistical validation (DSR, PBO, SPA, CPCV). Reuse existing engines; route CSV metric definitions to trade-csv-reconcile and candidate generation to futures-anomaly-discovery.
+description: Plan, reproduce or assess First Passage backtests, TradingView inspection and offline/native research. ALWAYS use for Joshua's TradingView backtest CSV uploads; real-or-overfit questions; parameter sweeps/config grids; robustness, plateau, placebo, permutation, multiplicity, selection effects, Step-0, panel integrity, pre-registration, forward tests, day-of-week/subset effects; deflated/probabilistic Sharpe (DSR), PBO, reality check, SPA, Romano-Wolf/StepM, model confidence set (MCS), universe correction, CPCV; "what config next" or "does the best of K survive". Also fires before ANY proposed re-run (direction flip, exit redesign, new filter); excursion counterfactuals, cost pre-flight and futures-anomaly-discovery K accounting. Use for execution/fill assumptions, costs, chronology and reproducibility; reuse existing engines. Route investigation framing to inqhiori, artifact structure to brief-authoring, CSV metrics to trade-csv-reconcile and generation to futures-anomaly-discovery.
 ---
 
 # Strategy Validation
@@ -47,6 +47,11 @@ per-contract fees require different calculations. The empirical helper
 `scripts/selection_tests.py costs` supports percentage commissions; inspect its
 units and pass explicit inputs rather than applying its FX defaults to futures.
 Use the campaign's existing cost model for per-contract fees.
+
+`scripts/cost_geometry_pregate.py` is the canonical implementation
+(`round_trip_cost_price()` and `cost_r()`) of per-trade, stop-distance-normalized
+cost. It owns the formula; do not restate it from memory. Its Phase-0 report is
+report-only; use explicit price-unit inputs and retain the fee-unit caveats above.
 
 Estimate net expectancy and its cost sensitivity; there is no universal multiple
 to clear (the 4x convention was deleted by operator ruling 2026-10-24). Do not
