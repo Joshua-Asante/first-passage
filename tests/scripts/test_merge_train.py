@@ -75,8 +75,22 @@ class FakeGh:
     was never edited, a plain comment body, or {"history": [(time, body), ...]}, whose last
     version is the current text; GitHub returns edit versions newest first."""
 
-    def __init__(self, prs: dict[int, dict], thread_pages: int = 1, edit_page: int = 100):
+    def __init__(self, prs: dict[int, dict], thread_pages: int = 1, edit_page: int = 100,
+                 refuse_graphql: bool = False):
         self.prs, self.thread_pages, self.edit_page, self.edits = prs, thread_pages, edit_page, {}
+        self.refuse_graphql = refuse_graphql
+
+    def _by_head(self, path: str) -> int:
+        sha = path.split("/commits/")[1].split("/")[0]
+        return next(n for n, p in self.prs.items() if p.get("head", HEAD) == sha)
+
+    def _rest_pr(self, n: int) -> dict:
+        p = self.prs[n]
+        state = p.get("state", "OPEN")
+        return {"number": n, "title": p.get("title", "t"), "draft": p.get("draft", False),
+                "state": "open" if state == "OPEN" else "closed", "merged": state == "MERGED",
+                "base": {"ref": p.get("base", "main")}, "head": {"sha": p.get("head", HEAD)},
+                "mergeable_state": p.get("merge", "CLEAN").lower()}
 
     def _comments(self, n: int) -> list[dict]:
         out = []
@@ -94,6 +108,26 @@ class FakeGh:
         return out
 
     def __call__(self, args: list[str]) -> str:
+        if self.refuse_graphql and (args[0] == "pr" or args[:2] == ["api", "graphql"]):
+            raise RuntimeError(f"gh {' '.join(args[:3])} failed: " + REFUSED)
+        if args[0] == "api" and args[-1].startswith("repos/") and "/pulls/" in args[-1] \
+                and args[-1].split("/")[-1].isdigit():
+            return json.dumps(self._rest_pr(int(args[-1].split("/")[-1])))
+        if args[0] == "api" and "/check-runs?" in args[-1]:
+            n = self._by_head(args[-1])
+            return json.dumps([{"check_runs": [
+                {"name": c["name"], "status": c["status"].lower(), "conclusion": (c.get("conclusion") or None)
+                 and c["conclusion"].lower()} for c in self.prs[n].get("checks", green("skills (3.12)", "build (3.11)"))
+                if "context" not in c]}])
+        if args[0] == "api" and "/status?" in args[-1]:
+            n = self._by_head(args[-1])
+            return json.dumps([{"statuses": [{"context": c["context"], "state": c["state"].lower()}
+                                             for c in self.prs[n].get("checks", []) if "context" in c]}])
+        if args[0] == "api" and args[-1].endswith("/ccr/review_threads"):
+            n = int(args[-1].split("/")[-3])
+            return json.dumps([[{}] * self.prs[n].get("threads", 0) + [{"resolved": True}]])
+        if args[0] == "api" and "/pulls?state=open" in args[-1]:
+            return json.dumps([[{"number": n} for n in self.prs]])
         if args[:2] == ["pr", "list"]:
             return json.dumps([{"number": n} for n in self.prs])
         if args[:2] == ["pr", "view"]:
@@ -130,6 +164,10 @@ class FakeGh:
             return json.dumps({"data": {"repository": {"pullRequest": {"reviewThreads": {
                 "nodes": nodes, "pageInfo": {"hasNextPage": more, "endCursor": str(page + 1)}}}}}})
         raise AssertionError(f"unexpected gh call {args}")
+
+
+REFUSED = ("HTTP 403: GitHub GraphQL is not available from Claude Code sessions; "
+           "use the REST API (gh api repos/{owner}/{repo}/...).")
 
 
 def gate(**pr) -> "mt.PrGate":
@@ -479,3 +517,52 @@ def test_gate_exit_code_json_and_unicode_title(capsys):
                                       (HEAD, OLD, False), ("", HEAD, False)])
 def test_same_commit_needs_seven_hex(a, b, same):
     assert mt._same_commit(a, b) is same
+
+
+# Where GitHub GraphQL is refused (Claude Code cloud sessions), the gate reads over REST.
+
+def rest_gate(**pr) -> "mt.PrGate":
+    return mt.fetch_gate(1, mt.DEFAULT_REPO, FakeGh({1: pr}, refuse_graphql=True))
+
+
+def test_graphql_refused_reads_rest_and_holds_on_the_unreadable_card_history():
+    g = rest_gate(bot=[card(HEAD, "completed", False), receipt(OLD), receipt(HEAD)])
+    assert g.verdict == "HOLD" and g.merge_command == ""
+    reasons = " ".join(g.reasons)
+    assert "edit history unreadable" in reasons and "count the reviews by hand" in reasons
+    assert [(r.sha[:7], r.findings, r.source) for r in g.reviews] == [
+        (OLD[:7], False, "receipt"), (HEAD[:7], False, "receipt")]
+    assert g.clean_at_head and g.codex.status == "completed"
+
+
+def test_graphql_refused_still_reads_checks_merge_state_draft_and_threads():
+    checks = green("skills (3.12)") + [
+        {"name": "pytest (3.11)", "status": "IN_PROGRESS", "conclusion": ""},
+        {"name": "build (3.11)", "status": "COMPLETED", "conclusion": "FAILURE"},
+        {"context": "ci/x", "state": "PENDING"},
+    ]
+    g = rest_gate(bot=[card(HEAD, "completed", False)], checks=checks, merge="BEHIND",
+                  threads=2, draft=True)
+    assert g.pending_checks == ["pytest (3.11)", "ci/x"] and g.failing_checks == ["build (3.11)"]
+    assert g.merge_state == "BEHIND" and g.draft and g.unresolved_threads == 2
+
+
+def test_graphql_refused_thread_without_a_resolved_flag_counts_as_open():
+    assert rest_gate(bot=[card(HEAD, "completed", False)], threads=1).unresolved_threads == 1
+
+
+def test_graphql_refused_reports_a_merged_pr():
+    assert rest_gate(state="MERGED", merge="UNKNOWN").verdict == "MERGED"
+
+
+def test_graphql_refused_watch_lists_open_prs_over_rest(tmp_path):
+    fake = FakeGh({905: {"bot": [card(HEAD, "completed", False)]}}, refuse_graphql=True)
+    (event,) = mt.watch_once(mt.DEFAULT_REPO, 900, tmp_path, 30, NOW, fake)
+    assert "#905" in event
+
+
+def test_other_gh_failures_are_not_mistaken_for_a_refusal():
+    def boom(args):
+        raise RuntimeError("gh pr view failed: HTTP 502")
+    with pytest.raises(RuntimeError, match="502"):
+        mt.fetch_gate(1, mt.DEFAULT_REPO, boom)
