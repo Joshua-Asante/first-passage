@@ -8,7 +8,7 @@
 | Private specification | `local_artifacts/book-repair-2026-10/orb-edition/ORB-EDITION-HORIZON-SPEC-DRAFT-v3.md` |
 | Private specification sha256 | `f70d052b39f8f14672b3f314b8d95521d57bbe87b26c37fcaa0cd2d2cbe01af3` |
 | Private freeze record | `local_artifacts/book-repair-2026-10/orb-edition/ORB-EDITION-HORIZON-FREEZE-v1.json` |
-| Private freeze record sha256 | `0ef759cd73bbf481c3d3230390b3484d5ac23a6975a688034d389e406c15594b` |
+| Private freeze record sha256 | `927e4daf31c6ac92801dbc76759bfa04b0072bfba1f57758f43fa7dbe89e105e` |
 | Hash index | Both files are registered in [`docs/evidence/PRIVATE_EVIDENCE.sha256`](../../evidence/PRIVATE_EVIDENCE.sha256) and archived with `scripts/evidence_archive.py` |
 | Authority | Joshua, 2026-10-31: "ORB stays in the book past January", then "GO route b" |
 
