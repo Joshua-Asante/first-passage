@@ -26,7 +26,7 @@ def _cap(value, where: str) -> int:
     return value
 
 
-def load(repo: Path, config: Path) -> tuple[dict[str, int], list[str], int]:
+def load(repo: Path, config: Path) -> tuple[dict[str, int], list[str], int, int]:
     path = repo / config
     if not path.is_file():
         raise ValueError(f"{config}: missing")
@@ -41,12 +41,15 @@ def load(repo: Path, config: Path) -> tuple[dict[str, int], list[str], int]:
     if not isinstance(files, dict) or not files:
         raise ValueError(f"{config}: files must be a non-empty mapping")
     caps = {str(name): _cap(cap, f"files.{name}") for name, cap in files.items()}
-    if not isinstance(t0, dict) or set(t0) != {"files", "cap"}:
-        raise ValueError(f"{config}: t0 must have exactly files and cap")
+    if not isinstance(t0, dict) or set(t0) != {"files", "hook", "cap"}:
+        raise ValueError(f"{config}: t0 must have exactly files, hook and cap")
+    hook = t0["hook"]
+    if type(hook) is not int or hook < 0:
+        raise ValueError(f"t0.hook: must be a non-negative integer, got {hook!r}")
     members = t0["files"]
     if not isinstance(members, list) or not members or len(set(members)) != len(members):
         raise ValueError(f"{config}: t0.files must be a non-empty list without repeats")
-    return caps, [str(name) for name in members], _cap(t0["cap"], "t0.cap")
+    return caps, [str(name) for name in members], hook, _cap(t0["cap"], "t0.cap")
 
 
 def size(repo: Path, name: str, tracked: set[str]) -> int:
@@ -58,7 +61,7 @@ def size(repo: Path, name: str, tracked: set[str]) -> int:
 
 def check(repo: Path, config: Path = CONFIG) -> list[str]:
     """Return one report line per budget; raise ValueError on any malformed input."""
-    caps, members, t0_cap = load(repo, config)
+    caps, members, hook, t0_cap = load(repo, config)
     listed = subprocess.run(["git", "ls-files", "-z", "--", *sorted(set(caps) | set(members))],
                             cwd=repo, check=True, stdout=subprocess.PIPE)
     tracked = {name for name in listed.stdout.decode("utf-8").split("\0") if name}
@@ -67,8 +70,9 @@ def check(repo: Path, config: Path = CONFIG) -> list[str]:
     for name, cap in caps.items():
         lines.append(f"{'OVER' if sizes[name] > cap else 'ok'} {name}: {sizes[name]} / {cap} B "
                      f"(headroom {cap - sizes[name]})")
-    total = sum(sizes[name] for name in members)
-    lines.append(f"{'OVER' if total > t0_cap else 'ok'} t0 ({' + '.join(members)} + hook): "
+    # T0 is the documents plus the SessionStart hook output allowance (spec §3.1).
+    total = sum(sizes[name] for name in members) + hook
+    lines.append(f"{'OVER' if total > t0_cap else 'ok'} t0 ({' + '.join(members)} + hook {hook}): "
                  f"{total} / {t0_cap} B (headroom {t0_cap - total})")
     return lines
 

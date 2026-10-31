@@ -11,8 +11,9 @@ files:
   PIPELINES.md: 10313
   docs/operational_rules.md: 88431
 
-# T0: read in full at every session start; the 1,024 B is the SessionStart
-# hook output allowance (spec §3.1).
+# T0: read in full at every session start = the files plus the SessionStart
+# hook output allowance (spec §3.1); hook counts toward the measured total.
 t0:
   files: [AGENTS.md, STATE.md]
+  hook: 1024
   cap: 66117
