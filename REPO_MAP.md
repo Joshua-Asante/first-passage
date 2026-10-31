@@ -42,6 +42,7 @@ Heading kept for existing references; the table shows current ownership, not `gi
 | `lab/analysis/` | Campaign harnesses and evidence at `<theme>/<slug>/` | [lab catalog](lab/CATALOG.md), In flight first |
 | `lab/research_utils/` | Shared research primitives | [research utilities](lab/research_utils/README.md) |
 | `lab/discovery/` | Search contracts and scoring | [discovery](lab/discovery/README.md) |
+| `lab/builder/` | Strategy builder v1: card ledger, ORB blocks and compiler, gates 5a–5g | [builder](lab/builder/README.md) |
 | `ops/c1_rail/` | Listener, sizing, payload, telemetry, arm/disarm interfaces; Track B book owner/protection/halt/settlement (`book_*`, `account_close_*`); offline `qualification/` package with its separately installed `execution/` service | [rail README](ops/c1_rail/README.md), `qualification_cli.py` |
 | `ops/c1_signal_daemon/` | Python signal-host package | [daemon README](ops/c1_signal_daemon/README.md) |
 | `ops/instruments/`, `ops/venue_editions/`, `ops/calendars/` | Instrument evidence, venue binding, calendar records | [ops README](ops/README.md) |
