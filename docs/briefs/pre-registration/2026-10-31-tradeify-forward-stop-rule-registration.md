@@ -15,3 +15,5 @@
 **What the hashes bind.** The rule decides, for each strategy, whether to keep it, drop it, or halt it for a fault, by a sequential test on its forward trades. The rule text and its freeze record are private under Rule 13: this file carries no figures, parameters or account data. Before signing, the rule passed a final Codex review round, and the freeze record passed a further narrow round authorized by Joshua.
 
 **Binding.** Any change to the rule after the first forward session ends this rule's record. A successor needs Joshua's authorization and a new registration, and its evidence starts again from zero.
+
+**Addenda.** [Addendum 1 (ORB horizon edition)](2026-10-31-tradeify-forward-stop-rule-registration-addendum-1.md), registered 2026-10-31.
