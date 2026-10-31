@@ -19,6 +19,7 @@ INSTRUMENT_SPECS: dict[str, InstrumentSpec] = {
     "MYM": InstrumentSpec("MYM", 0.50, 1.0, 0.50),
     "M2K": InstrumentSpec("M2K", 5.0, 0.10, 0.50),
     "MGC": InstrumentSpec("MGC", 10.0, 0.10, 1.00),
+    "MCL": InstrumentSpec("MCL", 100.0, 0.01, 1.00),
     "ES": InstrumentSpec("ES", 50.0, 0.25, 12.50),
     "NQ": InstrumentSpec("NQ", 20.0, 0.25, 5.00),
     "YM": InstrumentSpec("YM", 5.0, 1.0, 5.00),

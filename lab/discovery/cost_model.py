@@ -41,7 +41,7 @@ BP_PER_UNIT = 10_000.0
 # Applying it to products without a row is the rates_ev_zf_recon defect shape.
 COMMISSION_BINDINGS: dict[str, str] = {
     **dict.fromkeys(("MES", "MNQ", "MYM", "M2K"), "index_micro"),
-    **dict.fromkeys(("ZN", "ZB", "ZF", "CL", "NG", "6E", "MGC", "ES", "NQ",
+    **dict.fromkeys(("ZN", "ZB", "ZF", "CL", "NG", "6E", "MGC", "MCL", "ES", "NQ",
                      "YM", "RTY", "GC", "MNG"), "unavailable"),
 }
 # Compatibility views, never a second authored classification.
