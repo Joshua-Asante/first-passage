@@ -238,6 +238,12 @@ is insufficient. Before a path-conditional re-tier, add the relevant probes to
 `m1-artifact-structure` stays blocking (`always`): the
 [acceptance validator](validate_c1_monitoring_acceptance.py) rejects unreadable or
 invalid artifacts, missing required fields, invalid status and secret violations.
+
+`md-anchors` and `doc-budgets` are `always`: a link breaks when its target moves,
+and any edit can push a file over its cap. `md-anchors` fails only on broken-link
+identities new to, or more frequent than, `md_anchor_baseline.txt`; `doc-budgets`
+caps the files in `doc_budgets.yml` and the T0 set. The baseline and the caps only
+fall; content legs lower them.
 `m1-tree-skew` uses `--check-tree-skew` as a report-only audit; ordinary deployed
 versus main drift does not fail a commit. Neither check substitutes for arm-time
 validation or grants permission. The [M1 owner](../docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md)

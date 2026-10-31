@@ -76,6 +76,24 @@ gates:
       - scripts/check_pine_manifest.py
       - --check-card-pins
 
+  # Markdown path + #fragment ratchet (org cleanup P0.4/P1.1): fails only on a
+  # broken-link identity new to, or more frequent than, the shrink-only baseline.
+  - id: md-anchors
+    tier: always
+    cmd:
+      - python
+      - scripts/check_md_anchors.py
+      - --baseline
+      - scripts/md_anchor_baseline.txt
+
+  # Byte caps for orientation documents and the T0 session-start set
+  # (scripts/doc_budgets.yml; caps only fall).
+  - id: doc-budgets
+    tier: always
+    cmd:
+      - python
+      - scripts/check_doc_budgets.py
+
   # Durability invariant for the rail's authoritative SQLite stores. The regex
   # is deliberately the whole of ops/: the scanner's registry check fires on a
   # NEW connect site anywhere under ops/, so narrowing it to the six known store

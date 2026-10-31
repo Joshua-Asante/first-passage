@@ -84,7 +84,7 @@ reads this table. Regenerate with
 `python scripts/check_repo_map_scripts_table.py --write`; `--check` exits 1 on drift.
 
 <!-- BEGIN generated: scripts-table -->
-_90 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_91 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 † = layer fallback (not in `scripts_layer`); Gate — = no `gates.yml` command runs the file and no module-run gate triggers on it (it may still run inside another gate's script).
 
@@ -108,6 +108,7 @@ _90 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/check_closure_disposition.py` | governance† | `closure-disposition` (path-conditional) | — |
 | `scripts/check_cost_model_closed_world.py` | lab | `cost-model-closed-world` (path-conditional) | — |
 | `scripts/check_data_manifests.py` | governance | `data-manifests` (data-conditional) | — |
+| `scripts/check_doc_budgets.py` | governance† | `doc-budgets` (always) | — |
 | `scripts/check_docs_runtime_inventory.py` | governance† | `docs-runtime-inventory` (audit) | — |
 | `scripts/check_durable_store_pragmas.py` | governance† | `durable-store-pragmas` (path-conditional) | — |
 | `scripts/check_falsifier_reachability.py` | governance† | `falsifier-reachability-census` (audit) | --stats (report-only) |
@@ -118,7 +119,7 @@ _90 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/check_instrument_rejection_coverage.py` | governance† | `instrument-rejection-coverage` (audit) | WARN, --exit-zero |
 | `scripts/check_lab_path_relocation.py` | governance† | — | — |
 | `scripts/check_lifecycle_consistency.py` | governance† | `lifecycle-consistency` (path-conditional) | — |
-| `scripts/check_md_anchors.py` | governance† | — | — |
+| `scripts/check_md_anchors.py` | governance† | `md-anchors` (always) | — |
 | `scripts/check_md_relative_links.py` | governance† | — | — |
 | `scripts/check_path_liveness.py` | governance | `path-liveness` (always) | — |
 | `scripts/check_pine_manifest.py` | governance | `pine-manifest` (always); `pine-pin-provenance` (always); `card-pins` (always) | — |
