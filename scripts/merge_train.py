@@ -32,6 +32,11 @@ later clean one look like the fourth.
 every PR, and exits by itself after ``--max-seconds`` (default 1680, under a 30-minute
 Monitor limit). A GitHub review still "running" at the head after ``--stall-minutes``
 (default 30) is flagged STALLED, the cue for the Codex CLI fallback. Requires ``gh``.
+
+Where GitHub GraphQL is refused (Claude Code cloud sessions), the PR, its checks, the open
+PR list and review threads are read over REST instead. The card's edit history has no REST
+form, so there the reviews are listed from the connector's receipts and every PR HOLDs for a
+count by hand: a deleted receipt would go unseen.
 """
 from __future__ import annotations
 
@@ -56,6 +61,7 @@ _STATE_RE = re.compile(r"codex-review-state:v1 (\{.*?\}) -->")
 _RECEIPT_RE = re.compile(r"Reviewed commit:\*\*\s*`([0-9a-f]{7,40})`")
 _RUNNING_SINCE_RE = re.compile(r'Running\*\*\s+since\s+<relative-time datetime="([^"]+)"')
 _CLI_RE = re.compile(r"\A\s*codex-cli-review:v1 ([0-9a-f]{40}) (clean|findings)\b")
+_GRAPHQL_REFUSED = "GraphQL is not available"   # the cloud proxy's 403 text
 _THREADS_QUERY = (
     "query($o:String!,$n:String!,$p:Int!,$c:String){repository(owner:$o,name:$n)"
     "{pullRequest(number:$p){reviewThreads(first:100,after:$c)"
@@ -92,7 +98,7 @@ class CodexState:
 class Review:
     sha: str
     findings: bool         # an unknown result counts as findings
-    source: str            # connector | cli
+    source: str            # connector | cli | receipt (card history unreadable)
     at: str                # ISO time the result was recorded
 
 
@@ -266,6 +272,34 @@ def decide(g: PrGate) -> PrGate:
     return g
 
 
+def _graphql_refused(exc: RuntimeError) -> bool:
+    return _GRAPHQL_REFUSED in str(exc)
+
+
+def _rest_pages(path: str, run: Runner) -> list:
+    """Every page of a paginated REST GET, as a list of pages."""
+    return json.loads(run(["api", "--paginate", "--slurp", path]))
+
+
+def _pr_view_rest(number: int, repo: str, run: Runner) -> dict:
+    """The ``gh pr view --json`` fields fetch_gate reads, from REST."""
+    pr = json.loads(run(["api", f"repos/{repo}/pulls/{number}"]))
+    head = pr["head"]["sha"]
+    rollup = [{"name": r.get("name"), "status": (r.get("status") or "").upper(),
+               "conclusion": (r.get("conclusion") or "").upper()}
+              for page in _rest_pages(f"repos/{repo}/commits/{head}/check-runs?per_page=100", run)
+              for r in page["check_runs"]]
+    rollup += [{"context": s.get("context"), "state": (s.get("state") or "").upper()}
+               for page in _rest_pages(f"repos/{repo}/commits/{head}/status?per_page=100", run)
+               for s in page["statuses"]]
+    return {
+        "number": pr["number"], "title": pr.get("title", ""),
+        "state": "MERGED" if pr.get("merged") else (pr.get("state") or "open").upper(),
+        "isDraft": pr.get("draft"), "baseRefName": pr["base"]["ref"], "headRefOid": head,
+        "mergeStateStatus": (pr.get("mergeable_state") or "").upper(), "statusCheckRollup": rollup,
+    }
+
+
 def _pages(query: str, fields: list[str], path: list[str], run: Runner) -> list[dict]:
     """Every node of a paginated GraphQL connection reached by ``path``."""
     nodes, cursor = [], None
@@ -285,17 +319,30 @@ def _pages(query: str, fields: list[str], path: list[str], run: Runner) -> list[
 
 def _unresolved_threads(number: int, repo: str, run: Runner) -> int:
     owner, name = repo.split("/", 1)
-    nodes = _pages(_THREADS_QUERY, ["-F", f"o={owner}", "-F", f"n={name}", "-F", f"p={number}"],
-                   ["repository", "pullRequest", "reviewThreads"], run)
+    try:
+        nodes = _pages(_THREADS_QUERY, ["-F", f"o={owner}", "-F", f"n={name}", "-F", f"p={number}"],
+                       ["repository", "pullRequest", "reviewThreads"], run)
+    except RuntimeError as exc:
+        if not _graphql_refused(exc):
+            raise
+        # The cloud proxy's REST route; a thread without resolved=true counts as open.
+        return sum(1 for page in _rest_pages(f"repos/{repo}/pulls/{number}/ccr/review_threads", run)
+                   for node in page if node.get("resolved") is not True)
     return sum(1 for node in nodes if not node.get("isResolved"))
 
 
-def _card_versions(comment: dict, run: Runner) -> tuple[list[tuple[str, str]], list[str]]:
-    """Every version of a summary card, oldest first, and why its history can't be trusted.
+def _card_versions(comment: dict, run: Runner) -> tuple[list[tuple[str, str]], list[str]] | None:
+    """Every version of a summary card, oldest first, and why its history can't be trusted;
+    None where GraphQL is refused, as the edit history has no REST form.
     GitHub's edit list holds every version of an edited comment, the current one included,
     so the REST body (read earlier, so possibly older) stands in only for a card never edited."""
-    edits = _pages(_EDITS_QUERY, ["-f", f"id={comment['node_id']}"],
-                   ["node", "userContentEdits"], run) if comment.get("node_id") else []
+    try:
+        edits = _pages(_EDITS_QUERY, ["-f", f"id={comment['node_id']}"],
+                       ["node", "userContentEdits"], run) if comment.get("node_id") else []
+    except RuntimeError as exc:
+        if _graphql_refused(exc):
+            return None
+        raise
     problems = []
     for e in edits:
         editor = ((e.get("editor") or {}).get("login") or "").lower()
@@ -321,18 +368,26 @@ def codex_history(comments: list[dict], pr_reviews: list[dict], owner: str,
     history is incomplete (each one HOLDs the PR)."""
     login = lambda c: ((c.get("user") or {}).get("login") or "").lower()  # noqa: E731
     state, reviews, problems, records = CodexState(), [], [], []
+    unreadable = False   # a card's edit history could not be read
     for c in comments:
         body = c.get("body") or ""
         if login(c) == CODEX_BOT:
             if _card(body):
-                versions, bad = _card_versions(c, run)
+                history = _card_versions(c, run)
+                if history is None:
+                    unreadable = True
+                    problems.append(f"Codex card {c.get('id')} edit history unreadable "
+                                    "(GitHub GraphQL refused here); reviews listed from receipts")
+                    state = _card(body) or state
+                    continue
+                versions, bad = history
                 problems += bad
                 reviews += connector_reviews(versions)
                 state = _card(versions[-1][1]) or state
             elif "codex-pull-request-review-summary" in body:
                 problems.append(f"old-format Codex card {c.get('id')}")
             elif rec := _receipt(body):
-                records.append(rec)
+                records.append((*rec, c.get("created_at") or ""))
             else:
                 first = body.strip().splitlines()[0][:40] if body.strip() else ""
                 problems.append(f"unrecognised Codex comment {c.get('id')} ({first!r})")
@@ -342,8 +397,15 @@ def codex_history(comments: list[dict], pr_reviews: list[dict], owner: str,
             reviews += cli_reviews([c])
     # A connector PR review with a body is the receipt of one review; an empty one is a
     # thread reply.
-    records += [rec for r in pr_reviews if login(r) == CODEX_BOT and (r.get("body") or "").strip()
+    records += [(*rec, r.get("submitted_at") or "") for r in pr_reviews
+                if login(r) == CODEX_BOT and (r.get("body") or "").strip()
                 and (rec := _receipt(r["body"], r.get("commit_id") or ""))]
+    if unreadable:
+        # No card history to cross-check against; the HOLD above already stands.
+        reviews += [Review(sha, findings, "receipt", at) for sha, findings, at in records]
+        reviews.sort(key=lambda r: r.at)
+        return state, reviews, list(dict.fromkeys(problems))
+    records = [(sha, findings) for sha, findings, _ in records]
     connector = [r for r in reviews if r.source == "connector"]
     for sha, findings in records:
         def same(s: str, f: bool) -> bool:
@@ -356,10 +418,15 @@ def codex_history(comments: list[dict], pr_reviews: list[dict], owner: str,
 
 
 def fetch_gate(number: int, repo: str, run: Runner = gh_runner) -> PrGate:
-    pr = json.loads(run([
-        "pr", "view", str(number), "--repo", repo, "--json",
-        "number,title,state,isDraft,baseRefName,headRefOid,mergeStateStatus,statusCheckRollup",
-    ]))
+    try:
+        pr = json.loads(run([
+            "pr", "view", str(number), "--repo", repo, "--json",
+            "number,title,state,isDraft,baseRefName,headRefOid,mergeStateStatus,statusCheckRollup",
+        ]))
+    except RuntimeError as exc:
+        if not _graphql_refused(exc):
+            raise
+        pr = _pr_view_rest(number, repo, run)
     if pr.get("state", "OPEN") != "OPEN":
         return decide(PrGate(number=number, repo=repo, title=pr.get("title", ""),
                              state=pr["state"], head=pr.get("headRefOid", "")))
@@ -417,8 +484,14 @@ def watch_once(repo: str, min_pr: int, state_dir: Path, stall_minutes: int,
     """One poll: return NEW/CHANGED/CLOSED lines. State is written only after the
     whole poll succeeds, so an error mid-poll loses no event."""
     state_dir.mkdir(parents=True, exist_ok=True)
-    listed = json.loads(run(["pr", "list", "--repo", repo, "--state", "open",
-                             "--limit", "200", "--json", "number"]))
+    try:
+        listed = json.loads(run(["pr", "list", "--repo", repo, "--state", "open",
+                                 "--limit", "200", "--json", "number"]))
+    except RuntimeError as exc:
+        if not _graphql_refused(exc):
+            raise
+        listed = [p for page in _rest_pages(f"repos/{repo}/pulls?state=open&per_page=100", run)
+                  for p in page]
     numbers = sorted(p["number"] for p in listed if p["number"] > min_pr)
     lines = {}
     for n in numbers:
