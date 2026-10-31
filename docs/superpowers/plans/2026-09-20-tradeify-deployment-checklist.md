@@ -7,23 +7,28 @@ superseded for Tradeify**, not the current delivery plan. The
 [10-16 ruling](#addendum-2026-10-16--track-b-superseded-for-tradeify) governs;
 [shared obligations](../../adr/2026-09-12-tradeify-book-protection-instance-admission.md#addendum-2026-10-25--d4-tradeify-scoped-supersession-and-where-preserved-items-live)
 remain with their recorded owners. The retained evaluation and weekly
-preservation trade continue under their existing conditions; the personal lane's
-Q-SFCLEAR-3 dispatch preparation remains paused under the
-[10-19 ruling](#addendum-2026-10-19--no-book-lineage-configuration-has-an-evidence-case-for-the-tradeify-evaluation).
+preservation trade continue under their existing conditions. The
+[10-19 ruling](#addendum-2026-10-19--no-book-lineage-configuration-has-an-evidence-case-for-the-tradeify-evaluation)'s
+pause on Q-SFCLEAR-3 is superseded: the personal lane closed on 10-29
+([reconciliation row 3](#addendum-2026-10-31--authority-for-the-aegis--orb-pair-proposed-reconciliation)).
+For the Aegis + ORB pair, the [10-31 reconciliation](#addendum-2026-10-31--authority-for-the-aegis--orb-pair-proposed-reconciliation),
+accepted ⟨RULING-DATE⟩, owns which obligations are discharged, superseded or
+open, and its closing list names what blocks the first armed forward session.
 
 | Record | Read as | Remaining boundary |
 |---|---|---|
 | [Native NinjaScript plan](2026-10-21-tradeify-native-ninjascript-strategy-plan-DRAFT.md) | DRAFT sequence for the separate native lane | Its expanded P1 assessment and later phase GOs are not supplied by this checklist |
 | [ORB/Aegis workshop](../specs/2026-10-28-orb-aegis-workshop-design.md#evidence-and-ownership-boundary) | Research workflow and identity boundary | Workshop ORB, O-N portfolio ORB and O-0 native solo ORB do not inherit each other's evidence or acceptance |
-| [Branch (b) rulings](#addendum-2026-10-28--branch-b-ruled-ahead-of-the-11-08-sitting), merged in [#959](https://github.com/Joshua-Asante/first-passage/pull/959) and [#965](https://github.com/Joshua-Asante/first-passage/pull/965) | Read-only stage 1 covers ORB and Aegis together as one candidate; this does not grant the native plan's expanded P1 | The pair's own evidence case and exclusivity remain owed. [Runbook §5](../../notes/2026-10-18-native-protection-recovery-pilot-runbook.md#5-decisions) records SM-1–SM-3 as ruled 10-29; native evidence, including U-18, remains owed |
-| [Qualification framework](../../briefs/pre-registration/2026-10-26-tradeify-native-lane-prereg-DRAFT.md), merged in [#961](https://github.com/Joshua-Asante/first-passage/pull/961) | Successor to #941; document remains DRAFT after merge | Pre-ratification adjudication, operator values and ratification remain owed; its formal nomination and exact account binding are open. It is not an approved replacement for an existing objective |
+| [Branch (b) rulings](#addendum-2026-10-28--branch-b-ruled-ahead-of-the-11-08-sitting), merged in [#959](https://github.com/Joshua-Asante/first-passage/pull/959) and [#965](https://github.com/Joshua-Asante/first-passage/pull/965) | Read-only stage 1 covers ORB and Aegis together as one candidate; this does not grant the native plan's expanded P1 | For the pair, the evidence case and exclusivity are tracked in [reconciliation rows 1 and 6](#addendum-2026-10-31--authority-for-the-aegis--orb-pair-proposed-reconciliation). [Runbook §5](../../notes/2026-10-18-native-protection-recovery-pilot-runbook.md#5-decisions) records SM-1–SM-3 as ruled 10-29; native evidence, including U-18, remains owed |
+| [Pair reconciliation](#addendum-2026-10-31--authority-for-the-aegis--orb-pair-proposed-reconciliation), accepted ⟨RULING-DATE⟩ | Owner of the pair's open obligations | The blocker list at the end of that addendum; nothing there is discharged by this routing note |
+| [Qualification framework](../../briefs/pre-registration/2026-10-26-tradeify-native-lane-prereg-DRAFT.md), merged in [#961](https://github.com/Joshua-Asante/first-passage/pull/961) | Successor to #941; document remains DRAFT after merge | Pre-ratification adjudication, operator values and ratification remain owed. For the pair, nomination and account binding are tracked in [reconciliation rows 4 and 5](#addendum-2026-10-31--authority-for-the-aegis--orb-pair-proposed-reconciliation). It is not an approved replacement for an existing objective |
 
 The [four-firm ceiling scope ruling](../../adr/2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-10-28--scope-of-the-4-bust-ceiling-accepted)
 keeps the program falsifier separate from the owned Select 100K operating
 objective. The historical 5% references below establish no new account ceiling.
 The [10-19 finding](#addendum-2026-10-19--no-book-lineage-configuration-has-an-evidence-case-for-the-tradeify-evaluation)
-still governs its book-lineage scope; whether an exact ORB/Aegis pairing falls
-inside it is an owner decision, not settled by a shared label. No candidate,
+still governs its book-lineage scope; how it applies to the Aegis + ORB pair is
+[reconciliation row 2](#addendum-2026-10-31--authority-for-the-aegis--orb-pair-proposed-reconciliation). No candidate,
 account, sizing, evidence gate or deployment approval is ratified by this routing
 note. Recheck the linked owners before use.
 
@@ -1026,7 +1031,7 @@ operational controls or standing instructions.
 
 ## Addendum 2026-10-31 — authority for the Aegis + ORB pair: proposed reconciliation
 
-**Status: Proposed, not accepted: Joshua accepts or rejects.** This addendum decides nothing. It reads the public record at `main@26a7624d` and lists, for each obligation this checklist still shows open for the pair (Aegis and ORB, both native NinjaScript, together on the one owned Select 100K evaluation), what discharges it, what supersedes it, or what leaves it open. Where the deciding record is private, it is named as "private record, confirm locally", with what it must show. No private content is guessed or copied here (Rule 13).
+**Status: Accepted ⟨RULING-DATE⟩** (Joshua, ⟨WHERE⟩, verbatim: "⟨VERBATIM⟩"). Rows rejected or amended: ⟨NONE, or list them with the ruling's wording⟩. *Proposed text, 2026-10-31:* Proposed, not accepted: Joshua accepts or rejects. The addendum decided nothing until that ruling. It reads the public record at `main@26a7624d` and lists, for each obligation this checklist still shows open for the pair (Aegis and ORB, both native NinjaScript, together on the one owned Select 100K evaluation), what discharges it, what supersedes it, or what leaves it open. Where the deciding record is private, it is named as "private record, confirm locally", with what it must show. No private content is guessed or copied here (Rule 13).
 
 **What the public record does not hold.** Joshua's 2026-10-31 ruling to release both strategies together, the signed Aegis card 1c and ORB card 1, the canary card, the Sim101 canary results and the release-1 drafts are all private. The only public trace of the pair's forward attempt is the [forward stop rule registration](../../briefs/pre-registration/2026-10-31-tradeify-forward-stop-rule-registration.md) `:3` (it names the owned Select 100K forward attempt, Aegis A-0 and ORB O-0), its [Addendum 1](../../briefs/pre-registration/2026-10-31-tradeify-forward-stop-rule-registration-addendum-1.md) `:3`, `:12`, `:14`, and the [ORB horizon edition v8](../../briefs/pre-registration/2026-10-31-orb-horizon-edition-registration-v8.md) `:3`, `:23`. The [four-firm ADR](../../adr/2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-10-29--one-program-the-multi-firm-operation-accepted) `:431` names the ORB+Aegis native route as the program's current work. None of these binds an account or grants a session.
 
