@@ -9,7 +9,7 @@
 - **[R]** repo-held, with file:line. These are venue facts as the repo last recorded them (Rule 17 quotes live at the cited line). They are not re-verified here.
 - **[RV]** repo-held but flagged by the repo itself as owed, provisional, proxied or conflicting: needs re-verification before use.
 - **[INF]** inference or textbook model, not sourced. Never a venue fact.
-- **No web research was done this pass.** Every venue fact below comes from the repo. Public firm pages were not re-read, so nothing here is newer than its cited repo date.
+- **No web research was done in the first pass.** Every venue fact in §1 comes from the repo. A second pass (2026-11-01) checked public firm pages; its findings, conflicts and the re-ranked assumption list live in the [venue-fact register](2026-11-01-prop-firm-venue-fact-register-DRAFT.md), which supersedes §1.3 and §5.2 where they differ.
 
 Reading limits: every bust figure quoted is from its RESULTS owner ([Rule 20](../operational_rules.md#rule-20--figures-come-from-their-owner)); the closed-form numbers in §4 are model arithmetic on repo venue inputs, labelled [INF], not MC results and not claims about any strategy.
 
@@ -75,7 +75,7 @@ Common to the rows below unless noted: profit target 6% of starting balance; no 
 
 ### 2.2 Inferences (Harris framing) [INF]
 
-1. **In eval and sim-funded, no CME participant takes the other side.** Fills come from the platform simulator against the CQG feed. The economic counterparty is the firm: the trader pays a fee for an option whose payoff is a future payout, and the firm's P&L is fees minus payouts (plus resets and add-ons). Whether any firm copies successful traders' flow to a live account (A-book) or simply pays from fee income (pure B-book on a simulator) is **not sourced in the repo**.
+1. **In eval and sim-funded, no CME participant takes the other side.** Fills come from the platform simulator against the CQG feed. The economic counterparty is the firm: the trader pays a fee for an option whose payoff is a future payout, and the firm's P&L is fees minus payouts (plus resets and add-ons). Whether a firm copies successful traders' flow (A-book) is not in the repo. The second pass found first-party text: Tradeify wants traders who "can be called up to live to eventually be copied by our own firm", and reports that 3.0% of funded participants were called up to live (Aug 2025–Jul 2026); MFFU bars tools that "exploit the favorable fills offered in the Simulated Environment" (register D5, D6, D9; web, not accepted into an owner record). So: simulator until a small called-up minority, with copying of that minority.
 2. **The rulebook is the firm's adverse-selection defence.** In Harris's terms the firm is a dealer facing a mix of uninformed traders (most fee payers) and informed or option-exploiting traders. Each rule targets a known exploit of a free option: the trailing drawdown caps the option's payoff relative to peak; consistency rules block one lucky day; hedging bans across accounts block the "long in one account, short in another, one always passes" construction; cross-firm exclusivity and copy bans stop one edge being sold to many firms; HFT bans and source review screen out traders who exploit the simulator's fill model rather than the market. A strategy that looks like any of these will be treated as one.
 3. **Simulator fills are the grading surface.** The eval is scored on the simulator's fill model, not CME queue position. A thin edge can pass or fail on how the simulator fills stops and limits and how it applies the auto-flatten ("non-fatal (slippage only)", [R envelope :42]). The repo holds **no measurement** of any firm's simulator fill model (§5 rank D).
 4. **At the live funded stage, CME counterparties apply.** Standard microstructure says micro equity-index and gold futures flow meets electronic market makers and other short-horizon liquidity providers at the touch, with larger directional participants mostly in the full-size contracts that micros arbitrage against. None of this is sourced in the repo; no CME participant-composition data was read.
@@ -150,7 +150,7 @@ x rises as size falls (σ shrinks faster than μ), so with no clock, smaller is 
 | 1.83 (best in-house validated edge, Aegis, M-19) | $231 | ~230 (~11 months) |
 | 2.00 | $252 | ~190 (~9 months) |
 
-These are model dollars, not strategy figures. Every firm in scope removes the explicit deadline (the M-18 rule is retired because no tier carries one, [M-18](../methodology/lessons/methodology_lessons.md)), but the clock comes back through monthly eval fees (Tradeify's carrying cost is still unrecorded, [ledger :22](../pursuits/SUBSCRIPTION_LEDGER.md)), weekly activity rules, the program's own dates (four-firm §4, 2026-11-08) and opportunity cost. So the pass rate achievable in calendar-relevant time is set by **edge × √(independent bets per day)**, not by sizing. That is M-18's finding restated for no-deadline venues: more independent setups per day beat a fatter single edge.
+These are model dollars, not strategy figures. Every firm in scope removes the explicit deadline (the M-18 rule is retired because no tier carries one, [M-18](../methodology/lessons/methodology_lessons.md)), but a clock comes back through Bulenox's 30-day access window on a one-time fee (Tradeify evals are a one-time payment with "no deadline"; register A1.5, D14), weekly activity rules, retry and purchase limits (register D2), the program's own dates (four-firm §4, 2026-11-08) and opportunity cost. So the pass rate achievable in calendar-relevant time is set by **edge × √(independent bets per day)**, not by sizing. That is M-18's finding restated for no-deadline venues: more independent setups per day beat a fatter single edge.
 
 ### 4.4 Intraday vs EOD measurement (repo figures)
 
@@ -192,6 +192,8 @@ A dollar barrier feels the book's dollar variance: in §4.3, x ∝ μ/σ². Addi
 6. **Activity rules.** Weekly at Tradeify, MFFU; 5-trading-day at Bulenox; strategies that go quiet need the token trade (load-bearing, `load_bearing_numbers.md` §2).
 
 ### 5.2 Unverified assumptions, ranked by cost-if-wrong × likelihood ÷ cost-to-check
+
+> **Superseded by the [register §E](2026-11-01-prop-firm-venue-fact-register-DRAFT.md#e-unverified-assumptions-ranked)** after the 2026-11-01 web pass (sim-fill assumption raised; Bulenox Option 1 gap confirmed on the venue page; Growth item resolved). Kept below as the first-pass ranking.
 
 Scale 1–3 each (cost-to-check: 1 = read a page or a file; 2 = a re-run, an engine change, or an operator- or firm-side question; 3 = money or live trading).
 
