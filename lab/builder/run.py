@@ -19,8 +19,9 @@ Order: the spec, cards, costs, book and calendar are validated, then every card 
 the ledger before any bar is read, then the data is loaded and checked, the split resolved on
 its session dates, and the book must cover ``min_overlap`` development sessions of every
 instrument before any card is evaluated. Reports land in ``out/<card id>.report.json`` with a
-one-line verdict each, and each report's sha256, in ``out/verdict.json``: deleted before the
-cards are ledgered and written last, so it marks a finished attempt (builder.holdout reads it).
+one-line verdict each, and each report's sha256, in ``out/verdict.json`` with the development
+binding (``binding``) and its sha256. The marker is deleted before the cards are ledgered and
+written last by an atomic rename, so it exists only for a finished attempt (builder.holdout).
 """
 from __future__ import annotations
 
@@ -28,6 +29,7 @@ import datetime as dt
 import hashlib
 import json
 import math
+import os
 import sys
 from pathlib import Path
 
@@ -131,6 +133,23 @@ def load_data(s: dict, instrument: str, calendar: data.Calendar):
     return bars, dev, hold, summary
 
 
+def binding(s: dict, cs: list[cards.Card], cost: dict[str, gates.Costs]) -> dict:
+    """Every development input, canonically: run.yaml's fields with each file reduced to its
+    pinned sha256 (paths and ``out`` do not change a result), the card hashes, the resolved
+    per-instrument costs and the engine. builder.holdout recomputes it from the current run.yaml."""
+    return {"run_id": s["run_id"], "ledger": str(Path(s["ledger"]).resolve()), "firm": s["firm"], "roll": s["roll"],
+            "k_scope": s["k_scope"], "calendar_sha256": s["calendar"]["sha256"],
+            "book": None if s["book"] is None else {k: s["book"][k] for k in ("sha256", "min_overlap")},
+            "data": {i: {"sha256": d["sha256"], "split": d["split"]} for i, d in sorted(s["data"].items())},
+            "cards": {c.id: c.sha256 for c in sorted(cs, key=lambda c: c.id)},
+            "cost_per_trade_usd": {i: cost[i].per_trade(i) for i in sorted(cost)},
+            "engine_sha256": gates.engine_version()}
+
+
+def binding_sha256(b: dict) -> str:
+    return hashlib.sha256(json.dumps(b, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
 def main(argv: list[str]) -> int:
     s = spec(Path(argv[0]))
     cs = load_cards(s)
@@ -138,6 +157,8 @@ def main(argv: list[str]) -> int:
     cost = costs(s, instruments)
     book = None if s["book"] is None else data.load_book(Path(s["book"]["path"]), s["book"]["sha256"])
     cal = data.load_calendar(Path(s["calendar"]["path"]), s["calendar"]["sha256"])
+    bind = binding(s, cs, cost)
+    bind_sha = binding_sha256(bind)
     out = Path(s["out"])
     (out / "verdict.json").unlink(missing_ok=True)  # no completion marker survives an interrupted rerun
     ledger.append_cards(Path(s["ledger"]), s["run_id"], cs)  # before any bar is read
@@ -155,14 +176,17 @@ def main(argv: list[str]) -> int:
         rep = gates.evaluate(c, bars, dev, Path(s["ledger"]), cost[c.instrument], summary["sha256"], book,
                              closed=cal.closed, k_scope=s["k_scope"])
         rep.update(run_id=s["run_id"], roll=s["roll"], firm=s["firm"], data=summary,
-                   split=s["data"][c.instrument]["split"], calendar_sha256=cal.sha256)
+                   split=s["data"][c.instrument]["split"], calendar_sha256=cal.sha256, dev_binding_sha256=bind_sha)
         body = json.dumps(rep, indent=1).encode("utf-8")
         (out / f"{c.id}.report.json").write_bytes(body)
         verdicts.append({"card": c.id, "card_sha256": c.sha256, "report_sha256": hashlib.sha256(body).hexdigest(),
                          "verdict": rep["verdict"],
                          "stopped_at": rep["stopped_at"], "book_s": rep["book"].get("book_s"),
                          "book_s_with_card": rep["book"].get("book_s_with_card")})
-    (out / "verdict.json").write_text(json.dumps(verdicts, indent=1), encoding="utf-8")
+    tmp = out / "verdict.json.tmp"  # written whole, then renamed: the marker is complete or absent
+    tmp.write_text(json.dumps({"dev_binding_sha256": bind_sha, "binding": bind, "cards": verdicts}, indent=1),
+                   encoding="utf-8")
+    os.replace(tmp, out / "verdict.json")
     for v in verdicts:
         print(v)
     return 0

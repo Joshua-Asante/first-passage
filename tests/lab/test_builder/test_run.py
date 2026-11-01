@@ -3,11 +3,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 
 import pytest
 
-from builder import cards, data, holdout, ledger, run
+from builder import cards, data, gates, holdout, ledger, run
 from tests.lab.test_builder.builder_inputs import CARD, export_lines, panel, write
 
 CAL = Path(__file__).resolve().parents[3] / "ops" / "calendars" / "cme_holiday_calendar_2022_2026.json"
@@ -49,9 +50,12 @@ def book_file(tmp_path, book: dict) -> dict:
 def test_run_writes_reports_with_the_data_summary_split_and_calendar(spec):
     path, s, dates = spec
     assert go(path, s) == 0
-    [v] = json.loads((path.parent / "out" / "verdict.json").read_text())
+    marker = json.loads((path.parent / "out" / "verdict.json").read_text())
+    [v] = marker["cards"]
     rep = report(path)
     assert v["card"] == "g-001" and rep["data"]["sha256"] == s["data"]["MCL"]["sha256"]
+    assert marker["dev_binding_sha256"] == rep["dev_binding_sha256"] == run.binding_sha256(marker["binding"])
+    assert not (path.parent / "out" / "verdict.json.tmp").exists()
     assert (rep["k"], rep["k_scope"]) == (1, "instrument") and rep["split"] == s["data"]["MCL"]["split"]
     assert rep["dev_sessions"] == [dates[0], dates[299], 300] and rep["calendar_sha256"] == s["calendar"]["sha256"]
 
@@ -207,6 +211,12 @@ def looks(s):
     return [e for e in ledger.read(Path(s["ledger"])) if e["kind"] == "holdout_look"]
 
 
+def refused(path, s, match):
+    with pytest.raises(holdout.HoldoutError, match=match):
+        go(path, s, holdout)
+    assert not Path(s["ledger"]).exists() or looks(s) == []
+
+
 def test_holdout_looks_survivors_in_card_id_order_on_the_pinned_window(spec):
     path, s, dates = spec
     two_cards(path, s)
@@ -217,111 +227,92 @@ def test_holdout_looks_survivors_in_card_id_order_on_the_pinned_window(spec):
     assert [ids[e["card_sha256"]] for e in looks(s)] == ["a-002", "g-001"]
     h = report(path, "g-001", "holdout")
     assert h["holdout_sessions"] == [dates[300], dates[379], 80] and h["split"] == s["data"]["MCL"]["split"]
-    assert h["verdict"] in {"pass", "fail"} and h["card_id"] == "g-001"
+    assert h["verdict"] in {"pass", "fail"} and h["dev_binding_sha256"] == report(path)["dev_binding_sha256"]
+
+
+def _remark(path, rep: dict) -> None:
+    """Rewrite g-001's report and re-point the marker's report_sha256 at it."""
+    out = path.parent / "out"
+    body = json.dumps(rep).encode()
+    (out / "g-001.report.json").write_bytes(body)
+    m = json.loads((out / "verdict.json").read_text())
+    m["cards"][0]["report_sha256"] = hashlib.sha256(body).hexdigest()
+    (out / "verdict.json").write_text(json.dumps(m))
 
 
 def test_holdout_skips_cards_that_did_not_survive(spec):
     path, s, _ = spec
     go(path, s)
-    out = path.parent / "out"
-    body = json.dumps({**report(path), "verdict": "killed"}).encode()
-    (out / "g-001.report.json").write_bytes(body)
-    [v] = json.loads((out / "verdict.json").read_text())
-    (out / "verdict.json").write_text(json.dumps([{**v, "report_sha256": hashlib.sha256(body).hexdigest()}]))
+    _remark(path, {**report(path), "verdict": "killed"})
     assert go(path, s, holdout) == 0 and looks(s) == [] and not (path.parent / "out" / "g-001.holdout.json").exists()
 
 
-@pytest.mark.parametrize("damage", ["no_run", "no_verdict", "no_report", "not_final", "other_run"])
-def test_holdout_refuses_an_unfinished_run(spec, damage):
-    path, s, _ = spec
-    if damage != "no_run":
-        go(path, s)
-    out = path.parent / "out"
-    if damage == "no_verdict":
-        (out / "verdict.json").unlink()
-    elif damage == "no_report":
-        (out / "g-001.report.json").unlink()
-    elif damage in ("not_final", "other_run"):
-        rep = report(path)
-        rep.update(verdict="running") if damage == "not_final" else rep.update(run_id="r0")
-        (out / "g-001.report.json").write_text(json.dumps(rep))
-    with pytest.raises(holdout.HoldoutError):
-        go(path, s, holdout)
-    assert not Path(s["ledger"]).exists() or looks(s) == []
+def _new_file(tmp_path, name, src: Path) -> dict:
+    p = tmp_path / name
+    p.write_bytes(src.read_bytes() + b"\n")
+    return {"path": str(p), "sha256": data.file_sha256(p)}
 
 
-def test_holdout_refuses_a_run_yaml_card_without_a_report(spec):
-    path, s, _ = spec
-    go(path, s)
-    two_cards(path, s)
-    with pytest.raises(holdout.HoldoutError, match="does not list exactly"):
-        go(path, s, holdout)
-    assert looks(s) == []
+# Each case: (binding field the refusal names, change before development or None, change after it).
+CHANGES = {
+    "calendar": ("calendar_sha256", None, lambda t, s, d: s.update(calendar=_new_file(t, "cal2.json", CAL))),
+    "costs": ("cost_per_trade_usd.MCL", lambda t, s, d: s.update(firm="Bulenox_100K", commission_per_side={"MCL": 1.5}),
+              lambda t, s, d: s.update(commission_per_side={"MCL": 0.5})),
+    "k_scope": ("k_scope", None, lambda t, s, d: s.update(k_scope="ledger")),
+    "split": ("data.MCL.split.holdout_end", None, lambda t, s, d: s["data"]["MCL"]["split"].update(holdout_end=d[390])),
+    "firm": ("firm", None, lambda t, s, d: s.update(firm="MFFU_Rapid_100K")),
+    "card": ("cards.g-001", None,
+             lambda t, s, d: (t / "c.yaml").write_text(CARD.replace('flat_at: "12:30"', 'flat_at: "12:45"'))),
+    "data": ("data.MCL.sha256", None,
+             lambda t, s, d: s["data"]["MCL"].update(_new_file(t, "export2.csv", Path(s["data"]["MCL"]["path"])))),
+    "book": ("book.sha256", lambda t, s, d: s.update(book={**book_file(t, {x: -1.0 for x in d[:300]}), "min_overlap": 1}),
+             lambda t, s, d: s.update(book={**book_file(t, {x: -2.0 for x in d[:300]}), "min_overlap": 1})),
+    "run_id": ("run_id", None, lambda t, s, d: s.update(run_id="r2")),
+}
 
 
-def test_holdout_refuses_a_card_hash_mismatch(spec):
-    path, s, _ = spec
-    go(path, s)
-    (path.parent / "c.yaml").write_text(CARD.replace('flat_at: "12:30"', 'flat_at: "12:45"'))
-    with pytest.raises(holdout.HoldoutError, match="card_sha256"):
-        go(path, s, holdout)
-    assert looks(s) == []
-
-
-def test_holdout_refuses_a_split_mismatch(spec):
+@pytest.mark.parametrize("case", sorted(CHANGES))
+def test_holdout_refuses_any_development_field_changed_after_development(spec, tmp_path, case):
     path, s, dates = spec
+    field, before, after = CHANGES[case]
+    if before:
+        before(tmp_path, s, dates)
     go(path, s)
-    s["data"]["MCL"]["split"]["holdout_end"] = dates[390]
-    with pytest.raises(holdout.HoldoutError, match="split"):
-        go(path, s, holdout)
-    assert looks(s) == []
-
-
-def test_holdout_look_is_taken_once(spec):
-    path, s, _ = spec
-    go(path, s)
-    go(path, s, holdout)
-    with pytest.raises(ledger.LedgerError, match="already"):
-        go(path, s, holdout)
-
-
-@pytest.mark.parametrize("pin", ["calendar", "data"])
-def test_holdout_refuses_a_changed_calendar_or_data_pin(spec, tmp_path, pin):
-    path, s, _ = spec
-    go(path, s)
-    if pin == "calendar":
-        p = tmp_path / "cal2.json"
-        p.write_text(CAL.read_text(encoding="utf-8") + "\n", encoding="utf-8")
-        s["calendar"] = {"path": str(p), "sha256": data.file_sha256(p)}
-    else:
-        src = Path(s["data"]["MCL"]["path"])
-        p = tmp_path / "export2.csv"
-        p.write_bytes(src.read_bytes() + b"\n")
-        s["data"]["MCL"].update(path=str(p), sha256=data.file_sha256(p))
-    with pytest.raises(holdout.HoldoutError, match=f"{pin}_sha256"):
-        go(path, s, holdout)
-    assert looks(s) == []
-
-
-def test_holdout_refuses_changed_costs(spec):
-    path, s, _ = spec
-    s.update(firm="Bulenox_100K", commission_per_side={"MCL": 1.5})
-    go(path, s)
-    s["commission_per_side"] = {"MCL": 0.5}
-    with pytest.raises(holdout.HoldoutError, match="cost_per_trade_usd"):
-        go(path, s, holdout)
-    assert looks(s) == []
+    after(tmp_path, s, dates)
+    refused(path, s, r"changed: \[.*" + re.escape(f"'{field}'"))  # firm also moves the cost
 
 
 def test_holdout_refuses_a_changed_engine(spec, monkeypatch):
     path, s, _ = spec
     go(path, s)
-    monkeypatch.setattr(holdout.gates, "engine_version", lambda: "0" * 64)
-    with pytest.raises(holdout.HoldoutError, match="engine_sha256"):
-        go(path, s, holdout)
+    monkeypatch.setattr(gates, "engine_version", lambda: "0" * 64)
+    refused(path, s, re.escape("changed: ['engine_sha256']"))
 
 
-def test_an_interrupted_rerun_leaves_no_completion_marker(spec):
+@pytest.mark.parametrize("damage", ["no_run", "no_verdict", "no_report", "other_binding", "not_final"])
+def test_holdout_refuses_an_unfinished_run(spec, damage):
+    path, s, _ = spec
+    if damage != "no_run":
+        go(path, s)
+    if damage == "no_verdict":
+        (path.parent / "out" / "verdict.json").unlink()
+    elif damage == "no_report":
+        (path.parent / "out" / "g-001.report.json").unlink()
+    elif damage == "other_binding":  # a consistent marker pointing at a report from another binding
+        _remark(path, {**report(path), "dev_binding_sha256": "0" * 64})
+    elif damage == "not_final":
+        _remark(path, {**report(path), "verdict": "running"})
+    refused(path, s, "has not finished|no final development report")
+
+
+def test_a_run_yaml_card_without_a_report_is_refused(spec):
+    path, s, _ = spec
+    go(path, s)
+    two_cards(path, s)
+    refused(path, s, re.escape("changed: ['cards.a-002']"))
+
+
+def test_an_interrupted_rerun_leaves_no_usable_marker(spec):
     path, s, _ = spec
     go(path, s)
     good = dict(s["data"]["MCL"])
@@ -330,8 +321,7 @@ def test_an_interrupted_rerun_leaves_no_completion_marker(spec):
         go(path, s)
     assert not (path.parent / "out" / "verdict.json").exists()
     s["data"]["MCL"] = good
-    with pytest.raises(holdout.HoldoutError, match="has not finished"):
-        go(path, s, holdout)
+    refused(path, s, "has not finished")
 
 
 def test_holdout_refuses_a_report_edited_after_the_run(spec):
@@ -339,6 +329,22 @@ def test_holdout_refuses_a_report_edited_after_the_run(spec):
     go(path, s)
     p = path.parent / "out" / "g-001.report.json"
     p.write_text(p.read_text() + " ")
-    with pytest.raises(holdout.HoldoutError, match="stale or edited"):
+    refused(path, s, "stale or edited")
+
+
+def test_holdout_refuses_an_edited_marker_binding(spec):
+    path, s, _ = spec
+    go(path, s)
+    p = path.parent / "out" / "verdict.json"
+    m = json.loads(p.read_text())
+    m["binding"]["k_scope"] = "ledger"
+    p.write_text(json.dumps(m))
+    refused(path, s, "no longer describes")
+
+
+def test_holdout_look_is_taken_once(spec):
+    path, s, _ = spec
+    go(path, s)
+    go(path, s, holdout)
+    with pytest.raises(ledger.LedgerError, match="already"):
         go(path, s, holdout)
-    assert looks(s) == []
