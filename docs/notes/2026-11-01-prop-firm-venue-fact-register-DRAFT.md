@@ -177,3 +177,14 @@ The Bulenox PDF's printed second column (2 × the first) is new support for the 
 - No account data, Pine, port, `effective_inputs.json` or research backtest dollar figure appears. Dollar figures here are venue rule or fee figures.
 - No firm was contacted, no order placed, no row or locked surface edited.
 - Not done within budget: Bulenox accordion sections (Option 1/2 detail, Withdrawal Rules, Inactivity) load by script and were not read; BluSky and FXIFY ToS bot clauses were not read; nothing outside `*.py` was swept in §C.
+
+---
+
+## H. Tradeify third pass
+
+The Tradeify deep-dive ([`2026-11-01-tradeify-venue-deep-dive-DRAFT.md`](2026-11-01-tradeify-venue-deep-dive-DRAFT.md) §5) adds T1–T10 to this register. The three H-severity items:
+- the agreement's §6.5 "flipping contracts just to register a 'trading day'" against the weekly preservation trade;
+- the account-operation, KYT and remote-access rules against agent-placed trades and VM hosts;
+- cross-platform hedging binding other-firm strategies.
+
+Its §6 lists suggestions.
