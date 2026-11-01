@@ -1,18 +1,25 @@
 """Gate 5h: venue Monte Carlo of the combined book (spec: "Bust <= ceiling at >= 2 firm configs;
 reports P(pass), P(payout)").
 
-The book (one column, used as given: its embedded costs do not change per config) plus at most
-one candidate (one column, priced per config) form a Mon-Fri panel over the weekdays inside both
-the book's date range and the candidate's supplied window; a leg with no session that day is
-zero. Only complete Mon-Fri weeks become blocks (``mc.ingest.build_week_blocks``). Each config
-runs ``mc.simulation.run_seed`` over the pinned seeds from a fresh account, at fixed size, with
-no protection (``dd_trigger=10.0``, ``dd_scale=1.0``): 10,000 paths. ``gating_bust`` = headline
-bust (daily + static + trailing) + inactivity bust; horizon-cap paths are reported, not counted
-as bust. The verdict passes when ``gating_bust`` <= the ceiling in every config; a config the
+The book (one column, used as given: its embedded costs do not change per config), a
+preservation leg (the operator's weekly preservation trade: minus one micro MNQ round trip at the
+config's costs on the first weekday of each complete Mon-Fri week) and at most one candidate (one
+column, priced per config) form a Mon-Fri panel over the weekdays inside both the book's date
+range and the candidate's supplied window; a leg with no session that day is zero. Only complete
+Mon-Fri weeks become blocks (``mc.ingest.build_week_blocks``). Each config runs
+``mc.simulation.run_seed`` over the pinned seeds from a fresh account, at fixed size, with no
+protection (``dd_trigger=10.0``, ``dd_scale=1.0``): 10,000 paths. ``gating_bust`` = headline bust
+(daily + static + trailing) + inactivity bust; horizon-cap paths are reported, not counted as bust.
+
+The gate is relative. Book alone and book plus candidate run on the same seeds and the same weeks,
+so ``run_seed`` draws the same week sequence for both (common random numbers). A candidate passes
+when, in every config, it raises ``gating_bust`` by at most 0.01 and lowers P(pass) by at most 0.01.
+``book_bust_target`` (0.05) is reported as ``book_target_met`` for the book alone and with the
+candidate; it never gates a candidate. A book-alone run's verdict is ``baseline``. A config the
 preflight or the cost table refuses yields a ``refused`` result, never an override.
 
-Settings are pinned by the research coordinator's ticket (2026-11-01). The ceiling is pending
-Joshua's approval. Not wired into ``gates.py`` or ``run.py`` yet.
+Settings are pinned by the research coordinator's ticket; thresholds approved by Joshua 2026-11-01.
+Not wired into ``gates.py`` or ``run.py`` yet.
 
 Book-alone baseline: ``python -m builder.venue --book <json> --sha256 <hex> --out <json>``.
 """
@@ -33,14 +40,17 @@ from mc import preflight
 from mc.ingest import build_week_blocks
 from mc.simulation import HORIZON_CAP, run_seed
 
-VENUE_THRESHOLDS = {"5h_bust_ceiling": 0.05}  # pending Joshua's approval
-THRESHOLD_STATUS = "pending Joshua's approval"
+VENUE_THRESHOLDS = {"book_bust_target": 0.05, "5h_max_bust_increase": 0.01, "5h_max_pass_decrease": 0.01}
+THRESHOLD_STATUS = "approved by Joshua 2026-11-01"
 CONFIGS = {"Tradeify_Select_100K": 0.40, "MFFU_Rapid_100K": 0.50}  # firm -> eval consistency fraction
 ACCOUNT = 100_000
 SEEDS = tuple(range(20261101, 20261111))
 SIMS_PER_SEED = 1000
 DD_TRIGGER, DD_SCALE = 10.0, 1.0  # unreachable trigger, unit scale: fixed size, no protection
-LABEL = "end-of-day research screen: venues enforce drawdown intraday; this panel has no intraday path"
+PRESERVATION_SYMBOL = "MNQ"
+LABEL = ("end-of-day research screen: venues enforce drawdown intraday; this panel has no intraday path. "
+         "Includes a preservation leg: minus one micro MNQ round trip at the config's costs on the first "
+         "weekday of each complete Mon-Fri week, the operator's weekly preservation trade")
 ACTIVITY = ("a day is active when any leg has nonzero P&L; inactivity counts consecutive idle rows, "
             "as simulate_path does")
 
@@ -66,19 +76,29 @@ class Candidate:
     window: tuple[str, str]  # first and last date the candidate was evaluated on, inclusive
 
 
+def round_trip(firm: str, symbol: str) -> float:
+    """2 x (per-symbol commission + 1 tick x point value) at ``firm``'s costs, the same cost as gate
+    5b. Raises Refused when the config has no commission for the symbol."""
+    try:
+        return gates.Costs.for_firm(firm, symbol).per_trade(symbol)
+    except (KeyError, ValueError) as e:
+        raise Refused(f"{firm}: no commission for {symbol}: {e}") from None
+
+
 def candidate_daily(c: Candidate, firm: str) -> dict[str, float]:
-    """{exit date: sum of points x point value - round trip} at ``firm``'s costs: 2 x (per-symbol
-    commission + 1 tick x point value), the same cost as gate 5b. Raises Refused when the config
-    has no commission for a symbol."""
+    """{exit date: sum of points x point value - round trip} at ``firm``'s costs."""
     out: dict[str, float] = {}
     for t in c.trades:
-        try:
-            cost = gates.Costs.for_firm(firm, t.symbol).per_trade(t.symbol)
-        except (KeyError, ValueError) as e:
-            raise Refused(f"{firm}: no commission for {t.symbol}: {e}") from None
-        pv = INSTRUMENTS[t.symbol].point_value
-        out[t.exit_date] = out.get(t.exit_date, 0.0) + t.points * pv - cost
+        cost = round_trip(firm, t.symbol)
+        out[t.exit_date] = out.get(t.exit_date, 0.0) + t.points * INSTRUMENTS[t.symbol].point_value - cost
     return out
+
+
+def preservation_daily(firm: str, lo: str, hi: str) -> dict[str, float]:
+    """{Monday: minus one MNQ round trip} for each complete Mon-Fri week in lo..hi."""
+    cost, end = round_trip(firm, PRESERVATION_SYMBOL), pd.Timestamp(hi)
+    return {d.strftime("%Y-%m-%d"): -cost for d in pd.bdate_range(lo, hi)
+            if d.weekday() == 0 and d + pd.Timedelta(days=4) <= end}
 
 
 def window(book: dict[str, float], c: Candidate | None) -> tuple[str, str]:
@@ -147,14 +167,29 @@ def simulate(firm: str, p: pd.DataFrame) -> dict:
     counts = {k: sum(r["outcomes"][k] for r in runs) for k in preflight.OUTCOME_KEYS}
     if sum(counts.values()) != n:
         raise VenueError(f"{firm}: outcome counts sum to {sum(counts.values())}, expected {n}")
-    gating = sum(counts[k] for k in preflight.BUST_KEYS) + counts["bust_inactivity"]
+    g = _gating(counts) / n
     return {"status": "ok", "paths": n, "counts": counts, "rates": s["rates"],
-            "headline_bust": s["headline_bust"], "gating_bust": gating / n, "p_pass": counts["pass"] / n,
-            "horizon_cap": counts["horizon_cap"] / n, "p_payout": "not encoded"}
+            "headline_bust": s["headline_bust"], "gating_bust": g, "p_pass": counts["pass"] / n,
+            "horizon_cap": counts["horizon_cap"] / n, "p_payout": "not encoded",
+            "book_target_met": g <= VENUE_THRESHOLDS["book_bust_target"]}
 
 
-def passes(gating_bust: float) -> bool:
-    return gating_bust <= VENUE_THRESHOLDS["5h_bust_ceiling"]
+def _gating(counts: dict) -> int:
+    return sum(counts[k] for k in preflight.BUST_KEYS) + counts["bust_inactivity"]
+
+
+def vs_book_alone(r: dict, alone: dict) -> dict:
+    """Paired change from count differences, so a change of exactly 100 paths in 10,000 is 0.01."""
+    n = r["paths"]
+    if alone["paths"] != n:
+        raise VenueError(f"unpaired runs: {n} vs {alone['paths']} paths")
+    return {"gating_bust": (_gating(r["counts"]) - _gating(alone["counts"])) / n,
+            "p_pass": (r["counts"]["pass"] - alone["counts"]["pass"]) / n}
+
+
+def passes(delta: dict) -> bool:
+    return (delta["gating_bust"] <= VENUE_THRESHOLDS["5h_max_bust_increase"]
+            and delta["p_pass"] >= -VENUE_THRESHOLDS["5h_max_pass_decrease"])
 
 
 def evaluate(book: dict[str, float], candidate: Candidate | None = None) -> dict:
@@ -163,36 +198,39 @@ def evaluate(book: dict[str, float], candidate: Candidate | None = None) -> dict
         raise VenueError("book is empty")
     _check(candidate, book)
     lo, hi = window(book, candidate)
-    base = panel({"book": book}, lo, hi)
-    weeks = blocks(base)
+    weeks = blocks(panel({"book": book}, lo, hi))
     configs = {}
     for firm in CONFIGS:
-        alone = simulate(firm, base)
-        if candidate is None:
-            configs[firm] = alone
-            continue
         try:
-            cand = candidate_daily(candidate, firm)
+            legs = {"book": book, "preservation": preservation_daily(firm, lo, hi)}
+            cand = None if candidate is None else candidate_daily(candidate, firm)
         except Refused as e:
             configs[firm] = {"status": "refused", "reason": str(e)}
             continue
-        r = simulate(firm, panel({"book": book, "candidate": cand}, lo, hi))
+        alone = simulate(firm, panel(legs, lo, hi))
+        if cand is None:
+            configs[firm] = alone
+            continue
+        # Same window, seeds and week count as the book-alone run: common random numbers.
+        r = simulate(firm, panel({**legs, "candidate": cand}, lo, hi))
         if r["status"] == "ok" and alone["status"] == "ok":
-            r["vs_book_alone"] = {"gating_bust": r["gating_bust"] - alone["gating_bust"],
-                                  "p_pass": r["p_pass"] - alone["p_pass"]}
+            r["vs_book_alone"] = vs_book_alone(r, alone)
+            r["relative_pass"] = passes(r["vs_book_alone"])
         r["book_alone"] = alone
         configs[firm] = r
     if any(c["status"] != "ok" for c in configs.values()):
         verdict = "refused"
+    elif candidate is None:
+        verdict = "baseline"
     else:
-        verdict = "pass" if all(passes(c["gating_bust"]) for c in configs.values()) else "fail"
+        verdict = "pass" if all(c["relative_pass"] for c in configs.values()) else "fail"
     return {"gate": "5h venue MC", "label": LABEL, "activity_convention": ACTIVITY,
             "thresholds": VENUE_THRESHOLDS, "threshold_status": THRESHOLD_STATUS,
             "settings": {"seeds": [SEEDS[0], SEEDS[-1]], "sims_per_seed": SIMS_PER_SEED, "account": ACCOUNT,
                          "dd_trigger": DD_TRIGGER, "dd_scale": DD_SCALE, "horizon": HORIZON_CAP,
                          "inactivity_off": False, "consistency": CONFIGS, "intraday_blocks": None,
                          "initial_state": None},
-            "legs": ["book"] if candidate is None else ["book", "candidate"],
+            "legs": ["book", "preservation"] + ([] if candidate is None else ["candidate"]),
             "window": [lo, hi], "complete_weeks": len(weeks), "configs": configs, "verdict": verdict}
 
 

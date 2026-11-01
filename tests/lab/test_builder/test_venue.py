@@ -37,9 +37,11 @@ def test_counts_partition_ten_thousand_paths_per_config(noisy):
         assert r["gating_bust"] == (c["bust_daily"] + c["bust_static"] + c["bust_trailing"]
                                     + c["bust_inactivity"]) / 10_000
         assert r["p_pass"] == c["pass"] / 10_000 and r["horizon_cap"] == c["horizon_cap"] / 10_000
-        assert r["p_payout"] == "not encoded"
-    assert noisy["label"] == venue.LABEL and noisy["activity_convention"] == venue.ACTIVITY
-    assert noisy["threshold_status"] == "pending Joshua's approval"
+        assert r["p_payout"] == "not encoded" and r["book_target_met"] is (r["gating_bust"] <= 0.05)
+    assert noisy["label"] == venue.LABEL and "preservation" in venue.LABEL
+    assert noisy["activity_convention"] == venue.ACTIVITY
+    assert noisy["threshold_status"] == "approved by Joshua 2026-11-01"
+    assert noisy["legs"] == ["book", "preservation"] and noisy["verdict"] == "baseline"
 
 
 def test_seed_determinism(noisy):
@@ -122,19 +124,78 @@ def test_inputs_fail_closed():
             venue.evaluate({**book(), "2024-01-03": bad})
 
 
-@pytest.mark.parametrize("bust, ok", [(0.0499, True), (0.05, True), (500 / 10_000, True), (0.0501, False),
-                                      (501 / 10_000, False)])
-def test_ceiling_at_and_around_five_percent(bust, ok):
-    assert venue.VENUE_THRESHOLDS == {"5h_bust_ceiling": 0.05}
-    assert venue.passes(bust) is ok
+def res(gating: int, passed: int, n: int = 10_000) -> dict:
+    counts = dict.fromkeys(preflight.OUTCOME_KEYS, 0)
+    counts.update(bust_daily=gating, bust_inactivity=0, horizon_cap=n - gating - passed, **{"pass": passed})
+    return {"status": "ok", "paths": n, "counts": counts}
 
 
-def test_verdict_needs_both_configs(monkeypatch):
-    rates = iter([0.05, 0.0501])
-    monkeypatch.setattr(venue, "simulate", lambda firm, p: {"status": "ok", "gating_bust": next(rates)})
-    assert venue.evaluate(book())["verdict"] == "fail"
-    rates = iter([0.05, 0.0499])
-    assert venue.evaluate(book())["verdict"] == "pass"
+@pytest.mark.parametrize("bust, passed, ok", [
+    ((500, 600), (9000, 9000), True),    # bust +100 paths = +0.01 exactly
+    ((500, 601), (9000, 9000), False),   # +0.0101
+    ((0, 100), (9000, 9000), True),
+    ((500, 500), (9000, 8900), True),    # pass -100 paths = -0.01 exactly
+    ((500, 500), (9000, 8899), False),   # -0.0101
+    ((500, 400), (9000, 9500), True),    # improvements pass
+])
+def test_tolerance_edges(bust, passed, ok):
+    assert venue.VENUE_THRESHOLDS == {"book_bust_target": 0.05, "5h_max_bust_increase": 0.01,
+                                      "5h_max_pass_decrease": 0.01}
+    d = venue.vs_book_alone(res(bust[1], passed[1]), res(bust[0], passed[0]))
+    assert venue.passes(d) is ok
+    for x, y in ((0.01, 0.0), (0.0, -0.01)):
+        assert venue.passes({"gating_bust": x, "p_pass": y})
+    assert not venue.passes({"gating_bust": 0.0101, "p_pass": 0.0})
+    assert not venue.passes({"gating_bust": 0.0, "p_pass": -0.0101})
+
+
+def test_relative_verdict_needs_both_configs_and_ignores_the_target(monkeypatch):
+    c = cand([("2024-01-03", 1.0, "MCL")])
+    # order: Tradeify alone, Tradeify + candidate, MFFU alone, MFFU + candidate
+    runs = iter([res(900, 8000), res(1000, 8000), res(900, 8000), res(1001, 8000)])
+    monkeypatch.setattr(venue, "simulate", lambda firm, p: next(runs))
+    rep = venue.evaluate(book(), c)
+    assert [rep["configs"][f]["relative_pass"] for f in FIRMS] == [True, False] and rep["verdict"] == "fail"
+    # a book far above the 0.05 target still passes a candidate that keeps within tolerance
+    runs = iter([res(900, 8000), res(1000, 8000), res(900, 8000), res(950, 7950)])
+    rep = venue.evaluate(book(), c)
+    assert rep["verdict"] == "pass"
+    with pytest.raises(venue.VenueError, match="unpaired"):
+        venue.vs_book_alone(res(0, 0, n=9_000), res(0, 0))
+
+
+def test_preservation_leg_placement_and_cost():
+    # Wed 2024-01-03 .. Tue 2024-01-23: complete weeks start Mon 01-08 and Mon 01-15; Mon 01-22 is partial
+    rt = {"Tradeify_Select_100K": 2 * (0.91 + 0.25 * 2.0), "MFFU_Rapid_100K": 2 * (0.95 + 0.25 * 2.0)}
+    for firm, cost in rt.items():
+        assert venue.preservation_daily(firm, "2024-01-03", "2024-01-23") == pytest.approx(
+            {"2024-01-08": -cost, "2024-01-15": -cost})
+    # the book's Monday 01-08 is a zero row: the preservation leg makes it active anyway
+    b = {"2024-01-03": 1.0, "2024-01-09": 2.0, "2024-01-16": 3.0, "2024-01-23": 4.0}
+    legs = {"book": b, "preservation": venue.preservation_daily(FIRMS[0], "2024-01-03", "2024-01-23")}
+    blk = venue.blocks(venue.panel(legs, "2024-01-03", "2024-01-23"))
+    assert blk.shape == (2, 5, 2) and blk[0][0, 0] == 0.0
+    assert blk[:, 0, 1] == pytest.approx([-rt[FIRMS[0]]] * 2) and not blk[:, 1:, 1].any()
+    assert (np.abs(blk).sum(axis=2) > 0)[:, 0].all()
+
+
+def test_book_alone_and_candidate_runs_share_seeds_and_weeks(monkeypatch):
+    seen = []
+    real = venue.run_seed
+
+    def spy(seed, n, b, **kw):
+        seen.append((seed, n, len(b), kw["horizon"], kw["strats"]))
+        return real(seed, n, b, **kw)
+    monkeypatch.setattr(venue, "run_seed", spy)
+    b = book(weeks=6)
+    venue.evaluate(b, cand([("2024-01-03", 1.0, "MCL")], window=(min(b), max(b))))
+    per_run = len(venue.SEEDS)
+    runs = [seen[i:i + per_run] for i in range(0, len(seen), per_run)]
+    assert len(runs) == 4
+    for alone, with_c in (runs[0:2], runs[2:4]):
+        assert [s[:4] for s in alone] == [s[:4] for s in with_c]
+        assert [s[0] for s in alone] == list(venue.SEEDS) and alone[0][2] == 6
+        assert alone[0][4] == ("book", "preservation") and with_c[0][4] == ("book", "preservation", "candidate")
 
 
 def test_book_alone_equals_book_plus_zero_candidate(noisy):
@@ -143,11 +204,12 @@ def test_book_alone_equals_book_plus_zero_candidate(noisy):
     for firm in FIRMS:
         r, alone = rep["configs"][firm], noisy["configs"][firm]
         assert r["counts"] == alone["counts"] and r["book_alone"] == alone
-        assert r["vs_book_alone"] == {"gating_bust": 0.0, "p_pass": 0.0}
-    assert rep["verdict"] == noisy["verdict"]
+        assert r["vs_book_alone"] == {"gating_bust": 0.0, "p_pass": 0.0} and r["relative_pass"]
+    assert rep["verdict"] == "pass"  # a zero candidate passes, whatever the book's target result
 
 
 def test_book_costs_are_not_repriced_per_config():
-    # A steady book passes everywhere in the same number of days: no per-config cost touched it.
+    # A steady book passes everywhere: only the small preservation cost differs per config.
     rep = venue.evaluate(book(daily=300.0))
-    assert all(rep["configs"][f]["counts"]["pass"] == 10_000 for f in FIRMS) and rep["verdict"] == "pass"
+    assert all(rep["configs"][f]["counts"]["pass"] == 10_000 and rep["configs"][f]["book_target_met"]
+               for f in FIRMS) and rep["verdict"] == "baseline"
