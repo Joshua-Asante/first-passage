@@ -1,4 +1,4 @@
-"""Strict BAR EXPORT v0.2 reader, the book file and the development/holdout split.
+"""Strict BAR EXPORT v0.2 reader, the book file, the frozen calendar and the date-pinned split.
 
 The builder reads raw TradingView BAR EXPORT v0.2 List-of-Trades files only, with its own
 parser. It does not use ``core/bar_export_loader``, which skips undecodable rows and keeps the
@@ -19,6 +19,14 @@ Every rule below aborts the load; none skips, defaults or warns (invariants I-B1
   are allowed; the summary counts them.
 
 The TV ``1!`` continuous series is used as exported; no roll is reconstructed.
+
+The split is pinned by date per instrument: development = sessions <= dev_end, holdout =
+dev_end < sessions <= holdout_end; later sessions are in neither. Both ends must be session dates
+of the loaded export, so a refreshed export cannot move a session across the boundary.
+
+The calendar (``ops/calendars/cme_holiday_calendar_2022_2026.json``) is read for exactly
+``CALENDAR_FIELDS``: the schema, the coverage window and every ``entries[].date``, whatever its
+status. Every evaluated session must lie inside the coverage window.
 """
 from __future__ import annotations
 
@@ -27,6 +35,7 @@ import hashlib
 import json
 import math
 import re
+from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
@@ -36,7 +45,8 @@ import pandas as pd
 from builder.instruments import DAY_END, EXPORT_TZ, INSTRUMENTS
 
 NY = "America/New_York"
-HOLDOUT_SHARE = 0.30
+CALENDAR_SCHEMA = "cme_holiday_calendar/v1"
+CALENDAR_FIELDS = ("schema", "coverage_start", "coverage_end", "entries[].date")
 BAR_MS = 15 * 60 * 1000
 COLUMNS = ("Trade number", "Type", "Signal", "Price USD")
 TYPES = {"Entry long", "Entry short", "Exit long", "Exit short"}
@@ -162,15 +172,58 @@ def session_dates(bars: pd.DataFrame, symbol: str) -> list[str]:
     return sorted(set(idx[m].strftime("%Y-%m-%d")))
 
 
-def split(dates: list[str], holdout_share: float = HOLDOUT_SHARE) -> tuple[list[str], list[str]]:
-    """Development = first (1 - share) of sessions by date; holdout = the rest. Both must be
-    non-empty and development needs two sessions, one per 5c half."""
-    cut = int(round(len(dates) * (1 - holdout_share)))
-    dev, hold = dates[:cut], dates[cut:]
+def pinned_split(sessions: list[str], dev_end: str, holdout_end: str) -> tuple[list[str], list[str]]:
+    """Development = sessions <= dev_end; holdout = dev_end < sessions <= holdout_end. Both ends
+    must be sessions of the export; development needs two sessions (one per 5c half), the holdout one."""
+    for name, d in (("dev_end", dev_end), ("holdout_end", holdout_end)):
+        if d not in sessions:
+            raise DataError(f"split {name} {d} is not a session date of the loaded export")
+    dev = [d for d in sessions if d <= dev_end]
+    hold = [d for d in sessions if dev_end < d <= holdout_end]
     if len(dev) < 2 or not hold:
-        raise DataError(f"split of {len(dates)} sessions gives {len(dev)} development and {len(hold)} holdout; "
-                        f"need >= 2 and >= 1")
+        raise DataError(f"split dev_end {dev_end} / holdout_end {holdout_end} gives {len(dev)} development "
+                        f"and {len(hold)} holdout sessions; need >= 2 and >= 1")
     return dev, hold
+
+
+def _iso(v) -> bool:
+    try:
+        return isinstance(v, str) and bool(DATE.match(v)) and date.fromisoformat(v).isoformat() == v
+    except ValueError:
+        return False
+
+
+@dataclass(frozen=True)
+class Calendar:
+    closed: frozenset[str]   # every entries[].date: sessions on these dates are not traded
+    start: str
+    end: str
+    sha256: str
+
+    def check_covers(self, sessions: list[str], what: str) -> None:
+        out = [d for d in sessions if not self.start <= d <= self.end]
+        if out:
+            raise DataError(f"{what}: sessions outside the calendar coverage {self.start}..{self.end}: {out[:5]}")
+
+
+def load_calendar(path: Path, sha256: str) -> Calendar:
+    check_sha256(path, sha256)
+    try:
+        d = json.loads(Path(path).read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        raise DataError(f"{path}: not JSON ({e})") from None
+    if not isinstance(d, dict) or d.get("schema") != CALENDAR_SCHEMA:
+        raise DataError(f"{path}: calendar schema must be {CALENDAR_SCHEMA}")
+    if not (_iso(d.get("coverage_start")) and _iso(d.get("coverage_end")) and d["coverage_start"] <= d["coverage_end"]):
+        raise DataError(f"{path}: coverage_start/coverage_end must be ordered YYYY-MM-DD dates")
+    entries = d.get("entries")
+    if not isinstance(entries, list) or not entries or any(not isinstance(e, dict) or not _iso(e.get("date"))
+                                                           for e in entries):
+        raise DataError(f"{path}: entries must be a non-empty list of objects with a YYYY-MM-DD date")
+    closed = frozenset(e["date"] for e in entries)
+    if any(not d["coverage_start"] <= x <= d["coverage_end"] for x in closed):
+        raise DataError(f"{path}: an entry date lies outside the coverage window")
+    return Calendar(closed, d["coverage_start"], d["coverage_end"], sha256)
 
 
 def _unique_pairs(pairs):
@@ -190,10 +243,6 @@ def load_book(path: Path, sha256: str) -> dict[str, float]:
     if not isinstance(book, dict) or not book:
         raise BookError(f"{path}: book must be a non-empty object; declare an empty book with book: null")
     for k, v in book.items():
-        try:
-            ok = bool(DATE.match(k)) and date.fromisoformat(k).isoformat() == k
-        except ValueError:
-            ok = False
-        if not ok or isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v):
+        if not _iso(k) or isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v):
             raise BookError(f"{path}: bad book entry {k!r}: {v!r}")
     return {k: float(v) for k, v in book.items()}
