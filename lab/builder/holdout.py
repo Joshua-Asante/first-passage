@@ -2,7 +2,8 @@
 
 Refused, before any look, unless the development run finished: ``out/verdict.json`` lists every
 card in run.yaml and each card has its ``out/<card id>.report.json`` with this run_id, a final
-verdict (survivor | killed | unresolved), and the card hash and split that run.yaml gives now.
+verdict (survivor | killed | unresolved), and the card hash, split, calendar sha256 and data
+sha256 that run.yaml gives now.
 The survivors are the cards whose report verdict is ``survivor``. Looks are taken in card-id
 order, each ledgered (``ledger.append_holdout_look``) before its holdout bars are simulated, and
 each writes ``out/<card id>.holdout.json``.
@@ -45,6 +46,10 @@ def survivors(s: dict, cs: list) -> list:
             raise HoldoutError(f"{c.id}: report card hash {rep.get('card_sha256')} != run.yaml card {c.sha256}")
         if rep.get("split") != s["data"][c.instrument]["split"]:
             raise HoldoutError(f"{c.id}: report split {rep.get('split')} != run.yaml split {s['data'][c.instrument]['split']}")
+        pins = {"calendar_sha256": s["calendar"]["sha256"], "data_sha256": s["data"][c.instrument]["sha256"]}
+        for k, want in pins.items():
+            if rep.get(k) != want:
+                raise HoldoutError(f"{c.id}: report {k} {rep.get(k)} != run.yaml pin {want}")
         if rep["verdict"] == "survivor":
             keep.append(c)
     return keep

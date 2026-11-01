@@ -279,3 +279,21 @@ def test_holdout_look_is_taken_once(spec):
     go(path, s, holdout)
     with pytest.raises(ledger.LedgerError, match="already"):
         go(path, s, holdout)
+
+
+@pytest.mark.parametrize("pin", ["calendar", "data"])
+def test_holdout_refuses_a_changed_calendar_or_data_pin(spec, tmp_path, pin):
+    path, s, _ = spec
+    go(path, s)
+    if pin == "calendar":
+        p = tmp_path / "cal2.json"
+        p.write_text(CAL.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+        s["calendar"] = {"path": str(p), "sha256": data.file_sha256(p)}
+    else:
+        src = Path(s["data"]["MCL"]["path"])
+        p = tmp_path / "export2.csv"
+        p.write_bytes(src.read_bytes() + b"\n")
+        s["data"]["MCL"].update(path=str(p), sha256=data.file_sha256(p))
+    with pytest.raises(holdout.HoldoutError, match=f"{pin}_sha256"):
+        go(path, s, holdout)
+    assert looks(s) == []
