@@ -1,6 +1,7 @@
 """One builder run and its holdout looks end to end on a synthetic raw export (I-R1..I-R3, I-C1, I-D3, I-K2, I-L4)."""
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -222,8 +223,11 @@ def test_holdout_looks_survivors_in_card_id_order_on_the_pinned_window(spec):
 def test_holdout_skips_cards_that_did_not_survive(spec):
     path, s, _ = spec
     go(path, s)
-    rep = report(path)
-    (path.parent / "out" / "g-001.report.json").write_text(json.dumps({**rep, "verdict": "killed"}))
+    out = path.parent / "out"
+    body = json.dumps({**report(path), "verdict": "killed"}).encode()
+    (out / "g-001.report.json").write_bytes(body)
+    [v] = json.loads((out / "verdict.json").read_text())
+    (out / "verdict.json").write_text(json.dumps([{**v, "report_sha256": hashlib.sha256(body).hexdigest()}]))
     assert go(path, s, holdout) == 0 and looks(s) == [] and not (path.parent / "out" / "g-001.holdout.json").exists()
 
 
@@ -259,7 +263,7 @@ def test_holdout_refuses_a_card_hash_mismatch(spec):
     path, s, _ = spec
     go(path, s)
     (path.parent / "c.yaml").write_text(CARD.replace('flat_at: "12:30"', 'flat_at: "12:45"'))
-    with pytest.raises(holdout.HoldoutError, match="card hash"):
+    with pytest.raises(holdout.HoldoutError, match="card_sha256"):
         go(path, s, holdout)
     assert looks(s) == []
 
@@ -295,5 +299,46 @@ def test_holdout_refuses_a_changed_calendar_or_data_pin(spec, tmp_path, pin):
         p.write_bytes(src.read_bytes() + b"\n")
         s["data"]["MCL"].update(path=str(p), sha256=data.file_sha256(p))
     with pytest.raises(holdout.HoldoutError, match=f"{pin}_sha256"):
+        go(path, s, holdout)
+    assert looks(s) == []
+
+
+def test_holdout_refuses_changed_costs(spec):
+    path, s, _ = spec
+    s.update(firm="Bulenox_100K", commission_per_side={"MCL": 1.5})
+    go(path, s)
+    s["commission_per_side"] = {"MCL": 0.5}
+    with pytest.raises(holdout.HoldoutError, match="cost_per_trade_usd"):
+        go(path, s, holdout)
+    assert looks(s) == []
+
+
+def test_holdout_refuses_a_changed_engine(spec, monkeypatch):
+    path, s, _ = spec
+    go(path, s)
+    monkeypatch.setattr(holdout.gates, "engine_version", lambda: "0" * 64)
+    with pytest.raises(holdout.HoldoutError, match="engine_sha256"):
+        go(path, s, holdout)
+
+
+def test_an_interrupted_rerun_leaves_no_completion_marker(spec):
+    path, s, _ = spec
+    go(path, s)
+    good = dict(s["data"]["MCL"])
+    s["data"]["MCL"]["sha256"] = "0" * 64  # the rerun aborts after ledgering, before any report
+    with pytest.raises(data.DataError):
+        go(path, s)
+    assert not (path.parent / "out" / "verdict.json").exists()
+    s["data"]["MCL"] = good
+    with pytest.raises(holdout.HoldoutError, match="has not finished"):
+        go(path, s, holdout)
+
+
+def test_holdout_refuses_a_report_edited_after_the_run(spec):
+    path, s, _ = spec
+    go(path, s)
+    p = path.parent / "out" / "g-001.report.json"
+    p.write_text(p.read_text() + " ")
+    with pytest.raises(holdout.HoldoutError, match="stale or edited"):
         go(path, s, holdout)
     assert looks(s) == []

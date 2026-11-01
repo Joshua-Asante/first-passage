@@ -19,11 +19,13 @@ Order: the spec, cards, costs, book and calendar are validated, then every card 
 the ledger before any bar is read, then the data is loaded and checked, the split resolved on
 its session dates, and the book must cover ``min_overlap`` development sessions of every
 instrument before any card is evaluated. Reports land in ``out/<card id>.report.json`` with a
-one-line verdict each in ``out/verdict.json``, written last.
+one-line verdict each, and each report's sha256, in ``out/verdict.json``: deleted before the
+cards are ledgered and written last, so it marks a finished attempt (builder.holdout reads it).
 """
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import json
 import math
 import sys
@@ -136,6 +138,8 @@ def main(argv: list[str]) -> int:
     cost = costs(s, instruments)
     book = None if s["book"] is None else data.load_book(Path(s["book"]["path"]), s["book"]["sha256"])
     cal = data.load_calendar(Path(s["calendar"]["path"]), s["calendar"]["sha256"])
+    out = Path(s["out"])
+    (out / "verdict.json").unlink(missing_ok=True)  # no completion marker survives an interrupted rerun
     ledger.append_cards(Path(s["ledger"]), s["run_id"], cs)  # before any bar is read
     loaded = {}
     for i in instruments:
@@ -144,7 +148,7 @@ def main(argv: list[str]) -> int:
             raise data.BookError(f"book covers {len(set(dev) & set(book))} {i} development sessions; "
                                  f"min_overlap is {s['book']['min_overlap']}")
         loaded[i] = (bars, dev, summary)
-    out = Path(s["out"]); out.mkdir(parents=True, exist_ok=True)
+    out.mkdir(parents=True, exist_ok=True)
     verdicts = []
     for c in cs:
         bars, dev, summary = loaded[c.instrument]
@@ -152,8 +156,10 @@ def main(argv: list[str]) -> int:
                              closed=cal.closed, k_scope=s["k_scope"])
         rep.update(run_id=s["run_id"], roll=s["roll"], firm=s["firm"], data=summary,
                    split=s["data"][c.instrument]["split"], calendar_sha256=cal.sha256)
-        (out / f"{c.id}.report.json").write_text(json.dumps(rep, indent=1), encoding="utf-8")
-        verdicts.append({"card": c.id, "card_sha256": c.sha256, "verdict": rep["verdict"],
+        body = json.dumps(rep, indent=1).encode("utf-8")
+        (out / f"{c.id}.report.json").write_bytes(body)
+        verdicts.append({"card": c.id, "card_sha256": c.sha256, "report_sha256": hashlib.sha256(body).hexdigest(),
+                         "verdict": rep["verdict"],
                          "stopped_at": rep["stopped_at"], "book_s": rep["book"].get("book_s"),
                          "book_s_with_card": rep["book"].get("book_s_with_card")})
     (out / "verdict.json").write_text(json.dumps(verdicts, indent=1), encoding="utf-8")
