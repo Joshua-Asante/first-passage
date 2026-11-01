@@ -70,9 +70,10 @@ The HTML pages embed per-request nonces, so their hashes identify a capture; the
 | B3 | M | Envelope overlay rows verified 2026-10-02; stale after **2026-12-31** under the 90-day rule | `ops/prop_envelope_default.md:81` | Scheduled re-verification |
 | B4 | L | Growth-specific re-read of 10495897 marked owed | `core/firm_rules.py:542-543` | **Dischargeable:** [W-raw] 10495897 (2026-10-15): "Applies to: All Tradeify accounts (Growth, Select, and Lightning). All accounts use End-of-Day (EOD) trailing drawdown", enforced in real time; and 10495915 (2026-10-20) repeats the real-time rule for Growth |
 | B5 | L | Skill eval-economics paragraph ("modest monthly fee") | `SKILL.md:155` | See A1.5 |
-| B6 | L | Skill and study both lack the 2026-10 Tradeify purchase limits (below, D2) | — | Gap, not error |
+| B6 | L | Skill and study both lack the 2026-10 Tradeify purchase limits (§I.2) | — | Gap, not error |
 | B7 | M | `SLIPPAGE_TICKS_PER_SIDE = 1.0` still labelled unmeasured | `lab/discovery/cost_mnq.py:28`, `cost_mgc.py:16`; [Q-COSTGEO-2 :14](../briefs/pre-registration/Q-COSTGEO-2-verdict-preregistration.md) | Measurement owner (§E) |
 | B8 | L | Inactivity: engine counts a rolling window, the venue rule is a weekly bucket. Known and documented | `core/firm_rules.py:201-218` | Known; no action here |
+| B9 | L | Dispatch paths not found: `docs/adr/2026-07-03-hardcore-p2-edge-transfer-gate.md` and `docs/ltm/briefs/Q-AUTO-FIRM-1-attended-automation-survey.md` are absent from the archive at `a75a188` under those paths (sparse `docs/adr` + `docs/ltm/briefs` checkout). The envelope §4 supersedes the survey for venue facts | `git ls-tree` at `a75a188` | None for these notes |
 
 ---
 
@@ -99,14 +100,7 @@ Sweep commands used: `grep -rIn` for those literals over `core ops lab/discovery
 
 | # | Sev | Firm | Fact (verbatim where quoted) | Why it matters |
 |---|---|---|---|---|
-| D1 | **H** | Tradeify | Funded lock table (10495897, 2026-10-15): EOD balance that triggers the lock at 100K is Growth $103,600 / Lightning $104,100 / Select Flex $103,100 / Select Daily $102,600; at 150K $155,100 / $155,350 / $154,600 / $153,600. The lock also triggers "immediately when you request a payout". Floor locks at "$100 above starting balance" | Implies funded DDs at 100K of $3,500 / $4,000 / $3,000 / **$2,500** (Select Daily). No funded rows exist in `firm_rules.py` |
-| D2 | M | Tradeify | 12853921 (2026-10-19): "Maximum 15 evaluations can be purchased within any 30-day period"; "Each evaluation can be reset up to 10 times within a 30-day period"; "You can hold up to 5 funded accounts simultaneously"; a $300,000 Select tier ("limited release", KYC, no resets, 3 lifetime) | Caps account-level breadth and retries; $300K tier absent |
-| D3 | **H** | Tradeify | Select funded payouts (12853921): Flex "Every 5 winning days", caps "Up to 50% of profits ($1,250 / $2,500 / $3,500 / $4,500 caps for accounts bought on or after September 1, 2026…)". Daily: caps "$600 / $1,250 / $1,750 / $2,500", "Daily Loss Limit: Yes ($500 / $1,000 / $1,250 / $1,750)", buffer "$1,100 / $2,100 / $2,600 / $3,600" | The repo has no payout owner (B1). These are the inputs a pass-value or "measure" step needs |
-| D4 | M | Tradeify | Microscalping, funded only (10468318, 2026-10-17): payout requires "Over 50% of your trades are longer than 10 seconds" and "Over 50% of your profit must come from trades held longer than 10 seconds". Failing it blocks payouts, not the account | Constrains short-hold designs; weekly token trades count toward the trade-count half |
-| D5 | **H** | Tradeify | 10468318: "Tradeify is looking for traders that … can be called up to live to eventually be copied by our own firm as well"; "We scan to ensure there are no similar orders on other accounts" | Sourced A-book intent for called-up traders (study §2, inference 1) |
-| D6 | **H** | Tradeify | Home page disclosure, "Trader Performance Statistics (August 2025 – July 2026, calculated as of 9 August 2026)": "(a) 17.2% of evaluation accounts initiated were successfully completed …; (b) 40.3% of individual participants … advanced …, initiated a median of 3 each …; (c) 28.5% of individual participants at the Funded Level received a payout; and (d) 3.0% of individual participants trading in a Funded Account were called up to a Live Funded Account" | The only sourced population figures for "who trades". [INF] 17.2% sits near the study's zero-edge trailing benchmark (13.5% at T/D = 2), consistent with a near-zero-edge population, but the products are pooled, so read it only as context |
-| D7 | M | Tradeify | 10468315 (2026-10-17): micro round trip $1.82 (MNQ/MYM/MES), $2.12 (MGC/MCL); minis ES/NQ/YM $5.76, GC $6.20. "Trading 10 MES contracts costs $18.20 per round trip, while 1 ES contract costs only $5.76" | At ≥10 micros of exposure, the mini costs ~68% less (arithmetic). The repo encodes micro costs only; mini+micro mixing is allowed (12268167) |
-| D8 | M | Tradeify | Tradeify Brokerage LLC d/b/a Slay Markets, "a CFTC-registered introducing broker guaranteed by NinjaTrader Clearing, LLC" (home page) | Fits the 10-30 "NinjaTrader owns the clearing firm" reply |
+| D1–D8 | — | Tradeify | Moved to §I: funded lock table and payouts → §I.3; Elite Live → §I.4; limits, prices, microscalping and costs → §I.2; copy intent, performance statistics and brokerage → §I.5 | One evidence home (Codex review, PR #1022) |
 | D9 | **H** | MFFU | 8444599 (modified 2026-10-30): automated strategies allowed "so long as these automated tools do not aim to exploit the favorable fills offered in the Simulated Environment"; "Exploiting the absence of slippage and utilizing tight brackets to gain from favorable fills are not permitted" | First-party admission that **sim fills are favourable and slippage-free**. A strategy that passes because of that is non-compliant, and it will not survive live. Changes rank of §E-4 |
 | D10 | M | MFFU | Rapid 100K sim-funded [W-x] 13286542: "$3,000 from your equity high-water mark (HWM)", "Intra-day trailing", lock at $100; payouts need a "$3,100" buffer, "$500" minimum, daily, 90/10 split. 50K [W-raw] 13134709: "$2,000 from your equity high-water mark", "Intra-day trailing", "Max Loss Lock at $100" | Funded stage is intraday-trailing on the HWM (harsher than eval). No funded rows in repo |
 | D11 | M | Bulenox | Account types "Fast Track" and "Momentum" (help-centre navigation and pricing page); "Up to five Master-level accounts at once" | Not in repo |
@@ -125,7 +119,7 @@ Score = cost-if-wrong × likelihood-wrong ÷ cost-to-check, each 1–3. Cost-to-
 | Rank | Assumption | C | L | K | Score | First check | Moved since the study? |
 |---|---|---|---|---|---|---|---|
 | 1 | Other firms impose no Tradeify-style native-only or cross-firm exclusivity rule | 3 | 2 | 1 | 6 | Read Bulenox, MFFU, BluSky, FXIFY ToS bot and ownership clauses (MFFU 8444599 allows own automation; BluSky bans mirroring) | Unchanged |
-| 2 | Funded-stage and payout rules are known well enough to value a pass | 3 | 2 | 1 | 6 | Accept D1, D3, D10 into an owner record | **Partly answered** by D1, D3, D10 (web, unaccepted) |
+| 2 | Funded-stage and payout rules are known well enough to value a pass | 3 | 2 | 1 | 6 | Accept §I.3–I.4 and D10 into an owner record | **Partly answered** by §I.3–I.4 and D10 (web, unaccepted) |
 | 3 | The MFFU Rapid row's clock and consistency belong to one plan | 2 | 3 | 1 | 6 | Decide which MFFU page governs (A2.1); ask MFFU if needed | Sharpened: the firm's own pages conflict |
 | 4 | **Sim fills are at least as hard as backtest fills** (1 tick/side) | 3 | 3 | 2 | 4.5 | Attended demo fill study, under operator direction | **Raised:** MFFU states sim fills are favourable and slippage-free (D9). A backtest may be harsher than the eval sim, but such a pass won't carry to live, and exploiting it is barred |
 | 5 | No-deadline venues carry no clock | 2 | 2 | 1 | 4 | Read Bulenox access-window and renewal terms | New (A1.5, D14): Bulenox access is valid for 30 days |
@@ -143,16 +137,7 @@ Score = cost-if-wrong × likelihood-wrong ÷ cost-to-check, each 1–3. Cost-to-
 
 | Fact | Repo | Page |
 |---|---|---|
-| Tradeify eval has no drawdown lock | `core/firm_rules.py:284-286` | [W-raw] 10495897: "Evaluation accounts do not have drawdown locking." |
-| Tradeify EOD-updated, real-time-enforced trail | `core/mc/simulation.py:351-357` | [W-raw] 10495897, 12853921, 10495915 |
-| Tradeify Select eval DD $1,000 / $2,000 / $3,000 / $4,500; caps 10/40/80/120 micro; 40% consistency (50% add-on); no DLL | `core/firm_rules.py:498-501, :335-336` | [W-raw] 12853921 (2026-10-19) |
-| Tradeify flat-by 16:45 / 12:59; auto-close non-fatal | `core/firm_rules.py:253-255` | [W-raw] 10495876 (2026-10-17) |
-| Tradeify weekly activity rule, per account | `core/firm_rules.py:181-200` | [W-raw] 10468318, 12268167 |
-| Tradeify bots: sole owner, exclusive within Tradeify, no HFT, live video | route record 10-30 | [W-raw] 10468318 |
-| Tradeify Tradovate API "only available for LIVE funded accounts" | envelope :42 | [W-raw] 10468222 (2026-10-18) |
-| Tradeify: no M6J (micro FX = M6E, M6A); no US Treasuries | envelope §5; `core/firm_rules.py:270-275` | [W-raw] 10468222 root list |
-| Tradeify micro costs $1.82 RT ($0.91/side), MGC/MCL $2.12 | `core/firm_rules.py:326, :330` | [W-raw] 10468315 |
-| Growth 100K: $3,500 DD, $2,500 soft DLL, 80 micro cap, 1 day, no consistency | `core/firm_rules.py:551-559` | [W-raw] 10495915 |
+| Tradeify (all confirmations) | see the "Repo" column of §I.2 | — |
 | MFFU micro costs $1.90 RT, MGC $2.20, MCL $1.16 | `core/firm_rules.py:387, :390` | [W-raw] 9735811 (2026-08-24) |
 | MFFU 16:10 ET auto-liquidation; holiday breach | `core/firm_rules.py:374-376` | [W-x] 9558251 (2026-08-24) |
 | MFFU HFT ban, trader copy ban, hedging ban on same underlying | envelope :43 | [W-raw] 8444599 |
@@ -167,9 +152,9 @@ The Bulenox PDF's printed second column (2 × the first) is new support for the 
 
 ## G. Corrections applied to the study draft in this pass
 
-- §2 inference 1: the A-book question is now partly sourced (D5, D6, D9). The text says so.
+- §2 inference 1: the A-book question is now partly sourced (§I.5, D9). The text says so.
 - §4.3: "monthly eval fees" replaced; Tradeify evals are a one-time payment with no deadline, and Bulenox access is valid for 30 days (A1.5).
-- §5.2: points here for the re-ranked list.
+- §1.3 and §5.2: replaced by links to §A–B and §E (Codex review, PR #1022).
 
 ## Self-review
 
@@ -182,9 +167,93 @@ The Bulenox PDF's printed second column (2 × the first) is new support for the 
 
 ## H. Tradeify third pass
 
-The Tradeify deep-dive ([`2026-11-01-tradeify-venue-deep-dive-DRAFT.md`](2026-11-01-tradeify-venue-deep-dive-DRAFT.md) §5) adds T1–T10 to this register. The three H-severity items:
-- the agreement's §6.5 "flipping contracts just to register a 'trading day'" against the weekly preservation trade;
-- the account-operation, KYT and remote-access rules against agent-placed trades and VM hosts;
-- cross-platform hedging binding other-firm strategies.
+See §I. Its three H-severity items are T1 (the agreement's §6.5 against the weekly preservation trade), T2 (account-operation, KYT and remote-access rules against agent-placed trades and VM hosts) and T3 (cross-platform hedging binding other-firm strategies). Suggestions live in the [deep-dive §6](2026-11-01-tradeify-venue-deep-dive-DRAFT.md#6-suggestions).
 
-Its §6 lists suggestions.
+---
+
+## I. Tradeify evidence (third pass, 2026-11-01)
+
+The one maintained home for Tradeify venue evidence gathered on 2026-11-01. The [Tradeify deep-dive](2026-11-01-tradeify-venue-deep-dive-DRAFT.md) links here and keeps only implications and suggestions. Nothing below is accepted into an owner record (Rule 17).
+
+### I.1 Sources and labels
+
+All quotes are **[W-raw]**: copied from the raw HTML of public pages fetched 2026-11-01. They are verbatim, but **not accepted into any owner record** (Rule 17).
+
+- **Help centre:** read through Tradeify's Intercom mirror `intercom.help/tradeify/en/articles/<id>`, because `help.tradeify.co` returns 403 to scripted fetches. I listed 71 articles from the six rule collections and read 41. Each article's `dateModified` is given as "(mod. YYYY-MM-DD)".
+- **Agreement:** `tradeify.co/funded-trader-agreement`. The page is titled **"Evaluation Services Agreement"**, says "Last modified: October 2026", and is cited as **ESA §n**.
+- **Home page:** `tradeify.co`.
+
+No account data, Pine, port or research backtest figure appears in this note. Dollar figures are Tradeify's published rule, fee and payout figures.
+
+### I.2 Rule inventory (evaluation, Select and Growth)
+
+| Rule | Text (verbatim, abridged) | Source | Repo |
+|---|---|---|---|
+| Drawdown clock | "The limit updates at end of day but is enforced in real time against your net liquidation value." "Applies to: All Tradeify accounts (Growth, Select, and Lightning)" | 10495897 (2026-10-15) | Matches (`core/mc/simulation.py:351-357`) |
+| Eval lock | "Evaluation accounts do not have drawdown locking." | 10495897 | Matches (`core/firm_rules.py:284-286, :321`) |
+| Select eval table | 100K: "Profit Target: $6,000 · Maximum Drawdown: $3,000 (End of Day) · Daily Loss Limit: None · Consistency Requirement: 40% (50% add-on available) · Maximum Contracts: 8 mini / 80 micro" | 12853921 (2026-10-19) | Matches (`:500`) |
+| 25K eval cap | "1 mini / 10 micro" (12853921, 10495915) **vs** "During evaluation, you have access to the full contract limits (2/20, 4/40, 8/80, or 12/120 …)" (12853966) | conflict | Repo 10 (corrected 2026-07-22, `:223-226`) |
+| 50K target | "Accounts purchased before the new dashboard launch retain their original $2,500 profit target" | 12853921 | Not encoded (100K unaffected) |
+| Consistency | Select eval 40%, "no consistency rule for Select accounts in funded mode"; Growth funded 35%; Lightning 20/25/30% | 10468320 (2026-10-17) | Select matches (`:336`) |
+| Time limit | "There is no time limit to complete a Growth or Select Evaluation" | 12268494 (2026-10-20) | — |
+| Expiry | "your account remains active until you either pass, fail, or the account expires"; "Expired accounts cannot be reinstated" | 12268494 | **Undefined** — no page read states when an account expires |
+| Activity | "at least one trade per week (Monday through Friday)" (help) vs "at least one trade per calendar week" (ESA §6.9); inactive accounts "deleted after an email warning" | 10468318, ESA, 12268494 | Matches the help version (`:181-200`) |
+| Trading day | "at least one trade placed from 6:00 P.M. ET to 5:00 P.M. ET the next day" | 10468225 (2026-10-17) | — |
+| Flat-by | "4:45 PM ET"; holiday "12:59 PM ET"; auto-close "will NOT result in account failure" | 10495876 (2026-10-17) | Matches (`:253-255`) |
+| News | "news trading is allowed on all accounts" | 12268167 | Matches |
+| Hedging | Product-group opposing positions banned "in a single account or … across several of your accounts"; ESA extends to External Accounts | 10495868 (2026-08-19); ESA §6.7 | Partly (§1 item 5) |
+| Bots | Sole owner, exclusive within Tradeify, no HFT, "live video of you enabling the code on your own PC"; "We scan to ensure there are no similar orders on other accounts" | 10468318; ESA §6.6 | Matches the route record 10-30 |
+| Platform route | NinjaTrader and TradingView "connect via Tradovate"; Rithmic accounts get Tradesea, Quantower, Sierra Chart, R\|Trader; "you cannot switch between brokers … without purchasing a new account" | 10468221 (2026-10-17) | Rithmic-platform automation not asked about |
+| API | "The Tradovate API is only available for LIVE funded accounts" | 10468222 (2026-10-18) | Matches |
+| Data feed | "Trading based on an external or delayed data feed is not allowed." | ESA §6.3 | Supports the native-only ruling |
+| Sizing style | "avoiding maximum or larger contract sizes on single trades … maintaining consistent trading sizes, avoiding dollar-cost averaging" (ESA §6.5) **vs** "We do not have any rules against or guidelines around … Dollar Cost Averaging (DCA), flipping, or scaling" (10468318) | conflict | Bears on pyramided and volatility-sized expressions |
+| Expired contracts | Trading an Expired Contract is "a breach … regardless of the Trader's intent"; no trading for a "Non-Market Price" from "stale, frozen, delayed … simulated" data | ESA §6.11 | Roll logic in any native strategy is a compliance item |
+| Simulated conditions | Prohibited: "exploitation of simulated conditions" | 17069653 | Same theme as MFFU's "favorable fills" (D9) |
+| VPS/VPN | "You cannot log in with VPN/VPS. After logging in normally, you may use VPS for trading at your own risk." | 12268494 | Recorded ([follow-up draft :37](2026-10-21-tradeify-native-followup-questions-DRAFT.md)) |
+| Limits | 15 Select evals per 30 days; 10 resets per eval per 30 days; 5 funded per individual **and household** (V2 300K up to 8) | 10468251 (2026-10-20) | Not encoded |
+| Products | No M6J (micro FX = "M6E, M6A"); no US Treasuries in the root list; micro round trip "$1.82" (MNQ/MYM/MES), "$2.12" (MGC/MCL); minis ES/NQ/YM "$5.76" | 10468222 (2026-10-18); 10468315 (2026-10-17) | Matches (`core/firm_rules.py:270-275, :326, :330`) |
+| Prices | Select 100K **$265**, reset **$169**; with 50% add-on $329 / $209; Growth 100K $255 / $169 | 14369021 (2026-10-19) | Ledger row d15 still open |
+
+### I.3 Funded stage: Select Flex vs Select Daily at 100K (12853966, 10495897)
+
+| | Select Flex | Select Daily |
+|---|---|---|
+| EOD drawdown | $3,000 | **$2,500** |
+| Lock trigger (EOD balance) → floor | $103,100 → $100,100 | $102,600 → $100,100 |
+| Daily loss limit | none | $1,250 (soft) |
+| Starting contracts → max | 3/30 → 8/80 (scaling at +$1,500 / +$2,000 / +$3,000 EOD equity) | same scaling |
+| Payout eligibility | "Every 5 winning days", winning day ≥ "$200" at 100K | daily, above a "$2,600" buffer |
+| Payout size | "Up to 50% of your total profits", cap **$3,500** (bought after 2026-09-01) | "up to 2× the profit earned between each payout request", cap **$1,750**; minimum $250 |
+| Split | "90 Trader / 10 Tradeify" | 90 / 10 |
+| Later payouts | "You must have positive net profit during each payout cycle" | same |
+
+### I.4 Elite Live (12969284; ESA §5)
+
+- **Eligibility:** "3 payouts on a single account, or 10 total payouts since the last live transition". This is "not automatic qualification".
+- **On transition:** "All Sim Funded and evaluation accounts are closed"; only accounts with ≥1 payout move.
+- **100K Elite:** start balance $0, EOD drawdown $3,000, "4 mini / 40 micro" until above the drawdown, then 8/80, no DLL, lock at $3,100. "Elite Live: Trade with real capital in live markets, with daily payouts at an 80/20 profit split" (12268494).
+- **Broker:** "all Tradeify Elite Live accounts are issued through and facilitated by NinjaTrader and GFF Brokers" (ESA §5).
+- **Payout before lock:** the floor moves up first, then the payout is deducted, "leaving the trader with only $1,500 of effective drawdown room instead of $2,000" (50K example).
+
+### I.5 Who trades at Tradeify (sourced)
+
+- "This is how a futures prop firm works: you trade the firm's simulated capital and receive real payouts when you meet the payout rules." (12268494)
+- "Tradeify is looking for traders that … can be called up to live to eventually be copied by our own firm as well." (10468318)
+- Trader Performance Statistics, Aug 2025–Jul 2026 (home page): 17.2% of evaluations completed; 40.3% of participants reached funded (median 3 evaluations each); 28.5% of funded participants received a payout; 3.0% of funded participants were called up to live.
+- "Tradeify Brokerage LLC d/b/a Slay Markets is a CFTC-registered introducing broker guaranteed by NinjaTrader Clearing, LLC" (home page). The 10-30 reply says "NinjaTrader owns the clearing firm" (route record).
+- "Simulated Funded Account … your trades mirror what would happen in the live markets, but your profits and losses are not real." (10468257, mod. 2026-10-20). Tradeify claims sim realism; MFFU says its sim gives "favorable fills" (D9). Neither firm publishes its fill model.
+
+### I.6 Tradeify conflicts and gaps T1–T10
+
+| # | Sev | Item | Evidence |
+|---|---|---|---|
+| T1 | **H** | ESA §6.5 "flipping contracts just to register a 'trading day'" vs the weekly preservation round trip and ESA §6.9 | [deep-dive §1](2026-11-01-tradeify-venue-deep-dive-DRAFT.md#1-what-changed-in-the-picture) item 1 |
+| T2 | **H** | Agent-operated orders and remote or VM hosts vs "personally … operate their account", "third party" management, KYT, and "prohibited virtualization, remote-access" | deep-dive §1 item 2 |
+| T3 | **H** | Cross-platform opposing positions bind every other-firm strategy, not just the personal lane | ESA §6.7(c), (i) |
+| T4 | M | 25K eval cap: 1/10 (12853921, 10495915) vs 2/20 (12853966) | §I.2 |
+| T5 | M | ESA §6.5 "avoiding dollar-cost averaging … consistent trading sizes" vs 10468318 "no rules against … DCA, flipping, or scaling" | §I.2 |
+| T6 | M | Activity: "Monday through Friday" (help) vs "calendar week" (ESA §6.9) | §I.2 |
+| T7 | M | "Account expires" appears in FAQs without a stated condition | 12268494, 10468256 |
+| T8 | M | Funded rows (Flex, Daily), scaling, payout mechanics and live terms are absent from `core/firm_rules.py` and every lab harness I know of | §I.3–I.4 |
+| T9 | L | ESA §4.1 still lists "Advanced Challenge"; the stats pool "Growth, Advanced and Select" | ESA; home page |
+| T10 | L | Rithmic-platform (Sierra Chart, Quantower, Tradesea) native automation was never asked about; only NinjaTrader, Tradovate and TradingView were named in the 10-12 reply | 10468221; route record 10-12 |

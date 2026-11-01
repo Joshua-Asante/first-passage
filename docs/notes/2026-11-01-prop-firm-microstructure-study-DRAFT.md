@@ -9,7 +9,7 @@
 - **[R]** repo-held, with file:line. These are venue facts as the repo last recorded them (Rule 17 quotes live at the cited line). They are not re-verified here.
 - **[RV]** repo-held but flagged by the repo itself as owed, provisional, proxied or conflicting: needs re-verification before use.
 - **[INF]** inference or textbook model, not sourced. Never a venue fact.
-- **No web research was done in the first pass.** Every venue fact in §1 comes from the repo. A second pass (2026-11-01) checked public firm pages; its findings, conflicts and the re-ranked assumption list live in the [venue-fact register](2026-11-01-prop-firm-venue-fact-register-DRAFT.md), which supersedes §1.3 and §5.2 where they differ.
+- **No web research was done in the first pass.** Every venue fact in §1 comes from the repo. A second pass (2026-11-01) checked public firm pages; its findings, conflicts and the re-ranked assumption list live in the [venue-fact register](2026-11-01-prop-firm-venue-fact-register-DRAFT.md), which owns the conflict list and the assumption ranking (§1.3 and §5.2 link to it).
 
 Reading limits: every bust figure quoted is from its RESULTS owner ([Rule 20](../operational_rules.md#rule-20--figures-come-from-their-owner)); the closed-form numbers in §4 are model arithmetic on repo venue inputs, labelled [INF], not MC results and not claims about any strategy.
 
@@ -32,7 +32,7 @@ Common to the rows below unless noted: profit target 6% of starting balance; no 
 | Bulenox_25K/50K/100K/150K/250K | 25K…250K | 1,500 / 2,500 / 3,000 / 4,500 / 5,500 [R :488-492] | Option 1 trailing; trails the high "including both realized and unrealized (open) profits" [R envelope :41] → **intraday ratchet and intraday breach** | No (lock is Master-stage, start + $100) [R :59-87 comment] | None (Option 1) [R :135] | None at eval; 40% at payout [R :122-124] | 0 [R :137] | 30/70/120/150/250 [R :488-492]; 250K tier **not on the 10-02 pricing page** [RV envelope :41] | $0.61 (MGC $0.76) [R :140] |
 | Tradeify_Select_25K/50K/100K/150K | 25K…150K | 1,000 / 2,000 / 3,000 / 4,500 [R :498-501] | Fixed-$ trail; floor ratchets on EOD balance; breach "enforced in real time against your net liquidation value" [R envelope :42; `core/mc/simulation.py:351-357`] | **No** — "Evaluation accounts do not have drawdown locking" [R :284-286] | None (Flex) [R :322] | 40%, soft at-pass gate [R :336, :245-247] | 3 (forced by consistency) [R :335] | 10/40/80/120, **account-aggregate** [R :219-233, :498-501] | $0.91 (MGC $1.06) [R :326] |
 | Tradeify_Growth_100K | 100K | 3,500 [R :554] | As Select; Growth-specific re-read of art. 10495897 **owed** [RV :535-543] | No [R :552] | $2,500 **soft** (stops the day, does not fail) [R :520-533, :555] | None [R :558] | 1 [R :556] | 80 [R :557] | $0.91 [R :552] |
-| MFFU_Rapid_50K/100K | 50K/100K | 2,000 / 3,000 [R :563-564] | EOD trailing MLL in eval; funded switches to intraday + $100 lock [R :339-341] | No [R :379] | None [R :380] | 50% soft [R :385] — **conflicts with envelope**, see §1.3 C1 | 2 [R :382] | 50/80; over-cap "can result in a BREACH" [R :358-364] | $0.95 (MGC $1.10) [R :387] |
+| MFFU_Rapid_50K/100K | 50K/100K | 2,000 / 3,000 [R :563-564] | EOD trailing MLL in eval; funded switches to intraday + $100 lock [R :339-341] | No [R :379] | None [R :380] | 50% soft [R :385] — **conflicts with envelope**, see register A2.1 | 2 [R :382] | 50/80; over-cap "can result in a BREACH" [R :358-364] | $0.95 (MGC $1.10) [R :387] |
 | BluSky_Premium_50K/100K | 50K/100K | 2,000 / 3,000 [R :569-570] | EOD trail, floor ratchets on EOD peak; breach if balance hits floor "at any point" [R envelope :44] | Not recorded either way [gap] | None in primary article [R :467] | 34% soft (re-scales target) [R :473] | 0 [R :469] | 50/100 [R :569-570] | $0.95 **NT-schedule proxy, not venue-published** [RV :476, :409-414] |
 | FXIFY_Futures_Flex_150K | 150K | 4,500 [R :588] | Fixed-$ EOD trail [R :587] | **Yes, at the starting balance** (`dd_lock_offset_usd: 0.0`) [RV :589; provisional :573-582] | $3,000 soft, read-only [R :591] | 50% soft [R :594] | 2 (derived) [R :593] | 100 [R :596] | **Unknown** [RV :598] |
 
@@ -41,27 +41,14 @@ Common to the rows below unless noted: profit target 6% of starting balance; no 
 | Firm | Flat-by (ET) | News | Inactivity | Platforms and automation | Eval → funded differences; payouts |
 |---|---|---|---|---|---|
 | Bulenox | 16:59 (15:59 CT), "All positions must be closed by 3:59 PM (CT)" [R envelope :41] | "News trading allowed" [R envelope :41] | ≥1 trade per 5 trading days [R :124-132, :139] | Algos via Rithmic third-party API, "$100 monthly fee" [R envelope :41] | Master: no reset; floor locks at start + $100; 40% payout consistency, cumulative [R :59-87, envelope :41]. Payout split and caps: **not in repo** |
-| Tradeify | 16:45 regular, 12:59 holiday-short; auto-flatten non-fatal [R :253-255, envelope :42] | "Tier 1 News Trading: You're allowed" (Select eval) [R envelope :42] | ≥1 trade per Mon–Fri week; inactive accounts "deleted after an email warning", not reactivatable [R :181-200] | Eval and sim-funded: strategy logic must be native to NinjaTrader, Tradovate or TradingView-via-Tradovate; no bridges or direct API; API only on live funded ("No exceptions") [R route record 10-12]; strategy owned exclusively; **a strategy run at Tradeify may not run at another prop firm** [R route record 10-30]. Hedging across a Product Group banned, in one account or across accounts [R :256-266; envelope §4a] | Lock exists only in sim-funded (start + $100) [R :284-286]; consistency removed in funded [R :245-247]; funded caps scale from a reduced base [R :220-221]. Payout rules: owner pointer is **dangling** (§1.3 C5) |
+| Tradeify | 16:45 regular, 12:59 holiday-short; auto-flatten non-fatal [R :253-255, envelope :42] | "Tier 1 News Trading: You're allowed" (Select eval) [R envelope :42] | ≥1 trade per Mon–Fri week; inactive accounts "deleted after an email warning", not reactivatable [R :181-200] | Eval and sim-funded: strategy logic must be native to NinjaTrader, Tradovate or TradingView-via-Tradovate; no bridges or direct API; API only on live funded ("No exceptions") [R route record 10-12]; strategy owned exclusively; **a strategy run at Tradeify may not run at another prop firm** [R route record 10-30]. Hedging across a Product Group banned, in one account or across accounts [R :256-266; envelope §4a] | Lock exists only in sim-funded (start + $100) [R :284-286]; consistency removed in funded [R :245-247]; funded caps scale from a reduced base [R :220-221]. Payout rules: owner pointer is **dangling** (register B1) |
 | MFFU | 16:10 auto-liquidation; holiday half-days no auto-liq and "will result in breaching" [R envelope :43] | T1 permitted on all evaluations; prohibited on Rapid and Pro sim-funded [R envelope :43] | ≥1 trade/week [R :384] | Own-settings automation OK; HFT banned; trader-to-trader copying banned [R envelope :43] | Funded: intraday trail + $100 lock [R :340-341]; SI/HG/PL/NG/QG restricted; metals micros capped [R envelope :43]. Payouts: not in repo |
 | BluSky | ~16:45 derived; "We recommend closing all trades before 4:45PM EST" [R envelope :44] | "at your own risk"; does not fail the account [R envelope :44] | "inactive for 30 consecutive days may be closed at our discretion" → encoded 22 idle business days [R :431-471] | "Semi-automated and full automated" welcomed; conduct policy bans account mirroring [R envelope :44] | Funded pricing "set by brokerage" [R :406-408]. Payouts: not in repo |
 | FXIFY Futures | not encoded [gap] | open conflict, unencoded [RV :578-579] | 14 calendar days + 7 grace, unencoded [R :597] | not encoded here; see the [rule sheet](2026-10-17-fxify-futures-flex-150k-evaluation-rule-sheet.md) | Funded lock unverified [R rule sheet :36] |
 
-### 1.3 Conflicts, gaps and stale entries found
+### 1.3 Conflicts, gaps and stale entries
 
-| # | Finding | Evidence | Direction if wrong |
-|---|---|---|---|
-| C1 | **MFFU Rapid row mixes two plans.** The row encodes an EOD MLL with 50% consistency. The envelope's 10-02 re-read says "30% on our Rapid EOD plans and 50% for Rapid Intraday", and the 100K source article 13286542 is the Intraday-Drawdown Rapid. | `core/firm_rules.py:339-341, :385` vs envelope :43 | Either the clock (EOD vs intraday) or the consistency (30 vs 50) is wrong for any one plan |
-| C2 | **Bulenox Option 1 ratchets on the intraday high; the engine ratchets on the EOD close and as %-of-peak.** `intraday_low` fixes the breach test only; the peak update is `if equity > peak` on the close. The F2 %-of-peak caveat is known; an intraday-high ratchet gap was **not found** in the closure, preflight or R1 RESULTS I searched (not proof of absence, M-33). | envelope :41; `core/mc/simulation.py:533, :561-562`; `core/mc/preflight.py:30-34, :151-152` | Optimistic: every Bulenox bust figure, honest-clock included, is low on this axis |
-| C3 | BluSky cost proxy 0.95 vs the 10-02 published NT-rail table ($0.94 free / $0.84 monthly / $0.64 lifetime; MGC $1.29/$1.19/$0.99) and $0.50 flat on Rithmic-class eval rails. Flagged, not edited. | `core/firm_rules.py:476`; envelope :44 | Proxy slightly pessimistic on the free plan |
-| C4 | Envelope Tradeify DD cell opens "Trailing-locking (Select, fixed-$ + $100 lock)" before saying eval has no lock. | envelope :42 | Misreads the eval as locked (the 07-22 defect, M-24) |
-| C5 | `firm_rules.py` names `docs/notes/rail_build/TRADEIFY_AUTOMATION_PAYOUT_COMPLIANCE.md` as the owner of record for inactivity enforcement; the file is not in the tree, and no `lab/ARCHIVED.json` entry by that name was found. No repo surface owns **payout rules** for any firm. | `core/firm_rules.py:191-192` | Funded-stage economics unmodeled |
-| C6 | Bulenox comment sources cite `/help/qualification-account/` and `/help/master-account/`, which 404 since the 10-02 restructure; the Rates PDF moved and its hash drifted (values unchanged). | `core/firm_rules.py:53-56, :122`; envelope :41 | Provenance only |
-| C7 | Inactivity: venue is a weekly bucket, engine counts rolling idle business days (over-fires on a complete calendar, under-fires on a sparse one). Known and documented. | `core/firm_rules.py:201-218`; [`load_bearing_numbers.md` §2](../load_bearing_numbers.md) | Known both ways |
-| C8 | E6 default still names the TV→listener→CrossTrade→Tradovate chain. CrossTrade is cancelled and the rail described as retired (ledger 10-31), Tradeify bars bridges for eval, while AGENTS.md says c1 is "warm and **disarmed**". Posture wording disagrees across surfaces. | envelope :21, amendment 08-06; [`SUBSCRIPTION_LEDGER.md:21, :42`](../pursuits/SUBSCRIPTION_LEDGER.md); AGENTS.md §Live-execution posture | Stale default |
-| C9 | Growth's intraday-breach reading rests on a Select-page read; Growth-specific re-read owed. | `core/firm_rules.py:535-543` | Probably none (same article) |
-| C10 | FXIFY row provisional: commissions unknown, news conflict, FAQ capture not byte-verified. | `core/firm_rules.py:573-598` | Unknown |
-| G1 | Overlay rows were verified 2026-10-02; the 90-day rule makes them stale after **2026-12-31**. | envelope :81 | Due date |
-| G2 | Dispatch paths not found: `docs/adr/2026-07-03-hardcore-p2-edge-transfer-gate.md` and `docs/ltm/briefs/Q-AUTO-FIRM-1-attended-automation-survey.md` are absent from the archive at `a75a188` under those paths (sparse `docs/adr` + `docs/ltm/briefs` checkout). The envelope §4 supersedes the survey for venue facts. | `git ls-tree` at `a75a188` | None for this note |
+Maintained in the [venue-fact register](2026-11-01-prop-firm-venue-fact-register-DRAFT.md) §A (conflicts) and §B (stale facts and pointers). The first-pass list is in git history.
 
 ---
 
@@ -75,9 +62,9 @@ Common to the rows below unless noted: profit target 6% of starting balance; no 
 
 ### 2.2 Inferences (Harris framing) [INF]
 
-1. **In eval and sim-funded, no CME participant takes the other side.** Fills come from the platform simulator against the CQG feed. The economic counterparty is the firm: the trader pays a fee for an option whose payoff is a future payout, and the firm's P&L is fees minus payouts (plus resets and add-ons). Whether a firm copies successful traders' flow (A-book) is not in the repo. The second pass found first-party text: Tradeify wants traders who "can be called up to live to eventually be copied by our own firm", and reports that 3.0% of funded participants were called up to live (Aug 2025–Jul 2026); MFFU bars tools that "exploit the favorable fills offered in the Simulated Environment" (register D5, D6, D9; web, not accepted into an owner record). So: simulator until a small called-up minority, with copying of that minority.
+1. **In eval and sim-funded, no CME participant takes the other side.** Fills come from the platform simulator against the CQG feed. The economic counterparty is the firm: the trader pays a fee for an option whose payoff is a future payout, and the firm's P&L is fees minus payouts (plus resets and add-ons). Whether a firm copies successful traders' flow (A-book) is not in the repo. The second pass found first-party text: Tradeify wants traders who "can be called up to live to eventually be copied by our own firm", and reports that 3.0% of funded participants were called up to live (Aug 2025–Jul 2026); MFFU bars tools that "exploit the favorable fills offered in the Simulated Environment" (register §I.5 and D9; web, not accepted into an owner record). So: simulator until a small called-up minority, with copying of that minority.
 2. **The rulebook is the firm's adverse-selection defence.** In Harris's terms the firm is a dealer facing a mix of uninformed traders (most fee payers) and informed or option-exploiting traders. Each rule targets a known exploit of a free option: the trailing drawdown caps the option's payoff relative to peak; consistency rules block one lucky day; hedging bans across accounts block the "long in one account, short in another, one always passes" construction; cross-firm exclusivity and copy bans stop one edge being sold to many firms; HFT bans and source review screen out traders who exploit the simulator's fill model rather than the market. A strategy that looks like any of these will be treated as one.
-3. **Simulator fills are the grading surface.** The eval is scored on the simulator's fill model, not CME queue position. A thin edge can pass or fail on how the simulator fills stops and limits and how it applies the auto-flatten ("non-fatal (slippage only)", [R envelope :42]). The repo holds **no measurement** of any firm's simulator fill model (§5 rank D).
+3. **Simulator fills are the grading surface.** The eval is scored on the simulator's fill model, not CME queue position. A thin edge can pass or fail on how the simulator fills stops and limits and how it applies the auto-flatten ("non-fatal (slippage only)", [R envelope :42]). The repo holds **no measurement** of any firm's simulator fill model (register §E rank 4).
 4. **At the live funded stage, CME counterparties apply.** Standard microstructure says micro equity-index and gold futures flow meets electronic market makers and other short-horizon liquidity providers at the touch, with larger directional participants mostly in the full-size contracts that micros arbitrage against. None of this is sourced in the repo; no CME participant-composition data was read.
 
 ---
@@ -150,11 +137,11 @@ x rises as size falls (σ shrinks faster than μ), so with no clock, smaller is 
 | 1.83 (best in-house validated edge, Aegis, M-19) | $231 | ~230 (~11 months) |
 | 2.00 | $252 | ~190 (~9 months) |
 
-These are model dollars, not strategy figures. Every firm in scope removes the explicit deadline (the M-18 rule is retired because no tier carries one, [M-18](../methodology/lessons/methodology_lessons.md)), but a clock comes back through Bulenox's 30-day access window on a one-time fee (Tradeify evals are a one-time payment with "no deadline"; register A1.5, D14), weekly activity rules, retry and purchase limits (register D2), the program's own dates (four-firm §4, 2026-11-08) and opportunity cost. So the pass rate achievable in calendar-relevant time is set by **edge × √(independent bets per day)**, not by sizing. That is M-18's finding restated for no-deadline venues: more independent setups per day beat a fatter single edge.
+These are model dollars, not strategy figures. Every firm in scope removes the explicit deadline (the M-18 rule is retired because no tier carries one, [M-18](../methodology/lessons/methodology_lessons.md)), but a clock comes back through Bulenox's 30-day access window on a one-time fee (Tradeify evals are a one-time payment with "no deadline"; register A1.5, D14), weekly activity rules, retry and purchase limits (register §I.2), the program's own dates (four-firm §4, 2026-11-08) and opportunity cost. So the pass rate achievable in calendar-relevant time is set by **edge × √(independent bets per day)**, not by sizing. That is M-18's finding restated for no-deadline venues: more independent setups per day beat a fatter single edge.
 
 ### 4.4 Intraday vs EOD measurement (repo figures)
 
-The floor ratchets on EOD balance, but the breach is tested intraday at Tradeify, BluSky ("at any point") and Bulenox Option 1 (and Bulenox ratchets intraday too, C2). Same books, same seeds, EOD clock vs intraday-honest clock:
+The floor ratchets on EOD balance, but the breach is tested intraday at Tradeify, BluSky ("at any point") and Bulenox Option 1 (and Bulenox ratchets intraday too, register A1.1). Same books, same seeds, EOD clock vs intraday-honest clock:
 
 | Book · tier · size | EOD bust | Honest-clock bust | Owner |
 |---|---|---|---|
@@ -162,6 +149,8 @@ The floor ratchets on EOD balance, but the breach is tested intraday at Tradeify
 | Live candidate book · Bulenox_100K · 1.00× | 3.51% | **26.77%** | [R1 7-tier RESULTS :218](../../lab/analysis/c1/firm_model_repair_r1_7tier_2026-08-23/RESULTS.md) |
 | Live candidate book · BluSky_Premium_100K · 1.00× | 4.44% | **32.26%** | R1 RESULTS :12 |
 | Live candidate book · Bulenox_100K · 0.50× | 0.08% | **0.59%** | R1 RESULTS :219 |
+
+All four figures assume the inactivity barrier is **off** ([`load_bearing_numbers.md` §2](../load_bearing_numbers.md#2-standing-rule--every-published-figure-assumes-the-inactivity-barrier-is-off)): they exclude inactivity failures and depend on the weekly-trade mitigation.
 
 Three readings:
 1. **The effective risk budget is D minus the worst intraday excursion, not D.** At 0.50× the W1 run's deepest bar excursion was about 43% of the $3,000 trail (RESULTS_INTRADAY_W1 :19); at 1.00× it roughly doubles and eats most of the rope.
@@ -171,7 +160,7 @@ Three readings:
 ### 4.5 Locking
 
 - **Eval without a lock (Tradeify, MFFU, presumably BluSky):** the floor trails all the way to the target. Modelling a funded-style $100 lock in the eval was optimistic: at 100K the lock engaged at EOD $103,100 against a $106,000 target, leaving the modelled floor up to $2,900 below the real one; corrected EOD bust rose 2.65% → 4.74% (Tradeify) and 2.64% → 4.25% (MFFU) (`firm_rules.py:287-299`; [ADR 07-22 §2](../adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#2--decision)).
-- **Eval with a lock at the starting balance (FXIFY Flex, provisional):** once EOD balance reaches $154,500 the floor freezes at $150,000 [RV `firm_rules.py:589`]. Arithmetic: the last $4,500 to the $159,000 target is run against a static floor $9,000 away, so the second half of the eval is close to the static column of §4.2. Of the tiers in scope it is the only eval whose geometry improves with progress.
+- **Eval with a lock at the starting balance (FXIFY Flex, provisional):** once EOD balance reaches $154,500 the floor freezes at $150,000 [RV `firm_rules.py:589`]. Arithmetic at the lock point: balance $154,500, floor $150,000, target $159,000, so the remaining stage is $4,500 up against $4,500 of static downside (T/D = 1, the §4.2 static column's 50% zero-edge row). Before the lock, the same $4,500 trail applies to a $9,000 target (T/D = 2). Of the tiers in scope it is the only eval whose geometry improves with progress.
 - **Funded (Tradeify, MFFU, Bulenox Master):** lock at start + $100; after the lock, the account is a static-floor account (§4.2 static column) whose cushion is whatever profit sits above start + $100.
 
 ### 4.6 Why M-21's risk-breadth point follows
@@ -184,37 +173,20 @@ A dollar barrier feels the book's dollar variance: in §4.3, x ∝ μ/σ². Addi
 
 ### 5.1 What most constrains what can pass (ranked by how much it narrows the strategy space)
 
-1. **Route and ownership rules.** Tradeify eval logic must be native (NinjaScript, Tradovate, TV-via-Tradovate); a Tradeify strategy may not run at another prop firm [R route record 10-12, 10-30]. So the multi-firm program needs **distinct strategies per firm**, and each needs its own search, so K and the DSR floor (M-19) rise with each firm added.
+1. **Route and ownership rules.** Tradeify eval logic must be native (NinjaScript, Tradovate, TV-via-Tradovate); a Tradeify strategy may not run at another prop firm [R route record 10-12, 10-30]. So the Tradeify strategy must be separate from anything run at another prop firm, and that separate strategy needs its own search (K and the DSR floor, M-19). Whether the other firms may share a strategy among themselves depends on their own terms, which are unverified (register §E rank 1).
 2. **Intraday breach against a trailing dollar floor.** Only strategies with small intraday adverse excursion relative to D survive (§4.4). Wide-stop, hold-and-hope and pyramided expressions are structurally disadvantaged.
 3. **Edge × frequency.** A thin single setup cannot pass in calendar-relevant time (§4.3). Favour many independent, short-hold bets per day with low variance (information-ratio exits, M-18).
 4. **Forced intraday flatten and costs.** Intraday-only holds; ~5.6 ticks RT on MNQ/MYM; stop entries pay extra slip (M-16). Mean-reversion or limit-entry designs fit the cost structure better than breakout stop entries, other things equal [INF].
 5. **Account-aggregate caps and hedging bans.** One cap shared across legs; no opposite-signed legs within a product group, in any account under the same control (envelope §4a). Same-group legs must be sign-constrained, which removes the natural hedge M-21 would otherwise reward.
 6. **Activity rules.** Weekly at Tradeify, MFFU; 5-trading-day at Bulenox; strategies that go quiet need the token trade (load-bearing, `load_bearing_numbers.md` §2).
 
-### 5.2 Unverified assumptions, ranked by cost-if-wrong × likelihood ÷ cost-to-check
+### 5.2 Unverified assumptions, ranked
 
-> **Superseded by the [register §E](2026-11-01-prop-firm-venue-fact-register-DRAFT.md#e-unverified-assumptions-ranked)** after the 2026-11-01 web pass (sim-fill assumption raised; Bulenox Option 1 gap confirmed on the venue page; Growth item resolved). Kept below as the first-pass ranking.
-
-Scale 1–3 each (cost-to-check: 1 = read a page or a file; 2 = a re-run, an engine change, or an operator- or firm-side question; 3 = money or live trading).
-
-| Rank | Assumption | Cost if wrong | Likelihood wrong | Cost to check | Score | First check |
-|---|---|---|---|---|---|---|
-| 1 | **Payout and funded-stage rules** are understood well enough to value a pass (split, caps, buffers, minimum days, lock timing). No repo owner (C5). | 3 | 2 | 1 | 6 | Read each firm's payout pages; record under Rule 17 |
-| 2 | **Other firms impose no Tradeify-style native-only or exclusivity rule.** Only Tradeify has answered. | 3 | 2 | 1 | 6 | Read Bulenox/MFFU/BluSky/FXIFY ToS for bots, ownership and cross-firm clauses |
-| 3 | **MFFU Rapid row** clock and consistency belong to one plan (C1). | 2 | 3 | 1 | 6 | Re-read 11994562 and 13286542; pick the plan |
-| 4 | **Bulenox Option 1 modelled faithfully** (C2: intraday-high ratchet and fixed-$ vs %-of-peak). | 2 | 3 | 1 | 6 | Re-read the qualification page; then size the gap (engine change, ADR) |
-| 5 | **Tradeify eval carrying cost** is small enough not to shorten the effective clock (§4.3). | 2 | 2 | 1 | 4 | Operator answer for ledger row d15 |
-| 6 | **Simulator fills ≈ backtest fills** (1 tick/side, stop vs limit behaviour, auto-flatten slippage). Unmeasured. | 3 | 2 | 2 | 3 | A sim-account fill study on a demo, attended, with operator direction |
-| 7 | **1 tick/side live slippage and negligible impact** at cap sizes on CME micros. Unmeasured. | 2 | 2 | 2 | 2 | Run the MNQ flow-depth PREREG |
-| 8 | **BluSky has no eval lock and its NT-rail cost is ~0.95** (C3). | 1 | 2 | 1 | 2 | Re-read BluSky drawdown and commission pages |
-| 9 | **FXIFY Flex lock-at-start and fees** (C10). | 1 | 2 | 1 | 2 | Byte-verified capture; fee page |
-| 10 | **Growth breach is intraday like Select** (C9). | 1 | 1 | 1 | 1 | Re-read 10495897 from a Growth context |
-
-Ties at 6 are ordered by cost-if-wrong, then by relevance to the Tradeify-first ruling (route record 10-30).
+Maintained in the [register §E](2026-11-01-prop-firm-venue-fact-register-DRAFT.md#e-unverified-assumptions-ranked) (cost-if-wrong × likelihood ÷ cost-to-check). The first-pass ranking is in git history.
 
 ### 5.3 What this does not decide
 
-No row edit, no re-MC, no strategy or venue choice. Rows 1–4 and 8–10 are page reads an agent can do under Rule 17 when directed; rows 5–7 need Joshua.
+No row edit, no re-MC, no strategy or venue choice.
 
 ---
 
@@ -224,5 +196,5 @@ Checked after drafting:
 - Every [R] citation was opened this session at the cited file; line ranges are to the `main` checkout at `2bc54b2`.
 - No account data, Pine, port, `effective_inputs.json` or research backtest dollar figure is quoted. §4.4 and §4.6 use bust percentages and ratios; §4.3's dollar column is labelled hypothetical model arithmetic on the venue's $3,000/$6,000 rule figures.
 - No new bust figure is asserted for any strategy; §4.2–4.3 are labelled textbook models.
-- Corrected in review: the G1 envelope line (49 → 81). C2 originally read as "unrecorded"; narrowed to "not found in the surfaces searched" (M-33). The MFFU conflict (C1) was rechecked against both lines.
+- Corrected in review: the Bulenox ratchet gap (now register A1.1) was narrowed from "unrecorded" to "not found in the surfaces searched" (M-33). Codex review on PR #1022 (2026-11-01): FXIFY lock-point cushion corrected (§4.5); inactivity-off qualifier added (§4.4); distinct-strategy conclusion narrowed to Tradeify (§5.1); §1.3 and §5.2 replaced by register links.
 - Residual risk: the venue facts are repo-recorded as of 2026-10-02 at the latest; firms change pages often, and no page was re-read here.
