@@ -115,6 +115,11 @@ def test_inputs_fail_closed():
         venue.evaluate({**book(), "2024-01-06": 1.0})
     with pytest.raises(venue.VenueError, match="empty"):
         venue.evaluate({})
+    for bad in (float("nan"), float("inf"), True):
+        with pytest.raises(venue.VenueError, match="non-finite points"):
+            venue.evaluate(book(), cand([("2024-01-03", -3.0, "MCL"), ("2024-01-03", bad, "MCL")]))
+        with pytest.raises(venue.VenueError, match="non-finite amounts"):
+            venue.evaluate({**book(), "2024-01-03": bad})
 
 
 @pytest.mark.parametrize("bust, ok", [(0.0499, True), (0.05, True), (500 / 10_000, True), (0.0501, False),

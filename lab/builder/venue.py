@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -89,12 +90,23 @@ def window(book: dict[str, float], c: Candidate | None) -> tuple[str, str]:
     return lo, hi
 
 
+def _finite(v) -> bool:
+    return not isinstance(v, bool) and isinstance(v, (int, float)) and math.isfinite(v)
+
+
 def _check(c: Candidate | None, book: dict[str, float]) -> None:
+    """Inputs fail closed: a non-finite amount would otherwise become NaN and be zero-filled."""
+    bad_amounts = sorted(d for d, v in book.items() if not _finite(v))
+    if bad_amounts:
+        raise VenueError(f"book has non-finite amounts on: {bad_amounts[:5]}")
     weekend = sorted(d for d in book if pd.Timestamp(d).weekday() > 4)
     if weekend:
         raise VenueError(f"book has weekend dates: {weekend[:5]}")
     if c is None:
         return
+    bad_points = sorted({t.exit_date for t in c.trades if not _finite(t.points)})
+    if bad_points:
+        raise VenueError(f"candidate has non-finite points on: {bad_points[:5]}")
     lo, hi = c.window
     if not (data.DATE.match(lo) and data.DATE.match(hi)) or lo > hi:
         raise VenueError(f"candidate window must be two ordered YYYY-MM-DD dates: {c.window}")
