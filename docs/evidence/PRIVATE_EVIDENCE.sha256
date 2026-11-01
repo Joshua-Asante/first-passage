@@ -382,3 +382,19 @@ dd6d16a453e6610d0ad8474b9341d17ed9adb8f05ff964493aaa0fa5bc875f2d  local_artifact
 c302a206c4cb988d2cf00785945577db80cfb5332189c66df8e2ca124616ed42  local_artifacts/book-repair-2026-10/orb-edition/ORB-EDITION-HORIZON-SPEC-DRAFT-v8.md
 22881c7f376763e5bd9218893dab778bc4f727e1a5bac02030e3c88b06e85a42  local_artifacts/book-repair-2026-10/orb-edition/ORB-EDITION-HORIZON-FREEZE-v3.json
 2324fbc61979722cd5286146b5b8de0bf1b0b9596e9ec08c961f4c11075cc869  local_artifacts/book-repair-2026-10/orb-edition/ORB-EDITION-C2A-REFERENCE-20261031.md
+# 2026-11-01 - builder run R1 registration
+# (docs/briefs/pre-registration/2026-11-01-builder-r1-mcl-orb-registration.md).
+f82abc1c539a7321adf457098e7380c93a460df4ad2121245d8c14748cf56e8a  local_artifacts/strategy-builder-2026-10/prereg-r1/PREREG-BUILDER-R1-DRAFT-v3.md
+07436ed9b33a7f55e62bc8b53ffb85e0e73ed24bffcd3c20f7338699787a3c7f  local_artifacts/strategy-builder-2026-10/prereg-r1/PREREG-BUILDER-R1-REVIEW-LOG-v1.md
+20eb461979bbd86926275f24f9be53c748615aa4887902e17d321b461b1a939a  local_artifacts/strategy-builder-2026-10/prereg-r1/PREREG-BUILDER-R1-FREEZE-v1.json
+8f41090d6153c080531f0d3cc35a04f36c6209b9fb322c79980c31e362025527  local_artifacts/strategy-builder-2026-10/prereg-r1/run-r1.yaml
+f4171b0b780f2c0e529ab12bc45dfab19edff894dd413d916fa2e3c87880879c  local_artifacts/strategy-builder-2026-10/prereg-r1/book-r1-pairO0-aegis-h1.json
+70e912739f91e0ff1509e6af5e8ca3bfbd29ae15fbf7955f650e47d3b79c4fca  local_artifacts/strategy-builder-2026-10/prereg-r1/make_book.py
+755fb303e1616705d9c406e839e9b1534608a7ee6e86027069b550057769e85a  local_artifacts/strategy-builder-2026-10/prereg-r1/cards/mcl-orb-001.yaml
+0d1e5ea8be2a924cd65d77971c51bee46885f26e76bddb6766716603f2b55f61  local_artifacts/strategy-builder-2026-10/prereg-r1/cards/mcl-orb-002.yaml
+28ed5f3f86914b87b79093d2e11a684b4e34cd24b706ed2bd56cf72c0286f7ba  local_artifacts/strategy-builder-2026-10/prereg-r1/cards/mcl-orb-003.yaml
+914f0ab5c2515349723158f7f7fdaff0abe3eff5da486312eebd650636b74285  local_artifacts/strategy-builder-2026-10/prereg-r1/cards/mcl-orb-004.yaml
+bab6342ce528f3faeca58a47f1a4124a8c9b2d9db1e1d1128061e29364e4940b  local_artifacts/strategy-builder-2026-10/prereg-r1/cards/mcl-orb-005.yaml
+a3b830cfd71db9c988188f80a4f090231be434cbc59ca5008f085ab03d229b36  local_artifacts/strategy-builder-2026-10/prereg-r1/cards/mcl-orb-006.yaml
+e4e0a7be7b58e94b7bf601d0006a8d31c1c997575be937c27ab3f24f3e25f1a2  local_artifacts/strategy-builder-2026-10/prereg-r1/cards/mcl-orb-007.yaml
+65dacca0de40cfad2412be16a6c1effe731fbbb01c0fcd3f250c80b5779cc4b3  local_artifacts/strategy-builder-2026-10/prereg-r1/cards/mcl-orb-008.yaml
