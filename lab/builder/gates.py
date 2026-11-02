@@ -5,6 +5,10 @@ records its value, threshold and pass/fail in the report, so a verdict traces to
 THRESHOLDS are the spec's proposed defaults; they change only by PR with Joshua's approval, and
 the pre-registration freezes them before any card runs. The book's per-session Sharpe with the
 candidate added is reported for every card, as a description, not a gate.
+
+A card with an unresolved trade (an open position on a day with no bar at or after flat_at) in
+its evaluated sessions, or a 5d neighbour with one, gets verdict ``unresolved``: never a
+survivor, never killed, reported with the count and dates.
 """
 from __future__ import annotations
 
@@ -18,6 +22,9 @@ import numpy as np
 from builder import compile as C, data, ledger
 from builder.cards import Card
 from builder.instruments import INSTRUMENTS
+
+K_SCOPES = ("instrument", "ledger")
+PLACEBO_LABEL = "5e placebo_rank (descriptive; timing shuffle with realised side and hold)"
 
 THRESHOLDS = {
     "5a_min_trades": 200,
@@ -35,6 +42,23 @@ THRESHOLDS = {
 
 class GateError(RuntimeError):
     pass
+
+
+class Unresolved(GateError):
+    def __init__(self, source: str, trades: list):
+        self.source, self.dates, self.count = source, sorted({t.date for t in trades}), len(trades)
+        super().__init__(f"{source}: {self.count} unresolved trade(s) on {self.dates[:5]}")
+
+    def report(self) -> dict:
+        return {"source": self.source, "count": self.count, "dates": self.dates}
+
+
+def resolved(trades: list, source: str) -> list:
+    """The trades, or Unresolved when any has no causal exit price."""
+    bad = [t for t in trades if t.unresolved]
+    if bad:
+        raise Unresolved(source, bad)
+    return trades
 
 
 @dataclass(frozen=True)
@@ -134,24 +158,30 @@ def _gate(gates: list, name: str, value, threshold, ok: bool) -> bool:
 
 
 def evaluate(card: Card, bars, dev: list[str], ledger_path: Path, costs: Costs, data_sha256: str,
-             book: dict[str, float] | None = None) -> dict:
+             book: dict[str, float] | None = None, *, closed: frozenset[str], k_scope: str) -> dict:
+    """``closed`` is the frozen calendar's dates; ``k_scope`` picks K for 5f (see ledger.k)."""
     if not ledger.contains(ledger_path, card.sha256):
         raise GateError(f"card {card.id} ({card.sha256[:12]}) is not in the ledger")
+    if k_scope not in K_SCOPES:
+        raise GateError(f"k_scope must be one of {K_SCOPES}, got {k_scope!r}")
     check_dates(card, bars, dev)
     if len(dev) < 2:
         raise GateError(f"{card.id}: 5c needs two development halves; got {len(dev)} session(s)")
-    T, k = THRESHOLDS, ledger.k(ledger_path, card.instrument)
+    T, k = THRESHOLDS, ledger.k(ledger_path, card.instrument if k_scope == "instrument" else None)
     skipped: dict[str, int] = {}
-    days = C.days(card, bars, dev, skipped)
+    days = C.days(card, bars, dev, skipped, closed)
     trades = [t for d in days for t in C.simulate_day(card, d)]
+    rep = {"card_id": card.id, "card_sha256": card.sha256, "instrument": card.instrument,
+           "engine_sha256": engine_version(), "data_sha256": data_sha256, "k": k, "k_scope": k_scope,
+           "thresholds": T, "dev_sessions": [dev[0], dev[-1], len(dev)], "trades": len(trades),
+           "cost_per_trade_usd": costs.per_trade(card.instrument), "skipped_days": skipped, "gates": []}
+    try:
+        resolved(trades, "card")
+    except Unresolved as u:
+        return {**rep, "verdict": "unresolved", "stopped_at": None, "unresolved": u.report(), "book": {}}
     x = daily(card, trades, dev, costs)
     v = net(card, trades, costs)
-    rep = {"card_id": card.id, "card_sha256": card.sha256, "instrument": card.instrument,
-           "engine_sha256": engine_version(), "data_sha256": data_sha256, "k": k, "thresholds": T,
-           "dev_sessions": [dev[0], dev[-1], len(dev)], "trades": len(trades), "net_usd_per_contract": float(v.sum()),
-           "session_sharpe": sharpe(x), "cost_per_trade_usd": costs.per_trade(card.instrument),
-           "skipped_days": skipped, "gates": []}
-    rep["book"] = _book(dev, x, book)
+    rep.update(net_usd_per_contract=float(v.sum()), session_sharpe=sharpe(x), book=_book(dev, x, book))
     g = rep["gates"]
     half = len(dev) // 2
     h1, h2 = set(dev[:half]), set(dev[half:])
@@ -159,14 +189,17 @@ def evaluate(card: Card, bars, dev: list[str], ledger_path: Path, costs: Costs, 
         lambda: _gate(g, "5a sample", len(trades), T["5a_min_trades"], len(trades) >= T["5a_min_trades"]),
         lambda: _gate(g, "5b costs", rep["cost_per_trade_usd"], "firm commission + 1 tick/side, applied", True),
         lambda: _halves(g, card, trades, costs, h1, h2),
-        lambda: _plateau(g, card, bars, dev, costs, float(v.sum())),
-        lambda: _gate(g, "5e placebo", (s := placebo_beaten_share(card, days, trades, costs, T["5e_placebo_runs"],
+        lambda: _plateau(g, card, bars, dev, costs, float(v.sum()), closed),
+        lambda: _gate(g, PLACEBO_LABEL, (s := placebo_beaten_share(card, days, trades, costs, T["5e_placebo_runs"],
                                                                     T["5e_seed"])), T["5e_min_beaten_share"],
                       s >= T["5e_min_beaten_share"]),
         lambda: _dsr_gate(g, x, k),
         lambda: _book_gate(g, rep["book"]),
     ]
-    rep["stopped_at"] = next((g[-1]["gate"] for ch in checks if not ch()), None)
+    try:
+        rep["stopped_at"] = next((g[-1]["gate"] for ch in checks if not ch()), None)
+    except Unresolved as u:  # a 5d neighbour has no causal exit on some day
+        return {**rep, "verdict": "unresolved", "stopped_at": "5d plateau", "unresolved": u.report()}
     rep["verdict"] = "survivor" if rep["stopped_at"] is None else "killed"
     return rep
 
@@ -187,13 +220,15 @@ def _halves(g, card, trades, costs, h1, h2) -> bool:
     return _gate(g, "5c halves", {"pf": p, "trades": [len(v1), len(v2)]}, THRESHOLDS["5c_min_pf_each_half"], ok)
 
 
-def _plateau(g, card, bars, dev, costs, base: float) -> bool:
+def _plateau(g, card, bars, dev, costs, base: float, closed: frozenset[str] = frozenset()) -> bool:
     """Every valid +-1 step neighbour keeps the threshold share of a positive base net; invalid
-    neighbours (value or timing) are named as skipped."""
+    neighbours (value or timing) are named as skipped. A neighbour with an unresolved trade raises
+    Unresolved."""
     nbs = [(f"{n}{'+' if s > 0 else '-'}", nb) for n, s, nb in card.neighbours()]
     if base <= 0:
         return _gate(g, "5d plateau", {"base_net": base}, "base net > 0", False)
-    kept = {name: float(net(card, C.simulate(nb, bars, dev), costs).sum() / base) for name, nb in nbs if nb}
+    kept = {name: float(net(card, resolved(C.simulate(nb, bars, dev, closed), f"neighbour {name}"), costs).sum() / base)
+            for name, nb in nbs if nb}
     ok = all(r >= THRESHOLDS["5d_min_profit_kept"] for r in kept.values())
     return _gate(g, "5d plateau", {"kept": kept, "skipped_invalid": [name for name, nb in nbs if not nb]},
                  THRESHOLDS["5d_min_profit_kept"], ok)
@@ -227,11 +262,17 @@ def _book_gate(g, b: dict) -> bool:
                  {"mean_on_book_losing_days": "> 0", "shared_loss_share": THRESHOLDS["5g_max_shared_loss_share"]}, ok)
 
 
-def holdout_look(card: Card, bars, holdout: list[str], ledger_path: Path, run_id: str, costs: Costs) -> dict:
-    """Stage 8: one logged look per survivor. The look is ledgered before any holdout bar is read."""
+def holdout_look(card: Card, bars, holdout: list[str], ledger_path: Path, run_id: str, costs: Costs,
+                 *, closed: frozenset[str]) -> dict:
+    """Stage 8: one logged look per survivor. The look is ledgered before any holdout bar is read.
+    An unresolved holdout trade spends the look and fails it, reported with its count and dates."""
     check_dates(card, bars, holdout)
     ledger.append_holdout_look(ledger_path, run_id, card)
-    v = net(card, C.simulate(card, bars, holdout), costs)
+    rep = {"card_sha256": card.sha256, "holdout_sessions": [holdout[0], holdout[-1], len(holdout)]}
+    try:
+        v = net(card, resolved(C.simulate(card, bars, holdout, closed), "holdout"), costs)
+    except Unresolved as u:
+        return {**rep, "verdict": "unresolved", "unresolved": u.report(), "pass": False}
     ok = v.sum() > 0 and pf(v) >= THRESHOLDS["8_min_pf"]
-    return {"card_sha256": card.sha256, "holdout_sessions": [holdout[0], holdout[-1], len(holdout)],
-            "trades": len(v), "net_usd_per_contract": float(v.sum()), "pf": pf(v), "pass": bool(ok)}
+    return {**rep, "verdict": "pass" if ok else "fail", "trades": len(v), "net_usd_per_contract": float(v.sum()),
+            "pf": pf(v), "pass": bool(ok)}

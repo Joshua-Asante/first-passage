@@ -255,13 +255,41 @@ def test_max_trades_rearms_after_a_stop():
     assert [(t.side, t.reason) for t in sim(card(m), b)] == [(1, "stop"), (-1, "flat")]
 
 
-def test_early_halt_exits_at_the_last_day_bar_not_the_evening_session():
-    # #1003 kept a date's bars after 17:00, so a day with no flat bar exited at the 18:00 reopen.
+def test_early_halt_leaves_the_trade_unresolved_not_filled_at_the_evening_or_last_close():
+    # #1003 exited at the 18:00 reopen; #1004 at the last day bar's close, a hindsight price.
     day = bars(overrides={**RANGE, "09:45": (70.15, 70.30, 70.10, 70.28)}, end="10:00")
     t = pd.date_range(f"{DAY} 18:00", f"{DAY} 23:45", freq="15min", tz="America/New_York")
     evening = pd.DataFrame({"open": 80.0, "high": 80.05, "low": 79.95, "close": 80.0}, index=t)
     [tr] = sim(card(), pd.concat([day, evening]))
-    assert (tr.reason, tr.exit_px) == ("flat", 70.0)
+    assert (tr.reason, tr.exit_i, tr.exit_px, tr.unresolved) == ("unresolved", None, None, True)
+    with pytest.raises(ValueError, match="no exit price"):
+        tr.points
+
+
+def test_entry_decision_depends_only_on_bars_up_to_entry():
+    # Paired fixture: identical bars through the 09:45 entry; afterwards one day runs to 11:45 with
+    # a different path, the other halts at 10:00, before the 10:30 flat_at.
+    common = {**RANGE, "09:45": (70.15, 70.30, 70.10, 70.28)}
+    full = bars(overrides={**common, "10:00": (70.3, 70.6, 70.25, 70.5), "10:30": (70.6, 70.7, 70.5, 70.6)})
+    cut = bars(overrides=common, end="10:00")
+    assert (full.loc[:f"{DAY} 09:45"] == cut.loc[:f"{DAY} 09:45"]).all().all()
+    [a], [b] = sim(card(), full), sim(card(), cut)
+    assert (a.side, a.entry_i, a.entry_px) == (b.side, b.entry_i, b.entry_px) == (1, 3, 70.21)
+    assert (a.reason, a.exit_px) == ("flat", 70.6) and b.reason == "unresolved"
+
+
+def test_a_stop_before_an_early_halt_is_still_resolved():
+    b = bars(overrides={**RANGE, "09:45": (70.15, 70.30, 70.10, 70.28), "10:00": (70.2, 70.2, 69.8, 69.85)},
+             end="10:00")
+    [t] = sim(card(), b)
+    assert (t.reason, t.exit_px) == ("stop", 69.89)
+
+
+def test_calendar_exception_day_is_not_traded_and_counted():
+    skipped = {}
+    b = bars(overrides={**RANGE, "09:45": (70.15, 70.30, 70.10, 70.28)})
+    assert C.days(card(), b, [DAY], skipped, frozenset({DAY})) == [] and skipped == {"calendar_exception": 1}
+    assert C.simulate(card(), b, [DAY], frozenset({DAY})) == [] and len(sim(card(), b)) == 1
 
 
 def test_I_G1_atr_is_never_computed_across_a_gap():

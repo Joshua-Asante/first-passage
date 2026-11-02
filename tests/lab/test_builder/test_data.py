@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import inspect
 import json
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -206,15 +207,57 @@ def test_I_R2_data_hash_must_match_the_pin(tmp_path, ex):
         data.load_bars(p, "MCL", "0" * 64)
 
 
-@pytest.mark.parametrize("n,ok", [(1, False), (2, False), (3, True), (10, True)])
-def test_I_S1_split_needs_two_dev_sessions_and_a_holdout(n, ok):
-    dates = [f"2024-01-{d:02d}" for d in range(1, n + 1)]
-    if ok:
-        dev, hold = data.split(dates)
-        assert len(dev) >= 2 and hold and dev + hold == dates
-    else:
-        with pytest.raises(data.DataError, match="split"):
-            data.split(dates)
+SESSIONS = [f"2024-01-{d:02d}" for d in range(1, 11)]
+
+
+def test_I_S1_pinned_split_by_date_excludes_sessions_after_holdout_end():
+    dev, hold = data.pinned_split(SESSIONS, "2024-01-05", "2024-01-08")
+    assert dev == SESSIONS[:5] and hold == SESSIONS[5:8]  # 2024-01-09 and -10 are in neither
+
+
+@pytest.mark.parametrize("dev_end,holdout_end,msg", [
+    ("2024-01-04T", "2024-01-08", "dev_end .* not a session"),
+    ("2024-01-05", "2024-01-11", "holdout_end .* not a session"),   # past the export
+    ("2023-12-29", "2024-01-08", "dev_end .* not a session"),       # before the export
+    ("2024-01-01", "2024-01-08", "need >= 2"),
+    ("2024-01-08", "2024-01-08", "need >= 2 and >= 1"),
+])
+def test_I_S1_pinned_split_refuses_non_session_ends_and_empty_sides(dev_end, holdout_end, msg):
+    with pytest.raises(data.DataError, match=msg):
+        data.pinned_split(SESSIONS, dev_end, holdout_end)
+
+
+CAL = Path(__file__).resolve().parents[3] / "ops" / "calendars" / "cme_holiday_calendar_2022_2026.json"
+
+
+def test_admitted_calendar_loads_every_entry_date_whatever_its_status():
+    cal = data.load_calendar(CAL, data.file_sha256(CAL))
+    raw = json.loads(CAL.read_text(encoding="utf-8"))
+    assert cal.closed == {e["date"] for e in raw["entries"]} and len(cal.closed) == len(raw["entries"])
+    assert {"2023-01-02", "2023-01-16", "2023-11-24"} <= cal.closed  # FULL_CLOSURE and EARLY_CLOSE rows
+    assert (cal.start, cal.end) == ("2022-01-01", "2026-12-31")
+    cal.check_covers(["2022-01-03", "2026-12-31"], "MCL")
+    with pytest.raises(data.DataError, match="outside the calendar coverage"):
+        cal.check_covers(["2021-12-31"], "MCL")
+
+
+@pytest.mark.parametrize("mutate,msg", [
+    (lambda d: d.update(schema="other"), "schema"),
+    (lambda d: d.pop("coverage_end"), "coverage"),
+    (lambda d: d["entries"][0].update(date="2023-1-2"), "entries"),
+    (lambda d: d["entries"][0].pop("date"), "entries"),
+    (lambda d: d.update(entries=[]), "entries"),
+    (lambda d: d["entries"][0].update(date="2030-01-01"), "outside the coverage"),
+])
+def test_calendar_is_strict(tmp_path, mutate, msg):
+    d = json.loads(CAL.read_text(encoding="utf-8"))
+    mutate(d)
+    p = tmp_path / "cal.json"
+    p.write_text(json.dumps(d), encoding="utf-8")
+    with pytest.raises(data.DataError, match=msg):
+        data.load_calendar(p, data.file_sha256(p))
+    with pytest.raises(data.DataError, match="pinned"):
+        data.load_calendar(CAL, "0" * 64)
 
 
 @pytest.mark.parametrize("text,msg", [
