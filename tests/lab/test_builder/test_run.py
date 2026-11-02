@@ -60,6 +60,15 @@ def test_run_writes_reports_with_the_data_summary_split_and_calendar(spec):
     assert rep["dev_sessions"] == [dates[0], dates[299], 300] and rep["calendar_sha256"] == s["calendar"]["sha256"]
 
 
+def test_dev_start_bounds_development_and_is_bound(spec):
+    path, s, dates = spec
+    s["data"]["MCL"]["split"]["dev_start"] = dates[50]
+    assert go(path, s) == 0
+    rep = report(path)
+    assert rep["dev_sessions"] == [dates[50], dates[299], 250] and rep["split"]["dev_start"] == dates[50]
+    assert json.loads((path.parent / "out" / "verdict.json").read_text())["binding"]["data"]["MCL"]["split"]         == s["data"]["MCL"]["split"]
+
+
 def test_calendar_exception_days_are_skipped_and_kept_as_sessions(spec):
     path, s, dates = spec
     go(path, s)
@@ -88,9 +97,11 @@ def test_k_scope_ledger_counts_cards_of_every_instrument_in_the_ledger(spec):
     (lambda s: s["data"]["MCL"].pop("split"), "path, sha256, split"),
     (lambda s: s.update(data={"MCL": "x.csv"}), "path, sha256, split"),
     (lambda s: s["data"]["MCL"].update(split={"dev_end": "2023-06-01"}), "dev_end, holdout_end"),
+    (lambda s: s["data"]["MCL"]["split"].update(start="2023-01-02"), "dev_end, holdout_end"),
+    (lambda s: s["data"]["MCL"]["split"].update(dev_start=s["data"]["MCL"]["split"]["dev_end"]), "dev_start < dev_end"),
     (lambda s: s["data"]["MCL"]["split"].update(dev_end="2023-6-1"), "YYYY-MM-DD"),
     (lambda s: s["data"]["MCL"]["split"].update(dev_end=0.7), "YYYY-MM-DD"),   # no percentage split
-    (lambda s: s["data"]["MCL"]["split"].update(dev_end="2024-12-31"), "before holdout_end"),
+    (lambda s: s["data"]["MCL"]["split"].update(dev_end="2024-12-31"), "dev_end < holdout_end"),
     (lambda s: s.update(calendar={"path": "c.json"}), "calendar must be"),
     (lambda s: s.update(k_scope="family"), "k_scope"),
     (lambda s: s.update(book={"path": "b.json", "sha256": "0"}), "min_overlap"),   # I-R3

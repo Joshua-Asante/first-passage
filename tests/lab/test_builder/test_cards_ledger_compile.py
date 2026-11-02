@@ -302,6 +302,49 @@ def test_I_G1_atr_is_never_computed_across_a_gap():
     assert len(sim(atr_card, b)) == 1 and len(sim(card(), hole)) == 1  # ATR not needed: the day trades
 
 
+# --- missing bars (W1 contract v5 §3) -------------------------------------------------------
+
+def drop(b: pd.DataFrame, *hhmm: str) -> pd.DataFrame:
+    return b.drop([pd.Timestamp(f"{DAY} {x}", tz="America/New_York") for x in hhmm])
+
+
+@pytest.mark.parametrize("slot", ["09:00", "09:15"])
+def test_missing_range_slot_skips_the_day_for_the_card_and_its_neighbours(slot):
+    b = drop(bars(overrides={**RANGE, "09:45": (70.15, 70.30, 70.10, 70.28)}), slot)
+    skipped = {}
+    assert C.days(card(), b, [DAY], skipped) == [] and skipped == {"range_gap": 1}
+    n1 = card(BASE.replace("value: 2", "value: 1"))
+    assert len(sim(n1, b)) == (slot == "09:15")  # a 1-bar neighbour's own range is 09:00 only
+
+
+def test_offset_range_uses_clock_slots_not_bar_positions():
+    # A missing pre-range bar must not shift the range: positions would move it to 09:15-09:30.
+    b = drop(bars(overrides={**RANGE, "09:45": (70.15, 70.30, 70.10, 70.28)}), "08:00")
+    [t] = sim(card(), b)
+    assert (t.side, t.entry_px) == (1, 70.21)
+
+
+def test_missing_bar_after_the_range_is_a_no_trade_interval():
+    # The 09:30 bar would have broken out; without it the entry waits for the next real bar.
+    b = drop(bars(overrides={**RANGE, "09:30": (70.15, 70.30, 70.10, 70.28),
+                             "09:45": (70.15, 70.30, 70.10, 70.28)}), "09:30")
+    [t] = sim(card(), b)
+    assert t.entry_i == 2 and b.index[b.index.get_loc(pd.Timestamp(f"{DAY} 09:00", tz="America/New_York")) + t.entry_i]         .strftime("%H:%M") == "09:45"
+
+
+def test_flat_on_a_missing_bar_exits_at_the_next_real_bar_open():
+    b = drop(bars(overrides={**RANGE, "09:45": (70.15, 70.30, 70.10, 70.28), "10:45": (70.4, 70.45, 70.35, 70.4)}),
+             "10:30")
+    [t] = sim(card(), b)
+    assert (t.reason, t.exit_px) == ("flat", 70.4)
+
+
+def test_flat_on_a_missing_bar_with_no_later_bar_is_unresolved():
+    b = bars(overrides={**RANGE, "09:45": (70.15, 70.30, 70.10, 70.28)}, end="10:15")
+    [t] = sim(card(), b)
+    assert t.reason == "unresolved"
+
+
 def test_I_G2_every_skipped_day_is_counted_by_reason():
     dow = card(BASE + "filters: [day_of_week]\ndays: [0]\n")  # Mondays only; DAY is a Tuesday
     skipped = {}

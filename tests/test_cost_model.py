@@ -164,11 +164,18 @@ def test_invalid_slip_convention_raises():
 
 @pytest.mark.parametrize(
     "instrument",
-    ["ZN", "ZB", "ZF", "CL", "NG", "6E", "MGC", "ES", "NQ", "YM", "RTY", "GC", "MNG"],
+    ["ZN", "ZB", "ZF", "CL", "NG", "6E", "ES", "NQ", "YM", "RTY", "GC", "MNG"],
 )
 def test_no_commission_row_instruments_raise_naming_gap(instrument):
     with pytest.raises(ValueError, match=instrument):
         cost_model.resolve_commission("Bulenox_100K", instrument)
+
+
+@pytest.mark.parametrize("firm,cps", [("Tradeify_Select_100K", 1.06), ("MFFU_Rapid_100K", 1.10)])
+def test_mgc_resolves_its_sourced_firm_row_and_refuses_firms_without_one(firm, cps):
+    assert cost_model.resolve_commission(firm, "MGC") == pytest.approx(cps)
+    with pytest.raises(ValueError, match="MGC"):
+        cost_model.resolve_commission("Bulenox_100K", "MGC")
 
 
 def test_ng_lookup_does_not_substitute_index_micro_rate():

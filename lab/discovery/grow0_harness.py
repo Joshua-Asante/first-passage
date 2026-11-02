@@ -24,13 +24,15 @@ _logger = logging.getLogger(__name__)
 
 _COST_FIRM_KEY = "Tradeify_Select_100K"
 _COST_RESOLVABLE_INSTRUMENT = "MNQ"
-_COST_UNRESOLVABLE_INSTRUMENT = "MGC"
+# The prereg named MGC; MGC gained a sourced firm row 2026-11-02 (PR #1025), so the probe
+# moved to GC, which still has none. The check is unchanged: an unrowed symbol must raise.
+_COST_UNRESOLVABLE_INSTRUMENT = "GC"
 _COST_RESOLVABLE_EXPECTED = 0.91  # prereg §3: resolve_commission("Tradeify_Select_100K", "MNQ") = 0.91
 
 
 def check_cost_wiring() -> None:
     """Prereg §3 'Cost-wiring construction check' -- two-sided: MNQ must resolve
-    to the real (index-micro) rate, and MGC must raise rather than silently
+    to the real (index-micro) rate, and an unrowed symbol must raise rather than silently
     falling back to a hardcoded literal. Called once at harness startup.
     """
     try:

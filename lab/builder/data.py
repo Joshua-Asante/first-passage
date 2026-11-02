@@ -13,16 +13,19 @@ Every rule below aborts the load; none skips, defaults or warns (invariants I-B1
 - Instrument constants equal ``builder.instruments`` on every row, with timeframe ``15``, and each
   bar's time_close is its open + 15 minutes.
 - Bar opens are on the 15m grid, unique, and strictly increase with trade number.
-- On a session day (a weekday with any bar in [session open, 17:00) ET) the open bar exists and
-  the bars from it to the day's last bar before 17:00 are contiguous. A day that ends early (a
-  holiday halt) and gaps outside that window (the daily halt, weekends, an overnight outage)
-  are allowed; the summary counts them.
+- Missing 15m bars are not refused: TradingView omits a bar in which nothing traded. The
+  summary counts weekdays with day-window bars ([session open, 17:00) ET) but no open bar
+  (``days_without_open_bar``; not sessions), session days with a gap inside the window
+  (``gap_sessions``), early-closing sessions and every gap between bars. ``builder.compile``
+  treats a missing bar as a no-trade interval (W1 contract v5 §3).
 
 The TV ``1!`` continuous series is used as exported; no roll is reconstructed.
 
-The split is pinned by date per instrument: development = sessions <= dev_end, holdout =
-dev_end < sessions <= holdout_end; later sessions are in neither. Both ends must be session dates
-of the loaded export, so a refreshed export cannot move a session across the boundary.
+The split is pinned by date per instrument: development = dev_start <= sessions <= dev_end,
+holdout = dev_end < sessions <= holdout_end; other sessions are in neither. Every given end must
+be a session date of the loaded export, so a refreshed export cannot move a session across a
+boundary. ``dev_start`` is optional (R1's specs predate it); bars before it may feed indicator
+warm-up only.
 
 The calendar (``ops/calendars/cme_holiday_calendar_2022_2026.json``) is read for exactly
 ``CALENDAR_FIELDS``: the schema, the coverage window and every ``entries[].date``, whatever its
@@ -146,16 +149,17 @@ def _check_sessions(bars: pd.DataFrame, symbol: str, path) -> dict:
     so = INSTRUMENTS[symbol].session_open
     hm, day = bars.index.strftime("%H:%M"), bars.index.strftime("%Y-%m-%d")
     inwin = (hm >= so) & (hm < DAY_END) & (bars.index.weekday < 5)
-    short = 0
-    for d, t in pd.Series(bars.index[inwin]).groupby(day[inwin]):
+    short = no_open = gappy = 0
+    for _, t in pd.Series(bars.index[inwin]).groupby(day[inwin]):
         if t.iloc[0].strftime("%H:%M") != so:
-            raise DataError(f"{path}: {d} has day-session bars but none at the {so} open")
-        if (t.diff().iloc[1:] != pd.Timedelta(minutes=15)).any():
-            raise DataError(f"{path}: {d} has a gap inside the day session")
+            no_open += 1
+            continue
+        gappy += bool((t.diff().iloc[1:] != pd.Timedelta(minutes=15)).any())
         short += t.iloc[-1].strftime("%H:%M") < f"{int(DAY_END[:2]) - 1:02d}:45"
     steps = pd.Series(bars.index).diff().iloc[1:]
     return {"bars": len(bars), "first": str(bars.index[0]), "last": str(bars.index[-1]),
-            "early_close_sessions": int(short), "gaps_between_bars": int((steps != pd.Timedelta(minutes=15)).sum())}
+            "early_close_sessions": int(short), "days_without_open_bar": no_open, "gap_sessions": gappy,
+            "gaps_between_bars": int((steps != pd.Timedelta(minutes=15)).sum())}
 
 
 def load_bars(path: Path, symbol: str, sha256: str) -> tuple[pd.DataFrame, dict]:
@@ -172,13 +176,15 @@ def session_dates(bars: pd.DataFrame, symbol: str) -> list[str]:
     return sorted(set(idx[m].strftime("%Y-%m-%d")))
 
 
-def pinned_split(sessions: list[str], dev_end: str, holdout_end: str) -> tuple[list[str], list[str]]:
-    """Development = sessions <= dev_end; holdout = dev_end < sessions <= holdout_end. Both ends
-    must be sessions of the export; development needs two sessions (one per 5c half), the holdout one."""
-    for name, d in (("dev_end", dev_end), ("holdout_end", holdout_end)):
-        if d not in sessions:
+def pinned_split(sessions: list[str], dev_end: str, holdout_end: str,
+                 dev_start: str | None = None) -> tuple[list[str], list[str]]:
+    """Development = dev_start <= sessions <= dev_end; holdout = dev_end < sessions <= holdout_end.
+    Every given end must be a session of the export; development needs two sessions (one per 5c
+    half), the holdout one."""
+    for name, d in (("dev_start", dev_start), ("dev_end", dev_end), ("holdout_end", holdout_end)):
+        if d is not None and d not in sessions:
             raise DataError(f"split {name} {d} is not a session date of the loaded export")
-    dev = [d for d in sessions if d <= dev_end]
+    dev = [d for d in sessions if (dev_start is None or dev_start <= d) and d <= dev_end]
     hold = [d for d in sessions if dev_end < d <= holdout_end]
     if len(dev) < 2 or not hold:
         raise DataError(f"split dev_end {dev_end} / holdout_end {holdout_end} gives {len(dev)} development "
