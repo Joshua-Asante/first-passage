@@ -70,7 +70,9 @@ def test_unsourced_inactivity_is_refused_not_overridden(monkeypatch):
     assert rep["configs"]["Tradeify_Select_100K"]["status"] == "ok" and rep["verdict"] == "refused"
 
 
-def test_missing_per_symbol_commission_is_refused():
+def test_missing_per_symbol_commission_is_refused(monkeypatch):
+    for f in FIRMS:
+        monkeypatch.setitem(preflight.FIRM_RULES[f], "cost_per_side_usd_by_symbol", {"MCL": 1.0})
     rep = venue.evaluate(book(), cand([("2024-01-03", 1.0, "MGC")]))
     assert all(rep["configs"][f]["status"] == "refused" and "MGC" in rep["configs"][f]["reason"] for f in FIRMS)
     assert rep["verdict"] == "refused"

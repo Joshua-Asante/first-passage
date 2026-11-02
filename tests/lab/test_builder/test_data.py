@@ -169,12 +169,13 @@ def test_I_B10_bar_opens_must_increase_with_trade_number(tmp_path, ex):
         load(tmp_path, lines)
 
 
-def test_I_B11_gap_inside_the_day_session_aborts(tmp_path, ex):
+def test_I_B11_gap_inside_the_day_session_is_loaded_and_counted(tmp_path, ex):
+    # TradingView omits a bar in which nothing traded (W1 contract v5 §3); compile owns the rule.
     _, lines = ex
     i = entry_line(lines, "10:30", day=1)
     del lines[i:i + 2]
-    with pytest.raises(data.DataError, match="gap inside the day session"):
-        load(tmp_path, lines)
+    bars, summary = load(tmp_path, lines)
+    assert summary["gap_sessions"] == 1 and len(data.session_dates(bars, "MCL")) == 3
 
 
 def test_I_B11_early_close_and_overnight_gaps_are_allowed_and_counted(tmp_path, ex):
@@ -186,12 +187,13 @@ def test_I_B11_early_close_and_overnight_gaps_are_allowed_and_counted(tmp_path, 
     assert len(data.session_dates(bars, "MCL")) == 3
 
 
-def test_I_B12_missing_session_open_bar_aborts(tmp_path, ex):
+def test_I_B12_day_without_its_open_bar_is_counted_and_is_not_a_session(tmp_path, ex):
     _, lines = ex
     i = entry_line(lines, "09:00", day=1)
     del lines[i:i + 2]
-    with pytest.raises(data.DataError, match="none at the 09:00 open"):
-        load(tmp_path, lines)
+    bars, summary = load(tmp_path, lines)
+    assert summary["days_without_open_bar"] == 1 and summary["gap_sessions"] == 0
+    assert len(data.session_dates(bars, "MCL")) == 2
 
 
 def test_I_B13_no_entry_rows_aborts(tmp_path):
@@ -213,6 +215,13 @@ SESSIONS = [f"2024-01-{d:02d}" for d in range(1, 11)]
 def test_I_S1_pinned_split_by_date_excludes_sessions_after_holdout_end():
     dev, hold = data.pinned_split(SESSIONS, "2024-01-05", "2024-01-08")
     assert dev == SESSIONS[:5] and hold == SESSIONS[5:8]  # 2024-01-09 and -10 are in neither
+
+
+def test_I_S1_dev_start_drops_earlier_sessions_from_development():
+    dev, hold = data.pinned_split(SESSIONS, "2024-01-05", "2024-01-08", dev_start="2024-01-03")
+    assert dev == SESSIONS[2:5] and hold == SESSIONS[5:8]
+    with pytest.raises(data.DataError, match="dev_start .* not a session"):
+        data.pinned_split(SESSIONS, "2024-01-05", "2024-01-08", dev_start="2023-12-29")
 
 
 @pytest.mark.parametrize("dev_end,holdout_end,msg", [

@@ -1,14 +1,18 @@
 """Card -> trades on closed 15m bars (spec stage 4, backtest side).
 
 Fill model, conservative where 15m bars hide the order of events:
-- The range is the card's n bars from the session open (offset for time_window). Orders are
-  stop entries one tick beyond the range, live from the first bar after the range until the
-  entry cutoff. A bar that opens beyond a level fills at its open (gap); otherwise at the level.
+- The range is the card's n fixed 15m clock slots from the session open (offset for
+  time_window). TradingView omits a bar in which nothing traded; a day missing any range slot
+  is not traded (skip reason ``range_gap``), which is known when the range closes. Orders are
+  stop entries one tick beyond the range, live from the first observed bar after the range
+  until the entry cutoff. A missing bar is a no-trade interval: nothing fills in it. A bar
+  that opens beyond a level fills at its open (gap); otherwise at the level.
 - If one bar touches both levels, the side whose level is nearer the bar's open fills.
 - In the entry bar, the stop counts if the bar reaches it; the target never does.
 - Later bars: a gap through the stop exits at the open; if a bar reaches both the stop and the
   target, the stop counts first.
-- At the first bar opening at or after flat_at the position exits at that open. If the day has
+- At the first observed bar opening at or after flat_at (the next real bar when the flat_at
+  slot is missing) the position exits at that open. If the day has
   no such bar (an early halt) and no stop or target exited the position, the trade is
   ``unresolved``: it has no exit price, because any price after the last bar is unknown and the
   last bar's close would be chosen with hindsight. No further entry is taken that day.
@@ -27,7 +31,7 @@ import numpy as np
 import pandas as pd
 
 from builder.cards import Card
-from builder.instruments import DAY_END, INSTRUMENTS
+from builder.instruments import DAY_END, INSTRUMENTS, minutes
 
 ATR_LEN = 14
 BAR_MIN = 15
@@ -73,17 +77,19 @@ class Trade:
 def days(card: Card, bars: pd.DataFrame, dates: list[str], skipped: dict | None = None,
          closed: frozenset[str] = frozenset()) -> list[Day]:
     """The card's tradable days among ``dates`` (sessions of ``bars``). A day's bars run from the
-    session open to the last bar before DAY_END; ``data`` guarantees they are contiguous. Days left
-    out are counted in ``skipped`` by reason: calendar_exception (the date is in ``closed``, the
-    frozen calendar's dates), day_of_week (card filter), short_session (the day
-    ends before entries go live) and atr_window_gap (the card uses ATR and there are
-    no 15 contiguous bars for it)."""
+    session open to the last bar before DAY_END and may have gaps. Days left out are counted in
+    ``skipped`` by reason: calendar_exception (the date is in ``closed``, the frozen calendar's
+    dates), day_of_week (card filter), short_session (the day ends before entries go live),
+    range_gap (a range slot has no bar) and atr_window_gap (the card uses ATR and there are no
+    15 contiguous bars for it)."""
     inst = INSTRUMENTS[card.instrument]
     tr = np.maximum(bars["high"], bars["close"].shift()) - np.minimum(bars["low"], bars["close"].shift())
     step_ok = pd.Series((pd.Series(bars.index).diff() == pd.Timedelta(minutes=BAR_MIN)).to_numpy(), index=bars.index)
     atr = tr.rolling(ATR_LEN).mean().where(step_ok.rolling(ATR_LEN).sum() == ATR_LEN).to_numpy()
     off, n = int(card.p("offset_bars", 0)), int(card.p("n_bars"))
     uses_atr = "atr_multiple" in (card.stop, card.target) or "min_range_atr" in card.filters
+    so = minutes(inst.session_open)
+    slots = [f"{m // 60:02d}:{m % 60:02d}" for m in range(so + off * BAR_MIN, so + (off + n) * BAR_MIN, BAR_MIN)]
     hhmm = bars.index.strftime("%H:%M")
     win = np.flatnonzero((hhmm >= inst.session_open) & (hhmm < DAY_END))
     by_day = pd.Series(win).groupby(bars.index[win].strftime("%Y-%m-%d")).agg(list)
@@ -99,17 +105,21 @@ def days(card: Card, bars: pd.DataFrame, dates: list[str], skipped: dict | None 
             t = tuple(hhmm[ix])
             flat = next((j for j, s in enumerate(t) if s >= card.flat_at), len(t))
             t, ix = t[:flat + 1], ix[:flat + 1]
-            first = off + n
             cutoff = min(next((j for j, s in enumerate(t) if s >= card.entry_cutoff), len(t)), flat)
+            first = t.index(slots[-1]) + 1 if slots[-1] in t else len(t)
             a = atr[ix[first - 1]] if first < cutoff else np.nan
-            if first >= cutoff:
+            if t[-1] <= slots[-1]:
+                reason = "short_session"
+            elif any(x not in t for x in slots):
+                reason = "range_gap"
+            elif first >= cutoff:
                 reason = "short_session"
             elif uses_atr and (not np.isfinite(a) or a <= 0):
                 reason = "atr_window_gap"
             else:
                 o, h, l, c = (bars[k].to_numpy()[ix] for k in ("open", "high", "low", "close"))
                 out.append(Day(d, t, o, h, l, c, first, cutoff, flat,
-                               float(h[off:first].max()), float(l[off:first].min()), float(a)))
+                               float(h[first - n:first].max()), float(l[first - n:first].min()), float(a)))
                 continue
         skipped[reason] = skipped.get(reason, 0) + 1
     return out

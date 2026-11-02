@@ -6,6 +6,7 @@ run.yaml (exactly these keys; commission_per_side is the only optional one):
     firm: Tradeify_Select_100K
     data: {MCL: {path: <BAR_EXPORT_v0.2 csv>, sha256: <pinned>,
                  split: {dev_end: 2025-06-30, holdout_end: 2026-06-30}}}
+                                           # split may also carry dev_start: earlier bars warm up only
     roll: "TV 1! continuous series as exported; no roll reconstructed"
     book: {path: <JSON {date: book P&L per session}>, sha256: <pinned>, min_overlap: 500}
                                            # or null: an empty book, declared
@@ -74,11 +75,11 @@ def _date(v, ctx: str) -> str:
 
 
 def _split(inst: str, v) -> dict:
-    if not isinstance(v, dict) or set(v) != {"dev_end", "holdout_end"}:
-        raise RunError(f"data.{inst}.split must be {{dev_end, holdout_end}}")
-    s = {k: _date(v[k], f"data.{inst}.split.{k}") for k in ("dev_end", "holdout_end")}
-    if not s["dev_end"] < s["holdout_end"]:
-        raise RunError(f"data.{inst}.split: dev_end must be before holdout_end")
+    if not isinstance(v, dict) or set(v) - {"dev_start"} != {"dev_end", "holdout_end"}:
+        raise RunError(f"data.{inst}.split must be {{[dev_start,] dev_end, holdout_end}}")
+    s = {k: _date(v[k], f"data.{inst}.split.{k}") for k in ("dev_start", "dev_end", "holdout_end") if k in v}
+    if not (s.get("dev_start", "") < s["dev_end"] < s["holdout_end"]):
+        raise RunError(f"data.{inst}.split: need dev_start < dev_end < holdout_end")
     return s
 
 
@@ -128,7 +129,9 @@ def load_data(s: dict, instrument: str, calendar: data.Calendar):
     """(bars, development sessions, holdout sessions, load summary) under the pinned split."""
     d = s["data"][instrument]
     bars, summary = data.load_bars(Path(d["path"]), instrument, d["sha256"])
-    dev, hold = data.pinned_split(data.session_dates(bars, instrument), d["split"]["dev_end"], d["split"]["holdout_end"])
+    sp = d["split"]
+    dev, hold = data.pinned_split(data.session_dates(bars, instrument), sp["dev_end"], sp["holdout_end"],
+                                  sp.get("dev_start"))
     calendar.check_covers(dev + hold, instrument)
     return bars, dev, hold, summary
 
