@@ -907,11 +907,9 @@ second caveat: the max need not belong to the day being explained.
 
 ## 15. Always-on hosting is not the desktop (console-only desktops)
 
-**Always-on processes** (c1 listener, future signal daemon, any process that must
-survive a laptop lid-close) run on an **always-on host** (Fly.io today for the
-c1 rail — see `deploy/c1_rail/`). The operator desktop is **console-only** for
-those processes: SSH/`fly ssh`, status reads, attended arm/disarm commands —
-not the runtime host.
+**Always-on processes** (any that must survive a laptop lid-close) run on an
+**always-on host**; the operator desktop is **console-only** for them, not the
+runtime host. c1's Fly apps are [retired](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-10-29--c1-retired-as-an-execution-route-staged-decommission).
 
 **Scope:** always-on / unattended-capable services. Does **not** ban
 route-LOCAL interactive agent work (parallel worker packets, one-shot analysis)

@@ -950,7 +950,6 @@ lab/archive/transfer_expression_grid_2026-08/cells/striker_nas100_mym/RUNSPEC.md
 lab/archive/transfer_expression_grid_2026-08/cells/striker_nas100_mym/RUNSPEC.md -> lab/archive/transfer_expression_grid_2026-08/docs/adr/2026-08-07-loop-s2-signal-host-fork.md [missing-file]	1
 lab/archive/transfer_expression_grid_2026-08/cells/striker_nas100_mym/RUNSPEC.md -> lab/archive/transfer_expression_grid_2026-08/docs/briefs/pre-registration/2026-08-12-q-txg-1-striker-nas100-mym-cell-prereg.md [missing-file]	1
 lab/archive/usdcad_fade_2026-06-26/RESULTS.md -> lab/docs/ltm/briefs/pre-registration/PREREG-USDCAD-FADE-2026-06-26.md [missing-file]	1
-ops/c1_rail/README.md -> PIPELINES.md#p5--live-execution-rail-c1--built--currently-disarmed [missing-anchor]	1
 ops/data/reconciles/2026-05-05_guardian_n_reconcile.md -> core/data/tv_exports/pepperstone [missing-file]	1
 ops/data/reconciles/2026-05-05_guardian_n_reconcile.md -> core/data/tv_exports/pepperstone/SHA256SUMS [missing-file]	1
 ops/data/reconciles/2026-05-05_guardian_n_reconcile.md -> ops/data/reconciles/data/tv_exports/pepperstone/Guardian_Gold_v5.5_PEPPERSTONE_XAUUSD_2026-04-26_87e73.csv [missing-file]	1
