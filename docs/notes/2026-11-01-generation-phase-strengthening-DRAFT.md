@@ -234,3 +234,78 @@ Sources: archive `SESSIONS-2026-Q3.md` and archive `docs/SESSIONS.md`, `docs/SES
 6. **D6:** Whether the retained Databento caches may ever be used (default: no).
 
 The 11-08 sitting already asks whether starvation is binding ([prep §3](2026-11-08-research-checks-prep.md#3-sourcing-channel-retirement-4-limb-2-first-starvation-check)). The census supports "yes", with the builder plus D1–D3 as the response.
+
+---
+
+## 8. Second pass (2026-11-03): the live generator's reach, the native target, the supply map
+
+**Base:** `main` at `18e24bc` (builder 5h, search-wide K, holdout runner and W1 merged; microstructure study and venue-fact register merged).
+**Budget (Rule 2):** ≤6 iterations; one read-only subagent; K = 0. Arithmetic only, from public inputs (K, session counts, the builder's own formula). No data, RESULTS or private prereg read.
+**Reading limit:** R1's private pre-registration may already hold the disclosure in §8.1; this pass could not read it. Nothing here predicts R1's result.
+
+### 8.1 Builder gate 5f sets a high floor at R1's K and window
+
+**Mechanism (Rule 0).**
+- Gate 5f passes when DSR ≥ 0.95 ([`gates.py`](../../lab/builder/gates.py) `THRESHOLDS`).
+- `dsr()` takes the per-session series, with every development session included and a no-trade day counted as zero (`daily()`), and deflates against `SR0 = E[max of K] × √(1/(n−1))`.
+- Under near-normal moments, a pass therefore needs a per-session Sharpe of at least `(E[max Z_K] + 1.645)/√(n−1)`. This is M-19's closed form, so it depends on K and years, not on trade frequency.
+- R1 is K = 8 on 812 development sessions ([registration](../briefs/pre-registration/2026-11-01-builder-r1-mcl-orb-registration.md)).
+- Reproduce with the standard library: `NormalDist().inv_cdf` plus the Euler–Mascheroni constant, as in `research_utils/deflated_sharpe.expected_max_sharpe`.
+
+**Minimum annualised net Sharpe needed to pass 5f:**
+
+| K | 812 sessions (R1 development, ~3.2 y) | ~4 y | ~8 y |
+|---|---|---|---|
+| 1 | 0.92 | 0.82 | 0.58 |
+| 2 | 1.21 | 1.08 | 0.77 |
+| 4 | 1.50 | 1.35 | 0.95 |
+| **8** | **1.73** | 1.55 | 1.10 |
+| 24 (e.g. `k_scope: ledger` after three 8-card rounds) | 2.02 | 1.81 | 1.28 |
+
+**Probability that 5f passes, given the true annualised Sharpe** (812 sessions; normal approximation; 5f only, so every other gate lowers it further):
+
+| True Sharpe | K = 1 | K = 8 | K = 24 |
+|---|---|---|---|
+| 0.85 (M-19's corrected published top-decile single strategy) | 0.45 | **0.06** | 0.02 |
+| 1.0 | 0.56 | 0.10 | 0.03 |
+| 1.5 | 0.85 | 0.34 | 0.18 |
+| 1.83 (M-19's best in-house validated edge) | 0.95 | 0.57 | 0.37 |
+
+**Reading.**
+- At R1's K and window, the 5f floor (1.73) sits above the literature's top decile (0.85) and just under the best edge the programme has ever validated (1.83). [M-19](../methodology/lessons/methodology_lessons.md) calls an axis dead only when the floor exceeds *both*, so R1 is **not formally dead, but it is near-dead**: a top-decile real edge passes 5f about 6% of the time.
+- The same arithmetic was disclosed before freeze for ORB reconstruction and ST-EH-1. [ADR 2026-07-12 §2.4](../adr/2026-07-12-dsr-k-rule-and-variance-floor-supersession.md) still requires that disclosure in every campaign pre-registration. **The public R1 registration does not show it; whether the private draft does is for the coordinator to confirm.**
+- This is the census's first mode (§1) recurring in the newest generator, from a cause the first pass missed. **The data window, not the search, now sets the floor.** The pre-2022 intraday depth went with the retired feeds (§3), so the admitted TV exports give about 4–4.6 years in total, and 70% of that goes to development.
+
+**Levers, cheapest honest one first.** None of them touches 5f's threshold, which Rule 23 and the frozen controls keep binding.
+
+1. **Years of history.** Going from 3.2 to 8 years cuts the K = 8 floor from 1.73 to 1.10. Candidate sources, **all unverified**, each needing an operator check or ruling (Rules 18 and 19):
+   - deeper TradingView intraday history on the current plan;
+   - NinjaTrader's historical data through the Tradeify connection (depth and terms of use unknown);
+   - the retained Databento caches (rights ruling, D6).
+   Bar size does not matter for n (the floor is per session), so a closed-bar logic on 30m or 60m bars could use longer exports if TradingView offers them.
+2. **K per round ≤ 2, with mechanism-first cards.** At K = 2 the floor at 812 sessions is 1.21, not 1.73. Eight parameter cells of one block buy almost nothing; two cards from different mechanisms buy two looks at independent hypotheses.
+3. **Keep `k_scope: instrument` unless a round really shares one hypothesis across instruments.** `ledger` scope grows the floor across rounds (the family-bank effect: Q-KBUDGET-1 L-cand-1).
+4. **Pool one mechanism across weakly correlated instruments as one card.** An equal-risk pool of M legs with true Sharpe 1.0 at pairwise ρ = 0 reaches pooled Sharpe √M: power at K = 8 rises from 0.10 to 0.29 (M = 2) and 0.69 (M = 4). At ρ = 0.6 it barely moves (0.17 at M = 4). This works only across asset classes, not across equity-index micros [INF on strategy-return correlation].
+   **Tension:** a pooled card is one strategy, so it supplies one firm, not several (§5).
+5. **Test the mechanism, not only the payoff.** The candidate contract's independent [mechanism discriminator](../adr/2026-08-30-candidate-contract.md#contract-fields-and-freezes) is measured on its own observable (event counts, conditional moves), which can have far more power than the payoff Sharpe. Under the [terminal taxonomy](../adr/2026-08-30-evaluation-order.md#confirm-verdicts), a discriminator pass with a failed payoff is `EXPRESSION-FAIL`: the mechanism stands and the next round tries another expression of it. A clean discriminator fail is `MARKET-NULL` and stops the line. The builder's gates 5a–5g have no discriminator today, so every builder failure is silent on the mechanism, which wastes the census's main lesson (mode 3).
+
+### 8.2 The native target is NinjaScript, so generate in it
+
+**Facts.** For Tradeify evaluation accounts, the only fully automated native route is a NinjaScript strategy in NinjaTrader ([routes note](2026-10-13-tradeify-compliant-automation-routes.md), routes 1–3):
+- Tradovate "has no strategy engine".
+- TradingView's support says automated strategy trading with a brokerage account "is not available", which leaves Pine as a research and alert surface.
+- Rithmic-side platforms are not named in the native-logic reply. The question is open ([deep-dive Q7](2026-11-01-tradeify-venue-deep-dive-DRAFT.md#62-questions-to-send-tradeify-one-message-joshua-sends)).
+
+**Consequences for generation.**
+1. **Every builder block should be NinjaScript-expressible on closed bars** with stop, limit or market orders and a hard flatten time. The builder's closed-15m compiler already fits; keep new blocks inside that envelope.
+   Build the NinjaScript compiler before survivors queue, not after: a survivor without a native expression cannot reach a Tradeify evaluation.
+2. **Research and execution feeds differ.**
+   - Generation scores on TradingView CME bars.
+   - A Tradeify evaluation fills on the platform simulator against its own feed ([microstructure study §2.2](2026-11-01-prop-firm-microstructure-study-DRAFT.md)).
+   - For closed-bar logic the bars should agree, but session calendars, rolls and missing bars can differ (the W1 commit already counts missing bars).
+   - **A per-instrument feed-equivalence spot check** (same sessions, TradingView export vs NinjaTrader history) belongs before a survivor goes to Joshua for the forward GO, not after.
+3. **Distinctness is now cheap to state:** a different NinjaScript strategy class, instrument and session window, described in plain language Joshua can give unaided ([deep-dive §6.4 item 17](2026-11-01-tradeify-venue-deep-dive-DRAFT.md#64-research-and-modelling-each-needs-its-own-pre-registration-and-go-where-it-spends)).
+
+### 8.3 Supply map
+
+(pending subagent return)
