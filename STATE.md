@@ -36,7 +36,7 @@ Newest 15 consequences; rationale stays with owners; older rows are in the
 [archive](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md).
 Retracted verdicts leave; their correction stays with the owner.
 
-- **2026-11-08** — 11-08 slate discharged on Joshua's 2026-11-03 rulings: four-firm §4 fired with a narrower consequence by operator ruling and ORB MNQ v7 withdrawn ([owner](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md)); PARK b1/b3/b6 lapsed to SUBTRACT ([records](docs/pursuits/)); decompound HOLD and its regime-monitor successor retired ([owner](docs/adr/2026-06-07-decompound-remc-hold.md)); queue review passed; follow-ups carried to 2027-02-08. Owner-record PRs: program #TBD, pursuits #TBD, research #TBD, decompound #TBD, builder #TBD.
+- **2026-11-08** — 11-08 slate discharged on Joshua's 2026-11-03 rulings: four-firm §4 fired with a narrower consequence by operator ruling and ORB MNQ v7 withdrawn ([owner](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md)); PARK b1/b3/b6 lapsed to SUBTRACT ([records](docs/pursuits/)); decompound HOLD and its regime-monitor successor retired ([owner](docs/adr/2026-06-07-decompound-remc-hold.md)); queue review passed; follow-ups carried to 2027-02-08. Owner-record PRs: [program #1034](https://github.com/Joshua-Asante/first-passage/pull/1034), [pursuits #1032](https://github.com/Joshua-Asante/first-passage/pull/1032), [research #1037](https://github.com/Joshua-Asante/first-passage/pull/1037), [decompound #1038](https://github.com/Joshua-Asante/first-passage/pull/1038), [builder #1031](https://github.com/Joshua-Asante/first-passage/pull/1031).
 - **2026-10-29** — Reference-model correction round authorized: one round bringing the account-risk candidate to runbook §6/§7 on `main` (A1, A2, SM-1 to SM-3), within the frozen card's footprint; no merge, platform work or limit binding ([card §11](docs/briefs/handoffs/2026-10-18-account-risk-reference-model-card-DRAFT.md#11-admission-record)).
 - **2026-10-29** — Native runbook order state model ruled: SM-1 (one model, §6.10), SM-2 option A (a trim is confirmed by the broker's order quantity or an accepted pair) and SM-3 (downward protection resizes confirmed the same way); U-18 must prove the native callbacks ([runbook §5](docs/notes/2026-10-18-native-protection-recovery-pilot-runbook.md#5-decisions)).
 - **2026-10-28** — Branch (b) ruled ahead of the 11-08 sitting: #807 stage 1 (read-only native toolchain assessment) only; the native runbook's order rules to be rewritten as one state model; #882 superseded. ORB and Aegis are expected to share one native Tradeify account; that needs its own evidence case under the 10-19 ruling ([addendum](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-28--branch-b-ruled-ahead-of-the-11-08-sitting)).
@@ -113,7 +113,7 @@ Owners hold canonical criteria; rows are pointers.
   fill/data-gated; synthetic tooling is not live evidence.
   [ADR §7](docs/adr/2026-07-11-tradable-anomalies-statistics-adoption.md)/[T4 record](docs/notes/research/2026-08-23-call1-oc-synthetic.md).
 - **ORB decay re-scope:** open without deployed-book data.
-  [Owner: venue-descope ADR §6](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md#6--consequences).
+  [Owner: venue-descope ADR §6](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md#6--consequences)/[current incumbent environment](docs/adr/2026-08-07-loop-s1-environment-ratification.md).
 - **Sentinel Tier-2/3 promotion, limb B1:** before the next quarterly slate; promotion,
   not a new build. [Design](docs/spec/2026-06-23-inqhiori-sentinel-design.md)/[Hermes closure](docs/briefs/closures/2026-07-27-hermes-agent-adoption-closure-resolved.md).
 - **PREREG-C1-DEDUPE-1:** M1 prerequisite met 2026-09-14; GO granted ([D-B13](docs/briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md), 2026-09-11). It does not apply to the REST book route as written (operator ruling 2026-10-02 (sitting 2)).
@@ -126,6 +126,8 @@ Owners hold canonical criteria; rows are pointers.
 - **MNQFLOW-1-DEPTH:** operator HOLD; wake: a historical MBP-10 source for S1 approved (no date).
   [S2B status](lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PREREG_S2B.md)/[charter](docs/adr/2026-08-16-deep-iteration-lane-charter.md)/[superseding K](docs/adr/2026-08-22-grow0-two-ledger-k-question.md).
 
+<a id="2026-11-08"></a>
+
 ### 2026-11-08 — DISCHARGED 2026-11-08
 
 Verdicts, expiries and remedies are recorded at their owners (Joshua's rulings of
@@ -135,11 +137,11 @@ Verdicts, expiries and remedies are recorded at their owners (Joshua's rulings o
 - **GRAND-tier ADR §4:** re-read complete. [Owner](docs/adr/2026-08-09-grand-tier-quintessentials-binding.md).
 - **GSUB-1 PARK expiries:** b1, b3 and b6 lapsed to SUBTRACT. [Records](docs/pursuits/).
 - **Prop-portfolio §4 primary falsifier:** fired; the narrower consequence is by operator
-  ruling; ORB MNQ v7 withdrawn as the candidate. [Four-firm owner](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md).
+  ruling; ORB MNQ v7 withdrawn as the candidate. [Four-firm owner](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-11-08--4-falsifier-fires-consequence-narrowed-by-operator-ruling-accepted)/[withdrawal](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md).
 - **Mechanism boundaries 2-A/2-C:** *placeholder* — pending the 2-C enumeration check
-  (`docs/notes/2026-11-08-2c-enumeration-check.md`). [Owner](docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md).
+  ([check](docs/notes/2026-11-08-2c-enumeration-check.md)); 2-B discharged under [channel retirement](docs/adr/2026-08-24-sourcing-phase-channel-retirement.md). [Owner](docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md).
 - **Sourcing-channel retirement §4 limb 2:** first observation recorded. [Owner](docs/adr/2026-08-24-sourcing-phase-channel-retirement.md).
-- **Harvest intake §4:** dormant doctrine. [Owner](docs/adr/2026-07-15-external-mechanism-harvest-intake.md).
+- **Harvest intake §4:** dormant doctrine. [Owner](docs/adr/2026-07-15-external-mechanism-harvest-intake.md)/[partial supersession](docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md).
 - **Regime-monitor successor:** retired with the decompound HOLD. [Owner](docs/adr/2026-06-07-decompound-remc-hold.md).
 - **Blind channel:** AMBIGUOUS-HOLD. [Channel](docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md).
 - **Regime-candidate flag lane:** not fired. [Owner](docs/adr/2026-07-26-regime-candidate-flag-lane.md).
@@ -161,7 +163,7 @@ Verdicts, expiries and remedies are recorded at their owners (Joshua's rulings o
   [Owner](docs/adr/2026-08-24-sourcing-phase-channel-retirement.md).
 - **Queue attention/order review:** ≤5 cap and out-of-order serving.
   [Charter](docs/adr/2026-07-16-root-doc-charter-dedup.md#queue-attention-review).
-- **Harvest intake §4:** limb 1 re-test. [Owner](docs/adr/2026-07-15-external-mechanism-harvest-intake.md).
+- **Harvest intake §4:** limb 1 re-test. [Owner](docs/adr/2026-07-15-external-mechanism-harvest-intake.md)/[partial supersession](docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md).
 - **Blind channel:** re-test of the AMBIGUOUS-HOLD.
   [Channel](docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md).
 - **Regime-candidate flag lane:** two-strikes re-check against new confirm closures.
