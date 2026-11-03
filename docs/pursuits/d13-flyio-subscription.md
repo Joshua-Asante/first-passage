@@ -1,4 +1,6 @@
-# Fly.io — KEEP
+# Fly.io — WINDING DOWN
+
+> **2026-11-03:** both c1 apps are reported scaled to zero in the operator-run session (endpoint probes at 14:55 UTC) ([Stage 1 record](../adr/2026-07-17-c1-rail-build-account-registration-go.md#stage-1-record--2026-11-03)). The reported rollback window starts November 3 (review around November 17); Stage 2 remains a separate operator decision. Billing and remaining resources are unverified, and potential charges are not limited to volumes. The KEEP standing below is historical.
 
 **Class:** (d) meta-belt (subscription) · **Standing:** KEEP
 **Aim served:** A1/A3 — hosts the rail listener + `c1-signal-daemon`
