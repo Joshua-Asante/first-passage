@@ -138,8 +138,8 @@ Verdicts, expiries and remedies are recorded at their owners (Joshua's rulings o
 - **GSUB-1 PARK expiries:** b1, b3 and b6 lapsed to SUBTRACT. [Records](docs/pursuits/).
 - **Prop-portfolio §4 primary falsifier:** fired; the narrower consequence is by operator
   ruling; ORB MNQ v7 withdrawn as the candidate. [Four-firm owner](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-11-08--4-falsifier-fires-consequence-narrowed-by-operator-ruling-accepted)/[withdrawal](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md).
-- **Mechanism boundaries 2-A/2-C:** *placeholder* — pending the 2-C enumeration check
-  ([check](docs/notes/2026-11-08-2c-enumeration-check.md)); 2-B discharged under [channel retirement](docs/adr/2026-08-24-sourcing-phase-channel-retirement.md). [Owner](docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md).
+- **Mechanism boundaries 2-A/2-C:** 2-C evidence: FIRED; verdict and re-banking at the 11-08 sitting
+  ([enumeration check](docs/notes/2026-11-08-2c-enumeration-check.md)); 2-B discharged under [channel retirement](docs/adr/2026-08-24-sourcing-phase-channel-retirement.md). [Owner](docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md).
 - **Sourcing-channel retirement §4 limb 2:** first observation recorded. [Owner](docs/adr/2026-08-24-sourcing-phase-channel-retirement.md).
 - **Harvest intake §4:** dormant doctrine. [Owner](docs/adr/2026-07-15-external-mechanism-harvest-intake.md)/[partial supersession](docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md).
 - **Regime-monitor successor:** retired with the decompound HOLD. [Owner](docs/adr/2026-06-07-decompound-remc-hold.md).
