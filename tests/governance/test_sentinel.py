@@ -129,7 +129,7 @@ def test_precondition_dormant_far_from_slate(tmp_path):
 
 
 def test_slate_date_is_pinned():
-    assert SLATE_DATE == date(2026, 11, 8)
+    assert SLATE_DATE == date(2027, 2, 8)
 
 
 # --- obligation_scan: docs/adr/* trigger-schedule aggregation (X2/X3) ----- #

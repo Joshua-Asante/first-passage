@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Last curated:** 2026-10-29
+**Last curated:** 2026-11-08
 
 Read the queue, then its linked plan.
 [SESSIONS](docs/SESSIONS.md) is history, `git status` owns uncommitted work, [operational_rules §7](docs/operational_rules.md)
@@ -36,6 +36,7 @@ Newest 15 consequences; rationale stays with owners; older rows are in the
 [archive](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md).
 Retracted verdicts leave; their correction stays with the owner.
 
+- **2026-11-08** — 11-08 slate discharged on Joshua's 2026-11-03 rulings: four-firm §4 fired with a narrower consequence by operator ruling and ORB MNQ v7 withdrawn ([owner](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md)); PARK b1/b3/b6 lapsed to SUBTRACT ([records](docs/pursuits/)); decompound HOLD and its regime-monitor successor retired ([owner](docs/adr/2026-06-07-decompound-remc-hold.md)); queue review passed; follow-ups carried to 2027-02-08. Owner-record PRs: program #TBD, pursuits #TBD, research #TBD, decompound #TBD, builder #TBD.
 - **2026-10-29** — Reference-model correction round authorized: one round bringing the account-risk candidate to runbook §6/§7 on `main` (A1, A2, SM-1 to SM-3), within the frozen card's footprint; no merge, platform work or limit binding ([card §11](docs/briefs/handoffs/2026-10-18-account-risk-reference-model-card-DRAFT.md#11-admission-record)).
 - **2026-10-29** — Native runbook order state model ruled: SM-1 (one model, §6.10), SM-2 option A (a trim is confirmed by the broker's order quantity or an accepted pair) and SM-3 (downward protection resizes confirmed the same way); U-18 must prove the native callbacks ([runbook §5](docs/notes/2026-10-18-native-protection-recovery-pilot-runbook.md#5-decisions)).
 - **2026-10-28** — Branch (b) ruled ahead of the 11-08 sitting: #807 stage 1 (read-only native toolchain assessment) only; the native runbook's order rules to be rewritten as one state model; #882 superseded. ORB and Aegis are expected to share one native Tradeify account; that needs its own evidence case under the 10-19 ruling ([addendum](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-28--branch-b-ruled-ahead-of-the-11-08-sitting)).
@@ -51,12 +52,10 @@ Retracted verdicts leave; their correction stays with the owner.
 - **2026-10-09** — Self-funded lane reopened (operator executive decision): personal Tradovate account, objective maximum growth, portfolio not yet selected (not the Tradeify book by default); intended CME data source; clearance standard = max 15% peak-to-trough drawdown; no capital authorization until a portfolio clears it ([ADR](docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md)).
 - **2026-10-02** — Sitting-1 rulings ("all recommended"): T00 order, ~~step 3 before `r3c-a2` expires, then the qualification-path fixes, then a P7 re-run under a fresh signed approval~~ (superseded the same day by sheet A1, below) ([checklist](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger)); D-feed (b) re-ruled, CP-7 after T00 GO-evidence, a bound equivalence spec and A9-PREP, provider-neutral preparation authorized ([CP-7](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken)); B4 before T06 dispatch, not blocking R1 ([ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-acceptance--s5-c3-step-1-accepted-c3-linux-grant-2026-09-29)); first release without the Aegis takeover, and F-5 discharges C-a row S-X2 ([B–D packet](docs/notes/2026-09-26-tradeify-bd-decision-packet.md#12-other-decisive-capabilities)); X-3/X-4 fills count for weekly preservation, X-3 symbol B is MNQ ([drill plan](docs/notes/2026-09-26-tradeify-route-drill-plan-draft.md#20-rules-common-to-x-1--x-5)); effective-input file readable in place ([§60](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25)); term 8, joint-batch validators ([S6 amendment](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-checkpoint-c-r--t05s6-result-commit-accepted-as-an-interface-s7-go-2026-09-21)). T05 C′ environment sealing, base-image pin, broadened R1 and the accepted host-drift residual ([ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-rulings--t05-environment-sealing-c-and-the-first-release-host-environment-drift-residual-2026-10-02)); S6 freeze amendment, seven terms ([ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-checkpoint-c-r--t05s6-result-commit-accepted-as-an-interface-s7-go-2026-09-21)). Equivalence spec frozen on #585's merge ([spec](docs/spec/2026-09-27-cme-execution-feed-equivalence-test-DRAFT.md)). Pre-registration exposure: both edition pre-registrations CLOSED and replaced by successors; standing rule, no agent runs a candidate-configurable replay against a pre-registered edition before its pre-registration is frozen ([checklist item 7.6.1](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts)). Vendor answers are not a C-a selection gate; residual risk accepted with guards; the Q6 scope check folded into X-3 ([item 7.3](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts)); X-3 two-symbol amendment ([drill plan §2.0](docs/notes/2026-09-26-tradeify-route-drill-plan-draft.md#20-rules-common-to-x-1--x-5)). Decision sheet ("all recommended", coordinator (3)): T00 step-3 re-order through a signed T00 screen authority, `r3c-a2` lapses unused; source-only spec `:124`/`:358` amendment approved in principle; ORB-3/VAN-3 answered before any step-3 output; one timing-only real-source probe before #581 ([checklist](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger)). Four-firm §4: the 09-03 EOD-clock discharge is withdrawn and a clear must hold on the intraday-honest clock ([withdrawal ADR](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-10-02--the-2026-09-03-discharge-withdrawn-an-intraday-honest-clear-is-required-accepted)). CP-7's grant scope supersedes the S2b provider-specific wait; trading use keeps its gates ([S2b ADR](docs/adr/2026-08-08-s2b-signal-daemon-build.md#addendum-2026-10-02--cp-7-grant-scope-and-the-live-cme-bar-source-row)). Lane D step 3 may edit the measured closure for `result_g5`/qseal, covered by the one fresh Part A measurement ([ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--lane-d-step-3-may-edit-the-measured-closure-result_g5-and-qseal-provisioning-2026-10-02)). The venue-facts re-verification by about 10-11 covers the four friendly firms; the other four rows stay stale and unused. Incident notifier defaults: correctly handled refusals don't notify, all channels lost while armed is an operator stop, retries continue until delivered. Sheet 2: second timing probe done ([#629](https://github.com/Joshua-Asante/first-passage/pull/629) timing basis); November calendar acceptances recorded at ratification ([#622](https://github.com/Joshua-Asante/first-passage/pull/622)); Q1, a revision of a forwarded bar latches the feed source unhealthy ([#619](https://github.com/Joshua-Asante/first-passage/pull/619)). Sheet 4: screen-authority design approved ([#629](https://github.com/Joshua-Asante/first-passage/pull/629#issuecomment-5965049542)). *2026-10-03:* sheet 5: build card approved ([#634](https://github.com/Joshua-Asante/first-passage/pull/634#issuecomment-5965354454)); N = 1,000 recorded, under precision review in sheet 6; TB-I3 D-3 = U ([#633](https://github.com/Joshua-Asante/first-passage/pull/633#issuecomment-5965354590)); #630 merged ([FEED-16 note](docs/notes/2026-10-03-feed16-warmup-design.md)); ORB-3/VAN-3 answered, exposure "seen" ([#634](https://github.com/Joshua-Asante/first-passage/pull/634#issuecomment-5965354454)). D-MON channel: Grafana Cloud IRM ([#635](https://github.com/Joshua-Asante/first-passage/pull/635)). Hyper: dot card 01 released ([#622 release](https://github.com/Joshua-Asante/first-passage/pull/622#issuecomment-5965599860)).
 
-- **2026-09-27** — Staged acceptance: evidence proportional to the next step; unknowns block only what they affect ([addendum](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-09-27--staged-acceptance-evidence-proportional-to-the-next-step)/[handoffs](docs/briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md)). Rulings: ORB L1 and fence classification ([§59 R7](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-7--orb-lifecycle-l1-reaffirmed-and-the-account-fence-classification-contract-2026-09-27)); no same-session restart of automation after an incident during commissioning and the first attended release; review before another session ([§A11.2](docs/adr/2026-09-17-bounded-platform-protection-incident-contract.md#a112--operator-ruling-no-same-session-restart-of-automation-after-an-incident-2026-09-27)/[§4.1](docs/spec/2026-09-14-tb-s3-halt-resume-contract.md#41-amendment-2026-09-27-incident-versus-correctly-handled-refusal)); preservation-trade read target ([§A11.3](docs/adr/2026-09-17-bounded-platform-protection-incident-contract.md#a113--operator-ruling-preservation-trade-evidence-as-the-target-of-authorized-reads-2026-09-27)); S5 staged gates, CP-1a, CP-1b ([ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--s5-staged-gates-approved-part-a-only-rule-scope-hold-kept-2026-09-27)/[CP-1a](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27)/[CP-1b](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1b-s5-hold-released-for-the-test_only-build-2026-09-28)).
-
 ## Dormant cross-session threads
 
-PARK threads b1, b3 and b6 stay with [their pursuit records](docs/pursuits/) (expiry
-below). Registry backfill debt: `python scripts/check_closure_disposition.py --list-debt`.
+PARK threads b1, b3 and b6 lapsed to SUBTRACT on 2026-11-08 ([pursuit records](docs/pursuits/));
+b5's expiry is below. Registry backfill debt: `python scripts/check_closure_disposition.py --list-debt`.
 
 ## Scheduled forward triggers
 
@@ -108,68 +107,44 @@ Owners hold canonical criteria; rows are pointers.
   [Q-MONSURF-1](docs/briefs/closures/Q-MONSURF-1-closure-resolved.md).
 - **M-C per-fill add-slippage capture:** waits for the first strategy-signal add fill;
   prerequisite ledger capture landed. [Q-COSTGEO-3](docs/briefs/closures/Q-COSTGEO-3-closure-ambiguous-needs-depth.md)/[triage](docs/briefs/closures/Q-MONSURF-1-closure-resolved.md).
-- **M-C ECR live-edge capture / b6:** PARK until a NAS100/MNQ-shaped leg's first live fill
-  on the incumbent eval or an F3 successor. [Pursuit](docs/pursuits/b6-q-nas-ecr-1.md); expiry below.
-- **M-A regime observer / decompound limb-2 successor:** elective; operator ruling owed on
-  whether its build gate needs a live fill. [Triage](docs/briefs/closures/Q-MONSURF-1-closure-resolved.md)/[risk-framework obligation](docs/adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md).
+- **M-C ECR live-edge capture:** b6 lapsed 2026-11-08; the ECR idea is a fresh Pre-Q at the
+  first native fill. [Pursuit](docs/pursuits/b6-q-nas-ecr-1.md).
 - **Lifecycle Call-1 / T4 Task 3:** rolling-PF sigma source and state writer stay
   fill/data-gated; synthetic tooling is not live evidence.
   [ADR §7](docs/adr/2026-07-11-tradable-anomalies-statistics-adoption.md)/[T4 record](docs/notes/research/2026-08-23-call1-oc-synthetic.md).
 - **ORB decay re-scope:** open without deployed-book data.
-  [Obligation](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md#6--consequences)/[current incumbent environment](docs/adr/2026-08-07-loop-s1-environment-ratification.md)/[pursuit](docs/pursuits/b3-orb-mnq-payability-line.md).
+  [Owner: venue-descope ADR §6](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md#6--consequences).
 - **Sentinel Tier-2/3 promotion, limb B1:** before the next quarterly slate; promotion,
   not a new build. [Design](docs/spec/2026-06-23-inqhiori-sentinel-design.md)/[Hermes closure](docs/briefs/closures/2026-07-27-hermes-agent-adoption-closure-resolved.md).
 - **PREREG-C1-DEDUPE-1:** M1 prerequisite met 2026-09-14; GO granted ([D-B13](docs/briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md), 2026-09-11). It does not apply to the REST book route as written (operator ruling 2026-10-02 (sitting 2)).
   [Pre-registration](docs/spec/PREREG-C1-DEDUPE-1-intent-key-functional-property.md)/[plan](docs/spec/PREREG-C1-DEDUPE-1-implementation-plan.md).
 - **CFD data-estate class-wide deletion:** awaits T1 / F3 FUTURES_LOCK and substrate
   Phase-6 confirmation. [Estate ADR](docs/adr/2026-07-11-ops-cfd-estate-retirement.md)/[substrate successor](docs/adr/2026-07-22-challenge-era-substrate-retirement.md)/[gate audit](docs/notes/audits/2026-07-17_gate_cfd-estate-classwide-delete.md).
-- **Mechanism-sourcing radar:** on demand; progress/idle checkpoint 2026-11-08.
-  [Harvest method](docs/methodology/strategy_harvest.md).
 - **Reversed-evidence propagation sweep:** pursuit fixes from the closed, unmerged pass are
   owed; most skills and strategy-card mirrors are unswept.
   [Findings](docs/notes/audits/2026-08-31-pursuits-personas-reversed-evidence-audit.md)/[first audit](docs/notes/audits/2026-08-31-reversed-evidence-docs-audit.md)/[instrument audit](docs/notes/audits/2026-08-31-ops-instruments-reversed-evidence-audit.md).
-- **MNQFLOW-1-DEPTH:** operator HOLD on value of spend (not a cost-only block or a decline). Since the
-  2026-09-10 Databento retirement it is also data-blocked: MBP-10 depth has no approved source and TV exports
-  carry none (wake: data source approved). Revisit at operator initiative or 2026-11-08; alternate supply
-  routes do not depend on it.
+- **MNQFLOW-1-DEPTH:** operator HOLD; wake: a historical MBP-10 source for S1 approved (no date).
   [S2B status](lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PREREG_S2B.md)/[charter](docs/adr/2026-08-16-deep-iteration-lane-charter.md)/[superseding K](docs/adr/2026-08-22-grow0-two-ledger-k-question.md).
 
-### 2026-11-08
+### 2026-11-08 — DISCHARGED 2026-11-08
 
-- **Queue attention/order review:** first check of the ≤5 cap (two-consecutive-quarter
-  condition) and repeated out-of-order serving.
-  [Charter](docs/adr/2026-07-16-root-doc-charter-dedup.md#queue-attention-review).
-- **GRAND-tier ADR §4:** scheduled re-read; initial binding satisfied, not sunset.
-  [Owner](docs/adr/2026-08-09-grand-tier-quintessentials-binding.md).
-- **GSUB-1 PARK expiries:** b1 Aegis→6J, b3 ORB-MNQ, b6 Q-NAS-ECR convert to SUBTRACT
-  absent explicit renewal ([records](docs/pursuits/)); b5 is below.
-- **Prop-portfolio §4 primary falsifier:** undischarged; absent the required qualifying
-  clearance, demote to research-only. Discharge needs its own dated re-MC, not a T00 screen
-  ([condition 4](docs/briefs/handoffs/2026-09-22-tradeify-t00-step1-producer-inventory.md#78-operator-rulings-on-the-return-2026-09-23)). [four-firm owner](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md)/[withdrawal](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md).
-  *2026-10-02:* the 2026-09-03 EOD-clock discharge is withdrawn; a clear must hold on the intraday-honest clock ([ruling](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-10-02--the-2026-09-03-discharge-withdrawn-an-intraday-honest-clear-is-required-accepted)).
-  *2026-10-06:* the dated re-MC returned FALSIFIED — early-fail; §4 stays undischarged, candidate (A) closes, and any next candidate needs fresh operator authorization. The program check above still runs on 11-08 ([record](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-10-06--dated-re-mc-verdict-falsified--early-fail-recorded)).
-- **Mechanism boundaries:** check clauses 2-A/2-C; 2-B discharged under
-  [channel retirement](docs/adr/2026-08-24-sourcing-phase-channel-retirement.md).
-  [Owner](docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md).
-- **Sourcing-channel retirement §4 limb 2:** first starvation check (second 2027-02-08).
-  [Owner](docs/adr/2026-08-24-sourcing-phase-channel-retirement.md).
-- **Harvest intake §4:** doctrine falsifier and idle guard; read owner counts and evidence,
-  not a root summary. [Owner](docs/adr/2026-07-15-external-mechanism-harvest-intake.md)/[partial supersession](docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md).
-- **Regime-monitor successor:** if no live fill, re-raise the standing-unfalsifiable gap at
-  the audit. [owner](docs/adr/2026-06-07-decompound-remc-hold.md).
-- **Blind channel:** check sourced-vs-empty status, pre-G0 count, N firing and any
-  analogue-manifest re-test. [Channel](docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md)/[analogue ruling](docs/adr/2026-08-15-analogue-modality-route-ruling.md).
-- **Regime-candidate flag lane:** two-strikes check against new confirm closures.
-  [Owner](docs/adr/2026-07-26-regime-candidate-flag-lane.md).
-- **Candidate contract and channel review:** initial consolidated review, including fired-ceiling
-  checks ([review](docs/adr/2026-08-30-candidate-contract.md#first-review-and-unresolved-obligations)).
-  Five artifact adoptions and five liveness reconciliations are owed at channel owners
-  ([owner](docs/adr/2026-08-30-candidate-contract.md#current-owner)/[liveness](docs/methodology/strategy_harvest.md#channel-liveness-contract)).
-- **Evaluation and rejection review:** initial consolidated review, and immediately on a
-  cost-authority/scope change ([review](docs/adr/2026-08-30-evaluation-order.md#first-review-and-unresolved-obligations)).
-  Full enforcement and the rejection parser/ladder stay incomplete;
-  [owner](docs/adr/2026-08-30-evaluation-order.md#current-owner)/[rejection patterns](docs/adr/2026-06-14-rejected-candidate-patterns.md#expression-ladder-and-register-routing)
-  hold the limits under [D3 routing](docs/adr/2026-08-09-rejection-register-topology-and-bar-wiring.md#2--decision).
+Verdicts, expiries and remedies are recorded at their owners (Joshua's rulings of
+2026-11-03); follow-up work is carried to 2027-02-08 below.
+
+- **Queue attention/order review:** passed; next 2027-02-08. [Charter](docs/adr/2026-07-16-root-doc-charter-dedup.md#queue-attention-review).
+- **GRAND-tier ADR §4:** re-read complete. [Owner](docs/adr/2026-08-09-grand-tier-quintessentials-binding.md).
+- **GSUB-1 PARK expiries:** b1, b3 and b6 lapsed to SUBTRACT. [Records](docs/pursuits/).
+- **Prop-portfolio §4 primary falsifier:** fired; the narrower consequence is by operator
+  ruling; ORB MNQ v7 withdrawn as the candidate. [Four-firm owner](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md).
+- **Mechanism boundaries 2-A/2-C:** *placeholder* — pending the 2-C enumeration check
+  (`docs/notes/2026-11-08-2c-enumeration-check.md`). [Owner](docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md).
+- **Sourcing-channel retirement §4 limb 2:** first observation recorded. [Owner](docs/adr/2026-08-24-sourcing-phase-channel-retirement.md).
+- **Harvest intake §4:** dormant doctrine. [Owner](docs/adr/2026-07-15-external-mechanism-harvest-intake.md).
+- **Regime-monitor successor:** retired with the decompound HOLD. [Owner](docs/adr/2026-06-07-decompound-remc-hold.md).
+- **Blind channel:** AMBIGUOUS-HOLD. [Channel](docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md).
+- **Regime-candidate flag lane:** not fired. [Owner](docs/adr/2026-07-26-regime-candidate-flag-lane.md).
+- **Candidate contract and evaluation order:** reviewed; follow-ups carried.
+  [Contract](docs/adr/2026-08-30-candidate-contract.md)/[order](docs/adr/2026-08-30-evaluation-order.md).
 
 ### 2026-12-31 (approx.)
 
@@ -184,3 +159,14 @@ Owners hold canonical criteria; rows are pointers.
 - **Sourcing-channel retirement §4:** limb 2, second starvation check; limb 3, independently
   re-examine whether the evidence for early closure was complete at authoring.
   [Owner](docs/adr/2026-08-24-sourcing-phase-channel-retirement.md).
+- **Queue attention/order review:** ≤5 cap and out-of-order serving.
+  [Charter](docs/adr/2026-07-16-root-doc-charter-dedup.md#queue-attention-review).
+- **Harvest intake §4:** limb 1 re-test. [Owner](docs/adr/2026-07-15-external-mechanism-harvest-intake.md).
+- **Blind channel:** re-test of the AMBIGUOUS-HOLD.
+  [Channel](docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md).
+- **Regime-candidate flag lane:** two-strikes re-check against new confirm closures.
+  [Owner](docs/adr/2026-07-26-regime-candidate-flag-lane.md).
+- **Candidate contract:** owed artifact adoptions and liveness reconciliations at channel owners.
+  [Owner](docs/adr/2026-08-30-candidate-contract.md)/[liveness](docs/methodology/strategy_harvest.md#channel-liveness-contract).
+- **Builder:** evaluation-order mapping of its gates and its liveness ceiling.
+  [Evaluation order](docs/adr/2026-08-30-evaluation-order.md)/[builder](lab/builder/README.md).

@@ -285,11 +285,12 @@ def obligation_scan(root: Path, asof: date, horizon_days: int = 60) -> list[Find
 
 # The next dated slate whose preconditions v1 tracks explicitly (C2). Generalizing
 # precondition discovery from obligation_scan output is future work (spec §9).
-# Rolled 2026-08-08 -> 2026-11-08 (weekly sentinel run, 2026-08-10): the prior
-# slate DISCHARGED (STATE.md ### 2026-08-08); this constant is the only
-# re-arm mechanism for the SLATE_DATE-gated precondition checks (spec addendum
-# 2026-07-27) and does not advance itself.
-SLATE_DATE = date(2026, 11, 8)
+# Rolled 2026-08-08 -> 2026-11-08 (weekly sentinel run, 2026-08-10) and
+# 2026-11-08 -> 2027-02-08 (11-08 sitting, Joshua's ruling A1 of 2026-11-03):
+# each time the prior slate DISCHARGED (STATE.md ### <slate>); this constant is
+# the only re-arm mechanism for the SLATE_DATE-gated precondition checks (spec
+# addendum 2026-07-27) and does not advance itself.
+SLATE_DATE = date(2027, 2, 8)
 
 
 def _slate_verification_discharged(section: str, slate: date) -> bool:
