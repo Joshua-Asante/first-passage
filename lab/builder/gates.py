@@ -128,6 +128,33 @@ def dsr(x: np.ndarray, k: int) -> tuple[float, float]:
     return deflated_sharpe(sr, n, skew, kurt, sr0), sr0
 
 
+# D7 (generation-phase note §9.2): the benchmarks of the report-only reachability line; not gates
+REACH = {"sessions_per_year": 252, "true_sharpe": (0.85, 0.89), "reachable_at": 0.89}
+
+
+def reachability(k: int, n: int) -> dict:
+    """D7's report-only reach of gate 5f at K trials over n development sessions (ADR 2026-07-12
+    §2.4 power disclosure). Under near-normal moments 5f passes when the per-session Sharpe is at
+    least SR0 + z/sqrt(n-1), with SR0 the same ``expected_max_sharpe(k, 1/(n-1))`` that ``dsr``
+    uses and z the normal quantile of the 5f threshold. P(pass) at a true annual Sharpe S is the
+    normal approximation Phi((S - floor_annual) * sqrt((n-1)/252)). Both drop the PSR
+    denominator's (1 + SR^2/2) term, so at the floor the exact DSR sits a few 1e-4 below the
+    threshold. ``reachable`` means floor_annual <= 0.89 (the futures-native best). It never
+    changes a gate, a threshold or a verdict."""
+    from statistics import NormalDist
+    from research_utils.deflated_sharpe import expected_max_sharpe
+    if n < 2:
+        raise ValueError(f"reachability needs at least 2 development sessions, got {n}")
+    nd, py = NormalDist(), REACH["sessions_per_year"]
+    sr0 = float(expected_max_sharpe(k, 1.0 / (n - 1)))
+    floor = sr0 + nd.inv_cdf(THRESHOLDS["5f_min_dsr"]) / math.sqrt(n - 1)
+    ann = floor * math.sqrt(py)
+    p_pass = {f"{s:.2f}": nd.cdf((s - ann) * math.sqrt((n - 1) / py)) for s in REACH["true_sharpe"]}
+    return {"k": k, "dev_sessions": n, "floor_per_session": floor, "floor_annual": ann, "p_pass": p_pass,
+            "reachable": bool(ann <= REACH["reachable_at"]), "reachable_at": REACH["reachable_at"],
+            "basis": "5f only, normal approximation; a description, not a gate"}
+
+
 def placebo_beaten_share(card: Card, days: list[C.Day], trades: list[C.Trade], costs: Costs,
                          runs: int, seed: int) -> float:
     """Share of timing-shuffled runs whose net profit is below the card's. Each run keeps every
@@ -157,6 +184,11 @@ def _gate(gates: list, name: str, value, threshold, ok: bool) -> bool:
     return ok
 
 
+def k_for(ledger_path: Path, instrument: str, k_scope: str) -> int:
+    """The K gate 5f deflates against: the instrument's distinct ledgered cards, or the ledger's."""
+    return ledger.k(ledger_path, instrument if k_scope == "instrument" else None)
+
+
 def evaluate(card: Card, bars, dev: list[str], ledger_path: Path, costs: Costs, data_sha256: str,
              book: dict[str, float] | None = None, *, closed: frozenset[str], k_scope: str) -> dict:
     """``closed`` is the frozen calendar's dates; ``k_scope`` picks K for 5f (see ledger.k)."""
@@ -167,7 +199,7 @@ def evaluate(card: Card, bars, dev: list[str], ledger_path: Path, costs: Costs, 
     check_dates(card, bars, dev)
     if len(dev) < 2:
         raise GateError(f"{card.id}: 5c needs two development halves; got {len(dev)} session(s)")
-    T, k = THRESHOLDS, ledger.k(ledger_path, card.instrument if k_scope == "instrument" else None)
+    T, k = THRESHOLDS, k_for(ledger_path, card.instrument, k_scope)
     skipped: dict[str, int] = {}
     days = C.days(card, bars, dev, skipped, closed)
     trades = [t for d in days for t in C.simulate_day(card, d)]
