@@ -1,3 +1,5 @@
+> **Historical runbook:** c1 is retired. The Dockerfiles and image CI were removed on 2026-11-03; see [retirement status](../README.md). Host shutdown is still unverified. Commands below describe the former build and do not authorize deployment.
+
 # c1 signal daemon (Fly app)
 
 Second Fly app for the Python-native signal host ([SPEC S2b](../../docs/spec/2026-08-07-loop-s2b-python-signal-daemon-spec.md) ·

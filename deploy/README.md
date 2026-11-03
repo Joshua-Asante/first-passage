@@ -1,17 +1,17 @@
-# `deploy/` — Fly.io packaging
+# `deploy/` - retired c1 packaging
 
-Build context is the **repo root**. Do not collapse the two apps.
+The [c1 retirement ruling](../docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-10-29--c1-retired-as-an-execution-route-staged-decommission)
+retires the Python listener, signal daemon and CrossTrade route.
 
-| App | Config | Code |
-|---|---|---|
-| Listener | [`c1_rail/`](c1_rail/) | [`ops/c1_rail/`](../ops/c1_rail/) |
-| S2b daemon | [`c1_signal_daemon/`](c1_signal_daemon/) | [`ops/c1_signal_daemon/`](../ops/c1_signal_daemon/) |
+The two Dockerfiles and their dedicated image-validation workflow, shell runner
+and packaging tests were removed on 2026-11-03. Retrieve them through the
+[removal ledger](../docs/ltm/README.md#removal-batches).
 
-Posture (disarmed / no book) is owned by
-[`AGENTS.md`](../AGENTS.md) §Live-execution posture.
-Runbooks in the per-app READMEs are standup only — they do not authorize arming.
+The per-app [listener](c1_rail/README.md) and [daemon](c1_signal_daemon/README.md)
+runbooks are historical. Their manifests identify the apps for shutdown; example
+configs are not evidence of host state. The runtime, shutdown utilities, M1
+records and fixtures remain pending consumer-by-consumer retirement.
 
-Linux image validation (build, inert/disarmed boot, POSIX fsync/flock, arming
-interlock) lives in [`.github/workflows/c1-image-validation.yml`](../.github/workflows/c1-image-validation.yml)
-and [`scripts/c1_image_validation.sh`](../scripts/c1_image_validation.sh); procedure
-ownership stays in the per-app READMEs.
+**Host status, 2026-11-03:** verification and scale-to-zero are blocked because
+`fly apps list --json` returned `no access token available`. No host change was
+made. Fly cost remains unknown in the [subscription owner](../docs/pursuits/d13-flyio-subscription.md).
