@@ -21,6 +21,10 @@ def ledger(tmp_path, monkeypatch):
     # --search-log now requires a repo-contained path (portability fix); treat
     # tmp_path as "the repo" for these fixtures so they stay outside the real one.
     monkeypatch.setattr(rs, "_REPO_ROOT", tmp_path)
+    # 2-C condition (i) scan: an empty results root, so no artifact names the run.
+    results_root = tmp_path / "lab"
+    results_root.mkdir()
+    monkeypatch.setattr(rs, "RESULTS_ROOTS", [results_root])
     return d
 
 
@@ -59,12 +63,31 @@ def _close_args(**kw):
         operator_stopped=False,
         executed_k=None,
         stop_reason=None,
-        executed_looks=None,
+        executed_looks_file=None,
+        non_execution_evidence=None,
+        operator_signoff=None,
         rule_provenance_file=None,
         search_log=None,
     )
     base.update(kw)
     return Namespace(**base)
+
+
+def _stopped_args(tmp_path, executed_k, **kw):
+    """Operator-stopped close args with a 2-C enumeration of executed_k looks."""
+    looks = tmp_path / "looks.json"
+    looks.write_text(json.dumps(
+        [{"look": f"look {i}", "examiner": "operator"} for i in range(executed_k)]
+    ), encoding="utf-8")
+    return _close_args(
+        operator_stopped=True,
+        executed_k=executed_k,
+        stop_reason="ran out of budget",
+        executed_looks_file=str(looks),
+        non_execution_evidence="no outputs exist",
+        operator_signoff="operator, 2026-11-03",
+        **kw,
+    )
 
 
 def _open_blind(ledger):
@@ -183,15 +206,7 @@ def test_search_log_empty_list_aborts_on_operator_stopped_with_positive_executed
     empty_list.write_text("[]", encoding="utf-8")
 
     with pytest.raises(SystemExit) as exc:
-        rs.close_run(
-            _close_args(
-                operator_stopped=True,
-                executed_k=1,
-                stop_reason="ran out of budget",
-                executed_looks="1 look, examiner: operator",
-                search_log=str(empty_list),
-            )
-        )
+        rs.close_run(_stopped_args(tmp_path, 1, search_log=str(empty_list)))
     assert "empty JSON list" in str(exc.value)
 
 
@@ -204,15 +219,7 @@ def test_search_log_empty_list_accepted_on_operator_stopped_before_any_read(
     empty_list = tmp_path / "empty_list.json"
     empty_list.write_text("[]", encoding="utf-8")
 
-    rs.close_run(
-        _close_args(
-            operator_stopped=True,
-            executed_k=0,
-            stop_reason="stopped before any read",
-            executed_looks="0 looks",
-            search_log=str(empty_list),
-        )
-    )
+    rs.close_run(_stopped_args(tmp_path, 0, search_log=str(empty_list)))
     manifest = json.loads((ledger / "test_run.json").read_text(encoding="utf-8"))
     assert manifest["search_log"]["entry_count"] == 0
 
@@ -222,15 +229,7 @@ def test_search_log_recorded_on_operator_stopped_closure(ledger, tmp_path):
     log = tmp_path / "restarts.json"
     log.write_text(json.dumps([{"seed": 1}]), encoding="utf-8")
 
-    rs.close_run(
-        _close_args(
-            operator_stopped=True,
-            executed_k=1,
-            stop_reason="ran out of budget",
-            executed_looks="1 look, examiner: operator",
-            search_log=str(log),
-        )
-    )
+    rs.close_run(_stopped_args(tmp_path, 1, search_log=str(log)))
 
     manifest = json.loads((ledger / "test_run.json").read_text(encoding="utf-8"))
     assert manifest["search_log"]["entry_count"] == 1
