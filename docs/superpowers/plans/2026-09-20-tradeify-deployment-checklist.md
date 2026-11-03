@@ -7,8 +7,7 @@ superseded for Tradeify**, not the current delivery plan. The
 [10-16 ruling](#addendum-2026-10-16--track-b-superseded-for-tradeify) governs;
 [shared obligations](../../adr/2026-09-12-tradeify-book-protection-instance-admission.md#addendum-2026-10-25--d4-tradeify-scoped-supersession-and-where-preserved-items-live)
 remain with their recorded owners. The retained evaluation and weekly
-preservation trade continue under their existing conditions. The 10-19 pause of Q-SFCLEAR-3
-dispatch preparation is moot: the personal lane is closed ([Addendum 2026-11-08](#addendum-2026-11-08--draft-11-08-rules-withdrawn-the-orb-and-aegis-pair-is-book-lineage), row 3).
+preservation trade continue under their existing conditions. The [personal lane closed](../../adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed) on 2026-10-29; Q-SFCLEAR-3 is not run, and the 10-19 pause of its dispatch preparation is moot ([Addendum 2026-11-08](#addendum-2026-11-08--draft-11-08-rules-withdrawn-the-orb-and-aegis-pair-is-book-lineage), row 3). The [c1 stack is retired](../../adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-10-29--c1-retired-as-an-execution-route-staged-decommission) with staged decommission, not a native dependency.
 
 | Record | Read as | Remaining boundary |
 |---|---|---|

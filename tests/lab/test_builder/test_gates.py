@@ -244,3 +244,33 @@ def test_a_plateau_neighbour_with_an_unresolved_trade_voids_the_card(tmp_path, m
     rep, *_ = run(tmp_path)
     assert (rep["verdict"], rep["stopped_at"]) == ("unresolved", "5d plateau")
     assert rep["unresolved"]["source"].startswith("neighbour n_bars") and rep["unresolved"]["count"] == 1
+
+
+@pytest.mark.parametrize("k, n, floor, reachable", [
+    (8, 812, 1.73, False), (1, 812, 0.92, False), (2, 1512, 0.88, True), (2, 1323, 0.95, False)])
+def test_reachability_matches_the_d7_hand_values(k, n, floor, reachable):
+    r = gates.reachability(k, n)
+    assert round(r["floor_annual"], 2) == floor and r["reachable"] is reachable
+    assert r["floor_annual"] == pytest.approx(r["floor_per_session"] * 252 ** 0.5)
+    assert (r["k"], r["dev_sessions"], r["reachable_at"]) == (k, n, 0.89)
+
+
+def test_reachability_pass_probabilities_follow_the_normal_approximation():
+    r = gates.reachability(8, 812)  # the note's §8.1 table: 0.06 at a true 0.85, about 0.07 at 0.89
+    assert round(r["p_pass"]["0.85"], 2) == 0.06 and round(r["p_pass"]["0.89"], 2) == 0.07
+    assert round(gates.reachability(1, 812)["p_pass"]["0.85"], 2) == 0.45
+
+
+def test_reachability_floor_is_where_5f_flips_under_normal_moments():
+    """A normal series at the floor's per-session Sharpe has DSR 0.95 at the same K, up to the
+    dropped (1 + SR^2/2) denominator term."""
+    from research_utils.deflated_sharpe import deflated_sharpe, expected_max_sharpe
+    k, n = 4, 900
+    r = gates.reachability(k, n)
+    assert deflated_sharpe(r["floor_per_session"], n, 0.0, 3.0, expected_max_sharpe(k, 1 / (n - 1))) \
+        == pytest.approx(gates.THRESHOLDS["5f_min_dsr"], abs=1e-3)
+
+
+def test_reachability_needs_two_sessions():
+    with pytest.raises(ValueError, match="at least 2"):
+        gates.reachability(1, 1)
