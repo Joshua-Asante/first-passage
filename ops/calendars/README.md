@@ -202,6 +202,8 @@ operator's ratification before activation. Never edit a ratified file in place.
 
 ### Personal instance registry (G0-a)
 
+Historical: the personal lane [closed 2026-10-29](../../docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed); this records the retired contract.
+
 The personal instance (`personal_tradovate`) consumes these `book_session_calendar/v1` files
 unchanged, through [`deploy/c1_rail_personal/calendar_binding.json`](https://github.com/Joshua-Asante/first-passage/blob/066d22b250cff97785b6cf142aacf84e2d7e1301/deploy/c1_rail_personal/calendar_binding.json)
 and [`ops/c1_rail/personal_calendar_binding.py`](https://github.com/Joshua-Asante/first-passage/blob/066d22b250cff97785b6cf142aacf84e2d7e1301/ops/c1_rail/personal_calendar_binding.py) (both removed 2026-10-30 with the closed personal lane). It admits a session only for a digest listed in
