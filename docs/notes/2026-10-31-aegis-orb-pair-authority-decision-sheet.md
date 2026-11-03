@@ -2,7 +2,7 @@
 
 **Status:** Open. Joshua rules. This sheet decides nothing.
 **Answers:** the [pair reconciliation](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-31--authority-for-the-aegis--orb-pair-proposed-reconciliation) (#1015). Row numbers below are that addendum's rows.
-**After the ruling:** the answers fill the placeholders in the pointer PR (#1016), and the ruling is recorded in Joshua's words.
+**After the ruling:** record Joshua's answers in his words, update the reconciliation Status and affected pointers in #1016, and add its STATE decision-index entry. Until then, the reconciliation remains Proposed; the accepted 10-29 retirement and lane-closure corrections do not depend on this ruling.
 **Public-clone posture:** no figures, account data, Pine or port content (Rule 13). Private records are named only by what they must show.
 
 **How to answer.** One line is enough, for example: `D1 A, D2 A, D3 yes, D4 A, D5 sign, D6 A, D7 <date and words>, D8 A, D9 A, D10 sign, D11 A, D12 A, D13 A, D14 accept`. "All recommended" means the option marked (Recommended) in each item. A different answer, or a reason, can go next to any item.
