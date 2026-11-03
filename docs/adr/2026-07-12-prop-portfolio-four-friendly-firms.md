@@ -1,6 +1,7 @@
 # ADR 2026-07-12 — Prop-portfolio program: multi-firm ops target the four automation-friendly futures firms
 
 **Status:** Accepted (operator executive decision, recorded)
+**Disposition note 2026-11-08:** §4 primary falsifier fired; its consequence is narrowed by operator ruling ([Addendum 2026-11-08](#addendum-2026-11-08--4-falsifier-fires-consequence-narrowed-by-operator-ruling-accepted)).
 **Superseded-by:** none
 **Retain-until:** none
 **Decision date:** 2026-07-12
@@ -169,6 +170,8 @@ staleness in the **frozen** scoring gate's §10 hook 7 is recorded (and delibera
 ---
 
 ## Addendum 2026-08-22 — §4's success/revert dichotomy does not cover an exactly-one-tier clear (PROPOSED)
+
+*2026-11-08: inapplicable — zero tiers cleared ([Addendum 2026-11-08](#addendum-2026-11-08--4-falsifier-fires-consequence-narrowed-by-operator-ruling-accepted)).*
 
 **Status:** `Proposed` — drafted by Claude Code, awaiting operator (JA) ratification. Not yet
 effective; §4's original text (H, revert trigger, both hard-coded below) is unchanged unless and
@@ -391,7 +394,7 @@ gap.
 - Q-RANGECOND-1 and Q-ORBCUSH-1 are FALSIFIED.
 - Any differences between v7 and the ORB-MNQ-1 that was tested.
 
-Clearance is read on the intraday-honest clock with `headline_bust`. The pre-registration freezes by **2026-10-23**, and the dated re-MC runs by **2026-10-30**, so a verdict exists before the 2026-11-08 hard date. Evidence: existing technical owners, under Codex's integration and dispatch. *(2026-10-25 pointer: this schedule is overtaken. ORB v7 is paused by Joshua, not closed ([checklist 10-19](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-19--no-book-lineage-configuration-has-an-evidence-case-for-the-tradeify-evaluation)), and S4 stays stopped ([campaign §62](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#62--aegis-capture-cost-basis-zero-slippage-2026-10-20)). No rule changed.)*
+Clearance is read on the intraday-honest clock with `headline_bust`. The pre-registration freezes by **2026-10-23**, and the dated re-MC runs by **2026-10-30**, so a verdict exists before the 2026-11-08 hard date. Evidence: existing technical owners, under Codex's integration and dispatch. *(2026-10-25 pointer: this schedule is overtaken. ORB v7 is paused by Joshua, not closed ([checklist 10-19](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-19--no-book-lineage-configuration-has-an-evidence-case-for-the-tradeify-evaluation)), and S4 stays stopped ([campaign §62](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#62--aegis-capture-cost-basis-zero-slippage-2026-10-20)). No rule changed.)* *(2026-11-08: ORB MNQ v7 is withdrawn as the §4 candidate ([Addendum 2026-11-08](#addendum-2026-11-08--4-falsifier-fires-consequence-narrowed-by-operator-ruling-accepted)).)*
 
 **3. FXIFY Futures Flex registration.** FXIFY Futures Flex is added to the program's firm set and directed into `AUTOMATION_FRIENDLY_PROP_FIRMS`. This is FXIFY's futures program. It is distinct from the retired FX/CFD `FXIFY` substrate ([2026-07-22 retirement](2026-07-22-challenge-era-substrate-retirement.md)), so it takes its own registry key and never `ACTIVE_FIRM="FXIFY"`.
 - **Eligibility basis, recorded as it stands:** a generic, platform-scoped automation permission ([venue note 2026-10-14](../notes/2026-10-14-funded-venue-alternatives-assessment.md) §§1, 5, 12). It was read from search excerpts because direct reads were blocked. No written, clause-cited confirmation exists. The secondary (eligibility) trigger of §4 applies to this family.
@@ -439,6 +442,20 @@ Clearance is read on the intraday-honest clock with `headline_bust`. The pre-reg
 - Every candidate, evidence, qualification and authorization boundary recorded at its owner.
 - Nothing is armed, deployed or authorized by this addendum.
 
+## Addendum 2026-11-08 — §4 falsifier fires; consequence narrowed by operator ruling (Accepted)
+
+Ruled by Joshua 2026-11-03 (pre-sitting, in the Claude session preparing the 11-08 sitting); recorded effective 2026-11-08.
+
+- **The §4 primary falsifier fires on 2026-11-08.** No pre-registered candidate cleared the ceiling on any tier in a dated re-MC. The 2026-10-06 dated re-MC was FALSIFIED — early-fail ([status owner](2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-10-06--dated-re-mc-verdict-falsified--early-fail-recorded)), and O-13 applies ([prereg §4 "Program level" and §6 O-13](../briefs/pre-registration/2026-10-02-four-firm-dated-remc-prereg-DRAFT.md#6--open-operator-decisions-stated-not-decided)). Status is recorded at the [status owner](2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-11-08--4-falsifier-fires-consequence-narrowed-by-operator-ruling-recorded).
+- **Consequence: narrower, by explicit operator ruling.** This is Joshua's ruling **changing the falsifier's recorded consequence**, not a reading of what §4 already provided. §4's revert trigger demotes "this program" to research-only; the 2026-10-29 addendum made the Select 100K evaluation the program's first step and kept that demotion rule.
+  - **Demoted to research-only:** the multi-firm success claim and mandate.
+  - **Continues as program work:** scaling within Tradeify.
+- **R6 restoration is declined.** §4's revert action points at the R6 sole lane, which closed on 2026-10-29 ([lane closure](2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed)).
+- **ORB MNQ v7 is withdrawn as the §4 candidate** authorized by the [2026-10-16 addendum](#addendum-2026-10-16--operator-rulings-50-ceiling-fresh-4-candidate-orb-mnq-v7-fxify-futures-flex-registration-accepted) item 2.
+- **The [2026-08-22 `PARTIAL` addendum](#addendum-2026-08-22--4s-successrevert-dichotomy-does-not-cover-an-exactly-one-tier-clear-proposed) is inapplicable:** zero tiers cleared.
+
+§1–§4 text is not edited.
+
 ---
 
 ## Change history
@@ -457,3 +474,4 @@ Clearance is read on the intraday-honest clock with `headline_bust`. The pre-reg
 | 2026-10-28 | Addendum (Accepted, operator ruling): the §4 5.0% bust ceiling is scoped to this program's falsifier and does not bind account operating objectives; no value or §4 text changed | Joshua (ruling) + Claude Code (record) |
 | 2026-10-29 | Addendum (Accepted, operator ruling): one program, the multi-firm operation; the owned Select 100K evaluation is its first step; the personal-account objective is removed. §4, its ceiling and scope, and the 11-08 date are unchanged | Joshua + Claude Code |
 | 2026-10-30 | Same addendum, operator ruling added: scale first within Tradeify; later firms need distinct strategies sourced through research. §4 unchanged | Joshua + Claude Code |
+| 2026-11-08 | Addendum (Accepted, operator ruling 2026-11-03): §4 primary falsifier fires; consequence narrowed — the multi-firm success claim and mandate are research-only, scaling within Tradeify stays program work; R6 restoration declined; ORB MNQ v7 withdrawn as the §4 candidate; the 08-22 `PARTIAL` addendum inapplicable. §1–§4 text unedited | Joshua (ruling) + Claude Code (record) |

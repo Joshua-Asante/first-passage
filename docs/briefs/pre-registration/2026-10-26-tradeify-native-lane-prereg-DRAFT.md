@@ -46,6 +46,8 @@ A candidate is eligible only if all of the following hold:
 3. **Not closed:** it is not a member of the book lineage closed on 2026-10-19, unless the amendment cites new mechanism evidence ([Rule 26](../../operational_rules.md#rule-26--rejections-bar-re-proposal)).
 4. **Toolchain feasible:** #807 stage 1 has returned a written read-only finding that the native toolchain can express the strategy (for a pair, both ORB and Aegis) and its fixed sizing on the account.
 
+> **Note 2026-11-08:** item 3's "closed on 2026-10-19" and its pre-amendment Rule 26 citation are superseded by Joshua's ruling ([checklist addendum](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-11-08--draft-11-08-rules-withdrawn-the-orb-and-aegis-pair-is-book-lineage)): the ORB + Aegis pair is book lineage, the T00 ledger stays open at K = 13, and the 10-19 finding is an advisory prior under the amended [Rule 26](../../operational_rules.md#rule-26--prior-rejections-are-advisory-priors). Amending item 3 is owed at this draft's owner.
+
 ## §3 — Admissible evidence
 
 - **Data:** daily net P&L from the canonical feed only, CME futures TV exports ([Rule 18](../../operational_rules.md#rule-18--feeds-are-admitted-never-assumed)).

@@ -487,3 +487,9 @@ The operator ran the commands from their own Fly login. The agent supplied the c
 - **Disarmed before stop.** `c1-signal-daemon` health (14:47Z): `emit_enabled:false`, `effective_emit:false`, `connected:false`, `ceremony_state:DISABLED`, `strategy:NullStrategy`. `c1-rail`: the volume config `/data/c1_rail_config.json` printed `dry_run=True`, `armed_until=None` (only those two keys were read). `fly logs --no-tail` returned nothing, so no boot line was available.
 - **Stopped.** `fly scale count 0` on both apps reported one machine **destroyed** for each, not stopped. `fly machine list` then printed "No machines are available" for both. At 14:55Z both `https://<app>.fly.dev/` probes timed out (HTTP 000).
 - **Kept for rollback.** Both apps still exist. Rollback now means a redeploy, not a machine start. Remaining resources and billing are unverified; `fly volumes list` on both apps is still owed, but a volume inventory alone cannot establish total charges because other resources and usage can incur charges. The approximately two-week rollback window starts with the reported November 3 shutdown (14:55 UTC endpoint probes), for review around November 17. Stage 2 (destroy apps, volumes included) is still a separate operator decision.
+
+## Addendum 2026-11-08 — the $700 spend ceiling is re-homed to the retained account's owner record
+
+Ruled by Joshua 2026-11-03 (pre-sitting, in the Claude session preparing the 11-08 sitting); recorded effective 2026-11-08.
+
+The $700 spend ceiling (§2) survives c1's retirement. It is re-homed to the retained Tradeify account's owner record (private owner record; confirm locally).

@@ -7,6 +7,8 @@
 **Historical ratification coordinator (retired):** `01a142a1-3172-7dd2-a6d8-ff1f0e67634f`. **SR-9 coordination:** designated Claude deployment coordinator via Relay First Passage messages, `01a14c2b-c3bd-7c33-88c0-99be3cf86108`; Joshua retains ratification and merge decisions. Sole technical ownership is unchanged.
 **Authority:** #864, merge `a5c71338ff387d7bb3110b2e15a7aa4752ad72be`, accepted October 16 addendum to [program ADR](../../adr/2026-07-12-prop-portfolio-four-friendly-firms.md). Read that blob at the merge pin: the preparation checkout `3d898ecd7e697a567ffda2e941dc73cf20246d9c` predates the addendum. Existing dirty work is preserved.
 
+> **Status note 2026-11-08:** the §4 candidacy of ORB MNQ v7 was withdrawn on 2026-11-08 ([four-firm ADR addendum](../../adr/2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-11-08--4-falsifier-fires-consequence-narrowed-by-operator-ruling-accepted)). The body below is unedited.
+
 ## Question, roadmap and current handoff
 
 Does one precisely elected ORB MNQ v7 solo expression clear the existing survivor gate on the admitted frozen tiers? Its answer changes §4's evidence for November 8; historical failures remain standing.
