@@ -15,9 +15,12 @@
 
 The KEEP/warm-host posture above is historical, superseded by the
 [c1 staged retirement](../adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-10-29--c1-retired-as-an-execution-route-staged-decommission).
-The operator authorized verification, disarm and scale-to-zero on 2026-11-03.
-The local attempt stopped at `fly apps list --json`: exit 1, `no access token
-available`. Neither host state nor billing was obtained; no host was changed.
-Stage 1 and its rollback interval have not been verified to start. Costs remain
-open, not zero; stopped compute alone would not establish zero storage/IP costs.
-CrossTrade cancellation remains the separate d14 operator report.
+The earlier local attempt stopped at `fly apps list --json`: exit 1,
+`no access token available`; that attempt made no host changes.
+The later operator-run [Stage 1 record](https://github.com/Joshua-Asante/first-passage/blob/4af558dc0692834ff4daa8b314fa4a19503b4489/docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#stage-1-record--2026-11-03)
+reports disarmed configs, scale-to-zero, empty machine lists and endpoint
+timeouts at 14:55 UTC. This reconciliation did not independently query Fly.
+The reported rollback window starts November 3, with review around November 17;
+Stage 2 requires a separate operator decision. Billing and remaining resources
+are unverified: potential charges are not limited to volumes. Costs remain open,
+not zero. CrossTrade cancellation remains the separate d14 operator report.
