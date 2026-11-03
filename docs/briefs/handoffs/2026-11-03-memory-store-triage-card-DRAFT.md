@@ -59,7 +59,7 @@ The coordinator could not read the store from the cloud. From names cited in the
   - `project_tv_egress_automation`: the TradingView login-automation bar still stands.
 
 **Deliverables:**
-1. A triage table for Joshua, kept local and private, at `local_artifacts/memory-triage-2026-11/TRIAGE.md`. One row per memory file: name | index id/status | data class (public / private / account / credential) | disposition (KEEP / UPDATE / MIGRATE-PUBLIC / MIGRATE-PRIVATE / ARCHIVE) | one-line reason | repo evidence path.
+1. A triage table for Joshua, kept local and private, at `local_artifacts/memory-triage-2026-11/TRIAGE.md`. One row per memory file: name | index id/status | data class (public / private / account / credential) | disposition (KEEP / UPDATE / MIGRATE-PUBLIC / MIGRATE-PRIVATE / RETAIN / ARCHIVE) | one-line reason | repo evidence path.
 2. After approval: the memory moves (§2.2), one public PR (§2.3–§2.4) and, if needed, one archive-repo PR.
 
 **Not asked:**
@@ -82,12 +82,14 @@ The coordinator could not read the store from the cloud. From names cited in the
 - **Per-step gate:** `MEMORY.md` has no dangling lines, and every archived file exists under `_archive/`.
 
 ### Step 2.3 — Migrate approved MIGRATE rows
-- **Public:** add each lesson to `methodology_lessons.md` in light format (default C), citing its dated incident. Screen each one first: no account identifiers or figures, P&L, prices, sizes, parameter values, Pine, ports, vendor data, absolute home paths or credentials (`AGENTS.md` data movement). Anything that fails the screen becomes MIGRATE-PRIVATE.
-- **Private:** commit to `first-passage-archive` on a `claude/` branch with its own PR, following `docs/ltm/README.md`.
+- **Public:** add each lesson to `methodology_lessons.md` in light format (default C), citing its dated incident. Screen each one first: no account identifiers or figures, P&L, prices, sizes, parameter values, Pine, ports, vendor data, absolute home paths or credentials (`AGENTS.md` data movement). Content that fails the screen is routed by class:
+  - **Transferable private research** (no account data, credentials, Pine, ports or `effective_inputs.json`) may become MIGRATE-PRIVATE.
+  - **Non-transferable classes** (account data, credentials, Pine, ports, `effective_inputs.json`) become **RETAIN**: left in place in the memory store and escalated to Joshua by name only. They are never quoted, committed or handed off, to the archive or anywhere else (`AGENTS.md` data movement; `private_data.commit` is ungrantable in `scripts/seat_authority.yml`).
+- **Private:** commit approved MIGRATE-PRIVATE rows to `first-passage-archive` on a `claude/` branch with its own PR, following `docs/ltm/README.md`. RETAIN rows never go there.
 - **Per-step gate:** every public addition passes the screen, and the public diff contains no memory body copied verbatim beyond the lesson text itself.
 
 ### Step 2.4 — Update the index through its generator
-- **Action:** in `scripts/_build_lessons_index.py`, set each archived stub to `retired` (default B) and each migrated one to `migrated`, with its `full_ref` and `siblings`. Add `retired` to `LESSONS_INDEX.md:41` and to the test's allowed set if the test enforces one. Regenerate with `python scripts/_build_lessons_index.py > docs/methodology/LESSONS_INDEX.jsonl`.
+- **Action:** in `scripts/_build_lessons_index.py`, set each archived stub to `retired` (default B) and each migrated one to `migrated`, with its `full_ref` and `siblings`. Add `retired` to `LESSONS_INDEX.md:41` and to the test's allowed set if the test enforces one. Regenerate through the checkout launcher: `.\fp.ps1 python scripts/_build_lessons_index.py > docs/methodology/LESSONS_INDEX.jsonl`. If launcher validation fails, stop and return `BLOCKED — context-problem`. Never fall back to system Python (Rule 22).
 - **Per-step gate:** `.\fp.ps1 python -m pytest tests/test_lessons_index.py` passes.
 
 ### Step 2.N — Completion record
@@ -145,12 +147,12 @@ Step 2.1 always returns `NEEDS_CONTEXT` for the checkpoint. This is records hygi
 | Test | Property it must violate to fail | Owner |
 |---|---|---|
 | `tests/test_lessons_index.py` | the index is well-formed JSONL with unique IDs, no invented content on stubs, and resolving `full_ref` anchors | parent |
-| `grep -c "status\": \"external-unmigrated\"" docs/methodology/LESSONS_INDEX.jsonl` | falls from 69 by exactly the approved MIGRATE plus ARCHIVE count | parent |
+| `grep -c "status\": \"external-unmigrated\"" docs/methodology/LESSONS_INDEX.jsonl` | falls from 69 by exactly the number of approved MIGRATE and ARCHIVE rows **whose initial index status was `external-unmigrated`**. Rows with no index row (e.g. `reference_dukascopy_adapter`) or already `migrated` do not count. `TRIAGE.md` records each row's initial status. | parent |
 
 ```
 Status: <...>
 Per-step gates: 2.1 [...], 2.2 [...], 2.3 [...], 2.4 [...]
-Counts: KEEP n / UPDATE n / MIGRATE-PUBLIC n / MIGRATE-PRIVATE n / ARCHIVE n / credential flags n
+Counts: KEEP n / UPDATE n / MIGRATE-PUBLIC n / MIGRATE-PRIVATE n / RETAIN n / ARCHIVE n / credential flags n
 Diffs (files touched): <list>
 PRs: <public PR>, <archive PR or none>
 Concerns surfaced: <list>
@@ -172,7 +174,7 @@ Next action recommended: <one sentence>
 ## §10 — Audit hooks
 
 ```bash
-python -m pytest tests/test_lessons_index.py
+.\fp.ps1 python -m pytest tests/test_lessons_index.py
 grep -c '"status": "external-unmigrated"' docs/methodology/LESSONS_INDEX.jsonl
 grep -c '"status": "retired"' docs/methodology/LESSONS_INDEX.jsonl
 git diff origin/main...claude/memory-triage-2026-11 --name-only
@@ -181,6 +183,6 @@ git diff origin/main...claude/memory-triage-2026-11 --name-only
 ## Verification
 
 ```bash
-python scripts/check_brief.py docs/briefs/handoffs/2026-11-03-memory-store-triage-card-DRAFT.md --type cc_handoff
-python scripts/check_handoff_authority.py docs/briefs/handoffs/2026-11-03-memory-store-triage-card-DRAFT.md
+.\fp.ps1 python scripts/check_brief.py docs/briefs/handoffs/2026-11-03-memory-store-triage-card-DRAFT.md --type cc_handoff
+.\fp.ps1 python scripts/check_handoff_authority.py docs/briefs/handoffs/2026-11-03-memory-store-triage-card-DRAFT.md
 ```
