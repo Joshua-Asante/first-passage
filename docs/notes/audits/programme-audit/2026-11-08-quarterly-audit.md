@@ -59,7 +59,7 @@ This is the Rule 2 audit checklist item ([Rule 2 ADR §7](../../../adr/2026-06-1
 - **Readings.** The "empty table across ≥2 audit cycles" falsifier cannot fire, because the table is not empty. The "≥1 entry per active loop class" check fails for INNER if INNER counts as active. That question is part of the counting convention.
 - **Convention owed (ADR02-138).** The withdrawn [2026-08-22 addendum](../../../adr/2026-06-16-rule-2-budget-before-acting.md#addendum-2026-08-22-status-withdrawn-2026-08-23--operator-declined-to-ratify--audit-cycle-counting-convention-for-the-4-empty-log-falsifier) is not applied or revived here. Any convention is Joshua's to author at this gate. It decides whether INNER is an "active loop class" and how cycles are counted. It does not change the empty-log reading.
 - **This note's own budget:** a single drafting pass plus up to 3 review rounds, K = 0. It has not tripped at the time of writing.
-- `check_rule2_trip_log_liveness.py` (`--today 2026-11-08`) is run in §Verification.
+- `check_rule2_trip_log_liveness.py` (`--today 2026-11-08`): see §Verification.
 
 ## Falsifier-reachability census (Rule 17, `docs/operational_rules.md:964-972`)
 
@@ -83,9 +83,9 @@ The trend is flat to eroding. Over the cycle the denominator grew by 26 and only
 
 ## Verification
 
-- **Launcher (Rule 22).** `python -I scripts/fp.py doctor` first failed with "Operations virtual environment missing: …/tmp/ops-env". I created the venv by the documented route: `python3.11 -m venv tmp/ops-env`, then `pip install --require-hashes -r requirements-ops.lock`. `doctor` then reported Python 3.11.18, 62 locked packages matched, and the optional signing dependency absent. Every script above ran through `fp.py python` at `18e24bc` on a clean tree. These are evidence reads, not `fp test` or `check` runs, and no `record.json` was produced.
+- **Launcher (Rule 22).** `python -I scripts/fp.py doctor` first failed with "Operations virtual environment missing: …/tmp/ops-env". I created the venv by the documented route: `python3.11 -m venv tmp/ops-env`, then `pip install --require-hashes -r requirements-ops.lock`. `doctor` then reported Python 3.11.18, 62 locked packages matched, and the optional signing dependency absent. Every script above ran through `fp.py python` at `18e24bc` on a clean tree. These are evidence reads with no `record.json`. Separately, `python -I scripts/fp.py check` ran on this note's first commit `e76a4eb`. Its record (`.cache/fp-verification/20261103T203736Z-7d7c8e9f135a/record.json`, local) shows `status: completed`, `exit_code: 0` and `source_stable: true`. Within that run, `check_skill_deploy_sync.py` printed SKIP and `check_data_manifests.py` warned on absent-tree skips (vendor data is not in the public clone). `fp test` and `test-ops` were not run, because this change touches only docs.
 - **Not checked.** `check_skill_deploy_sync.py` printed SKIP (no deployed bundle in this container). Session entries before 2026-08-13 and the 08-08 packet pretriage exist only in `first-passage-archive`, which was not read. ADR02-59 already fires without them.
-- **Rule-2 liveness (after this note).** See the PR's verification section for the `check_rule2_trip_log_liveness.py --today 2026-11-08` output.
+- **Rule-2 liveness (after this note).** `check_rule2_trip_log_liveness.py --stats --today 2026-11-08` scanned 10 notes and found 2 since the last trip-log row, both mentioning Rule 2 or the trip-log. Result: `OK … 0 live finding(s)`, exit 0. This note is the compliant one dated on or after 11-08.
 
 ## §10 — Audit hooks (re-run next cycle)
 
