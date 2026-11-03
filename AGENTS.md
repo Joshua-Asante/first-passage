@@ -3,8 +3,7 @@
 ## Purpose
 
 Research for automated futures strategies at
-`core/firm_rules.AUTOMATION_FRIENDLY_PROP_FIRMS`; operations scale within Tradeify
-([four-firm §4 ruling, 2026-11-08](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md)). Mission:
+`core/firm_rules.AUTOMATION_FRIENDLY_PROP_FIRMS`; operations scale within Tradeify. Mission:
 **generate → evaluate → deploy → measure → update**.
 
 Start with [STATE.md](STATE.md) for priorities and obligations, then the owning
@@ -118,10 +117,10 @@ records resolve through the [legacy citation map](docs/operational_rules.md#lega
 | Incumbent environment retained; no successor migration | [S1](docs/adr/2026-08-07-loop-s1-environment-ratification.md) |
 | Python daemon → listener; TV login automation prohibited | [S2](docs/adr/2026-08-07-loop-s2-signal-host-fork.md), [daemon build](docs/adr/2026-08-08-s2b-signal-daemon-build.md) |
 | Withdrawn Striker editions stay barred; separate campaign expressions are conditionally eval-eligible | [withdrawal](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md), [readmission](docs/adr/2026-09-05-tradeify-select-striker-expression-readmission.md) |
-| Rail build/account registration GO; spend ceiling $700, surviving c1's retirement and re-homed to the retained Tradeify account's private owner record (2026-11-08) | [rail GO](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) |
+| Rail build/account registration GO; $700 ceiling, re-homed to the account's private owner record (2026-11-08) | [rail GO](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) |
 | Licensed test strategy can discharge M1 item 5 / B7 Stage 1 independently of strategy selection | [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) |
-| Four-firm program falsifier fired 2026-11-08, with a narrower consequence by operator ruling: the multi-firm success claim and mandate are research-only, scaling within Tradeify stays program work, ORB MNQ v7 is withdrawn as the §4 candidate | [program](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md), [F1 reversal](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-09-01--f1-reversed-a-tradeify-resting-discharge-now-counts-toward-4) |
-| Tradeify eval accounts: strategy logic must be native, with no external engine, bridge or direct API (support, 2026-10-12); Track B superseded for Tradeify 2026-10-16; the weekly trade (supported platform only, never CrossTrade or the API) continues; the personal lane closed 2026-10-29 and Q-SFCLEAR-3 is not run | [route record](docs/briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12-later--tradeify-support-strategy-logic-must-be-native-for-evaluation-accounts), [supersession](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify), [lane closure](docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed) |
+| Four-firm falsifier fired 2026-11-08; by operator ruling the multi-firm mandate is research-only and Tradeify scaling stays program work; ORB v7 withdrawn from §4 | [program](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) |
+| Tradeify eval accounts: strategy logic must be native, with no external engine, bridge or direct API (support, 2026-10-12); Track B superseded for Tradeify 2026-10-16; the weekly trade (supported platform only, never CrossTrade or the API) continues; the personal lane closed 2026-10-29 | [route record](docs/briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12-later--tradeify-support-strategy-logic-must-be-native-for-evaluation-accounts), [supersession](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify), [lane closure](docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed) |
 
 ## Strategy Reference (LOCKED legacy book — do not modify)
 
