@@ -482,8 +482,8 @@ Refundable deposits and minimum balances **stay under the cap**, as clarified ab
 
 ### Stage 1 record — 2026-11-03
 
-The operator ran the commands from their own Fly login. The agent supplied the commands and read the output, and held no Fly credential.
+The operator ran the commands from their own Fly login. The agent supplied the commands and read the output, and held no Fly credential. This is the operator-session record; the later reconciliation did not independently query Fly. It supersedes the earlier local session's authentication blocker as the latest reported host status, while preserving that earlier failed attempt as history.
 
 - **Disarmed before stop.** `c1-signal-daemon` health (14:47Z): `emit_enabled:false`, `effective_emit:false`, `connected:false`, `ceremony_state:DISABLED`, `strategy:NullStrategy`. `c1-rail`: the volume config `/data/c1_rail_config.json` printed `dry_run=True`, `armed_until=None` (only those two keys were read). `fly logs --no-tail` returned nothing, so no boot line was available.
 - **Stopped.** `fly scale count 0` on both apps reported one machine **destroyed** for each, not stopped. `fly machine list` then printed "No machines are available" for both. At 14:55Z both `https://<app>.fly.dev/` probes timed out (HTTP 000).
-- **Kept for rollback.** Both apps still exist. Rollback now means a redeploy, not a machine start. Volumes and their billing are unverified until `fly volumes list` is run on both apps. Stage 2 (destroy apps, volumes included) is still the operator's call, after about two weeks.
+- **Kept for rollback.** Both apps still exist. Rollback now means a redeploy, not a machine start. Remaining resources and billing are unverified; `fly volumes list` on both apps is still owed, but a volume inventory alone cannot establish total charges because other resources and usage can incur charges. The approximately two-week rollback window starts with the reported November 3 shutdown (14:55 UTC endpoint probes), for review around November 17. Stage 2 (destroy apps, volumes included) is still a separate operator decision.
