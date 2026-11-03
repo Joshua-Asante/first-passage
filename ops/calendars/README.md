@@ -8,6 +8,7 @@ so that no future session has to re-derive them.
 | File | What it owns |
 |---|---|
 | [`cme_holiday_calendar_2022_2026.json`](cme_holiday_calendar_2022_2026.json) | 85 dated entries, per product group (equity index · metals · FX): status, close time in ET, confidence, and a per-entry note. Plus three derived lists and a 13-item `unresolved` register. |
+| [`cme_holiday_calendar_2016_2026.json`](cme_holiday_calendar_2016_2026.json) | **Pending operator acceptance.** The same schema and key sets, coverage 2016-01-01..2026-12-31: the 85 entries above copied verbatim, plus 67 entries for 2016–2021 (152 in all), re-derived lists, and 9 new `unresolved` items. See [the 2016–2026 extension](#20162026-extension-pending-operator-acceptance). |
 
 ## ⚠ Provenance is SECONDARY, not primary
 
@@ -131,6 +132,29 @@ insensitive to all of them. The live ones worth knowing:
 There is no generator script — this was a research pass, not a pipeline. To extend past 2026, either
 resolve the primary source above, or re-derive from the same third-party encodings and record the
 new rows with their own `confidence` and `note`. Never widen `coverage_end` without adding entries.
+
+## 2016–2026 extension (pending operator acceptance)
+
+Added 2026-11-03 for the deeper TradingView re-exports (generation-phase note D8/D9, PR #1029). The builder refuses any session outside its pinned calendar's coverage (`lab/builder/data.py` `Calendar.check_covers`), so a pre-2022 window needs this file. **It is not admitted.** The builder README's admitted calendar, R1 and every run spec still name the 2022–2026 file above, which this change leaves byte-identical (sha256 `2698f268…a181e9`). Acceptance, and whether it carries D19's date-membership scope, is Joshua's.
+
+- **2022–2026:** copied verbatim from the D19 file. A test asserts equal entries and equal date membership (`tests/lab/test_builder/test_calendar_extension.py`).
+- **2016–2021: SECONDARY**, the same as the rest of the file. `www.cmegroup.com` was re-tried on 2026-11-03 and did not answer, so no CME primary source was read. Each row comes from three encodings at the **same commits** the 2022–2026 pass pinned:
+  - `pandas_market_calendars` (`CME_Equity`, `CMEGlobex_Metals`, `CMEGlobex_FX`), installed by pip from git at its pin;
+  - `exchange_calendars` (`CMES`, equity only), installed the same way;
+  - QuantConnect Lean's market-hours database (`Future-cme-ES`, `Future-comex-MGC`, `Future-cme-6J`), fetched at its pin; the sha256 of the bytes read is in `unresolved[0]`.
+  - A weekday enters when any encoding shows a non-NORMAL equity, metals or FX session.
+  - **Method check:** the same rule run over 2022–2026 reproduces the D19 file's weekday non-NORMAL date set exactly.
+  - No in-repo bar-panel cross-check was run (no vendor bytes read).
+- **New `unresolved` items (9).**
+  - One is the provenance item, `unresolved[0]`.
+  - Three are close-time disputes (Christmas Eve 2018–2020, metals).
+  - One is a status dispute that moves no date: 2021-04-02, Good Friday on an NFP day. Equity is EARLY 09:15 ET in two encodings and FULL in `exchange_calendars`.
+  - One is a group-status dispute that moves no date: 2018-12-05, the Bush mourning day. All three encodings close equity; metals and FX are disputed and emitted NORMAL at LOW confidence.
+  - Three are **date-membership disputes:** 2017-, 2018- and 2019-07-03. `exchange_calendars` reads a normal equity session. The rows are kept at LOW confidence, matching the accepted 2023 and 2024 rows. Direction: the builder skips those sessions rather than trading a possibly short one.
+  - Ad hoc closures that no library models remain an open residual for the whole extension.
+- **Regime.** Before 2022 the US-holiday shape is 13:00 ET for equity, metals **and FX** alike: COMEX holiday sessions lengthened only from 2022, and CME FX still observed US-holiday early closes. Every encoding agrees on this.
+- **Energy (MCL) has no column.** `lab/research_utils/secondary_calendar_evidence.py` checks `cme_holiday_calendar/v1` with exact top-level and per-entry key sets, so an extra field would break a v1 consumer. The builder reads only `entries[].date`, so energy does not change what it skips. On 2016–2021 the energy encodings (`pmc` `CMEGlobex_Crude`, Lean `Future-nymex-MCL`) match the metals shape, except Christmas Eve, where `pmc` reads NORMAL. Adding energy columns needs a schema version, not a v1 edit.
+- ⚠ **An asymmetry a builder user must know about.** The builder treats **every** entry date as a no-trade day, whatever its status (README "Frozen calendar"). The 2022–2026 part carries 20 all-NORMAL informational rows (for example Columbus Day and Veterans Day) and 4 weekend rows. The 2016–2021 part carries neither, so the builder trades those holidays before 2022 and skips them from 2022. Under the v1 builder this skips 20 ordinary 2022–2026 sessions, which the same run's 2016–2021 sessions do not mirror. Whether the builder should read only non-NORMAL rows is a separate decision; this file does not make it.
 
 ## Forward session file and typed overlay (TB-C1, first attended release)
 
