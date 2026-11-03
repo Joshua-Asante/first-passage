@@ -13,7 +13,7 @@
    - §3: AMBIGUOUS needs two consecutive audits (`docs/adr/2026-08-24-sourcing-phase-channel-retirement.md:77`); 11-08 is the first observation.
    - §4: the 08-17 ruling defines "admitted" (`docs/adr/2026-07-15-external-mechanism-harvest-intake.md:370`). H-OD-1 and H-TSMOM-1 meet it, so the idle guard was not triggered. L357 misstates D5.
    - §1: b6's prereg cannot be re-pointed to MNQ fills ("requires a fresh Pre-Q", `docs/spec/PREREG-NAS-ECR-1-live-edge-capture.md:14`).
-   - §2: the ORB manifest's `executed_looks` is "none" and cites Ruling 1 (ADR 2026-07-31 addendum b), not clause 2-C.
+   - §2: the ORB manifest's verdict banks 0 "per ADR 2026-07-26 clause 2-C", while its `executed_looks` ("none") acknowledges payability/T2 reads held under separate paths. The packet's "not fired" reading for 2-C does not hold without reconciling the two (A6).
 
 ## Week by deadline
 
@@ -28,7 +28,7 @@
 
 ## Recommended order
 
-A1 STATE discharge → A2 builder → A3 four-firm §4 → A4 draft branches and the pair → A5 PARK expiries → A6 research batch → A7 expenses → A8 programme-audit note → A9 queue review. Group B: S-PAIR top-up, mini PC timing, agent tiers, edge-source L3 and D-A.
+A1 STATE discharge (hard-date items recorded, not carried) → A2 builder → A3 four-firm §4 → A4 draft branches and the pair → A5 PARK expiries → A6 research batch → A7 expenses → A8 programme-audit note → A9 queue review. Group B: S-PAIR top-up, mini PC timing, agent tiers, edge-source L3 and D-A.
 
 ## Group A
 
@@ -36,12 +36,13 @@ A1 STATE discharge → A2 builder → A3 four-firm §4 → A4 draft branches and
 
 - **Decides:** what happens on Sunday to an 11-08 check that no owner has recorded.
 - **Mechanism:** the gate checks only for the DISCHARGED token (`scripts/check_state_currency.py:142-151,164-209`). STATE forbids rolling an obligation away without its record (`STATE.md:11-12`).
+- **Hard-date items cannot be carried.** Some checks are decided by the date itself: the four-firm §4 trigger fires on no verdict (O-13, A3), and the PARK records lapse absent renewal (A5). For these, the 11-08 record is the due verdict, expiry and remedy. Carrying the check would defer a falsifier (Rule 28).
 - **Options:**
-  - *Discharge with carry:* green. Each unrecorded check moves to 2027-02-08 with its owner named; the PR must list each one.
-  - *Extend:* a hand edit the owner must justify (spec `:357`). `ops/sentinel/scan.py:292` `SLATE_DATE = 2026-11-08` does not move with it.
+  - *Record, then discharge with carry:* green. Every hard-date verdict, expiry and remedy is recorded at its owner on 11-08. Only follow-up work moves to 2027-02-08, with its owner named; the PR lists each item.
+  - *Extend:* a hand edit the owner must justify (spec `:357`), and it cannot extend the hard-date items. `ops/sentinel/scan.py:292` `SLATE_DATE = 2026-11-08` does not move with it.
   - *Leave:* every PR is red from 11-09.
-- **Recommend:** discharge with carry, and roll sentinel's `SLATE_DATE`.
-- **Question:** "If an owner hasn't recorded by Sunday evening ET, is the heading discharged with that check carried to 2027-02-08 at its owner, and sentinel's slate date rolled with it?"
+- **Recommend:** record, then discharge with carry for follow-up work only, and roll sentinel's `SLATE_DATE`.
+- **Question:** "On 11-08, are the hard-date verdicts and expiries (four-firm §4, PARK b1/b3/b6) recorded at their owners, with only follow-up work carried to 2027-02-08, the heading discharged and sentinel's slate date rolled?"
 
 ### A2 — Builder: channel, K authority, evaluation order
 
@@ -55,7 +56,9 @@ A1 STATE discharge → A2 builder → A3 four-firm §4 → A4 draft branches and
 **Options:**
 - *Channel, and an expression of the ten-step order:* one authority (Rule 29). Needs an evaluation-order addendum mapping 5a–5h with listed exceptions, or 5g moved after the holdout. R1's re-registration carries the contract fields and a liveness ceiling (an owning record suffices, `docs/methodology/strategy_harvest.md:79-80`), plus a `register_search` manifest or an admitted second ledger. No net delay, since R1 must be re-registered anyway.
 - *Separately owned order:* faster for R1. Needs a public owning spec (none on main) and a scoped Effective clause. Creates a second verdict vocabulary.
-- *Not a channel:* a generator outside the K and liveness rules (`docs/operational_rules.md:128`).
+- *Not a channel:* only the channel-specific liveness question goes away. K accounting still binds: Rule 25 requires discovery output to "carry the manifest and K into validation" (`docs/operational_rules.md:128`), whatever the generator is called, and the builder already uses ledgered K at gate 5f.
+
+Under every option the builder needs an explicit, compliant K-ledger disposition: a `register_search` manifest, or its own ledger admitted as a K authority.
 
 **Recommend:** a channel, and an expression of the ten-step order with listed exceptions. R1 is re-registered on the current engine.
 
@@ -69,14 +72,19 @@ A1 STATE discharge → A2 builder → A3 four-firm §4 → A4 draft branches and
 - O-13 fires the trigger on no verdict (`docs/briefs/pre-registration/2026-10-02-four-firm-dated-remc-prereg-DRAFT.md:111,141`).
 - Sim101 canaries are not dated lab re-MCs.
 
+**What the record says the remedy is:**
+- §4 demotes "this program" and supersedes the ADR (`docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md:81,85`).
+- The 10-29 addendum makes the Select 100K evaluation the program's first step (`:430-431`) and keeps the demotion rule (`:438`).
+- The 10-28 addendum exempts the account's objective from the **5.0% ceiling** only (`:415-418`). It does not exempt the account from the program or its demotion.
+
 **Options:**
-- *Demote wholesale:* conflicts with the 10-29 single-objective addendum (`docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md:430-431`). The revert action's "restore R6" (`:85`) points at a closed lane. Mirrors to amend: `AGENTS.md:6,122`, `STATE.md:146-150`, `PIPELINES.md:8,72`, the `core/firm_rules.py:647` comment, `docs/pursuits/a1-four-firms-prop-portfolio-program.md:7`.
-- *Scoped supersession:*
-  - Only §4's success claim and the multi-firm mandate become research-only.
-  - The Select 100K objective already sits outside §4 (`:415-418`, private owner record).
-  - "Scale within Tradeify" (`:432`) needs an owner.
-  - "Research-only" bars an execution ADR citing this one as mandate. Only the retired c1 GO does (rail ADR `:27`).
+- *Fire and demote as written:*
+  - The program, including its Select 100K first step as program work, becomes research-only.
+  - Record separately what continues on independent authority, with each owner: the retained evaluation, the weekly preservation trade, and the native route's own records. "Research-only" bars an execution ADR citing this one as mandate; only the retired c1 GO does today (rail ADR `:27`).
+  - The revert action's "restore R6" (`:85`) points at a closed lane, so the superseding record declines it.
+  - Mirrors to amend: `AGENTS.md:6,122`, `STATE.md:146-150`, `PIPELINES.md:8,72`, the `core/firm_rules.py:647` comment, `docs/pursuits/a1-four-firms-prop-portfolio-program.md:7`.
   - Open: does the $700 ceiling (`AGENTS.md:120`) survive?
+- *Fire with a narrower consequence (a requested change, not a reading):* keeping operational scaling within Tradeify (`:432`) under the program while superseding only the multi-firm claim is not the recorded remedy. It would be a new ruling by Joshua, changing the preserved falsifier consequence, and it must be disclosed as such in the superseding record.
 - *Extend:* moves a falsifier (Rule 28). Unavailable.
 
 **ORB v7's §4 candidacy:**
@@ -84,9 +92,9 @@ A1 STATE discharge → A2 builder → A3 four-firm §4 → A4 draft branches and
 - Withdrawing it closes the v7 prereg and loses the only half-built route back into §4.
 - A fresh candidate must be distinct from anything released at Tradeify; none exists.
 
-**Recommend:** fire on 11-08 with a scoped supersession; withdraw ORB v7 as the candidate; name an owner for scale-within-Tradeify; rule on the $700 ceiling.
+**Recommend:** fire on 11-08 and demote as written, with R6 declined. Record which account activity continues on independent authority and who owns it. If Joshua wants scaling within Tradeify to stay program work, that is a separate, disclosed change to the consequence. Withdraw ORB v7 as the candidate; rule on the $700 ceiling.
 
-**Question:** "Record §4 fired on 11-08, superseding only the multi-firm success claim and mandate (R6 declined)? Withdraw ORB MNQ v7 as the §4 candidate? Does the $700 ceiling survive?"
+**Question:** "Record §4 fired on 11-08 and demote the program as written (R6 declined), listing what continues on independent authority? Or do you rule a narrower consequence, disclosed as a change? Withdraw ORB MNQ v7 as the §4 candidate? Does the $700 ceiling survive?"
 
 ### A4 — Draft 11-08 branches and the pair
 
@@ -139,7 +147,7 @@ All lapse on 11-08 absent renewal (`docs/adr/2026-08-09-grand-tier-quintessentia
 
 | Check | Reading | Consequence / question |
 |---|---|---|
-| Boundaries 2-A / 2-C | 2-A 0/3. 2-C cross-check run: three manifests match; the ORB manifest cites Ruling 1 | Rule it a Ruling-1 closure, so 2-C is not fired and MNQ.md gets a note. The alternative re-banks executed-K closures at declared K. The TXG1 verdict text contradicts its DEAD stop reason. *"Ruling 1?"* |
+| Boundaries 2-A / 2-C | 2-A 0/3. 2-C cross-check run: three manifests match their closures. The ORB manifest's verdict banks 0 "per … clause 2-C", while `executed_looks` acknowledges payability/T2 reads under separate paths, not enumerated as looks. Ruling 1 covered the *open* manifest and said banking happens at close; it does not authorize this zero-K close | Not decidable as "not fired". Either apply 2-C's enumeration to the payability/T2 reads and rule, with reasons, whether they were this manifest's selection looks; or record 2-C fired, which reverts to declared-K banking for all executed-K closures (ST-EH-1 to 84) by superseding ADR. The TXG1 verdict text contradicts its DEAD stop reason. *"Order the ORB enumeration check, or record 2-C fired?"* |
 | Sourcing retirement limb 2 | First observation (corrected) | Record and re-read 2027-02-08. *"Wait?"* |
 | Harvest intake §4 | Guard not triggered (corrected); limb 1 AMBIGUOUS via the fourth branch; limb 2 0/2 | Naming it idle is allowed; correct L233/L357. *"Name idle anyway and correct L357?"* |
 | Decompound HOLD | AMBIGUOUS; no pair fill is its live fill (`docs/adr/2026-06-07-decompound-remc-hold.md:296-298`) | Retire by superseding record, also closing SFRISK-1's riding trigger; fix the dead link `:289`. *"Retire?"* |
@@ -189,11 +197,12 @@ Owner falsifiers due at the 11-08 audit but absent from STATE's list (row IDs fr
 - **Missing:** Thursday's gap list mapped to runbook §4 IDs (private canary card).
 - **Rule now:** the earlier "touches protection/recovery" test always fires. Use the runbook's split instead:
   - Defer, by name, the cases that need the firm connection: U-3, U-10, U-11, U-15, U-16, U-18 (`docs/notes/2026-10-18-native-protection-recovery-pilot-runbook.md:125,131-146`).
-  - Top up if U-5, U-6, U-9, U-17 or any other Sim101-runnable case is missing.
+  - Top up if U-5, U-6, U-17, the locally runnable part of U-9, or any other Sim101-runnable case is missing.
+  - Split U-9. Its fault and callback checks (suppressed acknowledgment, reconnect with complete, absent and contradictory facts) can run locally. Its proof needs reads A **and** B to return `client_tag` (`:137`), and read B is the firm's web view (`:92`), so that part defers to the firm-connection stage. Partial simulation evidence is not the full U-9 proof D-N1 requires.
 - **Collision:** a top-up must precede the ORB evaluation build, which keeps the canary's type names (v11 `:17`); otherwise the 11-09 start slips.
 - **Accepting gaps defers:** P1 (`:116`) and D-N1 (`:152`).
 - **Later conflict:** after arming, a manual preservation trade on the strategy's account is an incident (U-1, U-12, `:129,140`).
-- **Question:** "Accept gaps only for firm-connection cases; top up before the evaluation build if U-5/U-6/U-9/U-17 is missing?"
+- **Question:** "Accept gaps only for firm-connection cases (including U-9's read-B proof); top up before the evaluation build if U-5, U-6, U-17 or U-9's local checks are missing?"
 
 ### B2 — Mini PC
 
@@ -228,7 +237,7 @@ Superseded by private 10-24/10-25 rulings (`docs/notes/2026-10-24-assumption-cha
   - K = 13 and 1b(i);
   - the R1 engine pin and the required keys;
   - the `state-currency` failures;
-  - the ORB manifest's Ruling-1 citation;
+  - the ORB manifest's verdict (2-C) and `executed_looks` (Ruling 1) text;
   - the harvest admission definition;
   - b6's "fresh Pre-Q";
   - a4's review date.
