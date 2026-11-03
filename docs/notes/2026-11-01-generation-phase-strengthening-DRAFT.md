@@ -272,7 +272,7 @@ The 11-08 sitting already asks whether starvation is binding ([prep §3](2026-11
 | 1.83 (M-19's best in-house validated edge) | 0.95 | 0.57 | 0.37 |
 
 **Reading.**
-- At R1's K and window, the 5f floor (1.73) sits above the literature's top decile (0.85) and just under the best edge the programme has ever validated (1.83). [M-19](../methodology/lessons/methodology_lessons.md) calls an axis dead only when the floor exceeds *both*, so R1 is **not formally dead, but it is near-dead**: a top-decile real edge passes 5f about 6% of the time.
+- At R1's K and window, the 5f floor (1.73) sits above the literature's top decile (0.85) and just under the best edge the programme has ever validated (1.83). That 1.83 is Aegis on the retired Pepperstone CFD panel. The ledger records the **futures-native best as about 0.89** ([MCL.md 2026-08-10b](../../ops/instruments/MCL.md)), which passes 5f at K = 8 about 7% of the time. [M-19](../methodology/lessons/methodology_lessons.md) calls an axis dead only when the floor exceeds *both*, so R1 is **not formally dead, but it is near-dead**: a top-decile real edge passes 5f about 6% of the time.
 - The same arithmetic was disclosed before freeze for ORB reconstruction and ST-EH-1. [ADR 2026-07-12 §2.4](../adr/2026-07-12-dsr-k-rule-and-variance-floor-supersession.md) still requires that disclosure in every campaign pre-registration. **The public R1 registration does not show it; whether the private draft does is for the coordinator to confirm.**
 - This is the census's first mode (§1) recurring in the newest generator, from a cause the first pass missed. **The data window, not the search, now sets the floor.** The pre-2022 intraday depth went with the retired feeds (§3), so the admitted TV exports give about 4–4.6 years in total, and 70% of that goes to development.
 
@@ -306,6 +306,73 @@ The 11-08 sitting already asks whether starvation is binding ([prep §3](2026-11
    - **A per-instrument feed-equivalence spot check** (same sessions, TradingView export vs NinjaTrader history) belongs before a survivor goes to Joshua for the forward GO, not after.
 3. **Distinctness is now cheap to state:** a different NinjaScript strategy class, instrument and session window, described in plain language Joshua can give unaided ([deep-dive §6.4 item 17](2026-11-01-tradeify-venue-deep-dive-DRAFT.md#64-research-and-modelling-each-needs-its-own-pre-registration-and-go-where-it-spends)).
 
-### 8.3 Supply map
+### 8.3 Supply map (zero-K, from `ops/instruments/` and the register)
 
-(pending subagent return)
+**Matrix** ([`PROFILES.md`](../../ops/instruments/PROFILES.md), 36 mechanisms × 27 instruments):
+
+| Status | Cells |
+|---|---|
+| DEAD | 47 |
+| AMBIGUOUS-PARKED | 19 |
+| CONTINGENT-FORWARD | 1 |
+| LIVE | 3 (all legacy, none with a venue) |
+| untested | 902 |
+
+The untested count overstates supply:
+- Only **185** of the 902 untested cells sit on admitted-feed instruments.
+- At least 11 cells marked untested were in fact tested or are in flight. Examples: MNQ compression, PDH/PDL and VWAP classes recorded in `MECHANISMS.md` but not in the matrix; 6J ORB falsified out of sample; MCL ORB is R1.
+- The builder expresses one family today: ORB stop-breakout on closed 15m bars.
+
+**Finding.** Of the 36 classes in [`MECHANISMS.md`](../../ops/instruments/MECHANISMS.md), only one records a WHO (expiry open interest: options market-makers, weekly). Across that catalogue and the register, **no alive cell is daily, intraday and has a named counterparty.** Every named-payer class is either:
+- monthly or weekly: turn-of-month, carry, expiry open interest. Those are underpowered at about 4 years (harvest Req 4).
+- dead where it is daily: MCL settlement ([RC](../rejected_candidates.md)), the gold fix.
+
+So daily intraday candidates enter either through harvest Path 1b (evidence-robustness) or the no-counterparty channel, which caps declared K at 3. On the §8.1 arithmetic, that cap helps.
+
+**Ranked cells** (all intraday-flat-expressible, daily, in the admitted feed, NinjaScript closed-bar expressible):
+
+| # | Cell | Firms | Why it ranks | Nearest prior |
+|---|---|---|---|---|
+| 1 | MGC × prior-day high/low break (RTH) | T B F S | non-index, level-based not clock-based | MNQ CON-4 AMBIGUOUS-HOLD; MGC London fade FALSIFIED (opposite selector); Select 100K granularity wall ([MGC.md W5](../../ops/instruments/MGC.md)) |
+| 2 | MCL × prior-day high/low break | T B F | MCL intake-dry rested on the deleted 4× multiple ([MCL.md 08-10b](../../ops/instruments/MCL.md)) [INF: reopenable] | MCL pullback-resumption FALSIFIED |
+| 3 | MCL × compression-gated breakout | T B F | different cost geometry from MNQ; not ORB | MNQ gross-positive, net-negative |
+| 4 | MGC × compression-gated breakout | T B F S | reopens a parked gold cell on the venue-legal contract | XAUUSD PARKED (spot panel deleted) |
+| 5 | 6J × prior-session breakout continuation | T B F (full 6J only, no M6J) | Asia/London window; distinct from Aegis (mean reversion) | M6A infeasible; 12-contract cap |
+| 6 | MCL / MGC × intraday momentum | T B F (S for MGC) | non-index | NQ/MNQ dead on post-2021 decay |
+
+**Families that could each seed a different firm.** These sit in four different Tradeify product groups, so they also avoid the cross-account opposing-direction rule, which binds within a group ([envelope](../../ops/prop_envelope_default.md)):
+
+| Family | Product group | Role |
+|---|---|---|
+| (a) US-open equity-index ORB | Equity Index | ORB-MNQ; Tradeify scales by adding accounts of it |
+| (b) COMEX metals level and compression breaks | Metals | [INF] better at Bulenox or BluSky than Select 100K, because of the granularity wall |
+| (c) NYMEX energy session breaks and momentum | Energy | R1 is ORB, so the next MCL card should be a different mechanism |
+| (d) FX Asia/London continuation | Currencies | 6J now, M6E once exported |
+
+Weakness: the counterparty of (a)–(d) differs only by asset-class microstructure. None names a payer, so each enters by Path 1b or the no-counterparty channel.
+
+**Feed gaps, ranked by cells unlocked** [INF on counts]:
+1. More years for the existing six (§8.1). MCL and M2K also end 2026-07-02.
+2. **M6E**: offered at all four firms; removes 6J's full-size sizing problem.
+3. Micro DAX (FDXM/FDXS): Tradeify only; the European session runs entirely before the flatten; outside the US-index raised bar.
+4. M6A.
+5. MES adds little: same product group as MNQ, and under the raised bar.
+
+### 8.4 What changes in the recommendations
+
+The second pass adds or reorders. §6 stands otherwise.
+
+| # | Change | Evidence | Effect | Who |
+|---|---|---|---|---|
+| **A** (new, first) | **Put a reachability line in every builder round's registration:** 5f floor and pass probability at the round's K and session count against 0.85 and the futures-native best. Rounds whose floor exceeds both are re-scoped (fewer cards, longer data) before freeze. | §8.1; ADR 2026-07-12 §2.4 already requires the disclosure | Stops spending rounds whose survivor rate is a few percent | Agent: compute and draft per round. Re-scoping a frozen round is **Joshua's** |
+| **B** (raises §6 #2) | **History depth before new instruments:** check what TradingView and NinjaTrader can export intraday, and how far back, for the six admitted instruments plus M6E. | §8.1 table: 3.2 → 8 years halves the floor's excess | Largest single lever on hit rate | Agent: TradingView page-level check of plan depth. Exports, and admitting a second source, are **Joshua's** (Rules 18, 19) |
+| **C** (new) | **K ≤ 2 per builder round, cards from different mechanisms, `k_scope: instrument`.** | §8.1 levers 2–3 | Floor 1.73 → 1.21 at R1's window | **Joshua** (round design is his spec) |
+| **D** (new) | **Add a mechanism discriminator to builder cards**, so a failure says whether the mechanism or the expression died. | §8.1 lever 5; census mode 3 | Turns silent failures into aimed next rounds | **Joshua** (builder spec); agent drafts |
+| **E** (new) | **Build the NinjaScript compiler before survivors queue; add a per-instrument TradingView vs NinjaTrader feed spot check** before a survivor's forward GO. | §8.2 | Removes a late, certain blocker | Agent within builder build steps already listed; the spot check needs the operator's NinjaTrader |
+| **F** (sharpens §6 #5) | **Seed rounds 2–4 from §8.3 families (b)–(d), one firm each**, ranked cells first. | §8.3 | Distinct supply per firm, outside the saturated domain | **Joshua** picks; agent drafts cards |
+
+**Decisions for Joshua added by this pass:**
+- **D7:** Should every builder registration carry the §8.1 reachability line, with a re-scope rule when the floor exceeds both benchmarks?
+- **D8:** History depth. Authorise the agent check, then decide exports or a second admitted source.
+- **D9:** Builder round shape: K ≤ 2, a discriminator, instrument scope.
+- **D10:** Which §8.3 family seeds which firm.
