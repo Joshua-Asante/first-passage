@@ -283,8 +283,8 @@ The 11-08 sitting already asks whether starvation is binding ([prep §3](2026-11
    - NinjaTrader's historical data through the Tradeify connection (depth and terms of use unknown);
    - the retained Databento caches (rights ruling, D6).
    Bar size does not matter for n (the floor is per session), so a closed-bar logic on 30m or 60m bars could use longer exports if TradingView offers them.
-2. **K per round ≤ 2, with mechanism-first cards.** At K = 2 the floor at 812 sessions is 1.21, not 1.73. Eight parameter cells of one block buy almost nothing; two cards from different mechanisms buy two looks at independent hypotheses.
-3. **Keep `k_scope: instrument` unless a round really shares one hypothesis across instruments.** `ledger` scope grows the floor across rounds (the family-bank effect: Q-KBUDGET-1 L-cand-1).
+2. **Few cards per instrument, mechanism-first.** At K = 2 the floor at 812 sessions is 1.21, not 1.73. **K is banked:** `ledger.k()` counts every distinct card ever logged on the instrument, and honest K (Rule 23) counts them whichever ledger file holds them. A later round on the same instrument therefore starts from its bank (MCL starts at 8 after R1), not from zero. Eight parameter cells of one block spend the instrument's budget for one hypothesis.
+3. **Keep `k_scope: instrument` unless a round really shares one hypothesis across instruments.** `ledger` scope adds every instrument's bank to every card's K (the family-bank effect: Q-KBUDGET-1 L-cand-1). Instrument scope excludes other instruments' cards but does not reset the instrument's own bank.
 4. **Pool one mechanism across weakly correlated instruments as one card.** An equal-risk pool of M legs with true Sharpe 1.0 at pairwise ρ = 0 reaches pooled Sharpe √M: power at K = 8 rises from 0.10 to 0.29 (M = 2) and 0.69 (M = 4). At ρ = 0.6 it barely moves (0.17 at M = 4). This works only across asset classes, not across equity-index micros [INF on strategy-return correlation].
    **Tension:** a pooled card is one strategy, so it supplies one firm, not several (§5).
 5. **Test the mechanism, not only the payoff.** The candidate contract's independent [mechanism discriminator](../adr/2026-08-30-candidate-contract.md#contract-fields-and-freezes) is measured on its own observable (event counts, conditional moves), which can have far more power than the payoff Sharpe. Under the [terminal taxonomy](../adr/2026-08-30-evaluation-order.md#confirm-verdicts), a discriminator pass with a failed payoff is `EXPRESSION-FAIL`: the mechanism stands and the next round tries another expression of it. A clean discriminator fail is `MARKET-NULL` and stops the line. The builder's gates 5a–5g have no discriminator today, so every builder failure is silent on the mechanism, which wastes the census's main lesson (mode 3).
@@ -366,7 +366,7 @@ The second pass adds or reorders. §6 stands otherwise.
 |---|---|---|---|---|
 | **A** (new, first) | **Put a reachability line in every builder round's registration:** 5f floor and pass probability at the round's K and session count against 0.85 and the futures-native best. Rounds whose floor exceeds both are re-scoped (fewer cards, longer data) before freeze. | §8.1; ADR 2026-07-12 §2.4 already requires the disclosure | Stops spending rounds whose survivor rate is a few percent | Agent: compute and draft per round. Re-scoping a frozen round is **Joshua's** |
 | **B** (raises §6 #2) | **History depth before new instruments:** check what TradingView and NinjaTrader can export intraday, and how far back, for the six admitted instruments plus M6E. | §8.1 table: 3.2 → 8 years halves the floor's excess | Largest single lever on hit rate | Agent: TradingView page-level check of plan depth. Exports, and admitting a second source, are **Joshua's** (Rules 18, 19) |
-| **C** (new) | **K ≤ 2 per builder round, cards from different mechanisms, `k_scope: instrument`.** | §8.1 levers 2–3 | Floor 1.73 → 1.21 at R1's window | **Joshua** (round design is his spec) |
+| **C** (new) | **Treat each instrument's banked builder K as a budget:** few cards per instrument, from different mechanisms, `k_scope: instrument`. | §8.1 levers 2–3; §9.3 budget table | Keeps rounds inside reach | **Joshua** (round design is his spec) |
 | **D** (new) | **Add a mechanism discriminator to builder cards**, so a failure says whether the mechanism or the expression died. | §8.1 lever 5; census mode 3 | Turns silent failures into aimed next rounds | **Joshua** (builder spec); agent drafts |
 | **E** (new) | **Build the NinjaScript compiler before survivors queue; add a per-instrument TradingView vs NinjaTrader feed spot check** before a survivor's forward GO. | §8.2 | Removes a late, certain blocker | Agent within builder build steps already listed; the spot check needs the operator's NinjaTrader |
 | **F** (sharpens §6 #5) | **Seed rounds 2–4 from §8.3 families (b)–(d), one firm each**, ranked cells first. | §8.3 | Distinct supply per firm, outside the saturated domain | **Joshua** picks; agent drafts cards |
@@ -401,7 +401,7 @@ M6E: 12,500 euros, tick 0.0001 = $1.25 ([CME contract specs](https://cmegroup.co
 
 **Rule.** Every builder registration states the 5f floor at its K and development-session count, and the pass probability for a true Sharpe of 0.85 (the literature's top decile) and 0.89 (the futures-native best, [MCL.md 08-10b](../../ops/instruments/MCL.md)).
 
-- **Reachable** means the floor ≤ 0.89, so a futures-native-best edge passes at least half the time. This is M-19's test with the in-house benchmark set to the futures-native best.
+- **Reachable** means the floor at **banked K** (the instrument's distinct builder cards already logged, plus the round's new cards, under `k_scope: instrument`) is ≤ 0.89. A futures-native-best edge then passes at least half the time. This is M-19's test with the in-house benchmark set to the futures-native best.
 - If a round's floor is above 0.89, it is re-scoped **before freeze**: fewer cards, a longer window, or pooling.
 - If it still cannot reach, the registration says so in one line, and Joshua decides whether the round's other value justifies it (as ST-EH-1 did).
 
@@ -409,7 +409,7 @@ M6E: 12,500 euros, tick 0.0001 = $1.25 ([CME contract specs](https://cmegroup.co
 
 **Durable fix.** A report-only `reachability(k, n)` line in the builder's run report, computed before any card is evaluated. It waits for D9 (the round shape it reports on) and lands by its own PR.
 
-**R1** is frozen and stays as registered (Rule 23). Its floor is in §8.1.
+**R1** is frozen and stays as registered (Rule 23). Its floor is in §8.1. **Consequence under this rule:** R1 banks K = 8 on MCL, so no further MCL builder card is reachable on any MCL window (§9.3). The energy family needs pooling or a different instrument.
 
 ### 9.3 D8, decided by Claude under Joshua's delegation
 
@@ -418,8 +418,8 @@ M6E: 12,500 euros, tick 0.0001 = $1.25 ([CME contract specs](https://cmegroup.co
 - Re-export the six admitted instruments, each from its contract start or TradingView's limit, whichever is later. Add M6E.
 - Each export is an operator act and lands as follows. The export session must run locally, because cloud checkouts lack the CSV bytes.
   1. Run the BAR EXPORT v0.2 exporter on the symbol at 15m (`M6E1!`, `MNQ1!`, `MYM1!`, `M2K1!`, `MGC1!`, `MCL1!`, `6J1!`), with as many year-pages as the row limit needs.
-  2. Run `scripts/validate_bar_export_v2.py` on each page.
-  3. Commit the CSVs with their `SHA256SUMS` delta in the same commit, with hooks installed (Rule 19).
+  2. Validate **each instrument's complete page set in one call**: `scripts/validate_bar_export_v2.py --in <every page for that symbol> …`, with the combined `--expected-unique-bars` and first/last open. The validator only detects conflicting overlaps among pages passed together. The refresh path (`core/bar_export_loader._parse_pages`) silently keeps the last duplicate, so page-by-page validation could hide a disagreement.
+  3. **The CSV bytes stay local.** They are gitignored (`.gitignore`: `core/data/tv_exports/**/*.csv`, `core/data/bar_data/*.csv`), and AGENTS.md's public-clone posture forbids committing vendor CSVs. Commit only the `SHA256SUMS` delta (and refreshed panel sidecars), in the same commit as the data change on disk, with hooks installed (Rule 19).
   4. **M6E only, in that same landing** (create-on-touch: [profile-index ADR §2b](../adr/2026-07-25-instrument-profile-index.md); the loader's own "extend when a new symbol's export lands"):
      - the `PRICE_COL_BY_INSTRUMENT` entry in `core/tv_export_loader.py`;
      - the `INSTRUMENT_SPECS` row in `core/instrument_specs.py`, with the CME quote;
@@ -438,7 +438,15 @@ M6E: 12,500 euros, tick 0.0001 = $1.25 ([CME contract specs](https://cmegroup.co
 | MCL, ~5.3 y | all development, forward confirm | 0.71 / 0.66 | 0.94 / 0.45 | 1.17 / 0.26 | 1.35 / 0.15 |
 | ~10 y (MGC / 6J / M6E if TradingView reaches) | 70% development | 0.62 / 0.76 | 0.82 / 0.58 | 1.02 / 0.37 | 1.17 / 0.23 |
 
-**Reading.** Deeper data makes K ≤ 2 reachable on the equity micros and on any 10-year contract. **K = 8 is not reachable on any window here.** MCL, R1's instrument, is the weakest.
+**Reading under D7** (floor ≤ 0.89 at banked K). This is the **total builder budget per instrument**, not per round:
+
+| Window | 70/30 split | All history for development, forward confirm |
+|---|---|---|
+| Equity micros, ~7.5 y | **K = 1** | K = 2 |
+| MCL, ~5.3 y | K = 1, **already spent** (R1 banked 8) | K = 1, already spent |
+| ~10 y (MGC / 6J / M6E if TradingView reaches) | K = 2 | K = 4 |
+
+With the current 70/30 split, each equity micro supports **one** honest builder card under D7, and a 10-year contract two. K = 8 is not reachable on any window. MCL, R1's instrument, has no reachable budget left. **The round-shape question (D9) is therefore mostly a budget-allocation question: which single look per instrument is worth spending, and whether to buy more looks with a forward confirm or with pooling.**
 
 ## 10. D9 and D10: the discussion frame (no decision taken)
 
@@ -446,11 +454,11 @@ M6E: 12,500 euros, tick 0.0001 = $1.25 ([CME contract specs](https://cmegroup.co
 
 | Question | Options | What the arithmetic says | Claude's lean |
 |---|---|---|---|
-| Cards per round (K) | 1, 2, 4 | §9.3: K ≤ 2 reachable on 7.5+ y; K = 4 only with a forward confirm on 7.5 y, or 10 y | K = 2: two cards from **different mechanisms**, not two cells of one |
-| Historical holdout | keep 70/30 · all history for development, confirm forward on paper or eval | Dropping the holdout cuts the floor about 0.16 at K = 2. It costs calendar time and moves confirmation onto live-like fills, which are what matter for a simulated eval anyway | Keep 70/30 for R2. Revisit once the native compiler exists, since a forward confirm needs it |
+| Cards per instrument (banked K) | 1 · 2 · more with re-scoping | §9.3: under D7, 70/30 allows K = 1 on equity micros and K = 2 on ~10-year contracts. A forward confirm doubles that. K = 4 needs both 10 years and a forward confirm | Spend each instrument's single look on the strongest mechanism-first card. Don't spread parameter cells |
+| Historical holdout | keep 70/30 · all history for development, confirm forward on paper or eval | Dropping the holdout cuts the floor about 0.16 at K = 2 and raises each instrument's budget (§9.3: equity micros 1 → 2, ~10-year contracts 2 → 4). It costs calendar time and moves confirmation onto live-like fills, which are what matter for a simulated eval anyway | Keep 70/30 for R2. The budget arithmetic argues for building the native compiler early, since a forward confirm needs it |
 | `k_scope` | instrument · ledger | Ledger scope raises the floor with every round (§8.1 lever 3) | instrument, unless one card spans instruments |
 | Mechanism discriminator | none (today) · one per card | A discriminator says whether the mechanism or the expression died (§8.1 lever 5) | One per card, report-only at first |
-| R1 | run as frozen · re-register on deeper MCL data | MCL deepens only to 2021-07 | Run as frozen; design R2 on the new exports |
+| R1 | run as frozen · re-register on deeper MCL data | MCL deepens only to 2021-07. R1 banks K = 8, so MCL has no reachable budget left under D7 either way | Run as frozen. Any further energy work needs pooling or another instrument |
 
 ### 10.2 D10: which family seeds which firm
 
@@ -465,9 +473,9 @@ M6E: 12,500 euros, tick 0.0001 = $1.25 ([CME contract specs](https://cmegroup.co
 | Tradeify | (a) US-open index ORB (in flight) | already the candidate; longest micro history | saturated domain bar (advisory); every other family must stay distinct from it |
 | Bulenox | (b) metals level and compression breaks (MGC) | MGC offered; likely long history; Select 100K's granularity wall does not apply here [INF] | no named payer; four MGC mean-reversion explores falsified (opposite shape) |
 | BluSky | (d) FX Asia/London continuation (M6E once exported) | M6E at all four firms; pre-US window most distinct from (a) | FX fix families dead; Aegis occupies 6J mean reversion (not M6E) |
-| MFFU | (c) energy session breaks (MCL) | MCL cost rows at MFFU | **shortest history (5.3 y)**; R1 is MCL ORB, so a second MCL card must be another mechanism |
+| MFFU | (c) energy session breaks (MCL) | MCL cost rows at MFFU | **No reachable MCL budget under D7** (5.3 y history; R1 banked 8). Needs a pooled card or another instrument |
 
 **Open questions for the discussion:**
-1. Should energy wait until a longer-history family has been tried, given MCL's reach?
+1. Energy: with MCL's builder budget spent, should MFFU take a different family (FX or metals), or should energy come back through a pooled card?
 2. Is "different instrument, session window and mechanism" enough distinctness for Joshua's reading of the exclusivity rule?
 3. Should one round carry one card per family (K = 1 each, four instruments), rather than two cards on one instrument?
