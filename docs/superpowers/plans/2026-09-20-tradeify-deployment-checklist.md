@@ -7,7 +7,7 @@ superseded for Tradeify**, not the current delivery plan. The
 [10-16 ruling](#addendum-2026-10-16--track-b-superseded-for-tradeify) governs;
 [shared obligations](../../adr/2026-09-12-tradeify-book-protection-instance-admission.md#addendum-2026-10-25--d4-tradeify-scoped-supersession-and-where-preserved-items-live)
 remain with their recorded owners. The retained evaluation and weekly
-preservation trade continue under their existing conditions. The [personal lane closed](../../adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed) on 2026-10-29; Q-SFCLEAR-3 is not run. The [c1 stack is retired](../../adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-10-29--c1-retired-as-an-execution-route-staged-decommission) with staged decommission, not a native dependency.
+preservation trade continue under their existing conditions. The [personal lane closed](../../adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed) on 2026-10-29; Q-SFCLEAR-3 is not run, and the 10-19 pause of its dispatch preparation is moot ([Addendum 2026-11-08](#addendum-2026-11-08--draft-11-08-rules-withdrawn-the-orb-and-aegis-pair-is-book-lineage), row 3). The [c1 stack is retired](../../adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-10-29--c1-retired-as-an-execution-route-staged-decommission) with staged decommission, not a native dependency.
 
 | Record | Read as | Remaining boundary |
 |---|---|---|
@@ -19,9 +19,10 @@ preservation trade continue under their existing conditions. The [personal lane 
 The [four-firm ceiling scope ruling](../../adr/2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-10-28--scope-of-the-4-bust-ceiling-accepted)
 keeps the program falsifier separate from the owned Select 100K operating
 objective. The historical 5% references below establish no new account ceiling.
-The [10-19 finding](#addendum-2026-10-19--no-book-lineage-configuration-has-an-evidence-case-for-the-tradeify-evaluation)
-still governs its book-lineage scope; whether an exact ORB/Aegis pairing falls
-inside it is an owner decision, not settled by a shared label. No candidate,
+The ORB MNQ v7 + Aegis A-0 pair is book lineage (T00 trial 13, K = 13); the
+[10-19 finding](#addendum-2026-10-19--no-book-lineage-configuration-has-an-evidence-case-for-the-tradeify-evaluation)
+is an advisory prior shown beside the pair's results, and the pair's own gates
+bind ([Addendum 2026-11-08](#addendum-2026-11-08--draft-11-08-rules-withdrawn-the-orb-and-aegis-pair-is-book-lineage)). No candidate,
 account, sizing, evidence gate or deployment approval is ratified by this routing
 note. Recheck the linked owners before use.
 
@@ -948,6 +949,8 @@ operational controls or standing instructions.
 
 ## Addendum 2026-10-13 — Track B suspended; 11-08 decision rules (DRAFT)
 
+*2026-11-08: the draft 11-08 rules are withdrawn as overtaken; branch (d) parks nothing ([Addendum 2026-11-08](#addendum-2026-11-08--draft-11-08-rules-withdrawn-the-orb-and-aegis-pair-is-book-lineage)).*
+
 **Ruling (Joshua, 2026-10-13, directly to the Deployment Coordinator, verbatim "1 yes", "4 yes"):** record a Track B suspension; draft the 11-08 decision rules now and defer the FLOOR-HALF pass-time check. Basis: Tradeify support's 2026-10-12 replies (no bridges, no direct API, all strategy logic native for evaluation and sim-funded accounts; [route record](../../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12-later--tradeify-support-strategy-logic-must-be-native-for-evaluation-accounts)) and the 2026-10-13 cloud status review. The review's figures not found on main (the 36.08% full-size bust; E1's ~96% within 500 business days) are unverified here.
 
 **Suspension, not a kill.** Frozen until the 11-08 sitting or an operator ruling: the E1 qualification spine (T05 R1/C′ through T17); T09 and its gates B–D; route drills X-3/X-4 and any CrossTrade order on the evaluation account; edition pre-registrations; CP-7 feed funding (#790); T07 operator workflow (#791); the O1 operator-attention R1/R2 work; GC-5-DISPLACED and TB-I3 S2; new evaluations; #807 beyond read-only. Not frozen: the weekly preservation trade (placed on a supported platform, never through CrossTrade or the API, per the 10-12 replies); the personal lane (Q-SFCLEAR-2 cards, P4, P-SW, the #746 runner). Code and evidence are kept. This is separate from the four-firm §4 falsifier.
@@ -996,7 +999,7 @@ operational controls or standing instructions.
 - **R1:** never scored on any account path. The committed composition grid ([RESULTS](../../../lab/analysis/c1/tradeify_book_composition_2026-09/RESULTS.md), EXPLORATORY, protection off) has rows for the Aegis leg alone on Select. At the grid's two largest sizes its FULL bust is at or above S1's 5% failure bound, with higher first-half and 2020–2022 busts. Every Select book that adds a leg to the largest Aegis cell busts more on FULL. Those added legs were ORB legs, not R1's.
 
 **Scope:**
-- The finding covers the book lineage on this evaluation: the declared book and its T00 successor rungs, including FLOOR-HALF and R1. No run was made and no trial was added; the T00 ledger stays at K = 12.
+- The finding covers the book lineage on this evaluation: the declared book and its T00 successor rungs, including FLOOR-HALF and R1. No run was made and no trial was added; the T00 ledger stays at K = 12. *(2026-11-08: K = 13; trial 13 is the ORB + Aegis pair ([Addendum 2026-11-08](#addendum-2026-11-08--draft-11-08-rules-withdrawn-the-orb-and-aegis-pair-is-book-lineage)).)*
 - **Not covered:** ORB MNQ v7 solo, which is paused by Joshua, not failed, and any strategy outside the lineage.
 - **Not four-firm §4 falsifier evidence.**
 - **Unchanged:** the K ledger stays open. Whether draft 11-08 branch (d) applies is left to the sitting.
@@ -1017,12 +1020,14 @@ operational controls or standing instructions.
 - **Runbook:** the [native protection and recovery runbook](../../notes/2026-10-18-native-protection-recovery-pilot-runbook.md) carries A2 (D-N10 to D-N16) and proposes the order state model (§6.10, SM-1 to SM-3, ruled 2026-10-29). #882 is closed as superseded.
 
 **Owed before ORB and Aegis can share that account:**
-- **Evidence case.** The 10-19 ruling (above) found no evidence case for any book-lineage configuration on this evaluation, and its composition grid shows Select books adding ORB legs to the Aegis cell busting more. Whether a pairing of ORB MNQ v7 (paused, outside that finding) with Aegis falls inside the finding is not ruled. Either way the pair needs its own evidence case, and Q-TFYNATIVE-1 (#941, draft) would gate it.
+- **Evidence case.** The 10-19 ruling (above) found no evidence case for any book-lineage configuration on this evaluation, and its composition grid shows Select books adding ORB legs to the Aegis cell busting more. Whether a pairing of ORB MNQ v7 (paused, outside that finding) with Aegis falls inside the finding is not ruled. *(2026-11-08: ruled — the pair is book lineage and the finding is an advisory prior ([Addendum 2026-11-08](#addendum-2026-11-08--draft-11-08-rules-withdrawn-the-orb-and-aegis-pair-is-book-lineage)).)* Either way the pair needs its own evidence case, and Q-TFYNATIVE-1 (#941, draft) would gate it.
 - **Exclusivity.** Tradeify bars the same bot across firms; both strategies must be run only at Tradeify.
 
 **Ruling (Joshua, 2026-10-28, ~23:58Z, given directly to the merge-train coordinator session, relayed; confirmed in the session that recorded the addendum above):** "ORB joins stage 1; the pair counts as one candidate". #807 stage 1's read-only toolchain assessment covers ORB as well as Aegis, and ORB and Aegis together are one candidate. Stage 1 remains read-only; the evidence case and exclusivity above are still owed.
 
 ## Addendum 2026-10-31 — authority for the Aegis + ORB pair: proposed reconciliation
+
+*2026-11-08: rows 2, 3 and 12 accepted; the other rows stay open ([Addendum 2026-11-08](#addendum-2026-11-08--draft-11-08-rules-withdrawn-the-orb-and-aegis-pair-is-book-lineage)).*
 
 **Status: Proposed, not accepted: Joshua accepts or rejects.** This addendum decides nothing. It reads the public record at `main@26a7624d` and lists, for each obligation this checklist still shows open for the pair (Aegis and ORB, both native NinjaScript, together on the one owned Select 100K evaluation), what discharges it, what supersedes it, or what leaves it open. Where the deciding record is private, it is named as "private record, confirm locally", with what it must show. No private content is guessed or copied here (Rule 13).
 
@@ -1060,3 +1065,13 @@ operational controls or standing instructions.
 11. Joshua's GO for that session (row 13).
 
 Row 3 needs no further act beyond acceptance. Once Joshua rules, the routing note at the top of this file, STATE queue item 1 and AGENTS.md `:123` need a matching pointer update in a separate PR.
+
+## Addendum 2026-11-08 — draft 11-08 rules withdrawn; the ORB and Aegis pair is book lineage
+
+Ruled by Joshua 2026-11-03 (pre-sitting, in the Claude session preparing the 11-08 sitting); recorded effective 2026-11-08.
+
+- **The [2026-10-13 draft 11-08 decision rules](#addendum-2026-10-13--track-b-suspended-11-08-decision-rules-draft) are withdrawn as overtaken:** (a) was withdrawn 10-16, (b) granted 10-28, and (c)'s lane closed 10-29. **Branch (d) parks nothing.**
+- **Joshua's 2026-10-25 ruling 1b(i) is confirmed.** The ORB MNQ v7 + Aegis A-0 pair is book lineage: T00 trial 13 ([`discovery_manifests/t00_tradeify_book_lineage_2026_10_10.json`](../../../discovery_manifests/t00_tradeify_book_lineage_2026_10_10.json)). The [10-19 finding](#addendum-2026-10-19--no-book-lineage-configuration-has-an-evidence-case-for-the-tradeify-evaluation) is an advisory prior under the amended [Rule 26](../../operational_rules.md#rule-26--prior-rejections-are-advisory-priors), shown beside the pair's results; the pair's own gates bind.
+- **The T00 lineage ledger stays open at K = 13.** This corrects the 10-19 addendum's "K = 12" and the "not ruled" in the 10-28 addendum and in reconciliation row 2, where they are read.
+- **The [2026-10-31 proposed reconciliation](#addendum-2026-10-31--authority-for-the-aegis--orb-pair-proposed-reconciliation):** rows 2, 3 and 12 are accepted; the other rows stay open.
+- The [native-lane framework](../../briefs/pre-registration/2026-10-26-tradeify-native-lane-prereg-DRAFT.md)'s G0 item 3 is superseded by this ruling; amending it is owed at that draft's owner.

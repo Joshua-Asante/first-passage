@@ -2,8 +2,8 @@
 
 ## Purpose
 
-Research and operations for automated futures strategies at
-`core/firm_rules.AUTOMATION_FRIENDLY_PROP_FIRMS`. Mission:
+Research for automated futures strategies at
+`core/firm_rules.AUTOMATION_FRIENDLY_PROP_FIRMS`; operations scale within Tradeify. Mission:
 **generate → evaluate → deploy → measure → update**.
 
 Start with [STATE.md](STATE.md) for priorities and obligations, then the owning
@@ -119,9 +119,9 @@ M1 `RESOLVED` ([acceptance](docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json)
 | Incumbent environment retained; no successor migration | [S1](docs/adr/2026-08-07-loop-s1-environment-ratification.md) |
 | Daemon → listener retired; TV login automation prohibited | [retirement](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-10-29--c1-retired-as-an-execution-route-staged-decommission), [S2](docs/adr/2026-08-07-loop-s2-signal-host-fork.md) |
 | Withdrawn Striker editions stay barred; separate campaign expressions are conditionally eval-eligible | [withdrawal](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md), [readmission](docs/adr/2026-09-05-tradeify-select-striker-expression-readmission.md) |
-| Rail GO retired; $700 ceiling and exemptions retained | [retirement](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-10-29--c1-retired-as-an-execution-route-staged-decommission) |
+| Rail GO retired; $700 ceiling re-homed to the account's private owner record | [re-home](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-11-08--the-700-spend-ceiling-is-re-homed-to-the-retained-accounts-owner-record) |
 | Licensed test strategy can discharge M1 item 5 / B7 Stage 1 independently of strategy selection | [M1 addendum](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24) |
-| Four-firm program falsifier remains dated 2026-11-08; Tradeify counts again | [program](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md), [F1 reversal](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-09-01--f1-reversed-a-tradeify-resting-discharge-now-counts-toward-4) |
+| Four-firm falsifier fired 2026-11-08; by operator ruling the multi-firm mandate is research-only and Tradeify scaling stays program work; ORB v7 withdrawn from §4 | [program](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md) |
 | Tradeify eval: native strategy logic only (no external engine, bridge or API); Track B superseded; native weekly trade continues; personal lane closed 10-29, Q-SFCLEAR-3 not run. | [support record](docs/briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12-later--tradeify-support-strategy-logic-must-be-native-for-evaluation-accounts), [supersession](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify), [lane closure](docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed) |
 
 ## Strategy Reference (LOCKED legacy book — do not modify)
