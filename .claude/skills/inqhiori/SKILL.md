@@ -13,7 +13,7 @@ Component skill of the **INQHIORI ⊕ OODA dual-loop framework** (reactivated 20
 - INQHIORI reference page — `34cdc0b53c11812d96f8f6e9ee500d5e`
 - The Algorithm reference page — `34ddc0b53c11811eb6a0d9192b63d252`
 
-Both predecessor pages remain valid for their definitional content (loop structure on INQHIORI; operator semantics on The Algorithm); both are archived under `docs/methodology/archive/notion/`. The integration discipline lives in this skill and `docs/methodology/inqhiori-canon.md`.
+Both predecessor pages remain valid for their definitional content (loop structure on INQHIORI; operator semantics on The Algorithm); both are archived under `docs/methodology/archive/notion/` (removed from the tree in P1.6; [INQHIORI v1](https://github.com/Joshua-Asante/first-passage/blob/f710fce9838a573c69815d950186f4cc0c46677e/docs/methodology/archive/notion/inqhiori-v1-investigation-framework.md), [The Algorithm](https://github.com/Joshua-Asante/first-passage/blob/f710fce9838a573c69815d950186f4cc0c46677e/docs/methodology/archive/notion/the-algorithm.md)). The integration discipline lives in this skill and `docs/methodology/inqhiori-canon.md`.
 
 ---
 

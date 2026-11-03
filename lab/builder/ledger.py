@@ -2,8 +2,8 @@
 
 Each line is one JSON entry whose ``entry_sha256`` covers every other field, including the
 previous entry's hash, so an edit or deletion anywhere breaks the chain. Cards are appended
-before the engine reads any data; K for an instrument is the number of distinct card hashes
-ever appended for it. Holdout looks are their own entries and do not count toward K.
+before the engine reads any data; K is the number of distinct card hashes ever appended, for one
+instrument (``k_scope: instrument``) or across all of them (``k_scope: ledger``). Holdout looks are their own entries and do not count toward K.
 
 ``read`` verifies the whole file on every call and raises on anything it cannot vouch for: a
 blank, truncated or non-object line, a broken chain, an unknown kind or field set, a card entry
@@ -98,5 +98,7 @@ def contains(path: Path, card_sha256: str) -> bool:
     return any(e["kind"] == "card" and e["card_sha256"] == card_sha256 for e in read(path))
 
 
-def k(path: Path, instrument: str) -> int:
-    return len({e["card_sha256"] for e in read(path) if e["kind"] == "card" and e["instrument"] == instrument})
+def k(path: Path, instrument: str | None) -> int:
+    """Distinct ledgered card hashes for ``instrument``, or across every instrument when None."""
+    return len({e["card_sha256"] for e in read(path)
+                if e["kind"] == "card" and instrument in (None, e["instrument"])})

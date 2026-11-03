@@ -21,12 +21,12 @@ Great Prune T1 pass — recover via `git show pre-prune-2026-08-08:<path>`.
 ## Methodology canon (now repo-canonical)
 
 - `34ddc0b53c1181479d7bdecc61f47078` — INQHIORI canon (D-S-A pre-Q gate) → REPO:docs/methodology/inqhiori-canon.md  *(memory #8, #24)*
-- `361dc0b53c1181138eccf03074d05486` — Methodology Canon (hub) → ARCHIVED-AT:docs/methodology/archive/notion/methodology-canon.md; LoR §3.5 now SUPERSEDED-BY:docs/adr/2026-06-12-three-loop-methodology-binding.md  *(memory #16)*
+- `361dc0b53c1181138eccf03074d05486` — Methodology Canon (hub) → ARCHIVED-AT:https://github.com/Joshua-Asante/first-passage/blob/f710fce9838a573c69815d950186f4cc0c46677e/docs/methodology/archive/notion/methodology-canon.md; LoR §3.5 now SUPERSEDED-BY:docs/adr/2026-06-12-three-loop-methodology-binding.md  *(memory #16)*
 
 ## `[LEGACY-NOTION]` tags from inqhiori-canon.md (all 7)
 
-- `34cdc0b53c11812d96f8f6e9ee500d5e` — INQHIORI v1 (reference) → ARCHIVED-AT:docs/methodology/archive/notion/inqhiori-v1-investigation-framework.md
-- `34ddc0b53c11811eb6a0d9192b63d252` — The Algorithm (reference) → ARCHIVED-AT:docs/methodology/archive/notion/the-algorithm.md
+- `34cdc0b53c11812d96f8f6e9ee500d5e` — INQHIORI v1 (reference) → ARCHIVED-AT:https://github.com/Joshua-Asante/first-passage/blob/f710fce9838a573c69815d950186f4cc0c46677e/docs/methodology/archive/notion/inqhiori-v1-investigation-framework.md
+- `34ddc0b53c11811eb6a0d9192b63d252` — The Algorithm (reference) → ARCHIVED-AT:https://github.com/Joshua-Asante/first-passage/blob/f710fce9838a573c69815d950186f4cc0c46677e/docs/methodology/archive/notion/the-algorithm.md
 - `34cdc0b53c11812cbb4ff637ba44736e` — Rule 1 — Small-cell variance prior → ARCHIVED-AT:docs/methodology/archive/notion/rule-1-small-cell-variance-prior.md
 - `34bdc0b53c1181fe9dc3fd93eadf3e8e` — Iran-Hormuz overlay deactivation (hard lesson) → DEAD (404, 2026-06-13) → REPO-HISTORY:`git show pre-prune-2026-06-05:archive/docs/methodology/archive/overlays/guardian_conflict_risk.md`; summary in inqhiori-canon.md §7 + methodology-canon.md §5
 - `357dc0b53c118124a3ddf811d1d50745` — Reflect — Striker NAS100 v1 dual-loop closure → DEAD (404, 2026-06-13) → SUPERSEDED-BY:inqhiori-canon.md §9 (closure summary) + core/strategies LOCK record
@@ -69,5 +69,5 @@ Great Prune T1 pass — recover via `git show pre-prune-2026-08-08:<path>`.
 - memory **#8** (loop-selection canon) → docs/methodology/inqhiori-canon.md
 - memory **#9** (anchors) → AGENTS.md + docs/mc_anchor_history.md
 - memory **#13** (Q-roster) → docs/briefs/INDEX.md
-- memory **#16** (role map / three-surfaces) → docs/methodology/archive/notion/methodology-canon.md + docs/adr/2026-06-12-notion-surface-retirement.md
+- memory **#16** (role map / three-surfaces) → https://github.com/Joshua-Asante/first-passage/blob/f710fce9838a573c69815d950186f4cc0c46677e/docs/methodology/archive/notion/methodology-canon.md + docs/adr/2026-06-12-notion-surface-retirement.md
 - memory **#24** (canon §14 read-surface clause) → docs/methodology/inqhiori-canon.md §14

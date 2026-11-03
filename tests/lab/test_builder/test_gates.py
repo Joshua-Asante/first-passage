@@ -12,13 +12,15 @@ from tests.lab.test_builder.builder_inputs import CARD, panel
 COSTS = gates.Costs(commission_per_side=1.06)
 
 
-def run(tmp_path, text=CARD, n_days=260, book=None, ledgered=True, dates=None, **kw):
+def run(tmp_path, text=CARD, n_days=260, book=None, ledgered=True, dates=None, closed=frozenset(),
+        k_scope="instrument", **kw):
     c = cards.parse(text)
     p = tmp_path / "ledger.jsonl"
     if ledgered:
         ledger.append_cards(p, "run-1", [c])
     b, all_dates = panel(n_days, **kw)
-    return gates.evaluate(c, b, all_dates if dates is None else dates, p, COSTS, "sha-test", book), c, b, all_dates, p
+    return gates.evaluate(c, b, all_dates if dates is None else dates, p, COSTS, "sha-test", book,
+                          closed=closed, k_scope=k_scope), c, b, all_dates, p
 
 
 def test_I_L4_engine_refuses_an_unledgered_card(tmp_path):
@@ -160,12 +162,12 @@ def test_declared_empty_book_passes_5g(tmp_path):
 def test_I_L5_holdout_look_is_logged_once_and_checks_dates_first(tmp_path):
     rep, c, b, dates, p = run(tmp_path)
     with pytest.raises(gates.GateError, match="not sessions"):
-        gates.holdout_look(c, b, ["2030-01-01"], p, "run-1", COSTS)
+        gates.holdout_look(c, b, ["2030-01-01"], p, "run-1", COSTS, closed=frozenset())
     assert not any(e["kind"] == "holdout_look" for e in ledger.read(p))
-    look = gates.holdout_look(c, b, dates[-50:], p, "run-1", COSTS)
-    assert look["pass"] and look["trades"] == 50
+    look = gates.holdout_look(c, b, dates[-50:], p, "run-1", COSTS, closed=frozenset())
+    assert look["pass"] and look["verdict"] == "pass" and look["trades"] == 50
     with pytest.raises(ledger.LedgerError, match="already"):
-        gates.holdout_look(c, b, dates[-50:], p, "run-1", COSTS)
+        gates.holdout_look(c, b, dates[-50:], p, "run-1", COSTS, closed=frozenset())
 
 
 def test_time_window_range_and_atr_stop_compile():
@@ -177,3 +179,68 @@ def test_time_window_range_and_atr_stop_compile():
     ds = C.days(c, b, dates)
     assert ds and ds[0].first == 2 and (ds[0].hi, ds[0].lo) == (70.2, 69.9)
     assert all(t.side == 1 for t in C.simulate(c, b, dates))
+
+
+def _halt(bars, dates, halted):
+    """Drop every bar from 12:00 on the given dates, so those days have no bar at the 12:30 flat_at."""
+    hm, day = bars.index.strftime("%H:%M"), bars.index.strftime("%Y-%m-%d")
+    return bars[~((hm >= "12:00") & day.isin(halted))]
+
+
+def test_an_unresolved_exit_voids_the_card(tmp_path):
+    c = cards.parse(CARD)
+    p = tmp_path / "ledger.jsonl"
+    ledger.append_cards(p, "run-1", [c])
+    b, dates = panel(260)
+    rep = gates.evaluate(c, _halt(b, dates, dates[3:5]), dates, p, COSTS, "sha", closed=frozenset(), k_scope="instrument")
+    assert rep["verdict"] == "unresolved" and rep["gates"] == [] and rep["stopped_at"] is None
+    assert rep["unresolved"] == {"source": "card", "count": 2, "dates": dates[3:5]}
+    json.dumps(rep)
+
+
+def test_calendar_exception_day_is_skipped_but_stays_a_zero_pnl_session(tmp_path):
+    rep0, *_ = run(tmp_path / "a")
+    _, dates = panel(260)
+    rep, *_ = run(tmp_path / "b", closed=frozenset(dates[5:7]))
+    assert rep["skipped_days"] == {"calendar_exception": 2} and rep["dev_sessions"][2] == 260
+    assert rep["trades"] == rep0["trades"] - 2
+
+
+def test_k_scope_ledger_counts_cards_across_instruments(tmp_path):
+    p = tmp_path / "ledger.jsonl"
+    ledger.append_cards(p, "other", [cards.parse(CARD.replace("instrument: MCL", "instrument: M2K"))])
+    by_inst, *_ = run(tmp_path, k_scope="instrument")
+    whole, *_ = run(tmp_path, k_scope="ledger")
+    assert (by_inst["k"], by_inst["k_scope"]) == (1, "instrument") and (whole["k"], whole["k_scope"]) == (2, "ledger")
+    with pytest.raises(gates.GateError, match="k_scope"):
+        run(tmp_path, k_scope="family")
+
+
+def test_placebo_is_labelled_descriptive_with_unchanged_threshold(tmp_path):
+    rep, *_ = run(tmp_path)
+    g = rep["gates"][4]
+    assert g["gate"] == "5e placebo_rank (descriptive; timing shuffle with realised side and hold)"
+    assert g["threshold"] == 0.95 == gates.THRESHOLDS["5e_min_beaten_share"]
+
+
+def test_unresolved_holdout_trade_spends_the_look_and_fails_it(tmp_path):
+    rep, c, b, dates, p = run(tmp_path)
+    look = gates.holdout_look(c, _halt(b, dates, [dates[-3]]), dates[-50:], p, "run-1", COSTS, closed=frozenset())
+    assert look["verdict"] == "unresolved" and not look["pass"]
+    assert look["unresolved"] == {"source": "holdout", "count": 1, "dates": [dates[-3]]}
+    assert sum(e["kind"] == "holdout_look" for e in ledger.read(p)) == 1
+
+
+def test_a_plateau_neighbour_with_an_unresolved_trade_voids_the_card(tmp_path, monkeypatch):
+    real = gates.C.simulate
+
+    def sim(card, bars, dates, closed=frozenset()):
+        out = real(card, bars, dates, closed)
+        if card.sha256 == "":  # a neighbour: its last trade loses its exit
+            out[-1] = gates.C.Trade(out[-1].date, out[-1].side, out[-1].entry_i, None, out[-1].entry_px, None, "unresolved")
+        return out
+
+    monkeypatch.setattr(gates.C, "simulate", sim)
+    rep, *_ = run(tmp_path)
+    assert (rep["verdict"], rep["stopped_at"]) == ("unresolved", "5d plateau")
+    assert rep["unresolved"]["source"].startswith("neighbour n_bars") and rep["unresolved"]["count"] == 1

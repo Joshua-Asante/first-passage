@@ -327,7 +327,9 @@ _TRADEIFY_EVAL = {
     # Rule 17: help.tradeify.co article 10468315 "Trading Commission Fees", read 2026-10-31
     # (coordinator, live; matches the 2026-07-13 note above): "Micro Crude Oil | MCL | NYMEX |
     # $2.12" total round trip per contract, "based on the free membership structure" -> $1.06/side.
-    "cost_per_side_usd_by_symbol": {"MCL": 1.06},
+    # Same article, read live 2026-11-02 (research coordinator): "E-Micro Gold | MGC | COMEX |
+    # $2.12" -> $1.06/side. It lists no SIL, MHG or MNG row (W1 contract v5 §5.4 drops them).
+    "cost_per_side_usd_by_symbol": {"MCL": 1.06, "MGC": 1.06},
 }
 # Select product line: the eval-only 40% consistency rule forces 3 trading days.
 _TRADEIFY_SELECT_EVAL = {
@@ -387,7 +389,9 @@ _MFFU_RAPID_EVAL = {
     "cost_per_side_usd": 0.95,      # all-in, index micros (MNQ/MYM/MES; MGC=$1.10)
     # Rule 17: help.myfundedfutures.com article 9735811, read 2026-10-31: "Micro Crude Oil" |
     # "MCL" | ... | "Total Cost Round Trip" "$1.16" -> $0.58/side (no plan scope stated on the page).
-    "cost_per_side_usd_by_symbol": {"MCL": 0.58},
+    # Same article (dated "August 24, 2026"), read 2026-11-02: "Micro Gold" | "MGC" | ... | "$2.20"
+    # -> $1.10/side. No MHG or MNG row; HG and NG are on its restricted list.
+    "cost_per_side_usd_by_symbol": {"MCL": 0.58, "MGC": 1.10},
 }
 
 # BluSky Trading "Premium" eval tiers — added 2026-07-12 (ADR 2026-07-12-prop-portfolio).

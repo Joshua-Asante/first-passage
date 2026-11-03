@@ -41,8 +41,9 @@ BP_PER_UNIT = 10_000.0
 # Applying it to products without a row is the rates_ev_zf_recon defect shape.
 COMMISSION_BINDINGS: dict[str, str] = {
     **dict.fromkeys(("MES", "MNQ", "MYM", "M2K"), "index_micro"),
-    "MCL": "firm_symbol_row",  # FIRM_RULES[firm]["cost_per_side_usd_by_symbol"]["MCL"] where sourced
-    **dict.fromkeys(("ZN", "ZB", "ZF", "CL", "NG", "6E", "MGC", "ES", "NQ",
+    # FIRM_RULES[firm]["cost_per_side_usd_by_symbol"][symbol] where sourced
+    **dict.fromkeys(("MCL", "MGC"), "firm_symbol_row"),
+    **dict.fromkeys(("ZN", "ZB", "ZF", "CL", "NG", "6E", "ES", "NQ",
                      "YM", "RTY", "GC", "MNG"), "unavailable"),
 }
 CATEGORIES = frozenset({"index_micro", "firm_symbol_row", "unavailable"})

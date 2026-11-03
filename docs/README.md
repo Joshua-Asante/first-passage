@@ -17,9 +17,9 @@ Facts stay with their owners
 | Workflow entry | [`governance/INDEX.md`](governance/INDEX.md) |
 | LTM cold store | [`ltm/README.md`](ltm/README.md) |
 | Notices / audits | [`notes/`](notes/) |
-| External-source notes (not a harvest intake) | [`external/README.md`](external/README.md) |
+| External-source notes (not a harvest intake) | [`external/README.md`](https://github.com/Joshua-Asante/first-passage/blob/f710fce9838a573c69815d950186f4cc0c46677e/docs/external/README.md) |
 | Retained historical prose (not live doctrine) | [`historical/README.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/historical/README.md) |
-| Operational lessons (if present; methodology lessons live elsewhere) | [`lessons/README.md`](lessons/README.md) |
+| Operational lessons (if present; methodology lessons live elsewhere) | [`lessons/README.md`](https://github.com/Joshua-Asante/first-passage/blob/f710fce9838a573c69815d950186f4cc0c46677e/docs/lessons/README.md) |
 | Plans + design specs | [`superpowers/README.md`](superpowers/README.md) |
 | Brief / ADR templates | [`templates/README.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/templates/README.md) |
 
