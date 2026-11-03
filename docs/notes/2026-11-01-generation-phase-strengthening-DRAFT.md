@@ -427,6 +427,12 @@ M6E: 12,500 euros, tick 0.0001 = $1.25 ([CME contract specs](https://cmegroup.co
      - a regenerated `PROFILES.md`.
      Nothing is added before the bytes exist.
 - Refresh the `bar_data` M15 panels and their sidecars from the new exports.
+- **Extend the admitted calendar before evaluating any pre-2022 session.** The builder refuses any session outside `ops/calendars/cme_holiday_calendar_2022_2026.json`'s coverage window (`lab/builder/data.py` `Calendar`, coverage 2022-01-01..2026-12-31; [README](../../lab/builder/README.md) "Frozen calendar"), so deeper exports alone unlock nothing.
+  - The extension is a new calendar file (or version) under the same `cme_holiday_calendar/v1` schema, reaching back to each window's start: 2019-05 for the equity micros, further for MGC, 6J and M6E.
+  - It needs the same kind of operator acceptance the current file got ([calendars README](../../ops/calendars/README.md), D19, scoped to date membership).
+  - The current file has equity, metals and FX columns but no energy columns. The builder reads only `entries[].date`, so this matters only if a consumer starts reading per-group status.
+  - R1 keeps its pinned calendar (Rule 23).
+  - Flagged on the PR by the operator's comment of 2026-11-03.
 
 **Recomputed reach** on the real windows. Each cell is the 5f floor / P(pass | true 0.89), with the normal approximation:
 
