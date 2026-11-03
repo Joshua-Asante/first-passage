@@ -1,6 +1,6 @@
 # `MNQFLOW-1-DEPTH` — S2 redraw (`S2B`), after the original sample's P0 abort
 
-**Status:** `HOLD 2026-08-23 (operator) — value-uncertain, not cost-blocked.` §9.1 signed;
+**Status:** `HOLD 2026-08-23 (operator) — value-uncertain, not cost-blocked.` *(2026-11-08: the 11-08 revisit below is dropped; see [Addendum 2026-11-08](#addendum-2026-11-08--hold-reading).)* §9.1 signed;
 §2.2's P0 re-estimate on these 30 dates came back **$154.7320**, over the $125.00 ceiling (see
 §9.2) — a structural finding, not a resolved credit question (two independent draws both land
 18–24% over; the true cost is nearer $150). Presented with three named paths (raise the
@@ -250,3 +250,10 @@ grep -n "SIGNED / FROZEN: ____" lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PR
   it is worth the spend."* None of the four named paths elected; recorded as its own state, not
   rounded to "decline." No forced re-test date. Status block updated in place (this is the
   document's own live status field, not frozen §§1–9 body text).
+
+### Addendum 2026-11-08 — HOLD reading
+
+Ruled by Joshua 2026-11-03 (pre-sitting); recorded effective 2026-11-08. Frozen body unedited.
+
+- **HOLD kept; the dated 2026-11-08 revisit is dropped.**
+- The only wake is "a historical MBP-10 source for the S1 window is approved". The frozen S1 (inherited from [`PREREG.md`](PREREG.md)) is a historical Databento MBP-10 window; any other source needs an amended pre-registration.

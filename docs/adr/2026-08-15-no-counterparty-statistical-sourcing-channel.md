@@ -475,3 +475,14 @@ This is a different epistemic state from the 08-15 empty walk (every then-legal 
 | Date | Change | By |
 |---|---|---|
 | 2026-08-23 | Addendum: scoped decline of the reopened 6A/M6A and GC/MGC entry-geometry / dense-1m cell; doors stay legally open; last pre-G0 slot unspent; count remains 2/3; not generation-dry; not an 08-15 empty walk. | Joshua (operator) + Cursor |
+
+---
+
+## Addendum 2026-11-08 — §4 reading
+
+Ruled by Joshua 2026-11-03 (pre-sitting); recorded effective 2026-11-08. Frozen body and earlier addenda unedited.
+
+- **§4: AMBIGUOUS-HOLD.** Pre-G0 kills stand at 2/3 on the channel's separate counter (N = 3 addendum); generation-dry has not fired. Re-test 2027-02-08.
+- `discovery_manifests/mnq_dailygeom_notice_20260829.json` records a **Notice-phase statistical screen**, not an admitted channel candidate. That rests on its purpose and admission history; its missing `lane` field alone would not establish it. Its disclosed **K = 5** is preserved.
+- The [analogue-modality ruling](2026-08-15-analogue-modality-route-ruling.md) is recorded **inert** there, as its Gate clause requires.
+- **Obsolete reference:** §4's battery-closure definition names "cost-law UNREACHABLE" as a closure stage. That universal cost-law gate (Requirement 5) was deleted 2026-10-24 ([evaluation-order ADR](2026-08-30-evaluation-order.md), Superseded-in-part-by line). Cost estimates and net-performance evaluation still matter, and historical kills remain recorded.

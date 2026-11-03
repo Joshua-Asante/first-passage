@@ -32,3 +32,9 @@ RESOLVED on election. Re-test rides the channel ADR's own 2026-11-08 falsifier: 
 ## Boundary
 
 Do **not** read this as un-pausing the dense-1m OHLCV temporal-selectivity lane generally — θ-parameterised entry-geometry constructs stay paused on their own terms. Do **not** use it to re-admit CON-1…CON-5 or a sibling under an "analogue" relabel; the test is the *absence* of named entry geometry, not the presence of the word. Do **not** cite route ③ (arithmetically false on both limbs: incumbent DSR 0.9644 vs the 0.950 floor; headline +0.890 vs the 0.850 floor).
+
+## Addendum 2026-11-08 — Gate reading
+
+Ruled by Joshua 2026-11-03 (pre-sitting); recorded effective 2026-11-08.
+
+**Inert.** Recorded at the channel ADR's 2026-11-08 reading, as the Gate clause requires; not carried as live doctrine. See the [channel ADR's 2026-11-08 addendum](2026-08-15-no-counterparty-statistical-sourcing-channel.md#addendum-2026-11-08--4-reading).
