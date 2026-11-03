@@ -1,4 +1,6 @@
-# Fly.io — KEEP
+# Fly.io — WINDING DOWN
+
+> **2026-11-03:** both c1 apps are scaled to zero ([Stage 1 record](../adr/2026-07-17-c1-rail-build-account-registration-go.md#stage-1-record--2026-11-03)). The apps are destroyed at Stage 2. The KEEP standing below is historical.
 
 **Class:** (d) meta-belt (subscription) · **Standing:** KEEP
 **Aim served:** A1/A3 — hosts the rail listener + `c1-signal-daemon`

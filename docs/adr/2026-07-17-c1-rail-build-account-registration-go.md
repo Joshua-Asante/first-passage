@@ -479,3 +479,11 @@ Refundable deposits and minimum balances **stay under the cap**, as clarified ab
 - The [M1 acceptance](../notes/rail_build/M1_MONITORING_ACCEPTANCE.json) and its validator stay as evidence and gates until Stage 3 decides them. M1 acceptance never transfers to another instance.
 - The spend ceiling and its exemptions stay as recorded.
 - The lane closure is in the [self-funded lane ADR](2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed), and the single program is in the [four-firm program ADR](2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-10-29--one-program-the-multi-firm-operation-accepted).
+
+### Stage 1 record — 2026-11-03
+
+The operator ran the commands from their own Fly login. The agent supplied the commands and read the output, and held no Fly credential.
+
+- **Disarmed before stop.** `c1-signal-daemon` health (14:47Z): `emit_enabled:false`, `effective_emit:false`, `connected:false`, `ceremony_state:DISABLED`, `strategy:NullStrategy`. `c1-rail`: the volume config `/data/c1_rail_config.json` printed `dry_run=True`, `armed_until=None` (only those two keys were read). `fly logs --no-tail` returned nothing, so no boot line was available.
+- **Stopped.** `fly scale count 0` on both apps reported one machine **destroyed** for each, not stopped. `fly machine list` then printed "No machines are available" for both. At 14:55Z both `https://<app>.fly.dev/` probes timed out (HTTP 000).
+- **Kept for rollback.** Both apps still exist. Rollback now means a redeploy, not a machine start. Volumes and their billing are unverified until `fly volumes list` is run on both apps. Stage 2 (destroy apps, volumes included) is still the operator's call, after about two weeks.
