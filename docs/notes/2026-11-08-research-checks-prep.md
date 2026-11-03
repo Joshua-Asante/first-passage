@@ -142,7 +142,7 @@
 
 ## 10. Mechanism-sourcing radar: progress and idle checkpoint
 
-**Owner:** [strategy_harvest §2.4](../methodology/strategy_harvest.md#24-standing-radar-cadence--zero-new-code-shape-pre-check-added-2026-08-24).
+**Owner:** [strategy_harvest §2.4](../methodology/strategy_harvest.md#24-mechanism-sourcing-radar--idle-on-demand-shape-pre-check-added-2026-08-24).
 **Criterion** (L129): the radar "Rides the existing quarterly review dates already on the forward board (2026-08-08, 2026-11-08)"; each pass has steps (1)-(5). STATE (L126) says: "on demand; progress/idle checkpoint 2026-11-08."
 **Evidence:** no §2.4 pass is recorded since 08-24. The only sourcing work is the 10-21 zero-K published-rule pass, which used none of steps (1)-(3) and found nothing admissible (note:70).
 **What changed:** the shape pre-check (step 4) is scored against `Tradeify_Select_100K`. The 10-29 order of expansion makes later-firm strategies the research need, and the builder now generates candidates internally.

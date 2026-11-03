@@ -2,6 +2,8 @@
 
 **Status:** `REGISTERED 2026-11-01`. Rule 23 requires this before any R1 card produces a result.
 
+**Status note 2026-11-08.** Ruled by Joshua 2026-11-03 (pre-sitting); recorded effective 2026-11-08. R1 is **not run as pinned**; its re-registration on the current engine is owed, with K recorded in a `register_search` manifest in `discovery_manifests/`, the [candidate contract's](../../adr/2026-08-30-candidate-contract.md#contract-fields-and-freezes) sole machine K ledger. Reason: engine `a0d33b6` predates the current required run-schema keys (`lab/builder/run.py:41,93-95`) and the causal-exit fix (`dfe8900`).
+
 | Item | Value |
 |---|---|
 | Pre-registration | Builder R1 draft v3 (private): `local_artifacts/strategy-builder-2026-10/prereg-r1/PREREG-BUILDER-R1-DRAFT-v3.md`, sha256 `f82abc1c539a7321adf457098e7380c93a460df4ad2121245d8c14748cf56e8a` |
