@@ -41,6 +41,10 @@ omit a read that qualifies as examined under 2-C?
   what K a closed manifest banks. The 08-03 ADR "spends no K and opens no manifest"
   (`docs/adr/2026-08-03-orb-mnq-repark-payability-falsified.md:57`). It doesn't rule on the
   closure's K either.
+- **After the close, an operator-ratified amendment kept the zero bank.** The 2026-08-18 amendment
+  ("OK on both") lists under "Does not change": "ORB Ruling 1 (`executed_k=0`) still banks 0"
+  (`docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md:182`). It ruled on two other banking
+  questions and records no examination of the ORB reads or of 2-C's conditions.
 
 ## 3. Read-by-read enumeration
 
@@ -75,10 +79,15 @@ The repo's own index carries the archived stage files under this campaign's anal
   failure alone voids the 2-C close. It is a separate route to the same consequence.
 - The T2 read (row 5) is not needed for the finding, and its attribution is contestable.
 
-**Counter-readings Joshua may weigh** (none is established by a primary source found here):
+**Counter-readings Joshua may weigh:**
 
-1. *Ruling 1 already set this manifest's K to zero.* Its text is about open manifests only
-   (`…payability-target.md:234-238`). No ruling found here applies it to the close.
+1. *The operator already confirmed this manifest's zero bank.* Ruling 1's own text is about open
+   manifests only (`…payability-target.md:234-238`). After the close, however, the operator-ratified
+   2026-08-18 amendment listed "ORB Ruling 1 (`executed_k=0`) still banks 0" as unchanged
+   (`docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md:182`). That confirms the **bank**. It
+   does not adjudicate the **enumeration**: the amendment cites no ORB read and no 2-C condition, and
+   2-C's trigger turns on what the closure note lists, not on the banked figure. Joshua decides
+   whether the confirmation also covers the omitted reads.
 2. *The note's "separate ORB analysis paths" sentence is an enumeration.* It names no read and no
    examiner (condition iii). Rows 1–4b also contradict its attribution claim, because each of those
    files names this campaign.
