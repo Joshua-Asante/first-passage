@@ -88,6 +88,7 @@ class FakeGh:
         p = self.prs[n]
         state = p.get("state", "OPEN")
         return {"number": n, "title": p.get("title", "t"), "draft": p.get("draft", False),
+                "body": p.get("body", ""),
                 "state": "open" if state == "OPEN" else "closed", "merged": state == "MERGED",
                 "base": {"ref": p.get("base", "main")}, "head": {"sha": p.get("head", HEAD)},
                 "mergeable_state": p.get("merge", "CLEAN").lower()}
@@ -137,6 +138,7 @@ class FakeGh:
             return json.dumps({
                 "number": int(args[2]), "title": p.get("title", "t"),
                 "state": p.get("state", "OPEN"), "isDraft": p.get("draft", False),
+                "body": p.get("body", ""),
                 "baseRefName": p.get("base", "main"),
                 "headRefOid": p.get("head", HEAD), "mergeStateStatus": p.get("merge", "CLEAN"),
                 "statusCheckRollup": p.get("checks", green("skills (3.12)", "build (3.11)")),
@@ -392,6 +394,36 @@ def test_merge_state_threads_draft_and_stacked_base():
     assert gate(**base, draft=True).verdict == "HOLD"
     stacked = gate(**base, base="claude/other-pr")
     assert stacked.verdict == "HOLD" and "retarget" in " ".join(stacked.reasons)
+
+
+@pytest.mark.parametrize("body", [
+    "Merge on or after 2026-11-08 ET, not before.\n\nRecords rulings.",
+    "**Merge on or after 2026-11-08 ET, not before, and after the program PR.**",
+    "Merge LAST, on 2026-11-08 ET, after the five owner-record PRs.",
+    "## Summary\n\n- merge on or after 2026-11-08",
+])
+def test_date_gate_holds_until_the_stated_et_date(body):
+    # #1030, #1031 and #1034 merged five days before their "Merge on or after" line (2026-11-03).
+    clean = {"bot": [card(HEAD, "completed", False)], "body": body}
+    before = mt.fetch_gate(1, mt.DEFAULT_REPO, FakeGh({1: clean}),
+                           now=datetime(2026, 11, 8, 4, 59, tzinfo=timezone.utc))
+    assert before.verdict == "HOLD" and before.not_before == "2026-11-08"
+    assert "on or after 2026-11-08 ET" in " ".join(before.reasons)
+    # ET midnight is 04:00 or 05:00 UTC; the gate opens at the later, so never early.
+    after = mt.fetch_gate(1, mt.DEFAULT_REPO, FakeGh({1: clean}),
+                          now=datetime(2026, 11, 8, 5, 0, tzinfo=timezone.utc))
+    assert after.verdict == "READY", after.reasons
+
+
+def test_date_gate_ignores_prose_and_reads_the_rest_path():
+    assert mt.date_gate("Evidence for the 2026-11-08 sitting. It decides nothing.") == ""
+    assert mt.date_gate("We merged on 2026-11-01 earlier.") == ""
+    assert mt.date_gate("Merge on or after 2026-11-08.\nMerge on or after 2026-11-10.") == "2026-11-10"
+    assert not mt.date_gate_open("2026-13-01", datetime(2030, 1, 1, tzinfo=timezone.utc))
+    g = mt.fetch_gate(1, mt.DEFAULT_REPO, FakeGh({1: {"bot": [card(HEAD, "completed", False)],
+                                                      "body": "Merge on or after 2099-01-01 ET."}},
+                                                 refuse_graphql=True))
+    assert g.not_before == "2099-01-01" and g.verdict == "HOLD"
 
 
 def test_review_threads_are_paginated():
