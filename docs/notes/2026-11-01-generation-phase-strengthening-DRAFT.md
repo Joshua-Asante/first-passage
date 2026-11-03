@@ -376,3 +376,98 @@ The second pass adds or reorders. §6 stands otherwise.
 - **D8:** History depth. Authorise the agent check, then decide exports or a second admitted source.
 - **D9:** Builder round shape: K ≤ 2, a discriminator, instrument scope.
 - **D10:** Which §8.3 family seeds which firm.
+
+---
+
+## 9. Operator direction and delegated calls (2026-11-03)
+
+### 9.1 What Joshua said, verbatim (2026-11-03, this session)
+
+> "More years of data - I have Tradingview premium, which can give 15min bar data far in the past with the bar export tool, and the micro futures that we specialize in date back to 2019.
+> Let's add M6E to the feed
+> I trust your judgement on D7 and D8, let's discuss D9 and D10 further. Before we discuss, hand it to Codex to review"
+
+**Contract launch dates bound the depth, whatever the plan allows** (web-checked 2026-11-03):
+
+| Instrument | Trades from | Usable history | Source |
+|---|---|---|---|
+| MES / MNQ / MYM / M2K | 2019-05-06 | about 7.5 years | [CME launch release](https://www.cmegroup.com/media-room/press-releases/2019/5/06/cme_group_announceslaunchofnewmicroe-miniequityindexfutures.html), [CME FAQ](https://www.cmegroup.com/education/frequently-asked-questions-micro-e-mini-equity-index-futures.html) |
+| MCL | 2021-07-12 | about 5.3 years; **stays the shortest-history instrument** | [CME MCL FAQ](https://www.cmegroup.com/education/articles-and-reports/micro-wti-crude-oil-futures-faq) |
+| MGC, 6J, M6E | older contracts | depth set by what TradingView returns; measure at export | — |
+
+M6E: 12,500 euros, tick 0.0001 = $1.25 ([CME contract specs](https://cmegroup.com/trading/fx/e-micros/e-micro-euro_contractSpecs_futures.html)). It is a Rule 17 quote to re-read when it is encoded.
+
+### 9.2 D7, decided by Claude under Joshua's delegation
+
+**Rule.** Every builder registration states the 5f floor at its K and development-session count, and the pass probability for a true Sharpe of 0.85 (the literature's top decile) and 0.89 (the futures-native best, [MCL.md 08-10b](../../ops/instruments/MCL.md)).
+
+- **Reachable** means the floor ≤ 0.89, so a futures-native-best edge passes at least half the time. This is M-19's test with the in-house benchmark set to the futures-native best.
+- If a round's floor is above 0.89, it is re-scoped **before freeze**: fewer cards, a longer window, or pooling.
+- If it still cannot reach, the registration says so in one line, and Joshua decides whether the round's other value justifies it (as ST-EH-1 did).
+
+**Why this layer.** [ADR 2026-07-12 §2.4](../adr/2026-07-12-dsr-k-rule-and-variance-floor-supersession.md) already requires the disclosure. The rule only fixes the benchmark and the action, so no new gate is added and 5f's threshold is untouched.
+
+**Durable fix.** A report-only `reachability(k, n)` line in the builder's run report, computed before any card is evaluated. It waits for D9 (the round shape it reports on) and lands by its own PR.
+
+**R1** is frozen and stays as registered (Rule 23). Its floor is in §8.1.
+
+### 9.3 D8, decided by Claude under Joshua's delegation
+
+**Use TradingView Premium only, at full 15m depth. No second source.**
+- NinjaTrader history and the Databento caches stay closed; D6 stays "no".
+- Re-export the six admitted instruments, each from its contract start or TradingView's limit, whichever is later. Add M6E.
+- Each export is an operator act and lands as follows. The export session must run locally, because cloud checkouts lack the CSV bytes.
+  1. Run the BAR EXPORT v0.2 exporter on the symbol at 15m (`M6E1!`, `MNQ1!`, `MYM1!`, `M2K1!`, `MGC1!`, `MCL1!`, `6J1!`), with as many year-pages as the row limit needs.
+  2. Run `scripts/validate_bar_export_v2.py` on each page.
+  3. Commit the CSVs with their `SHA256SUMS` delta in the same commit, with hooks installed (Rule 19).
+  4. **M6E only, in that same landing** (create-on-touch: [profile-index ADR §2b](../adr/2026-07-25-instrument-profile-index.md); the loader's own "extend when a new symbol's export lands"):
+     - the `PRICE_COL_BY_INSTRUMENT` entry in `core/tv_export_loader.py`;
+     - the `INSTRUMENT_SPECS` row in `core/instrument_specs.py`, with the CME quote;
+     - `ops/instruments/M6E.md`;
+     - a regenerated `PROFILES.md`.
+     Nothing is added before the bytes exist.
+- Refresh the `bar_data` M15 panels and their sidecars from the new exports.
+
+**Recomputed reach** on the real windows. Each cell is the 5f floor / P(pass | true 0.89), with the normal approximation:
+
+| Window | Split | K = 1 | K = 2 | K = 4 | K = 8 |
+|---|---|---|---|---|---|
+| Equity micros, ~7.5 y | 70% development (current spec) | 0.72 / 0.65 | **0.95 / 0.45** | 1.18 / 0.26 | 1.36 / 0.14 |
+| Equity micros, ~7.5 y | all development, forward confirm | 0.60 / 0.79 | **0.79 / 0.61** | 0.99 / 0.40 | 1.13 / 0.25 |
+| MCL, ~5.3 y | 70% development | 0.85 / 0.53 | 1.12 / 0.33 | 1.40 / 0.16 | 1.61 / 0.08 |
+| MCL, ~5.3 y | all development, forward confirm | 0.71 / 0.66 | 0.94 / 0.45 | 1.17 / 0.26 | 1.35 / 0.15 |
+| ~10 y (MGC / 6J / M6E if TradingView reaches) | 70% development | 0.62 / 0.76 | 0.82 / 0.58 | 1.02 / 0.37 | 1.17 / 0.23 |
+
+**Reading.** Deeper data makes K ≤ 2 reachable on the equity micros and on any 10-year contract. **K = 8 is not reachable on any window here.** MCL, R1's instrument, is the weakest.
+
+## 10. D9 and D10: the discussion frame (no decision taken)
+
+### 10.1 D9: the shape of a builder round
+
+| Question | Options | What the arithmetic says | Claude's lean |
+|---|---|---|---|
+| Cards per round (K) | 1, 2, 4 | §9.3: K ≤ 2 reachable on 7.5+ y; K = 4 only with a forward confirm on 7.5 y, or 10 y | K = 2: two cards from **different mechanisms**, not two cells of one |
+| Historical holdout | keep 70/30 · all history for development, confirm forward on paper or eval | Dropping the holdout cuts the floor about 0.16 at K = 2. It costs calendar time and moves confirmation onto live-like fills, which are what matter for a simulated eval anyway | Keep 70/30 for R2. Revisit once the native compiler exists, since a forward confirm needs it |
+| `k_scope` | instrument · ledger | Ledger scope raises the floor with every round (§8.1 lever 3) | instrument, unless one card spans instruments |
+| Mechanism discriminator | none (today) · one per card | A discriminator says whether the mechanism or the expression died (§8.1 lever 5) | One per card, report-only at first |
+| R1 | run as frozen · re-register on deeper MCL data | MCL deepens only to 2021-07 | Run as frozen; design R2 on the new exports |
+
+### 10.2 D10: which family seeds which firm
+
+**Inputs:**
+- the §8.3 families and their product groups;
+- per-firm product availability (§8.3 ranked cells; [venue-fact register](2026-11-01-prop-firm-venue-fact-register-DRAFT.md));
+- §9.3 reach by history;
+- the 10-30 rule: one strategy per firm; Tradeify scales by accounts.
+
+| Firm | Candidate family | For | Against |
+|---|---|---|---|
+| Tradeify | (a) US-open index ORB (in flight) | already the candidate; longest micro history | saturated domain bar (advisory); every other family must stay distinct from it |
+| Bulenox | (b) metals level and compression breaks (MGC) | MGC offered; likely long history; Select 100K's granularity wall does not apply here [INF] | no named payer; four MGC mean-reversion explores falsified (opposite shape) |
+| BluSky | (d) FX Asia/London continuation (M6E once exported) | M6E at all four firms; pre-US window most distinct from (a) | FX fix families dead; Aegis occupies 6J mean reversion (not M6E) |
+| MFFU | (c) energy session breaks (MCL) | MCL cost rows at MFFU | **shortest history (5.3 y)**; R1 is MCL ORB, so a second MCL card must be another mechanism |
+
+**Open questions for the discussion:**
+1. Should energy wait until a longer-history family has been tried, given MCL's reach?
+2. Is "different instrument, session window and mechanism" enough distinctness for Joshua's reading of the exclusivity rule?
+3. Should one round carry one card per family (K = 1 each, four instruments), rather than two cards on one instrument?
