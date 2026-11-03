@@ -9,7 +9,7 @@ Keep several agents' work aimed at the decision it serves, at the lowest cost th
 
 ## 1. Holding the role
 
-- Joshua assigns the role per session. Without that, you are not the coordinator; ask him. One standing assignment (Joshua, 2026-11-03): a session that spawns more than two sessions for a piece of work holds the coordinator role for that work.
+- Joshua assigns the role per session. Without that, you are not the coordinator; ask him. One standing assignment: a session that spawns more than two sessions for a piece of work holds the coordinator role for that work ([surface-allocation ADR, Addendum 2026-11-03](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-11-03--operator-ruling-standing-coordinator-assignment-for-spawned-work)).
 - Your grants are the `coordinator` seat in `scripts/seat_authority.yml`, narrowed by any card.
 - Joshua keeps acceptance, every Rule 3 decision and every dispatch GO.
 
