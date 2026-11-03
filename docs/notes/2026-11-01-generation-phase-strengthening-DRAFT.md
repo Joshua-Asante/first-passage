@@ -374,7 +374,7 @@ The second pass adds or reorders. §6 stands otherwise.
 **Decisions for Joshua added by this pass:**
 - **D7:** Should every builder registration carry the §8.1 reachability line, with a re-scope rule when the floor exceeds both benchmarks?
 - **D8:** History depth. Authorise the agent check, then decide exports or a second admitted source.
-- **D9:** Builder round shape: K ≤ 2, a discriminator, instrument scope.
+- **D9:** Builder round shape. *Decided 2026-11-03: see §10.1.*
 - **D10:** Which §8.3 family seeds which firm.
 
 ---
@@ -407,7 +407,7 @@ M6E: 12,500 euros, tick 0.0001 = $1.25 ([CME contract specs](https://cmegroup.co
 
 **Why this layer.** [ADR 2026-07-12 §2.4](../adr/2026-07-12-dsr-k-rule-and-variance-floor-supersession.md) already requires the disclosure. The rule only fixes the benchmark and the action, so no new gate is added and 5f's threshold is untouched.
 
-**Durable fix.** A report-only `reachability(k, n)` line in the builder's run report, computed before any card is evaluated. It waits for D9 (the round shape it reports on) and lands by its own PR.
+**Durable fix.** A report-only `reachability(k, n)` line in the builder's run report, computed before any card is evaluated. D9 is now decided (§10.1), so it can land by its own PR.
 
 **R1** is frozen and stays as registered (Rule 23). Its floor is in §8.1. **Consequence under this rule:** R1 banks K = 8 on MCL, so no further MCL builder card is reachable on any MCL window (§9.3). The energy family needs pooling or a different instrument.
 
@@ -456,15 +456,35 @@ With the current 70/30 split, each equity micro supports **one** honest builder 
 
 ## 10. D9 and D10: the discussion frame (no decision taken)
 
-### 10.1 D9: the shape of a builder round
+### 10.1 D9: the shape of a builder round — DECIDED 2026-11-03
 
-| Question | Options | What the arithmetic says | Claude's lean |
+**Joshua, 2026-11-03, verbatim:** "go with your recommendations on D9".
+
+**Why.** `ledger.k()` banks every card ever run on an instrument, and D7 sets reach at floor ≤ 0.89, so each instrument has a small **lifetime** budget of looks. The budget depends on development sessions. Under the old 70/30 split, the holdout share was what cost looks, not the holdout itself. Arithmetic is the §8.1 closed form, with development sessions = total sessions − 378.
+
+| Development / holdout | Equity micros (~7.5 y) | ~10-year contracts | MCL (~5.3 y) |
 |---|---|---|---|
-| Cards per instrument (banked K) | 1 · 2 · more with re-scoping | §9.3: under D7, 70/30 allows K = 1 on equity micros and K = 2 on ~10-year contracts. A forward confirm doubles that. K = 4 needs both 10 years and a forward confirm | Spend each instrument's single look on the strongest mechanism-first card. Don't spread parameter cells |
-| Historical holdout | keep 70/30 · all history for development, confirm forward on paper or eval | Dropping the holdout cuts the floor about 0.16 at K = 2 and raises each instrument's budget (§9.3: equity micros 1 → 2, ~10-year contracts 2 → 4). It costs calendar time and moves confirmation onto live-like fills, which are what matter for a simulated eval anyway | Keep 70/30 for R2. The budget arithmetic argues for building the native compiler early, since a forward confirm needs it |
-| `k_scope` | instrument · ledger | Ledger scope raises the floor with every round (§8.1 lever 3) | instrument, unless one card spans instruments |
-| Mechanism discriminator | none (today) · one per card | A discriminator says whether the mechanism or the expression died (§8.1 lever 5) | One per card, report-only at first |
-| R1 | run as frozen · re-register on deeper MCL data | MCL deepens only to 2021-07. R1 banks K = 8, so MCL has no reachable budget left under D7 either way | Run as frozen. Any further energy work needs pooling or another instrument |
+| 70/30 (R1's shape) | 1 look | 2 looks | 1 (spent) |
+| **Fixed ~18-month holdout (~378 sessions), decided** | **2 looks** (development ≈ 1,512) | **3 looks** (≈ 2,142) | 1 (spent) |
+| All development, forward confirm | 2 looks | 4 looks | 1 (spent) |
+
+A forward confirm buys nothing over the fixed holdout for the equity micros. It also needs the NinjaScript compiler, and matching a 378-session holdout takes about 18 months of forward trading. It stays a later stage, not the confirm.
+
+**Decided package** (applies from R2; R1 is unchanged):
+1. **Holdout = the last ~18 months (~378 sessions) of each instrument's pinned export,** set through the run spec's date-pinned `split: {dev_start, dev_end, holdout_end}`. This is a registration choice: no engine or `THRESHOLDS` change. The holdout is looked at once per survivor, as the builder already enforces.
+2. **One card per instrument per round, each a different mechanism.**
+   - Mechanism-first, with one pre-committed parameter set and no grid.
+   - Plateau robustness comes from the 5d ±1-step neighbours. They are simulated only as a kill check and never ledgered or selected among (`gates._plateau`, `cards.neighbours`), so they cost no K.
+   - Each round spends one look per instrument and **keeps the next in reserve**.
+3. **One mechanism discriminator per card, report-only for now.** It is declared at registration with its observable, null, direction and threshold (candidate-contract field). A result says whether the mechanism or the expression failed, which aims the reserve look. Making a clean discriminator fail terminal is a later decision.
+4. **`k_scope: instrument`.** A pooled multi-instrument card is allowed only by explicit registration choice and spends one look on **each** instrument it touches. Whether a pooled card can supply a firm is D10's question.
+5. **The D7 reachability line in every registration:** the 5f floor at banked K plus new cards, and the pass probability at true Sharpe 0.85 and 0.89.
+6. **R1 runs as frozen** (Rule 23). It spends MCL's budget, so energy re-enters only through a pooled card.
+
+**Owners and next steps.**
+- Items 1–5 are applied by each round's registration. R2's is the first.
+- The report-only `reachability(k, n)` line in the builder's run report (D7's durable fix, §9.2) lands by its own PR.
+- The pre-2022 calendar extension (§9.3) gates any 2019-onward window.
 
 ### 10.2 D10: which family seeds which firm
 
