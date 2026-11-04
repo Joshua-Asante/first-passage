@@ -8,7 +8,7 @@
 
 | Item | Value |
 |---|---|
-| Engine | `lab/builder` at `main` `8745b40` (branch B: 5g after the holdout, PR #1054); `gates.engine_version()` `b96793b874876e7f1c6d191c8a9ec056ae40626a32c213d3c2dc4c529fe8b199` |
+| Engine | `lab/builder` at `main` `15af399` (branch B, PR #1054, with its follow-up PR #1058: no book gives `placement: not_evaluated`, and the pinned book sha is recorded); `gates.engine_version()` `10f0eb19f302533ffc3ad56f8e06f76734d011ab4a851488e767b41bd4cfa363`. A later engine change before freeze moves this pin |
 | Gate mapping | [`lab/builder/README.md` §Ten-step mapping](../../../lab/builder/README.md#ten-step-mapping) (PR #1053, merged) |
 | Calendar | [`ops/calendars/cme_holiday_calendar_2016_2026.json`](../../../ops/calendars/cme_holiday_calendar_2016_2026.json), sha256 `407d93bb815ee6b297b2b58d56a71724506f1304756d698bb9c6e52ca5b60ad4`, coverage 2016-01-01..2026-12-31 (accepted 2026-11-04, [calendars README](../../../ops/calendars/README.md#20162026-extension-accepted-2026-11-04)) |
 | Firm | `Tradeify_Select_100K` (as R1); costs from `FIRM_RULES` per the builder README *Costs* rule |
@@ -18,21 +18,23 @@
 | Reach (D7), estimated | at K = 1 and about 960 development sessions: floor 0.843 annual, P(pass) 0.51 at 0.85 and 0.54 at 0.89, **reachable**. Estimate from calendar spans, not the export; the run's printed `reachability_5f` is the value of record |
 | Gate 5h | not run before Joshua's forward GO on a survivor (as R1) |
 
-## Decisions for Joshua before freeze
+## Decisions before freeze
 
-1. **Holdout window.** No MCL window is demonstrably untouched.
+**Ruled by Joshua, 2026-11-04, verbatim:** "go with A for the holdout, and your card rule". Decisions 1 and 2 are settled as A and the rule below. Decision 3 is open.
+
+1. **Holdout window: A (ruled 2026-11-04).** No MCL window is demonstrably untouched.
    - MSL-S2A's explore read MCL through 2025-06-30 (a different construct; [closure](../closures/MSL-S2A-closure-falsified.md)).
    - The MCL retain-mutate pilot's draft spec calls 2025-07-01..2026-06-30 an "uncertified historical replay, never independent OOS", because later exposure is unknown ([spec §2.2](../../spec/2026-10-30-mcl-retain-mutate-pilot-rev3-DRAFT.md#22-historical-exposure-uncertified-replay)). No read of it is recorded.
    - 2026-07-03..2026-11-02 is newly exported (2026-11-03), about 85 sessions. Its exposure is unverified too, short of a local audit or operator attestation, and it is too short to confirm on its own.
 
    | Option | Holdout | Development (est.) | Floor at K = 1 | Bars read by MSL-S2A explore |
    |---|---|---|---|---|
-   | **A (recommended)**: D9 | last ~378 sessions of the new export (from about 2025-05) | ~960 | 0.843 | about 2 months |
+   | **A (ruled)**: D9 | last ~378 sessions of the new export (from about 2025-05) | ~960 | 0.843 | about 2 months |
    | B: R1's old boundary | 2025-02-25 → 2026-11-02 (~425) | ~910 | 0.866 | about 4 months |
 
-   A is the split the 2026-11-04 reach figure assumed (0.84) and overlaps less read data. Either way the registration discloses the exposure. Both options contain the uncertified 2025-07..2026-06 period. If Joshua rules it unacceptable as a Confirm, no reachable MCL card exists on this export.
-2. **Card-selection rule** (outcome-free, applied locally from the card files only): the card the v3 pre-registration names as primary, if it names one; otherwise the card at the centre of the registered grid, so that every ±1 neighbour is valid for 5d. Part A records the rule, the card and why.
-3. **Book.** Keep R1's book series for the post-holdout placement check (5g, now placement only). Its `min_overlap` must hold on the new development window; if it does not, Joshua chooses a smaller `min_overlap` or `book: null`.
+   A is the split the 2026-11-04 reach figure assumed (0.84) and overlaps less read data. It contains the uncertified 2025-07..2026-06 period, and the registration discloses that exposure. Part A pins the dates from the landed export: `dev_end` is the session before the last 378, and `holdout_end` is the export's last session.
+2. **Card-selection rule (ruled 2026-11-04)**, outcome-free and applied locally from the card files only: the card the v3 pre-registration names as primary, if it names one; otherwise the card at the centre of the registered grid, so that every ±1 neighbour is valid for 5d. Part A records the rule, the card and why.
+3. **Book (open).** Recommended: keep R1's book series for the post-holdout placement check (5g, now placement only). Its `min_overlap` must hold on the new development window; if it does not, Joshua chooses a smaller `min_overlap` or `book: null`. Under PR #1058, `book: null` leaves placement `not_evaluated`, never a clear.
 
 ## Prerequisites (Must run locally)
 
