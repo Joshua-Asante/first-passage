@@ -494,3 +494,66 @@ def test_5e_is_deterministic_and_seeded():
     a1, a2 = (gates.placebo_beaten_share(c, b, dates, tr, COSTS, 500, 7) for _ in range(2))
     assert a1 == a2
     assert gates.placebo_beaten_share(c, b, dates, tr, COSTS, 500, 8)["null_mean"] != a1["null_mean"]
+
+
+def test_5e_boundary_sweep_every_admitted_slide_has_bars_that_can_exist():
+    """Every instrument's session open, flat_at and entry_cutoff on and off the 15m grid, n_bars
+    1-3, offset 0 and 2: each admitted slide's range slots, cutoff bar and flat bar are 15m-grid
+    times from the session open to before 17:00, and Delta = 0 is never in S or its span."""
+    from builder.instruments import DAY_END, INSTRUMENTS, minutes
+    up = lambda m: -(-m // 15) * 15  # noqa: E731  the first 15m bar open at or after m
+    hm = lambda m: f"{m // 60:02d}:{m % 60:02d}"  # noqa: E731
+    base = cards.parse(WALK_CARD)
+    checked = 0
+    for inst, spec in INSTRUMENTS.items():
+        so = minutes(spec.session_open)
+        for n in (1, 2, 3):
+            for off in (0, 2):
+                for flat in range(so + 15, minutes(DAY_END) + 1, 5):
+                    for cut in sorted({flat, flat - 7, flat - 30}):
+                        ps = (("n_bars", n, 1),) + ((("offset_bars", off, 1),) if off else ())
+                        c = dataclasses.replace(base, instrument=inst, range="time_window" if off else "first_n_bars",
+                                                params=tuple(sorted(ps)), flat_at=hm(flat), entry_cutoff=hm(cut))
+                        if cards._timing_error(c):
+                            continue
+                        S = gates.slides(c)
+                        line = gates.slide_line(c)
+                        assert 0 not in [d for d, _ in S] and line["slides"] == len(S)
+                        assert line["windows_drawn"] == len(S) + 1
+                        if S:
+                            assert 0 not in line["delta_bars"] and line["delta_bars"] == [S[0][0], S[-1][0]]
+                        for d, s in S:
+                            o = int(s.p("offset_bars"))
+                            assert o == off + d >= 0 and s.range == "time_window" and s.instrument == inst
+                            slots = [so + 15 * (o + i) for i in range(n)]
+                            assert slots[0] >= so and all(t % 15 == 0 for t in slots)
+                            assert minutes(s.range_end()) == slots[-1] + 15 < minutes(s.entry_cutoff)
+                            assert up(minutes(s.entry_cutoff)) <= up(minutes(s.flat_at)) < minutes(DAY_END)
+                            assert minutes(s.flat_at) - minutes(s.entry_cutoff) == flat - cut  # frame moves whole
+                            checked += 1
+    assert checked > 10_000
+
+
+def test_5e_first_n_bars_to_time_window_round_trips():
+    """A first_n_bars card and its time_window offset-0 form trade identically, and sliding there
+    and back restores the card's clock frame."""
+    c = cards.parse(WALK_CARD)
+    tw = dataclasses.replace(c, range="time_window", params=tuple(sorted(c.params + (("offset_bars", 0, 1),))))
+    b, dates = walk_panel(20, 11)
+    assert gates.C.simulate(c, b, dates) == gates.C.simulate(tw, b, dates)
+    back = gates.slid(gates.slid(c, 3), -3)
+    assert (back.range_start(), back.range_end(), back.entry_cutoff, back.flat_at) == (
+        c.range_start(), c.range_end(), c.entry_cutoff, c.flat_at)
+    assert back.p("offset_bars") == 0 and [q for q in back.params if q[0] != "offset_bars"] == list(c.params)
+
+
+def test_5e_delta_zero_is_drawn_but_not_counted(monkeypatch):
+    """Slides that net 0 everywhere: the null's mean is the card's net over |S| + 1 windows."""
+    c = cards.parse(WALK_CARD)
+    b, dates = walk_panel(40, 4)
+    tr = gates.C.simulate(c, b, dates)
+    monkeypatch.setattr(gates, "slide_matrix", lambda S, *a, **k: (np.zeros((len(dates), len(S))), 0, 0))
+    r = gates.placebo_beaten_share(c, b, dates, tr, COSTS, 20_000, 1)
+    k = len(gates.slides(c))
+    assert r["slides"] == k == 7 and r["windows_drawn"] == 8
+    assert r["null_mean"] == pytest.approx(r["real_net"] / (k + 1), rel=0.05)
