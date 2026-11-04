@@ -17,12 +17,8 @@ Use this for every strategy-builder round from R2 on, and for R1's owed re-regis
 
 **Rules this template applies:**
 - **The unit is a cell:** instrument × session window × mechanism × target firm.
-- **Looks are a per-instrument budget.** K is banked across rounds (`lab/builder/ledger.py` `k()`). D7 sets reach at the 5f floor ≤ 0.89. D9 fixes the round shape:
-  - one card per instrument per round, with the next look held in reserve;
-  - a fixed ~18-month holdout;
-  - `k_scope: instrument`;
-  - a report-only mechanism test.
-  Sources: [generation note §9.2, §10.1, §11](../../notes/2026-11-01-generation-phase-strengthening-DRAFT.md).
+- **Looks are a per-instrument budget.** K is banked across rounds (`lab/builder/ledger.py` `k()`). The reach bar is D7 ([generation note §9.2](../../notes/2026-11-01-generation-phase-strengthening-DRAFT.md#92-d7-decided-by-claude-under-joshuas-delegation)). Round shape, split, K scope and the mechanism test's status are D9 ([§10.1](../../notes/2026-11-01-generation-phase-strengthening-DRAFT.md#101-d9-the-shape-of-a-builder-round--decided-2026-11-03)). This template links them and never copies their values.
+- **Prerequisite before any registration.** The [evaluation-order Addendum 2026-11-08](../../adr/2026-08-30-evaluation-order.md#addendum-2026-11-08--builder-gates-express-the-ten-step-order) requires a mapping of builder gates 5a–5h to the ten-step order, with listed exceptions, or gate 5g moved after the holdout. That mapping must exist before a round freezes.
 - **Data movement** ([AGENTS.md](../../../AGENTS.md#public-clone-posture)):
   - Part A is **private**: it lives in `local_artifacts/` and is registered in [`PRIVATE_EVIDENCE.sha256`](../../evidence/PRIVATE_EVIDENCE.sha256).
   - Part B is **public** and cites Part A only by repo-relative path and sha256.
@@ -35,15 +31,16 @@ Use this for every strategy-builder round from R2 on, and for R1's owed re-regis
 Status: DRAFT v<k> · <date> · authorizes nothing until Part B records Joshua's GO
 
 A1 Round envelope
-  Instruments and target firms: <instrument → firm>, one card each (D9)
+  Prerequisite: gate mapping per the evaluation-order Addendum 2026-11-08, at <path or PR> (no freeze without it)
+  Instruments and target firms: <instrument → firm>, cards per instrument per D9
   Data pins: <export path(s)> · sha256 per SHA256SUMS · window <first>..<last>
   Calendar pin: <admitted calendar path> · sha256 <…>
   Engine pin: lab/builder @ <commit> · gates.engine_version() <…>
-  Split per instrument: dev_start <…> · dev_end <…> · holdout_end <…> (holdout ≈ last 378 sessions, D9)
-  K: register_search manifest <discovery_manifests/…json>, opened before any data read · k_scope: instrument
+  Split per instrument: dev_start <…> · dev_end <…> · holdout_end <…> (holdout per D9)
+  K: register_search manifest <discovery_manifests/…json>, opened before any data read · k_scope per D9
 
 A2 Cell dossier (one per card; T2)
-  Cell: <instrument> × <session window, ET> × <mechanism id from ops/instruments/MECHANISMS.md> × <target firm>
+  Cell: <opaque cell id> = <instrument> × <session window, ET, private> × <mechanism id from ops/instruments/MECHANISMS.md> × <target firm>
   Mechanism: WHO pays (a constraint, not a preference) · WHEN · WHY it persists · HOW it dies, or the 1b evidence-robustness path (strategy_harvest Req 1)
   Prior consult: `scripts/instrument_profiles.py cell <SYM> <mechanism>` output pasted; register hits; domain bars (advisory, Rule 26)
   Venue legality at the target firm: native route · flatten time · product offered · news and hold rules · cross-firm hedging (cite the venue-fact register)
@@ -52,18 +49,19 @@ A2 Cell dossier (one per card; T2)
   Effect priors: cited cohort win rate / mean win / mean loss or δ/σ with decay haircut, or UNSCREENABLE (never invented, Rule 20)
 
 A3 Reach (T3; arithmetic only, before any data read)
-  5f floor at banked K + this card, n development sessions: annual floor <…> · P(pass | 0.85) <…> · P(pass | 0.89) <…> · reachable <yes/no>
-  If not reachable: re-scope (fewer cards, longer window, pooling) or state why the round proceeds anyway; Joshua decides (D7)
-  Power at the expected event count (Req 4) · barrier feasibility on the firm's geometry (EM screen / firm row) · cost and slip sensitivity 0/0.5/1/1.5 ticks (printed, never a kill) · risk breadth vs the firm's book (ρ, n_eff_risk_delta)
+  5f reach at banked K + this card and n development sessions: the fields gates.reachability(k, n) returns (builder README "Reachability line"), copied as computed
+  If not reachable under D7: act as D7 directs; Joshua decides any exception
+  Power at the expected event count (strategy_harvest Req 4) · barrier feasibility on the firm's geometry (EM screen / firm row) · cost and entry-slip sensitivity per M-16 (printed only; Req 5 deleted 2026-10-24) · risk breadth vs the firm's book per M-21
 
 A4 Card and mechanism test (T4)
-  Card: <card id> · sha256 <…> · library blocks only · one pre-committed parameter set (no grid; 5d neighbours are kill checks only)
+  Card: <card id> · sha256 <…> · library blocks only · parameter commitment per D9 (5d neighbours are kill checks only)
   Native expression: closed bars · stop/limit/market only · flat by the firm's time · NinjaScript-expressible for Tradeify targets
-  Mechanism test (report-only, D9): observable and statistic · null · expected direction · threshold · coverage and power · measured independently of the payoff
+  Mechanism test (status per D9): the candidate contract's discriminator fields (observable and statistic · null · expected direction · threshold · coverage and power), measured independently of the payoff
 
 A5 Pre-registered routing (T7)
-  Gates: builder 5a–5g in order (gates.py THRESHOLDS, cited not restated) · then 5h venue MC (venue.py) · then one holdout look per survivor (holdout.py)
-  Mechanism test outcome, recorded beside the gate verdict (report-only until Joshua makes it terminal): clean fail → MARKET-NULL (stop this mechanism's line) · pass with payoff fail → EXPRESSION-FAIL (reserve look may try another expression) · underpowered → no evidence about the mechanism
+  Gates: as the engine applies them (gates.py, THRESHOLDS cited not restated; venue.py 5h; holdout.py), each placed in the ten-step order by the prerequisite mapping and its listed exceptions
+  Run integrity: the builder's fail-closed rules (unresolved trades, input DataError) and the evaluation order's EVIDENCE-VOID rule
+  Mechanism test: record its outcome under the full Confirm taxonomy, with its precedence (evaluation-order §Confirm verdicts). While the test is not terminal (D9), a typed outcome neither ends a mechanism line nor rescues a card. The builder verdict governs, and any consequence of the typed outcome is Joshua's decision
   Survivor: to Joshua for the forward GO; nothing else is blessed (Rule 25)
   After the run: dated disposition in each instrument ledger (Rule 27); rejection routing per the rejection-patterns owner; K bank updated
 
@@ -84,11 +82,12 @@ Status: REGISTERED <date>. Rule 23 requires this before any R<n> card produces a
 | Freeze record | local_artifacts/<…>.json, sha256 <…>; pins cards, book series, run spec, data, calendar |
 | Run spec | local_artifacts/<…>/run-r<n>.yaml, sha256 <…> |
 | Engine | lab/builder at <commit>; gates.engine_version() <…> |
+| Gate mapping | evaluation-order Addendum 2026-11-08 mapping at <path or PR> |
 | Data | <export path(s)>, pinned in SHA256SUMS; windows <…> |
 | Calendar | <admitted calendar path>, sha256 <…> |
-| Cells | <instrument × session window × mechanism × target firm>, one per card |
+| Cells | <opaque cell id> = instrument × mechanism class × target firm; session windows and clock settings stay in Part A |
 | K | per instrument: banked <…> + new <…>; register_search manifest <discovery_manifests/…> |
-| Reach (D7) | per instrument: annual 5f floor <…>, P(pass | 0.89) <…>, reachable <yes/no> |
+| Reach (D7) | per instrument: the run's reachability_5f values, as computed |
 | Authority | Joshua, <date>: "<verbatim GO>" |
 | Hash index | every private file above registered in docs/evidence/PRIVATE_EVIDENCE.sha256 |
 
