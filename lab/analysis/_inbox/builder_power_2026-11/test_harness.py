@@ -2,14 +2,13 @@
 from __future__ import annotations
 
 import math
-import sys
-from pathlib import Path
 
 import numpy as np
 import pytest
 
-sys.path.insert(0, str(Path(__file__).parent))
-import harness as H  # noqa: E402
+from research_utils.camp_import import load_camp_sibling  # noqa: E402
+
+H = load_camp_sibling("harness", __file__)  # a bare `import harness` can bind another camp's harness
 
 from builder import gates  # noqa: E402
 
