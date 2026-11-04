@@ -34,6 +34,7 @@ documents the camp boundary for humans/tools.
 
 | slug | theme | status | hot | one-liner | body | heavy |
 |---|---|---|---|---|---|---|
+| builder_power_2026-11 | _inbox | ACTIVE | yes | — | lab/analysis/_inbox/builder_power_2026-11/ | — |
 | mnq_dailygeom_notice_2026-08-29 | _inbox | ACTIVE | yes | — | lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/ | — |
 | mym_mechanism_harvest_2026-08-29 | _inbox | ACTIVE | yes | — | lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/ | — |
 | prop_payout_geometry_2026-10 | _inbox | ACTIVE | yes | research input only. 50K tiers (target/drawdown 1.5) beat 100K (2.0) on fees per first payout at every Sharpe tested;... | lab/analysis/_inbox/prop_payout_geometry_2026-10/ | — |
