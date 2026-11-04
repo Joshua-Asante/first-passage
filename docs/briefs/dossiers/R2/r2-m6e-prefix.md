@@ -16,7 +16,7 @@ Status: R2 dossier (Part A §A2–§A3, tasks T2–T3) · 2026-11-04 · K = 0 (n
 ## Effect priors (Req 2)
 | Source (date accessed) | Cohort | Figure | Transplant? |
 |---|---|---|---|
-| Krohn, Mueller, Whelan, Bank of Canada SWP 2021-48 (working-paper version of *J. Finance* 79(1) 2024, 541–578), https://www.bankofcanada.ca/wp-content/uploads/2021/10/swp2021-48.pdf (2026-11-04) | EUR/USD spot (Refinitiv RTH), Jan 1999–Dec 2019 | Table I, EUR "pre-E": −8.87% annualised, t = −7.24 | No (parent spot pair of M6E, labelled) |
+| Krohn, Mueller, Whelan, Bank of Canada SWP 2021-48 (working-paper version of *J. Finance* 79(1) 2024, 541–578), https://www.bankofcanada.ca/wp-content/uploads/2021/10/swp2021-48.pdf (2026-11-04) | EUR/USD spot (Refinitiv RTH), Jan 1999–Dec 2019 | Table I, EUR "pre-E": −8.87% annualised, t = −7.24 | **Yes: spot → futures.** The cohort is the parent spot pair, and KMW report no single-currency futures row (Table III's CME futures figure is a EUR/GBP/JPY portfolio). Under harvest Req 2 a spot cohort is not the target instrument's own cohort, so it is admissible only by Joshua's ruling (Rule 3) |
 | same, Table III | CME futures dollar portfolio (EUR, GBP, JPY), Jan 2006–Dec 2019 | pre-E −5.06% ann., t = −5.81 | Portfolio incl. EUR; futures-market confirmation only, not the screen figure |
 | same, Table II | dollar portfolio, 9 currencies, subsamples | pre-E full −4.21 (t −4.50); 2014–19 −3.14 (t −2.28) | Portfolio; used only as a decay ratio, disclosed |
 | McLean & Pontiff, *J. Finance* 71(1) 2016, 5–32, https://Www.Gwern.net/doc/economics/2016-mclean.pdf (2026-11-04) | 97 US cross-sectional predictors | "26% lower out-of-sample and 58% lower post-publication … 32% (58%–26%) lower return from publication-informed trading" | Haircut source (equities), not a δ |
@@ -24,7 +24,7 @@ Status: R2 dossier (Part A §A2–§A3, tasks T2–T3) · 2026-11-04 · K = 0 (n
 - Arithmetic: δ/σ per event = |t|/√N_days. N_days = 5,264, the paper's own count ("5,264 daily observations", KMW table notes; coordinator re-read 2026-11-04). EUR pre-E: 7.24/√5264 = **0.0998**.
 - Post-2014 check, which covers the post-Feb-2015 WMR window change: the dollar-portfolio pre-E δ/σ is 2.28/√1315 = 0.0629 for 2014–19 against 4.50/√5264 = 0.0620 for the full sample. The ratio is 1.01, so no in-sample decay appears on this leg. (N for 2014–19 ≈ 1,315 is my estimate: 5.25 years × ~251.)
 - Decay haircut: McLean–Pontiff **58%**, the conservative central choice. It covers both data-mining and publication decay, and the paper was circulating from about 2019–2020, inside our dev window. The 32% publication-only figure is a sensitivity.
-- Screen figure: **δ/σ = 0.0998 × 0.42 = 0.042** (sensitivity: 32% haircut gives 0.068). The figure is gross and from the spot parent. Net tradeability on M6E is the campaign's question, not the screen's.
+- Screen figure: **UNSCREENABLE on the target cohort pending Joshua's ruling** on the spot-parent transplant above. A δ probe on the M6E export would supply it (charges K). Conditional reading, if the ruling admits the spot cohort: **δ/σ = 0.0998 × 0.42 = 0.042** (sensitivity: 32% haircut gives 0.068). The figure is gross and from the spot parent. Net tradeability on M6E is the campaign's question, not the screen's.
 
 ## Prior consult (advisory, Rule 26)
 ```text
@@ -81,6 +81,6 @@ exit=1
   | 3 | 0.822 | 0.533 | 0.581 | yes |
   | 4 | 0.888 | 0.454 | 0.502 | yes, at the boundary |
   Normal approximation; 5f only, so every other gate lowers P(pass). The instrument's lifetime budget is 4 looks (generation note §11).
-- Power at expected event count: N = 2,325 dev sessions × 1 event/session = 2,325. power = Φ(√2325 × 0.042 − 1.96) = Φ(48.22 × 0.0419 − 1.96) = Φ(0.060) = **0.52**. That is marginal. The break-even δ/σ for 0.50 is 1.96/48.22 = 0.0406. With the 32% haircut: Φ(3.274 − 1.96) = **0.91**. Unhaircut: 0.998.
+- Power at expected event count (conditional on the spot-cohort ruling): N = 2,325 dev sessions × 1 event/session = 2,325. power = Φ(√2325 × 0.042 − 1.96) = Φ(48.22 × 0.0419 − 1.96) = Φ(0.060) = **0.52**. That is marginal. The break-even δ/σ for 0.50 is 1.96/48.22 = 0.0406. With the 32% haircut: Φ(3.274 − 1.96) = **0.91**. Unhaircut: 0.998.
 - Cost and entry-slip sensitivity (M-16, printed only): M6E tick 0.0001 = $1.25 (CME spec, quoted in the generation DRAFT §9.1; Rule 17 re-read owed at landing). The MFFU commission of $1.44 RT = **1.15 ticks RT**. The per-event gross mean takes −8.87%/252 = 3.52 bp; the 252-day annualisation is my assumption, not stated in the table note. At an assumed EUR/USD level of 1.0–1.2 that is 3.5–4.2 ticks unhaircut, **1.48–1.77 ticks after the 58% haircut**, and 2.39–2.87 ticks after 32%. Net of commission: **0.33–0.62 ticks** (58%) or 1.24–1.72 ticks (32%). So **0.3–0.6 tick of total entry-plus-exit slip consumes the screen effect.** That is less than crossing a one-tick spread once each way at half-spread per side. On M-16's terms the cell is cost-bound at the conservative haircut and survives only at the 32% reading. It is the same cost wall D2 hit.
 - Barrier feasibility: pending atlas (sibling session).

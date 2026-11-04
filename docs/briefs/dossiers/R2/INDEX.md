@@ -36,9 +36,9 @@ Columns:
 | | 2 | [r2-m2k-imom](r2-m2k-imom.md) | `intraday-momentum` × Tradeify | 1a | 0.024 | 0.15 (fails) | reserve |
 | MGC | 1 | [r2-mgc-cgb](r2-mgc-cgb.md) | `compression-gated-breakout` × BluSky | fails 1a and 1b | U | — | **R2 candidate, conditional:** enters only if Joshua admits a Req-1-failing cell through the builder or no-counterparty channel |
 | | 2 | [r2-mgc-pdhpdl](r2-mgc-pdhpdl.md) | `pdh-pdl-breakout-rth` × BluSky | fails 1a and 1b | U | — | reserve |
-| 6J | 1 | [r2-6j-tokyofix](r2-6j-tokyofix.md) | Tokyo-fix USD demand (NEW) × Bulenox | **1a met** | H2 0.048 · H1 0.034 · H3 U | H2 **0.63** · H1 0.37 | **R2: card H2 (post-fix leg) only**, K = 1 |
+| 6J | 1 | [r2-6j-tokyofix](r2-6j-tokyofix.md) | Tokyo-fix USD demand (NEW) × Bulenox | **1a met** | U on 6J (spot USDJPY only). If Joshua admits the spot cohort: H2 0.048, H1 0.034, H3 U | conditional: H2 **0.63**, H1 0.37 | **R2, conditional on Joshua's spot-cohort ruling:** card H2 (post-fix leg) only, K = 1 |
 | | 2 | [r2-6j-psbc](r2-6j-psbc.md) | `prior-session-breakout-continuation` × Bulenox | 1b fails limb (iv) | U | — | reserve |
-| M6E | 1 | [r2-m6e-prefix](r2-m6e-prefix.md) | pre-ECB-fix dealer pre-hedge drift (NEW) × MFFU | **1a met** | 0.042 | **0.52** (marginal) | **R2, conditional:** the M6E repo landing must come first, and the EURUSD fix-reversal bar must be answered in the pre-registration |
+| M6E | 1 | [r2-m6e-prefix](r2-m6e-prefix.md) | pre-ECB-fix dealer pre-hedge drift (NEW) × MFFU | **1a met** | U on M6E (spot EUR/USD only). If Joshua admits the spot cohort: 0.042 | conditional: **0.52** (marginal) | **R2, conditional:** on the same spot-cohort ruling, on the M6E repo landing, and on the pre-registration answering the EURUSD fix-reversal bar |
 | | 2 | [r2-m6e-asialdn](r2-m6e-asialdn.md) | Asia-range London break (NEW) × MFFU | fails 1a and 1b | U | — | reserve |
 
 ## Reasoning
@@ -62,7 +62,7 @@ Columns:
 - MGC has four looks, so a card here is cheapest in reach terms. But a cell that fails Req 1 is "not a seed" under harvest §1, so admitting it through the builder is Joshua's channel call.
 
 **6J: Tokyo fix, post-fix leg only.**
-- It is the only dossier with a named payer, a daily event and a target-pair cohort that passes Req 4 after the haircut. Krohn–Mueller–Whelan Table I, JPY: post-Tokyo +7.94%/yr, t 8.22, over 5,264 days, gives δ/σ 0.113 before the haircut and 0.048 after it, so power is 0.63.
+- It is the only dossier with a named payer and a daily event whose cited cohort passes Req 4 after the haircut. That cohort is **spot USDJPY**, not 6J futures: KMW report futures only as a portfolio. Using it as 6J's screen figure is a spot→futures transplant under Req 2, admissible only by Joshua's ruling; without the ruling the cell is UNSCREENABLE and would need a K-charging probe. Krohn–Mueller–Whelan Table I, JPY: post-Tokyo +7.94%/yr, t 8.22, over 5,264 days, gives δ/σ 0.113 before the haircut and 0.048 after it, so power is 0.63.
 - Carding only H2 keeps K = 1 under D9's one-card rule. H1 fails power and H3 is unscreenable.
 - **Cost is the risk.** At the repo's 1 tick/side slip, the leg survives at a USDJPY level near 100 but not near 150 (dossier Reach).
 - Disclosed advisory priors:
@@ -70,7 +70,7 @@ Columns:
   - the EURUSD fix-reversal add-back bar names "a different fix (Tokyo/Frankfurt)".
 
 **M6E: pre-ECB-fix drift, conditional.**
-- It has a named payer and a target-pair cohort: KMW Table I, EUR pre-ECB −8.87%/yr, t −7.24, giving δ/σ 0.042 after the haircut and power 0.52.
+- It has a named payer and a spot-pair cohort (the same spot→futures ruling as 6J applies): KMW Table I, EUR pre-ECB −8.87%/yr, t −7.24, giving δ/σ 0.042 after the haircut and power 0.52.
 - In-sample, the post-2014 dollar-portfolio leg shows no decay, which is the strongest decay evidence among the FX cells.
 - Weaknesses:
   - power is marginal;
@@ -110,7 +110,9 @@ Columns:
 | r2-mym-overnight-drift, r2-mym-intraday-momentum | HOW-it-dies observable (signed flow, gamma) not on the admitted feed | an admitted order-flow source (Rule 18) |
 | r2-m2k-ondrift | δ: no Russell cohort | δ probe on M2K |
 | r2-mgc-cgb, r2-mgc-pdhpdl | δ: no gold intraday cohort; Req 1 also fails (no payer, 1b limbs unmet) | in-house δ extraction spending an MGC look, with a discriminator (IAAFT null for cgb) |
+| r2-6j-tokyofix | δ on 6J futures: only a spot-USDJPY cohort exists (spot→futures transplant) | Joshua's ruling on the spot cohort, or a δ probe on 6J |
 | r2-6j-tokyofix | H3 (gotobi-only pre-fix leg): no mean or σ (Bessho et al. give profit factor only) | probe with a gotobi dummy, or opening Akiyama et al. 2021 |
+| r2-m6e-prefix | δ on M6E futures: only a spot-EUR/USD cohort exists (spot→futures transplant) | Joshua's ruling on the spot cohort, or a δ probe on M6E |
 | r2-6j-psbc | δ: no 6J/USDJPY cohort; 1b limb (iv) fails | probe |
 | r2-m6e-asialdn | δ: no EUR/USD cohort; 1a and all 1b limbs fail | probe, with the DL-2 geometric-feasibility diagnostic |
 
@@ -137,6 +139,8 @@ Every figure used for a screen, power or ranking call was re-read by the coordin
 - Striker's and Aegis's private windows.
 
 Venue quotes are taken from the [venue-fact register](../../../notes/2026-11-01-prop-firm-venue-fact-register-DRAFT.md), the [envelope](../../../../ops/prop_envelope_default.md) and PR #1040's cross-firm draft, with each one's date. None is accepted into an owner record (Rule 17).
+
+**Codex round 1 (head `4939ed6`):** spot cohorts relabelled as spot→futures transplants, so the 6J and M6E screens are conditional on Joshua's ruling; Aegis figures elided from pasted consult output (Rule 13).
 
 **Corrections the coordinator made to worker drafts:**
 - removed cell-revealing clock times;

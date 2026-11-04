@@ -67,8 +67,8 @@ ledger: ops/instruments/6J.md
 verdict: untested — no prior on this cell.
 class finding (mechanism-wide, not specific to 6J): No tradeable turn-of-month premium on SPX500's canonical Pepperstone feed (2017–2026, n=113 turns) — the existence battery is hard-absent (Welch t=0.64, label-perm p=0.25), the effect is entirely COVID-concentrated, and the halves sign-reverse. [SPX500.md F5](SPX500.md)
 K bank: read ../../discovery_manifests/ — never trust a snapshot.
-prior: Aegis-to-6J venue-transfer retains measured panel evidence (n=129, PF 2.318, ~50% venue haircut vs canonical) - parked as a scale-path decision, not falsified by the evidence. [#J1]
-prior: The venue structurally throttles Aegis sizing: the 12-contract cap binds on 76% of trades, realizing effective risk ~0.5-1.0% against the locked 1.5% target. [#J5]
+prior: [Aegis-to-6J venue-transfer prior; its figures are elided from this copy because they describe the locked Aegis book (Rule 13). Read them at the owner, `ops/instruments/6J.md`.] [#J1]
+prior: [Venue sizing-throttle prior on Aegis; figures elided from this copy (Rule 13, locked sizing target). Read them at `ops/instruments/6J.md`.] [#J5]
 exit=0
 ```
 - `cell 6J prior-session-breakout-continuation` → exit=0 (pasted in r2-6j-psbc).
