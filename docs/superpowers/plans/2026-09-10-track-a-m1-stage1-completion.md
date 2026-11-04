@@ -108,13 +108,13 @@ Routing test is [`2026-07-14-cc-cursor-surface-allocation.md`](../../adr/2026-07
 
 Handoff briefs (dispatch in this order; each is self-contained):
 
-- [A1 — Astra: signal-source decision packet](../../briefs/handoffs/2026-09-10-track-a-a1-claude-signal-source-decision-packet.md)
+- [A1 — Astra: signal-source decision packet](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/handoffs/2026-09-10-track-a-a1-claude-signal-source-decision-packet.md)
 - [A1b — Codex: implement the ratified input (option D)](../../briefs/handoffs/2026-09-11-track-a-a1b-codex-operator-input-implementation.md)
 - [A2 — Linux image validation](../../briefs/handoffs/2026-09-10-track-a-a2-cursor-linux-image-validation.md) (filename keeps its dated identifier; spawn target re-targeted to Codex 2026-09-15)
-- [A3 — Astra: recovery-path attestation](../../briefs/handoffs/2026-09-10-track-a-a3-claude-recovery-path-attestation.md)
-- [A4 — Astra: deployment-readiness review](../../briefs/handoffs/2026-09-10-track-a-a4-claude-deployment-readiness-review.md)
-- [A5 — Astra: listener deploy, disarmed](../../briefs/handoffs/2026-09-10-track-a-a5-claude-listener-deploy-disarmed.md)
-- [A6 — Astra: daemon deploy, inert](../../briefs/handoffs/2026-09-10-track-a-a6-claude-daemon-deploy-inert.md)
+- [A3 — Astra: recovery-path attestation](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/handoffs/2026-09-10-track-a-a3-claude-recovery-path-attestation.md)
+- [A4 — Astra: deployment-readiness review](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/handoffs/2026-09-10-track-a-a4-claude-deployment-readiness-review.md)
+- [A5 — Astra: listener deploy, disarmed](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/handoffs/2026-09-10-track-a-a5-claude-listener-deploy-disarmed.md)
+- [A6 — Astra: daemon deploy, inert](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/handoffs/2026-09-10-track-a-a6-claude-daemon-deploy-inert.md)
 - [A7 — Operator + Astra: attended Stage 1 dry-run](../../briefs/handoffs/2026-09-10-track-a-a7-claude-attended-stage1-dry-run.md)
 - [A8 — Astra: signoff, RESOLVED artifact, redeploy](../../briefs/handoffs/2026-09-10-track-a-a8-claude-m1-resolution.md)
 

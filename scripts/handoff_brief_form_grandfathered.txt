@@ -5,24 +5,16 @@
 # is not on it, so the gate checks it (surface-allocation ADR, Addendum 2026-09-27).
 2026-07-24-cc-handoff-core-dead-code-prune.md
 2026-09-05-claude-funding-evidence.md
-2026-09-10-track-a-a1-claude-signal-source-decision-packet.md
 2026-09-10-track-a-a2-cursor-linux-image-validation.md
-2026-09-10-track-a-a3-claude-recovery-path-attestation.md
-2026-09-10-track-a-a4-claude-deployment-readiness-review.md
-2026-09-10-track-a-a5-claude-listener-deploy-disarmed.md
-2026-09-10-track-a-a6-claude-daemon-deploy-inert.md
 2026-09-10-track-a-a7-claude-attended-stage1-dry-run.md
 2026-09-10-track-a-a8-claude-m1-resolution.md
 2026-09-10-track-b-qualify-accepted-book-umbrella.md
 2026-09-11-track-a-a1b-codex-operator-input-implementation.md
 2026-09-12-astra-tradeify-contract-pr-closeout.md
 2026-09-12-tb-s3-kernel-redesign.md
-2026-09-12-tb-t1-snapshot-sealer-packet.md
 2026-09-13-tradeify-contract-closeout.md
 2026-09-14-a7-agent-capture-supplement.md
-2026-09-14-seven-bundle-runtime-interface-plan.md
 2026-09-14-track-b-next-session.md
-2026-09-14-track-b-parallel-prerequisites.md
 2026-09-14-track-b-ratifications.md
 2026-09-15-operator-codex-deployment-checklist.md
 2026-09-15-phase1-parallel-session.md
@@ -60,6 +52,3 @@
 2026-09-25-crosstrade-rest-route-assessment.md
 2026-09-25-tradeify-capability-allocation-deletion-map.md
 2026-09-26-close-semantics-c-a.md
-2026-09-26-orb-striker-edition-production.md
-2026-09-26-vanguard-fixed-stop-edition-production.md
-2026-09-26-vanguard-mgc-trailing-determination.md

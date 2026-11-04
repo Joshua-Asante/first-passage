@@ -8,7 +8,7 @@
 
 **Tech Stack:** Existing Python daemon/listener, shared sizing and capacity components, durable journals, replay, broker observations and release tooling.
 
-**Spec:** User's six-stage remaining-work table; [attended release plan](2026-09-14-tradeify-attended-release.md); [qualification and deployment sequence](2026-09-13-tb-i1-through-deployment.md). This is a phase-level decomposition, not a replacement code-level implementation packet or new ratification.
+**Spec:** User's six-stage remaining-work table; [attended release plan](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/superpowers/plans/2026-09-14-tradeify-attended-release.md); [qualification and deployment sequence](2026-09-13-tb-i1-through-deployment.md). This is a phase-level decomposition, not a replacement code-level implementation packet or new ratification.
 
 ## Global Constraints
 

@@ -227,7 +227,7 @@ then `core/mc/simulation.py`, `core/mc/preflight.py` and synthetic MC tests.
 accounts, and the composition/replay outputs represent the eventual quantity policy.
 Write the interface-level implementation specification before changing this core
 surface; the existing calculator repair is independently testable and can land first.
-The [used-account kernel specification](2026-09-05-tradeify-used-account-kernel.md)
+The [used-account kernel specification](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/superpowers/plans/2026-09-05-tradeify-used-account-kernel.md)
 owns the five-field interface and its supported snapshot boundary; the bar adapter
 and private binding remain separate obligations.
 

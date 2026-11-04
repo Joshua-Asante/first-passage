@@ -13,7 +13,7 @@ the same frozen threshold after the 2026-08-15 quarantine-and-patch cycle.
 **Operator ruling:** direction to "proceed with Phase 2" given 2026-08-15, session following
 the governance-belt audit. No separate A3-style ruling is required to *run* this measurement —
 only to act on a `DELETE-HOLDS` result past re-enabling the mechanism (see Forbidden moves).
-**Bears on:** [`Q-XMEM-1`](../Q-XMEM-1-cross-surface-memory-sidecar-pilot.md) Limb B — the
+**Bears on:** [`Q-XMEM-1`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/Q-XMEM-1-cross-surface-memory-sidecar-pilot.md) Limb B — the
 brief's own architecture (§4/§5/§6) stays frozen and untouched by this file.
 
 ---

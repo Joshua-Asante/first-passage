@@ -12,7 +12,7 @@ The operator-accepted instance is the combined `Tradeify_Select_100K` account's 
 
 ## 2. Quantity law
 
-**Correction 2026-09-13:** the former generic quantity-floor equation incorrectly applied law A to Striker and included an on-rail beta multiplier. The [recorded O-1/O-5/O-6 rulings](../notes/2026-09-12-track-b-scaling-faithfulness-read.md#3--the-single-finite-export-menu-frozen-2026-09-12-under-the-ruled-defaults) already resolve both: Striker uses risk-scaled law B; Call-4 is an off-rail operator kill-switch / GO-NO-GO trigger, never an additional rail sizing multiplier. This correction implements those decisions in the technical contract and records no new ratification.
+**Correction 2026-09-13:** the former generic quantity-floor equation incorrectly applied law A to Striker and included an on-rail beta multiplier. The [recorded O-1/O-5/O-6 rulings](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-09-12-track-b-scaling-faithfulness-read.md#3--the-single-finite-export-menu-frozen-2026-09-12-under-the-ruled-defaults) already resolve both: Striker uses risk-scaled law B; Call-4 is an off-rail operator kill-switch / GO-NO-GO trigger, never an additional rail sizing multiplier. This correction implements those decisions in the technical contract and records no new ratification.
 
 Let `p` be 1 in NORMAL and 0.40 in PROTECTED; `l` is the per-leg lifecycle multiplier (AUTHORIZED=1, WATCH-1=0.50, WATCH-2=0.25, RETIRED=0). Use exact rational arithmetic before flooring. Compute a **requested base** first; only confirmed fills establish the **executed base** used by an add. An emitted or accepted request is not an executed base.
 

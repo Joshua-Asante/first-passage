@@ -91,7 +91,7 @@ directs further work.)*
    entry logic, stop, target, ATR, trail, break-even, risk percent, pyramid, day-of-week filter,
    instrument, bar size — was carried across byte-identical in intent and re-verified by diff. The edit is
    specified in
-   [`2026-09-03-venue-bound-session-guard.md`](../superpowers/specs/2026-09-03-venue-bound-session-guard.md).
+   [`2026-09-03-venue-bound-session-guard.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/superpowers/specs/2026-09-03-venue-bound-session-guard.md).
 3. **A replacement is a new expression, not a repaired one.** It gets a new strategy id, a new Pine filename,
    its own hash pin, and a fresh config entry. The superseded entry is retained as a
    `superseded_sources` record carrying its hash, filename and the flag that retired it. No verdict, anchor,

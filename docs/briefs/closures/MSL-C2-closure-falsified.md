@@ -44,7 +44,7 @@ Below two-incident bar — watch: Stage-1 design-point arithmetic can PASS while
 - **Routing:** STOP this catalogue / G0. Serialized slate hands slot to **P3.2 MSL-C3 (M2K)** — Stage-0 L3 one-shot + WSTRUCT sequencing before flight (not opened here).
 - **Entry packet:** n/a
 - **Stop rule / re-proposal bar:** new mechanism evidence (different reference class / direction / TF), not stop-buffer or window retune on this G0. Re-proposal ≠ C3.
-- **Board write:** Open/next → P3.2 C3 Stage-0 (L3 + WSTRUCT read) — owner [`msl-first-slate`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/2026-08-12-msl-first-slate.md) §MSL-C3 · [`msl-program-plan`](../programs/2026-08-12-msl-program-plan.md) §6.
+- **Board write:** Open/next → P3.2 C3 Stage-0 (L3 + WSTRUCT read) — owner [`msl-first-slate`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/2026-08-12-msl-first-slate.md) §MSL-C3 · [`msl-program-plan`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/programs/2026-08-12-msl-program-plan.md) §6.
 
 - **Registry:** rejected_candidates.md — ### MSL-C2 London-range failed-extension fade × MGC — FALSIFIED (explore IS)
 

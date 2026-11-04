@@ -10,7 +10,7 @@
 
 **Tech Stack:** Existing operations Python/launcher, SQLite transactions, canonical JSON and enrolled signatures, Linux Unix peer credentials, Docker workers, Linux cgroup accounting, disposable Ubuntu verification harness.
 
-**Spec:** [Protected full E1 campaign successor specification](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/superpowers/specs/2026-09-17-protected-full-e1-campaign.md). Read both files before execution.
+**Spec:** [Protected full E1 campaign successor specification](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/superpowers/specs/2026-09-17-protected-full-e1-campaign.md). Read both files before execution.
 
 ## Global Constraints
 

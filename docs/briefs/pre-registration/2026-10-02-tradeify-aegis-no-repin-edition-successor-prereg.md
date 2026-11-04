@@ -50,8 +50,8 @@ The statement goes in AEG-3's status cell (the last cell), in exactly this form:
 | [Capability map](../../notes/2026-09-25-tradeify-capability-allocation-deletion-map.md) C10d and the amend-decision row | The one-time breakeven and target re-pin is a port-emitted `BracketAmend` that depends on L2(c). The re-pin is a strategy decision, and a vendor trail is not equivalent. |
 | [B–D decision packet](../../notes/2026-09-26-tradeify-bd-decision-packet.md) GC-2b, B-8 | A failed modify capability returns with alternatives; no automatic replacement edition (R-EDITIONS). |
 | [Incident ADR](../../adr/2026-09-17-bounded-platform-protection-incident-contract.md) §A1, §A4 (Aegis row), §A8 rules 9–10, §A9.1 UB-4 | The narrowed request shape. Aegis needs per-contract requests. Split admission is whole-or-nothing, with one unresolved request per symbol. UB-4: abandoning a remainder must enter the Aegis pre-registration where Aegis splits, and be replayed. |
-| [Scaling-faithfulness read](../../notes/2026-09-12-track-b-scaling-faithfulness-read.md) (Aegis row) | Aegis exits are price-only (stop, target, breakeven, stale, EOD). The rail expresses the captured size as a fixed quantity (TB-S1 (F)). |
-| [Signal-route evaluation](../../notes/2026-09-25-tradingview-signal-route-evaluation.md) (Aegis rows) | Entry state and the daily count advance locally. The breakeven latch, target re-pin and holding clock are local strategy state at the completed-bar boundary. |
+| [Scaling-faithfulness read](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-09-12-track-b-scaling-faithfulness-read.md) (Aegis row) | Aegis exits are price-only (stop, target, breakeven, stale, EOD). The rail expresses the captured size as a fixed quantity (TB-S1 (F)). |
+| [Signal-route evaluation](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-09-25-tradingview-signal-route-evaluation.md) (Aegis rows) | Entry state and the daily count advance locally. The breakeven latch, target re-pin and holding clock are local strategy state at the completed-bar boundary. |
 | `ops/c1_rail/book_policy.py:176-183`; `ops/c1_signal_daemon/book_adapters.py:39-43`; `core/strategies/BOOK_SOURCES.sha256` | Aegis is the short leg, at priority 1 (the takeover taker), protected rule `SCALE`. Current pins: Pine `db78ecba…`, port `11763740…`. Neither file is edited. |
 | [Deployment checklist](../../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md) first-release item 7 | Intentional partial exits are unsupported in the first release. C-a is directed, not selected, for every strategy close and scheduled flatten. |
 | `AGENTS.md` "Public-clone posture" | No Pine source, parameter value or port code appears here. Rules are stated as shapes only. |
@@ -102,7 +102,7 @@ A multi-contract intent is sent as that many one-contract requests, each carryin
 |---|---|---|
 | Aegis edition Pine (private) | SHA-256 recorded in `core/strategies/BOOK_SOURCES.sha256` (or `PORT_MANIFEST.sha256`, per the §59 owner's convention) and here, or the retained compatible identity | **OWED** |
 | Aegis edition Python port (private) | SHA-256 pin beside the existing pins in `ops/c1_signal_daemon/book_adapters.py`, as a separate reviewed change, or the retained compatible identity | **OWED** |
-| Realization and leg identity | Override-only or code edition; keep or renew `leg_id`. The options and their cascade are in the [realization and leg-identity options note](../../notes/2026-10-02-edition-realization-and-leg-id-options.md), which proposes no scheme | **OWED (operator)** |
+| Realization and leg identity | Override-only or code edition; keep or renew `leg_id`. The options and their cascade are in the [realization and leg-identity options note](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-10-02-edition-realization-and-leg-id-options.md), which proposes no scheme | **OWED (operator)** |
 | Effective inputs for the edition | Explicit source and runtime digests, reused or successor as ruled. The effective-inputs file holds all four legs, so a successor changes the **book-wide** runtime digest | **OWED (operator)** |
 | This file at freeze | Commit SHA recorded in the owning record (§8 step 1) | At freeze |
 
@@ -123,7 +123,7 @@ The public repository receives identities and behaviour shapes only, never sourc
 
 - K accounting is per leg. This file would add one expression for Aegis; the siblings' three expressions are unchanged.
 - If all three files freeze, the book's E1 runs with four route-native editions.
-- The §6 split replay rule **should match** the siblings' choice. State here whether it does; a different rule must be justified. One concrete option (b) is in [ED-10](../../notes/2026-10-02-ed10-sequential-split-replay-pricing.md). Aegis is the short leg, so any rule must be side-aware. *It does: operator ruling 2026-10-02 (sitting 2).*
+- The §6 split replay rule **should match** the siblings' choice. State here whether it does; a different rule must be justified. One concrete option (b) is in [ED-10](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-10-02-ed10-sequential-split-replay-pricing.md). Aegis is the short leg, so any rule must be side-aware. *It does: operator ruling 2026-10-02 (sitting 2).*
 
 ## §6 — How the edition requalifies, and what counts as a result
 

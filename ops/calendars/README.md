@@ -190,7 +190,7 @@ Added 2026-11-04 for exports that reach further back (MGC 2010-10, M6E 2009-03).
 ## Forward session file and typed overlay (TB-C1, first attended release)
 
 Landed 2026-09-15 under Packet 1 Step 4 of the
-[attended-release plan](../../docs/superpowers/plans/2026-09-14-tradeify-attended-release.md) and the
+[attended-release plan](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/superpowers/plans/2026-09-14-tradeify-attended-release.md) and the
 [calendar/parity amendment](../../docs/notes/2026-09-15-calendar-parity-separation-amendment.md).
 The D19 file above is **unchanged**; it remains historical date membership only. These artifacts live
 under `ops/calendars/` because their consumer is the rail (`lab` may not import `ops`); the Track B
@@ -226,7 +226,7 @@ Generation and ratification are ordered events: the loader parses and retains
 predate generation; this does not authorize historical admission.
 
 This component is extracted under the approved
-[PR 395 split](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/superpowers/specs/2026-09-15-pr395-component-split.md).
+[PR 395 split](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/superpowers/specs/2026-09-15-pr395-component-split.md).
 Its legacy source evidence warning remains visible; extracting the calendar
 does not qualify settlement or activate the book.
 

@@ -41,7 +41,7 @@ Per the frozen pre-registration (§6, commit `ad438ed`): **zero** paper-decidabl
 ## §5 — Disposition
 
 Per §9 of the parent brief:
-- Composition map published: [`docs/methodology/objective_composition_map.md`](../../methodology/objective_composition_map.md).
+- Composition map published: [`docs/methodology/objective_composition_map.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/objective_composition_map.md).
 - Falsification addendum appended to the parent thesis: [`docs/notes/2026-07-29-comparative-advantage-thesis.md`](../../notes/2026-07-29-comparative-advantage-thesis.md) §4 Addendum.
 - **No charter ADR is authored.** The estate does not need a new operation-level objective document — it already states, redundantly and in multiple independent locations, the precedence rules a charter would have had to invent. What it needs, named in the two flagged residuals, is smaller: one process gap (T3) and two documentation cross-reference fixes (T4, P-BUSTCEIL-1) — neither rises to the level this brief was authorized to fix (§5 forbids editing any threshold or gate; these are process/doc suggestions for the operator to route, not executed here).
 

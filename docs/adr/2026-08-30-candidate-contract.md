@@ -166,7 +166,7 @@ remains live practice; there is no retroactive migration in this consolidation.
 | Channel | Adoption owners |
 |---|---|
 | HARV | [intake](2026-07-15-external-mechanism-harvest-intake.md), [ratification](2026-07-13-harv-discovery-lane-ratification.md), [procedure §5–6](../methodology/strategy_harvest.md#5-seed-manifest-declaration-template) |
-| Dense1m/TNEC | [lane spec](../spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md) |
+| Dense1m/TNEC | [lane spec](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md) |
 | MSL | [charter](../spec/2026-08-12-msl-manual-sourcing-loop-charter.md), [ratification](2026-08-12-msl-sourcing-channel-ratification.md) |
 | No-counterparty statistical/geometric | [blind channel](2026-08-15-no-counterparty-statistical-sourcing-channel.md) |
 | Deep-iteration | [charter](2026-08-16-deep-iteration-lane-charter.md); GROW is tooling within it |

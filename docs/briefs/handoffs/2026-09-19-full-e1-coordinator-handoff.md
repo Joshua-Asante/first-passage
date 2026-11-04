@@ -19,7 +19,7 @@
 ## Read these authoritative documents first
 
 - [Execution slices and common contract](../../superpowers/plans/2026-09-18-full-e1-execution-slices.md): S1–S8 outcomes, tests, E01–E12 mapping, output-size and revision closure.
-- [Governing specification](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/superpowers/specs/2026-09-17-protected-full-e1-campaign.md).
+- [Governing specification](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/superpowers/specs/2026-09-17-protected-full-e1-campaign.md).
 - [S2 handoff and coordinator resource decisions](2026-09-19-full-e1-s2-budgeted-supervision.md).
 - [R1 handoff](2026-09-19-full-e1-s2-r1-recovery-authority.md) and [accepted independent review](2026-09-19-full-e1-s2-r1-review.md).
 - [Local S2 implementation plan](../../superpowers/plans/2026-09-19-s2-local-supervision.md).

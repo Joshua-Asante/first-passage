@@ -69,7 +69,7 @@ Short names used in the entries:
 | `X-1 packet` | [`docs/notes/2026-09-29-x1-decision-packet.md`](2026-09-29-x1-decision-packet.md) |
 | `incident ADR` | [`docs/adr/2026-09-17-bounded-platform-protection-incident-contract.md`](../adr/2026-09-17-bounded-platform-protection-incident-contract.md) |
 | `amendment` | [`docs/superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md`](../superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md) |
-| `binding packet` | [`docs/notes/2026-10-02-feed-spec-open-parameter-binding-packet.md`](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-10-02-feed-spec-open-parameter-binding-packet.md) |
+| `binding packet` | [`docs/notes/2026-10-02-feed-spec-open-parameter-binding-packet.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-10-02-feed-spec-open-parameter-binding-packet.md) |
 
 ### A — Portfolio expression
 

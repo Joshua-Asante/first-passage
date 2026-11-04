@@ -11,7 +11,7 @@ worktrees and uncommitted documents are preserved.
 
 Related documents:
 
-- [Structural assessment](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/audits/2026-09-17-pr415-structural-assessment.md).
+- [Structural assessment](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/audits/2026-09-17-pr415-structural-assessment.md).
 - [Implementation plan](../plans/2026-09-17-qualification-structural-closure.md).
 - [Existing N1 boundary design](2026-09-17-qualification-execution-boundary-design.md).
 - [Existing N1 boundary plan](../plans/2026-09-17-qualification-execution-boundary.md).

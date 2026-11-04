@@ -5,7 +5,7 @@
 repo's documentation to be in alignment, sharing the same facts across surfaces").
 
 **Scope:** not a blind full-corpus sweep (that is `adr-decay-audit`'s job — see the companion run at
-[`docs/notes/audits/adr-corpus/2026-08-29-adr-decay-audit.md`](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/audits/adr-corpus/2026-08-29-adr-decay-audit.md)
+[`docs/notes/audits/adr-corpus/2026-08-29-adr-decay-audit.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/audits/adr-corpus/2026-08-29-adr-decay-audit.md)
 and its §7 correction below). This run instead:
 
 1. Extracted the full `Supersedes` / `Superseded-by` / `Superseded-in-part-by` graph across all 175
@@ -158,7 +158,7 @@ surface list above, for a future reversed-evidence pass.
 
 ## §5 — Correction to the 2026-08-29 ADR-decay audit
 
-[`docs/notes/audits/adr-corpus/2026-08-29-adr-decay-audit.md`](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/audits/adr-corpus/2026-08-29-adr-decay-audit.md)
+[`docs/notes/audits/adr-corpus/2026-08-29-adr-decay-audit.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/audits/adr-corpus/2026-08-29-adr-decay-audit.md)
 §7 "Living-document fixes" claims `STATE.md:197 "blind channel... 1/3" corrected to 2/3`. This session's
 verify pass on finding #1 above re-derived that claim from scratch and found it false: `git show
 975fe14 -- STATE.md` shows that commit's actual diff only added an unrelated forward-board line and

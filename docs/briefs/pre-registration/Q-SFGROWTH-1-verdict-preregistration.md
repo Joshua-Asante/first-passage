@@ -1,6 +1,6 @@
 # Q-SFGROWTH-1 — Verdict pre-registration
 
-**Status:** FROZEN 2026-10-09 (operator: "freeze the plan"), before any export is read or any scorer exists. The freeze commit is recorded in the [parent brief §8](../Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md#8--verdict-pre-registration). A verdict computed after any constant below moves is void; a changed constant is a new pre-registration. Corrections from the freeze review land before Phase 0 reads data, as a dated amendment and re-freeze (see §E). The original freeze text is immutable at `121e2acf`.
+**Status:** FROZEN 2026-10-09 (operator: "freeze the plan"), before any export is read or any scorer exists. The freeze commit is recorded in the [parent brief §8](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md#8--verdict-pre-registration). A verdict computed after any constant below moves is void; a changed constant is a new pre-registration. Corrections from the freeze review land before Phase 0 reads data, as a dated amendment and re-freeze (see §E). The original freeze text is immutable at `121e2acf`.
 
 **Re-scoped 2026-10-11 (Q-SFCLEAR-1 FROZEN 2026-10-11):** under [ADR addendum 2026-10-11b](https://github.com/Joshua-Asante/first-passage/blob/d7ad4d8d672790dfbe647b22fd9d75a95576f109/docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-11b--tradeify-book-reused-on-the-personal-lane-supersedes-the-option-c-split) (PR #784) the personal lane's study is [Q-SFCLEAR-1](Q-SFCLEAR-1-verdict-preregistration.md), a single-tuple clearance of the Tradeify book at R1. See [section G](#g---re-scope-to-q-sfclear-1-2026-10-11). Nothing below runs. Q-SFCLEAR-1 was itself superseded before run by [Q-SFCLEAR-2](Q-SFCLEAR-2-verdict-preregistration.md) (2026-10-11), which carries the same references to this file and was superseded before run by [Q-SFCLEAR-3](Q-SFCLEAR-3-verdict-preregistration.md) (2026-10-13; FROZEN 2026-10-14), which incorporates them.
 
@@ -318,7 +318,7 @@ the three earlier approvals remain unchanged. Review and amended freeze are owed
 The hash-verified Striker MYM reference activates the pinned Pine's native daily/
 total drawdown guard. Source reads on October 10 confirm `ddHit` (line 205) feeds
 entry eligibility (241) and position closure (368); `backtestMode` gates it.
-This agrees with the [prior source read](../../notes/2026-09-12-track-b-scaling-faithfulness-read.md#1--classification-per-leg-pine-line-refs-are-to-the-pinned-body).
+This agrees with the [prior source read](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-09-12-track-b-scaling-faithfulness-read.md#1--classification-per-leg-pine-line-refs-are-to-the-pinned-body).
 
 On amended re-freeze, this ruling supersedes section A's parenthetical claim that
 only the simulator's 15% halt is modeled: **normal mode excludes external Tradeify

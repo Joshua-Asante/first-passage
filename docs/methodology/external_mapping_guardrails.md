@@ -1,9 +1,9 @@
 # External-mapping guardrails (canonical)
 
-**Owner:** this file. Distilled from the 2026-08-18→08-20 mapping notices; consolidated here so a later instance does not have to re-read both bodies ([audit](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/audits/programme-audit/2026-08-20-external-mapping-move-class-audit.md) §5 action 4).
+**Owner:** this file. Distilled from the 2026-08-18→08-20 mapping notices; consolidated here so a later instance does not have to re-read both bodies ([audit](../notes/audits/programme-audit/2026-08-20-external-mapping-move-class-audit.md) §5 action 4).
 **Not a new belt item.** The two guardrails below already bound instances 2 and 3. This file **removes the split location**, it does not add a third test.
 
-A fourth (or later) instance of the external-framework / peer-firm mapping move-class requires **fresh owner GO**. Instance 4 (2026-08-23) was GO'd as download + map of *existing* First Passage rails — no imported mechanism, no new pipeline stage. The standing pin / inventory / Proposed ADR that first session added was later rejected; borrow principles as needed ([notice](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/notice/N-2026-08-23-nemo-guardrails-reconciliation.md)).
+A fourth (or later) instance of the external-framework / peer-firm mapping move-class requires **fresh owner GO**. Instance 4 (2026-08-23) was GO'd as download + map of *existing* First Passage rails — no imported mechanism, no new pipeline stage. The standing pin / inventory / Proposed ADR that first session added was later rejected; borrow principles as needed ([notice](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/notice/N-2026-08-23-nemo-guardrails-reconciliation.md)).
 
 ## Guardrail 1 — domain-conflation
 
@@ -26,4 +26,4 @@ A proposal that would survive looks boring in pipeline-native terms: a one-line 
 - [`N-2026-08-18-quintessentials-ml-lifecycle-mapping.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/notes/notice/N-2026-08-18-quintessentials-ml-lifecycle-mapping.md)
 - [`N-2026-08-20-anthropic-training-principles-pipeline-mapping.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/notes/notice/N-2026-08-20-anthropic-training-principles-pipeline-mapping.md)
 - [`N-2026-08-20-peer-firm-conversion-bottleneck-mapping.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/notes/notice/N-2026-08-20-peer-firm-conversion-bottleneck-mapping.md)
-- Instance 4 record: [`N-2026-08-23-nemo-guardrails-reconciliation.md`](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/notice/N-2026-08-23-nemo-guardrails-reconciliation.md)
+- Instance 4 record: [`N-2026-08-23-nemo-guardrails-reconciliation.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/notice/N-2026-08-23-nemo-guardrails-reconciliation.md)

@@ -12,7 +12,7 @@
 **Superseded-by:** none
 **Superseded-in-part-by:** deployment-checklist [Addendum 2026-10-16](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify) — Tradeify scope only; items serving the personal or native lanes stand ([Addendum 2026-10-25](#addendum-2026-10-25--d4-tradeify-scoped-supersession-and-where-preserved-items-live))
 **Retain-until:** the instance's registry row is retired or superseded
-**Related:** [acceptance record](../notes/2026-09-10-tradeify-protection-selection.md) · [campaign record §55/§56](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · [ULP rounding](2026-05-10-dd-protection-ulp-rounding.md) · [C2 relock](2026-05-08-dd-trigger-c2-relock.md) · [regime-robustness gate](../methodology/regime_robustness_gate.md) · [TB-R2 read](../notes/2026-09-12-track-b-scaling-faithfulness-read.md) · [TB-T1 seal contract](../spec/2026-09-12-tradeify-account-snapshot-seal-contract.md) · [TB-S3 rail spec](../spec/2026-09-12-c1-multi-leg-rail-extension-spec.md) (merged PR #360, R-L) · TB-P1 pre-registration draft (PR #363)
+**Related:** [acceptance record](../notes/2026-09-10-tradeify-protection-selection.md) · [campaign record §55/§56](../briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) · [ULP rounding](2026-05-10-dd-protection-ulp-rounding.md) · [C2 relock](2026-05-08-dd-trigger-c2-relock.md) · [regime-robustness gate](../methodology/regime_robustness_gate.md) · [TB-R2 read](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-09-12-track-b-scaling-faithfulness-read.md) · [TB-T1 seal contract](../spec/2026-09-12-tradeify-account-snapshot-seal-contract.md) · [TB-S3 rail spec](../spec/2026-09-12-c1-multi-leg-rail-extension-spec.md) (merged PR #360, R-L) · TB-P1 pre-registration draft (PR #363)
 **Layer:** risk-control governance. **Zero change** to `core/dd_protection.py`, its frozen `DD_TRIGGER` / `DD_SCALE`, `calculate_protection`, `core/dd_geometry.py` or `POLICY_REGISTRY` by this ADR. The registry row itself lands only in **TB-D0** after TB-E1's seal, citing this ADR as ratified.
 **Tier:** full (it changes the admission chain for a live-risk instance; light tier is not available).
 **Revision:** 2026-10-25 — rule consolidation D4 removed Tradeify-only Track B directives (ADR13-56, ADR13-59, ADR13-62, ADR13-63, ADR13-64, ADR13-70, ADR13-71, ADR13-73, ADR13-104, ADR13-105) and scoped the supersession to Tradeify; prior decision at `91ccd984693d62c5c83ff3f428188dd47085633d`.
@@ -263,15 +263,15 @@ Joshua replied "all recommended" to the sitting-2 answer sheet (2026-10-03T01:42
 **Scope:** risk-control governance only. There is **zero change** to `core/dd_protection.py`, `DD_TRIGGER` and `DD_SCALE`, `core/dd_geometry.py`, `POLICY_REGISTRY`, `BASE_RISK`, the lifecycle multipliers, Pine, ports or effective inputs.
 
 **Answers:**
-- D-A of the [P-L4 proposal](../notes/2026-10-11-p-l4-tb-i3-amendments-PROPOSAL.md) §2: where the expected hash lives. **Option A, a GO field.**
-- D-P5-2 of the [P-L5 records packet](../notes/2026-10-11-p-l5-size-vector-records-packet-PROPOSAL.md) §4: sizing is an EF shared component.
+- D-A of the [P-L4 proposal](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-10-11-p-l4-tb-i3-amendments-PROPOSAL.md) §2: where the expected hash lives. **Option A, a GO field.**
+- D-P5-2 of the [P-L5 records packet](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-10-11-p-l5-size-vector-records-packet-PROPOSAL.md) §4: sizing is an EF shared component.
 
 ### Why this is needed
 
 - **The qualification side can already change per-leg sizing.** P-S1 to P-S3 (#762 to #764) added a per-leg size vector to it. The vector is carried by the signed v2 startup policy, so FBR binds it through its contract digest.
 - **The live side has no equivalent.** EF's shared-component proof (§2a notation) covers `book_policy.py`'s code and `cap_alloc`, but not the vector, which is data.
 - **The GO's closed field set (T10) has no place for it.** So nothing in T6–T11 proves that the rail sizes with the vector FBR qualified.
-- **The live wiring is specified separately.** That is P-L1 to P-L3 and R-SV, in [the scope note](../notes/2026-10-11-live-size-vector-wiring-scope.md). This addendum supplies only the two governance anchors they compare against.
+- **The live wiring is specified separately.** That is P-L1 to P-L3 and R-SV, in [the scope note](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-10-11-live-size-vector-wiring-scope.md). This addendum supplies only the two governance anchors they compare against.
 - **One definition throughout.** `size_vector_sha256 = sha256(canonical_json_bytes(sizing))`, the screen authority's formula (`ops/c1_rail/qualification/screen_authority.py`), over the canonical `validate_size_vector` encoding.
 - **The declared book is not a special case.** It is the identity vector, hash `dc9200a2f13a62a8e9fd27ff1f426f4c8653e1def76a67350cde5a89d0aa1fea` (public; computed from `IDENTITY_SIZE_VECTOR` at `b5571a9`).
 - **The successor recorded in the pre-registration values block is `139919cd1a20961b660c57527fa45c6b811124d468cfc97a3dd161db4d54c271`.** Only the hash is public, never the values.

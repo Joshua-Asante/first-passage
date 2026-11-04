@@ -22,7 +22,7 @@ cost-geometry grounds.
 
 ## §0 — Rule-0 reads (verified this session, 2026-08-20)
 
-- [`docs/spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md`](../../spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md)
+- [`docs/spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/spec/2026-08-09-dense1m-entry-mechanism-lane-spec.md)
   — the dense-1m TNEC lane this construct's *shape* resembles but is **not** filed under. §1: the
   next fresh Q-ID in that lane's own numbering would be `Q-TNEC-CON-6` — explicitly **not licensed**
   by `DENSE1M-UNPAUSE` (see below). This scoping deliberately uses an independent `Q-ICT-OTE-1` id,

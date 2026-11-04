@@ -15,7 +15,7 @@
 
 Read before recording this amendment: `ops/c1_rail/m1_stage1_contract.py`, `ops/c1_signal_daemon/m1_stage1_control.py`, `ops/c1_signal_daemon/operator_input_source.py`, `ops/c1_signal_daemon/m1_stage1.py`, and `ops/c1_rail/m1_stage1_control.py`. Anchor: base commit `f4d0d01657dc0f87d14429df2fa2633dda661238`, followed by the local `codex/a7-agent-capture` diff on September 14. The frozen contract remains `346387e565225d956da0f5b9696f211dee82ff9a823dda6e56b0ce32aba9d94f`; adding a source does not change its sizing or permanent dry-run enforcement.
 
-The governing S2b/M1 September 11 addenda and A7/A8 handoffs were read directly. The prior deployed implementation accepts manual input only; local changes are not evidence of a compatible deployed image. Browser observations and file-write practice are recorded in the [readiness checks](../superpowers/plans/2026-09-14-a7-browser-readiness-checks.md).
+The governing S2b/M1 September 11 addenda and A7/A8 handoffs were read directly. The prior deployed implementation accepts manual input only; local changes are not evidence of a compatible deployed image. Browser observations and file-write practice are recorded in the [readiness checks](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/superpowers/plans/2026-09-14-a7-browser-readiness-checks.md).
 
 ## §1 — Context
 

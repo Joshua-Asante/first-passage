@@ -1,6 +1,6 @@
 # H8(c) — Omitted required slot ends the session: bounded test card — worker card
 
-**Status:** PREPARED 2026-09-27 by the coordinator on accepting [H8 step (b)](../../notes/2026-09-27-h8b-feed-gap-classification.md#coordinator-acceptance-2026-09-27). **Not dispatched.** **READY ON** two events:
+**Status:** PREPARED 2026-09-27 by the coordinator on accepting [H8 step (b)](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-09-27-h8b-feed-gap-classification.md#coordinator-acceptance-2026-09-27). **Not dispatched.** **READY ON** two events:
 - the PR carrying this card is accepted and merged;
 - [PR #521](https://github.com/Joshua-Asante/first-passage/pull/521) (H5 step (b)) is merged, because its test module is this card's regression base. #521 is accepted **partially**, under its §7 (B) variance. It keeps one strict XFAIL for CC-3 (an ordinary unknown outcome raises no halt), and a locally reproduced environmental `test-ops` failure is disclosed. Using it as a regression base does not imply complete incident-contract compliance.
 
@@ -52,7 +52,7 @@ acceptance:
 - `AGENTS.md`.
 - Halt/resume contract §1–§4.1 and §7, including the 2026-09-27 omitted-slot entry under §4.1 *Qualifications* and §4.1 *Implementation status*.
 - Incident ADR §A11.2, with its clarifications.
-- The [H8(b) note](../../notes/2026-09-27-h8b-feed-gap-classification.md): §5 (the conditions and the synthetic trace) and *Coordinator acceptance*.
+- The [H8(b) note](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-09-27-h8b-feed-gap-classification.md): §5 (the conditions and the synthetic trace) and *Coordinator acceptance*.
 - Owners, at the dispatch revision:
   - `ops/c1_signal_daemon/book_runtime.py`: `on_completed_bar`, `expire_barrier` and `recover`;
   - `ops/c1_signal_daemon/book_evaluate_loop.py`;

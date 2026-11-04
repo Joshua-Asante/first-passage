@@ -80,7 +80,7 @@ a current owner.
 
 Steps 1/8/10's structural/composition limbs are **fit-for-scope**; step 7 is
 **integrity-only**. The separate survivor-scoring Part-A gate owns lifecycle
-admission under the [composition map](../methodology/objective_composition_map.md).
+admission under the [composition map](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/objective_composition_map.md).
 No fit screen or this ordering decision substitutes for that gate.
 
 ### Reachability
@@ -192,7 +192,7 @@ Grounding at `502a8fb4717e8caaa7d183a0a010998cfd7a30c2`: `lab/discovery/register
 `lab/discovery/admission_schema.py`, `lab/discovery/frozen_rules.py`,
 `lab/research_utils/breadth.py`, `core/mc/modes.py`,
 `scripts/cost_geometry_pregate.py`, `scripts/check_instrument_rejection_coverage.py`,
-the [composition map](../methodology/objective_composition_map.md),
+the [composition map](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/objective_composition_map.md),
 [EM screen](../spec/2026-08-05-eval-mechanism-shape-screen.md),
 [third-leg S1–S7](../spec/2026-07-27-third-leg-target-spec.md),
 [control-group scope](../../ops/prop_envelope_default.md),

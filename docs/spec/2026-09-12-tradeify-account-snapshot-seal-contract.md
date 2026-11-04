@@ -1,6 +1,6 @@
 # SPEC: Tradeify portfolio — account-snapshot seal contract (TB-T1 field and evidence contract)
 
-Status: PROPOSED · 2026-09-12 (rev 4, #358 Codex capture-ordering and output-collision findings closed) · authorizes nothing ($0 · K=0) · depends: [Track B umbrella](../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) TB-T1 / TB-B7 stubs · campaign-state §17 / D23 (evidence class) · campaign-state §15 item 2 (recapture immediately before arming) · [used-account kernel](../superpowers/plans/2026-09-05-tradeify-used-account-kernel.md) (no adjustments, no pending orders)
+Status: PROPOSED · 2026-09-12 (rev 4, #358 Codex capture-ordering and output-collision findings closed) · authorizes nothing ($0 · K=0) · depends: [Track B umbrella](../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) TB-T1 / TB-B7 stubs · campaign-state §17 / D23 (evidence class) · campaign-state §15 item 2 (recapture immediately before arming) · [used-account kernel](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/superpowers/plans/2026-09-05-tradeify-used-account-kernel.md) (no adjustments, no pending orders)
 Objective: fix the fields, evidence files, checks and output of the B7 account-snapshot sealer so Codex can build the tool now (TB-T1) while the fresh live snapshot itself stays a later operator gate; TB-P1 cites this contract instead of restating it.
 
 Input parsing: duplicate JSON keys at any depth refuse as `C2` before evidence
@@ -48,7 +48,7 @@ C1 every evidence file exists and is non-empty; the three canonicalized paths ar
 Output: one private JSON (`values`, `derived` incl. `valid_until`, `evidence` {path basename, sha256, captured_at}, `checks` {id: pass}, `seal_timestamp`, `tool_sha256`, `contract`: this file's path) written atomically under an ignored root (default `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/local_artifacts/account_snapshots/`); stdout carries the sealed file's SHA-256, the check ids that passed and `valid_until`. The seal is **attested-by-evidence, not machine-verified against the broker**: no read API exists for the dashboard, and the final stdout line is exactly `Attested by evidence; not machine-verified against the broker.`
 
 Steps:
-1. Codex builds `scripts/seal_account_snapshot.py` + `tests/test_seal_account_snapshot.py` test-first per the [TB-T1 packet](../briefs/handoffs/2026-09-12-tb-t1-snapshot-sealer-packet.md).
+1. Codex builds `scripts/seal_account_snapshot.py` + `tests/test_seal_account_snapshot.py` test-first per the [TB-T1 packet](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/handoffs/2026-09-12-tb-t1-snapshot-sealer-packet.md).
 2. The Astra coordinator adjudicates against the evidence; the operator merges (campaign ownership record §57).
 3. At TB-B7 the operator captures E1–E3 and runs the sealer; the coordinator records the sealed digest, timestamp and `valid_until` in the execution fingerprint; TB-E2 and TB-B10 check `valid_until` before they start.
 

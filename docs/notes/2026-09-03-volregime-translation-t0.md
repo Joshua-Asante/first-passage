@@ -1,7 +1,7 @@
 # Q-VOLREGIME translation — Packet T0 bridges
 
 **Date:** 2026-09-03  
-**Campaign:** [`translation plan`](../superpowers/plans/2026-09-01-q-volregime-bounded-translation-campaign.md)  
+**Campaign:** [`translation plan`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/superpowers/plans/2026-09-01-q-volregime-bounded-translation-campaign.md)  
 **Decision:**
 [`ADR addendum 2026-09-03`](../adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03--campaign-is-volregime-translation-enter-at-packet-t)
 · [`Codex T0 addendum`](../adr/2026-09-02-portable-edge-cultivation-campaign-objective.md#addendum-2026-09-03b--t0-pre-contract-drop)  
@@ -16,7 +16,7 @@ T0 asks, for each proposed template, one falsifiable sentence:
 
 Acceptable bridges require a **cited directional or convexity prior** that was not selected from
 this campaign's reserved payoff window
-([`translation plan` T0](../superpowers/plans/2026-09-01-q-volregime-bounded-translation-campaign.md)).
+([`translation plan` T0](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/superpowers/plans/2026-09-01-q-volregime-bounded-translation-campaign.md)).
 “More range means breakout” is forbidden. Q-VOLREGIME’s own direction limb was deleted as a clean
 null ([`Q-VOLREGIME-1`](../briefs/Q-VOLREGIME-1-intraday-bar-volume-regime.md) Pre-Q D).
 `Q-RANGECOND-1` later showed that a stronger sibling range predictor did not lift ORB-MNQ

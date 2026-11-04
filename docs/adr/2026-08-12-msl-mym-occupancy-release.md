@@ -21,7 +21,7 @@ S1 already closed de-scope **F2** as keep-warm/disarmed at the incumbent ([S1](2
 
 ## Reads
 
-`ops/instruments/MYM.md` @ `e20e240` (2026-08-04 occupancy bar) · [S1](2026-08-07-loop-s1-environment-ratification.md) §2 F2 · [de-scope](2026-08-04-tradeify-venue-descope-eval-included.md) clauses 1–2 · [MSL plan](../briefs/programs/2026-08-12-msl-program-plan.md) B8 · MES/M2K/MCL `venue_note` “retained-not-released” lines.
+`ops/instruments/MYM.md` @ `e20e240` (2026-08-04 occupancy bar) · [S1](2026-08-07-loop-s1-environment-ratification.md) §2 F2 · [de-scope](2026-08-04-tradeify-venue-descope-eval-included.md) clauses 1–2 · [MSL plan](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/programs/2026-08-12-msl-program-plan.md) B8 · MES/M2K/MCL `venue_note` “retained-not-released” lines.
 
 ## Gate
 

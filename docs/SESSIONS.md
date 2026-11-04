@@ -123,7 +123,7 @@ historical number by merge commit or branch name, never by number alone. Owner:
 *Retrospectively recorded 2026-09-20 from the committed memo and PR record.*
 
 - **Focus:** scoped review of replacing the qualification execution infrastructure with managed services (conditional Batch/Fargate and Temporal assessments), [first-passage#426](https://github.com/Joshua-Asante/first-passage/pull/426) (`1c2472d`).
-- **Judgment:** the coordinator's recommendation is to **retain the current implementation for completion and six-month maintenance of the protected synthetic N1_ONLY slice**; no replacement experiment is justified by the reviewed evidence. A recommendation only: it granted no migration, implementation or experiment authority, and full-campaign economics remained unresolved. Reopening conditions and the responsibility trace are recorded in the [decision memo](notes/research/2026-09-18-qualification-build-versus-buy.md) and [research record](notes/research/2026-09-18-qualification-build-versus-buy-research.md).
+- **Judgment:** the coordinator's recommendation is to **retain the current implementation for completion and six-month maintenance of the protected synthetic N1_ONLY slice**; no replacement experiment is justified by the reviewed evidence. A recommendation only: it granted no migration, implementation or experiment authority, and full-campaign economics remained unresolved. Reopening conditions and the responsibility trace are recorded in the [decision memo](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/research/2026-09-18-qualification-build-versus-buy.md) and [research record](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/research/2026-09-18-qualification-build-versus-buy-research.md).
 - **Evidence:** commit-pinned source links, work-package estimates and break-even thresholds in the memo; documentation-only PR, no runtime tests or qualification jobs run.
 - **Open / next:** historical N1 engineering acceptance stays HELD; the memo's reopening conditions are the wake triggers.
 
@@ -169,7 +169,7 @@ historical number by merge commit or branch name, never by number alone. Owner:
 
 - **Focus:** Pre-A7 coordinator dispatch for the Tradeify portfolio (the operator's new name for the accepted four-strategy book): verify main/PR state, reconcile #356's delivered adapters/policy/emulator/parity against the umbrella's obligations, resolve the recorded strategy-behaviour discrepancies against the pinned Pine and the ports, produce TB-R2's export menu and TB-W1's warm-up requirements, and prepare the first Codex packets.
 - **Judgment:** the two ways of expressing "40 % of normal" (quantity-floor as built vs the sizing host's risk-scaled law) differ by a contract on roughly one Striker entry in ten, and only the risk-scaled law can be reproduced on a TradingView chart, so the export menu cannot freeze until the operator rules it; recorded as O-5 with a recommendation (law B for Striker, law A for Vanguard) rather than choosing. The Aegis fixed-8 rule was verified size-invariant in timing (121/121 captured bars and prices reproduced), so Aegis needs no further export. All 85 delivered book tests re-run green with the private inputs.
-- **Shipped:** [coordinator record](notes/2026-09-12-tradeify-portfolio-coordinator-dispatch-1.md) (verified state, completion matrix, decisions, packet dispositions) · [TB-R2 read + draft menu](notes/2026-09-12-track-b-scaling-faithfulness-read.md) · [snapshot-seal contract](spec/2026-09-12-tradeify-account-snapshot-seal-contract.md) + [TB-T1 packet](briefs/handoffs/2026-09-12-tb-t1-snapshot-sealer-packet.md) (READY, not launched) · umbrella rev 12 (§0.8 O-5..O-9, manifest statuses) · alias in the [acceptance record](notes/2026-09-10-tradeify-protection-selection.md#alias--the-tradeify-portfolio-recorded-2026-09-12) · STATE row 2.
+- **Shipped:** [coordinator record](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-09-12-tradeify-portfolio-coordinator-dispatch-1.md) (verified state, completion matrix, decisions, packet dispositions) · [TB-R2 read + draft menu](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-09-12-track-b-scaling-faithfulness-read.md) · [snapshot-seal contract](spec/2026-09-12-tradeify-account-snapshot-seal-contract.md) + [TB-T1 packet](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/handoffs/2026-09-12-tb-t1-snapshot-sealer-packet.md) (READY, not launched) · umbrella rev 12 (§0.8 O-5..O-9, manifest statuses) · alias in the [acceptance record](notes/2026-09-10-tradeify-protection-selection.md#alias--the-tradeify-portfolio-recorded-2026-09-12) · STATE row 2.
 - **Open / next:** operator rules O-5..O-9 (and O-1); then TB-R2 menu freeze and TB-S1 authoring; TB-I2 / TB-I3 stay BLOCKED on TB-S2 / TB-S3; A7 runs Sunday 2026-09-13 in its own session.
 
 ---
@@ -323,7 +323,7 @@ historical number by merge commit or branch name, never by number alone. Owner:
 
 ## 2026-09-05h — Add used-account state to the simulation kernel
 
-**Open / next:** STATE queue: `#1` [Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#50--used-account-kernel-2026-09-05) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24). The [kernel specification](superpowers/plans/2026-09-05-tradeify-used-account-kernel.md) supplies the original-basis state interface. Private account binding, export-bound captures, synchronized replay and the statistical freeze remain owed. The operator merged #308/#309; no campaign sample or new attempt was consumed.
+**Open / next:** STATE queue: `#1` [Tradeify Select configuration campaign](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#50--used-account-kernel-2026-09-05) · `#2` [B7-REFIRE Stage 1 + M1](adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24). The [kernel specification](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/superpowers/plans/2026-09-05-tradeify-used-account-kernel.md) supplies the original-basis state interface. Private account binding, export-bound captures, synchronized replay and the statistical freeze remain owed. The operator merged #308/#309; no campaign sample or new attempt was consumed.
 
 ---
 
@@ -547,9 +547,9 @@ unedited; this is its current-state pointer.
 **Shipped:** [campaign-state](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) §12g/§13/§14
 plus D17–D19; [PR #291](https://github.com/Joshua-Asante/first-passage/pull/291) merged (`0e3f40b`);
 [PR #293](https://github.com/Joshua-Asante/first-passage/pull/293) open; D19 amendments in the
-[normalization design](superpowers/specs/2026-09-02-tradeify-stage1-normalization-design.md), the
+[normalization design](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/superpowers/specs/2026-09-02-tradeify-stage1-normalization-design.md), the
 [re-expression lane ADR](adr/2026-09-03-venue-legality-re-expression-lane.md) and the
-[guard spec](superpowers/specs/2026-09-03-venue-bound-session-guard.md).
+[guard spec](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/superpowers/specs/2026-09-03-venue-bound-session-guard.md).
 **Decisions/defects:** **D17** — G1.4 named two dimensions TradingView cannot supply. Operator ruled
 **reconstruct** monthly totals from the row-level ledger (feasibility proven: exact reconciliation on all five,
 and **zero month-spanning holds**, so entry-vs-exit-month attribution is moot — a direct consequence of every leg
@@ -685,7 +685,7 @@ re-export the two Strikers at 100K; D3, D5, D7 open · `#2`
 [PR #284](https://github.com/Joshua-Asante/first-passage/pull/284) merged, and source the CME calendar the
 campaign was blocked on. No vendor bytes opened; no worker PR merged.
 **Shipped:** new [venue-legality re-expression lane ADR](adr/2026-09-03-venue-legality-re-expression-lane.md)
-(`Proposed`, full tier) + [venue-bound session guard spec](superpowers/specs/2026-09-03-venue-bound-session-guard.md);
+(`Proposed`, full tier) + [venue-bound session guard spec](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/superpowers/specs/2026-09-03-venue-bound-session-guard.md);
 [campaign-state artifact](briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md) §6 D11/D12/D13 ruled,
 D15/D16 raised, §9 item 11 updated, new §10 TradingView anchors.
 **Decisions/defects:** **D11 re-express** — re-expression is a post-view change that the plan's own Objective
@@ -1715,7 +1715,7 @@ scored panels).
 
 **Decisions/defects:** H6 HOLD lifted. Dated exceptions: `pursuit-records` off `--tier check`; `pine-pin-provenance --base` stays in manifest-check. No branch protection. Queue row 3 opened and closed same session (succession: no auto-replace).
 
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/1r_estimation.md)).
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 
@@ -1729,7 +1729,7 @@ scored panels).
 
 **Decisions/defects:** The Use-3 SPAN+COT cascade thread was **conceded dead by its own proposer** at Use 4 ("nothing converts WHETHER into WHERE — demote to filter") — removed from the candidate lanes. Ox-alpha's "scoped overnight" relaxation recorded as mostly foreclosed by venue fact (flat-16:45 is a firm rule), not adopted. All plans `AWAITING GO` — per-phase gates; two operator bar-readings named inside Phase B (F1 re-proposal terms for the MOC lane; F3 "not a different fix" for the fix-wake lane).
 
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)). Behind the queue: Phase A GO (A1 audit + A2 shape map, $0) and the parallel firm-repair Q GO are the sequence's next operator decisions.
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/1r_estimation.md)). Behind the queue: Phase A GO (A1 audit + A2 shape map, $0) and the parallel firm-repair Q GO are the sequence's next operator decisions.
 
 ---
 
@@ -1789,7 +1789,7 @@ sweep at `sims_per_seed=500` (frozen value is 10,000) under a real compute-budge
 **Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md)
 · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound
 ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) ·
-[`1r_estimation.md`](methodology/1r_estimation.md)).
+[`1r_estimation.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/1r_estimation.md)).
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 

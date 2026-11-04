@@ -147,7 +147,7 @@ owner. It does not open a second campaign ADR.
 | Source | Anchor | Supplies |
 |---|---|---|
 | This ADR §§1–3 | `f67306c` 2026-09-02 | Commercial elections that stay; P50 ineligibility that stays; Seat A = P50 that this addendum retires as the lead |
-| [`2026-09-01-q-volregime-bounded-translation-campaign.md`](../superpowers/plans/2026-09-01-q-volregime-bounded-translation-campaign.md) | `36b5305` 2026-09-02 | Execution owner still marked `PROPOSED — AWAITING OPERATOR ENVELOPE GO`; T0.1 item 1 requires L5 before an ORB-shaped template |
+| [`2026-09-01-q-volregime-bounded-translation-campaign.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/superpowers/plans/2026-09-01-q-volregime-bounded-translation-campaign.md) | `36b5305` 2026-09-02 | Execution owner still marked `PROPOSED — AWAITING OPERATOR ENVELOPE GO`; T0.1 item 1 requires L5 before an ORB-shaped template |
 | [`Q-VOLREGIME-1-intraday-bar-volume-regime.md`](../briefs/Q-VOLREGIME-1-intraday-bar-volume-regime.md) §5 | `36b5305` 2026-09-02 | Frozen forbidden move: no entry construct before the brief resolves |
 | [`volregime_l3_2026-08-31/RESULTS.md`](../../lab/analysis/_inbox/volregime_l3_2026-08-31/RESULTS.md) | `a60cc03` 2026-08-31 | L3 PASS both instruments — presence already run |
 | [`volregime_byyear_l4_2026-08-31/RESULTS.md`](../../lab/analysis/_inbox/volregime_byyear_l4_2026-08-31/RESULTS.md) | `a60cc03` 2026-08-31 | L4 PASS 7/7 both instruments |
@@ -173,7 +173,7 @@ election names the presence battery and the C1 freeze, not an observed L5 attrib
 **The ruling.**
 
 1. **This campaign is the Sep 1 VOLREGIME translation campaign.** Live execution owner:
-   [`2026-09-01-q-volregime-bounded-translation-campaign.md`](../superpowers/plans/2026-09-01-q-volregime-bounded-translation-campaign.md).
+   [`2026-09-01-q-volregime-bounded-translation-campaign.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/superpowers/plans/2026-09-01-q-volregime-bounded-translation-campaign.md).
    The Sep 2 commercial elections stand: portable genuine edge first; `Tradeify_Select_100K`
    preferred; manual weekly preservation accepted; edition failure does not erase a confirmed
    edge; $0 external spend; ≤48 local core-hours; 2–3 calendar days; at most one candidate

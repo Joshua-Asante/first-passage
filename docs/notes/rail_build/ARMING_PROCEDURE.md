@@ -10,7 +10,7 @@
 4. Collector observations and manual-action notes remain evidence with limitations. Reconciliation must cover gross positions, working/protective orders and all earlier runtime/manual/provider requests under retained E1–E3. Empty screens, elapsed time and acknowledgment do not clear blocks.
 5. On verified reconciliation, persist/read back ordinary disarm and remain HALTED. Resume is a separate fresh authenticated request bound to boot, generation, evidence and runtime identities, within the eligible session. Confirm effective activation before new risk; never replay halted-period signals.
 
-Every armed session requires explicit attendance and a verified alert/platform access path. Attendance continues until reconciled/disarmed; leaving early requires completing stop/intervention/disarm. Initial B7/n3/GO and later session gates stand. Production takeover, evidence verification and resume remain unavailable until implemented/qualified; [Packet 0](../../notes/2026-09-14-tradeify-attended-feasibility.md) records the blockers. M1/A7/A8 are recorded complete and are not reopened by this amendment.
+Every armed session requires explicit attendance and a verified alert/platform access path. Attendance continues until reconciled/disarmed; leaving early requires completing stop/intervention/disarm. Initial B7/n3/GO and later session gates stand. Production takeover, evidence verification and resume remain unavailable until implemented/qualified; [Packet 0](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-09-14-tradeify-attended-feasibility.md) records the blockers. M1/A7/A8 are recorded complete and are not reopened by this amendment.
 
 > **Track B rev8 design amendment (2026-09-14):** the [halt/resume contract](../../spec/2026-09-14-tb-s3-halt-resume-contract.md) replaces this procedure's proposed Track B session auto-clear, outage continuation and 16:30 first-flatten guidance. Use its exact schedule formula and fresh operator resume after flat reconciliation; 16:30 is reporting only. Initial B7/n3/GO/activation and separate policy gates remain. This amendment does not change existing deployed single-strategy operation or authorize use of a not-yet-implemented resume command.
 
@@ -341,7 +341,7 @@ improvise an interlock, never substitute a source.
 `ops/c1_rail/c1_rail_telemetry.py` @ `027a729`, `tests/ops/test_m1_acceptance_drills.py` @
 `25711e2`), but **no production write path populates the store**: `set_confirmed_base` /
 `confirm_executed_base` have no callers outside tests
-([Q-M1WIRE-1](../../briefs/Q-M1WIRE-1-arming-interlock-coverage.md) limb A2, CLOSED — FALSIFIED),
+([Q-M1WIRE-1](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/Q-M1WIRE-1-arming-interlock-coverage.md) limb A2, CLOSED — FALSIFIED),
 so an `add` halts until an operator-attested write exists. The operator decision that closure names
 is owed before any armed session relies on adds.
 

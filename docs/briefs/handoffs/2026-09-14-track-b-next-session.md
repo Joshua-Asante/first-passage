@@ -26,7 +26,7 @@ the historical manifests remain unchanged.
   not a claim that no later commits exist.
 - Runtime task: **Complete TB-I1 acceptance**, ID
   `01a09d65-baa6-78b0-b513-127f06d69743`.
-- [Prerequisite ledger](2026-09-14-track-b-parallel-prerequisites.md) and this
+- [Prerequisite ledger](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/handoffs/2026-09-14-track-b-parallel-prerequisites.md) and this
   handoff form the public documentation packet on this branch. Raw evidence
   remains private and ignored. No PR was opened by this task.
 - Runtime ratification records/addenda were last observed uncommitted on

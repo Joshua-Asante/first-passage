@@ -5,7 +5,7 @@
 **Closed:** 2026-10-13 for Q-SFCLEAR-2 (superseded before run); Q-SFCLEAR-3 is open under this brief
 **Authors:** Joshua (rulings) + Claude Code (drafting worker for the Deployment Coordinator)
 **Parent question:** N/A — owed item 1 of the [self-funded lane ADR](../adr/2026-10-09-self-funded-tradovate-lane-reopen.md#grounds), re-scoped by [addendum 2026-10-11b](https://github.com/Joshua-Asante/first-passage/blob/d7ad4d8d672790dfbe647b22fd9d75a95576f109/docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-11b--tradeify-book-reused-on-the-personal-lane-supersedes-the-option-c-split) (PR #784)
-**Supersedes:** [Q-SFCLEAR-1](Q-SFCLEAR-1-personal-clearance-tradeify-book.md) (SUPERSEDED-BEFORE-RUN 2026-10-11), which re-scoped [Q-SFGROWTH-1](Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md) (PR #752)
+**Supersedes:** [Q-SFCLEAR-1](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/Q-SFCLEAR-1-personal-clearance-tradeify-book.md) (SUPERSEDED-BEFORE-RUN 2026-10-11), which re-scoped [Q-SFGROWTH-1](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md) (PR #752)
 **Loop:** Inquire-phase Pre-Q — closure is gated by the [Q-SFCLEAR-3 verdict pre-registration](pre-registration/Q-SFCLEAR-3-verdict-preregistration.md); the [Q-SFCLEAR-2 pre-registration](pre-registration/Q-SFCLEAR-2-verdict-preregistration.md) at F governs where Q-SFCLEAR-3 §S does not change it
 **Artifact path:** `docs/briefs/Q-SFCLEAR-2-personal-clearance-tradeify-book.md`
 
@@ -27,8 +27,8 @@ Q-SFCLEAR-1 was frozen on 2026-10-11 without the operator tuple re-hash its own 
 
 ## §2 — Prior art / lineage
 
-- [Q-SFCLEAR-1](Q-SFCLEAR-1-personal-clearance-tradeify-book.md): same question and the same R1 tuple (sha256 `62d7ae19…671f`); freeze `734d108` void; nothing ran. Its rulings carry forward.
-- [Q-SFGROWTH-1](Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md): never ran; cited from `b02c173` for §C, F6, F7, F9 and the [Phase-0 classification](../../lab/analysis/c1/sfgrowth_2026-10/PHASE0_SIZING_CLASSIFICATION.md).
+- [Q-SFCLEAR-1](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/Q-SFCLEAR-1-personal-clearance-tradeify-book.md): same question and the same R1 tuple (sha256 `62d7ae19…671f`); freeze `734d108` void; nothing ran. Its rulings carry forward.
+- [Q-SFGROWTH-1](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md): never ran; cited from `b02c173` for §C, F6, F7, F9 and the [Phase-0 classification](../../lab/analysis/c1/sfgrowth_2026-10/PHASE0_SIZING_CLASSIFICATION.md).
 - T00 book lineage manifest: K = 12 (trial 10 = R1, carried; trials 11–12 = screened alternatives R1′ and R2).
 - Plan #785 (head `7d2ce02`): the sizing frame, pre-screen and clearance tests.
 

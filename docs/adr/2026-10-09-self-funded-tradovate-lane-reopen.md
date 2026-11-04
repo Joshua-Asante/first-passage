@@ -24,7 +24,7 @@
 3. **Data.** The same personal account is the intended real-time CME source for the
    signal daemon, replacing the retired Databento path, subject to Tradovate's and
    CME's licensing answers (the P6 draft in the
-   [feed-provider note](../notes/2026-10-03-feed-provider-questions-narrowed-DRAFT.md#46-p6-tradovate-api-personal-data-only-account)
+   [feed-provider note](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-10-03-feed-provider-questions-narrowed-DRAFT.md#46-p6-tradovate-api-personal-data-only-account)
    is reframed from data-only to own-assets trading).
 4. **Capital clearance: maximum peak-to-trough drawdown 15%** (operator ruling
    2026-10-09: "I'd accept a 15% drop", measured peak to trough). Within that bound the
@@ -87,7 +87,7 @@ first live order on the personal account:
 This ADR owns the lane's scope until a campaign or plan owner is named for items 1–8;
 [STATE.md](../../STATE.md) carries the forward row. Venue rules stay with
 [`core/firm_rules.py`](../../core/firm_rules.py); feed questions with the
-[feed-provider note](../notes/2026-10-03-feed-provider-questions-narrowed-DRAFT.md).
+[feed-provider note](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-10-03-feed-provider-questions-narrowed-DRAFT.md).
 
 ## Verification
 
@@ -152,7 +152,7 @@ Support's 20:19Z reply on 2026-10-12, recorded at the [route owner](../briefs/ha
 **Ruling** (Joshua, 2026-10-25, rule consolidation D4, [plan §5](../superpowers/plans/2026-10-25-rule-consolidation-step-1.md#5-rulings-joshua-2026-10-25)): the host-side activation-gate obligation (TB-I3) gets a named surviving owner. Its Track B owner was [superseded for Tradeify 2026-10-16](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify); this ADR now owns it for the rail.
 
 8. **Host-side activation gate.** The rail host itself refuses activation (booting with `dry_run=false`, or enabling risk-add) unless the instance's M1 acceptance and its other arm gates hold. Today `c1_rail_http_server.load_config` does not check M1, so editing the `/data` config bypasses the arm helper's interlock ([AGENTS.md §Live-execution posture](../../AGENTS.md#live-execution-posture)). Item 8 gates the first live order on the personal account, with items 1–7.
-   - *Design inputs, not adopted requirements:* the [instance ADR](2026-09-12-tradeify-book-protection-instance-admission.md) §2b validator, T11 effective activation and its 2026-10-11 addendum; the [synthetic interlock card](../briefs/handoffs/2026-10-03-tb-i3-synthetic-interlock-card-DRAFT.md); and the [incident ADR](2026-09-17-bounded-platform-protection-incident-contract.md) §A12.5 items it assigns to TB-I3 (the stale-evidence latch and the halt-on-unknown implementation), where this lane's instance uses the rail.
+   - *Design inputs, not adopted requirements:* the [instance ADR](2026-09-12-tradeify-book-protection-instance-admission.md) §2b validator, T11 effective activation and its 2026-10-11 addendum; the [synthetic interlock card](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/handoffs/2026-10-03-tb-i3-synthetic-interlock-card-DRAFT.md); and the [incident ADR](2026-09-17-bounded-platform-protection-incident-contract.md) §A12.5 items it assigns to TB-I3 (the stale-evidence latch and the halt-on-unknown implementation), where this lane's instance uses the rail.
    - Nothing is implemented, armed or authorized by this addendum.
 
 ## Addendum 2026-10-29 — personal-account objective removed; lane closed

@@ -127,10 +127,10 @@ accept the changed acceptance method before its first decision-bearing use.
 
 Owning records:
 
-- [Attended-release plan](../superpowers/plans/2026-09-14-tradeify-attended-release.md)
-- [Execution-domain evidence](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-15-packet1-execution-domain.md)
+- [Attended-release plan](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/superpowers/plans/2026-09-14-tradeify-attended-release.md)
+- [Execution-domain evidence](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-09-15-packet1-execution-domain.md)
 - [Calendar/account contract](2026-09-15-calendar-account-contract-resolution.md)
-- [Bundle intake interface](../briefs/handoffs/2026-09-14-seven-bundle-runtime-interface-plan.md)
+- [Bundle intake interface](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/handoffs/2026-09-14-seven-bundle-runtime-interface-plan.md)
 - [Track B umbrella](../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md)
 
 Independent reviewer `packet0_review` accepted the six-document amendment against

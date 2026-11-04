@@ -7,7 +7,7 @@
 
 ## §A3 — Recovery path (2026-09-11)
 
-**Brief:** [A3 handoff](../../briefs/handoffs/2026-09-10-track-a-a3-claude-recovery-path-attestation.md) · **Currency:** `origin/main @ b7e028a`; A0 hard check `git ls-tree --name-only origin/main ops/c1_rail/ | grep -c m1_stage1_` → `2` · **Authority used:** read-only Fly commands and read-only reads of the public tree and the private archive; no deploy, restart, `ssh` write, volume read, or archive push.
+**Brief:** [A3 handoff](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/handoffs/2026-09-10-track-a-a3-claude-recovery-path-attestation.md) · **Currency:** `origin/main @ b7e028a`; A0 hard check `git ls-tree --name-only origin/main ops/c1_rail/ | grep -c m1_stage1_` → `2` · **Authority used:** read-only Fly commands and read-only reads of the public tree and the private archive; no deploy, restart, `ssh` write, volume read, or archive push.
 
 ### 1. Mitigation in code
 
@@ -74,7 +74,7 @@ fly deploy --image registry.fly.io/c1-signal-daemon:deployment-01KZFVAFXM3RTWJWV
 
 ## §A4-L — Listener readiness (2026-09-11, first dispatch of the A4 brief)
 
-**Brief:** [A4 handoff](../../briefs/handoffs/2026-09-10-track-a-a4-claude-deployment-readiness-review.md) · **Currency:** `origin/main @ 3a1b859` (§A3 merged as #348); A0 hard check `git ls-tree --name-only origin/main ops/c1_rail/ | grep -c m1_stage1_` → `2` · **Inputs:** the A2 return = workflow run [34652166362](https://github.com/Joshua-Asante/first-passage/actions/runs/34652166362) (`workflow_dispatch` re-run by the parent on `81fe7d7`, success, 2026-09-11 22:02 UTC; the merge-push run 34634657453 on `6ce7b21` also success) and §A3 above · **Authority used:** read-only host reads (in-container commands run by the operator in their own console because this session's permission layer blocks `fly ssh console`; output read from the Terminal panel), non-ssh Fly reads, and local tests on `origin/main`. No write to either volume, no restart, no deploy, no migration, no `preflight`.
+**Brief:** [A4 handoff](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/handoffs/2026-09-10-track-a-a4-claude-deployment-readiness-review.md) · **Currency:** `origin/main @ 3a1b859` (§A3 merged as #348); A0 hard check `git ls-tree --name-only origin/main ops/c1_rail/ | grep -c m1_stage1_` → `2` · **Inputs:** the A2 return = workflow run [34652166362](https://github.com/Joshua-Asante/first-passage/actions/runs/34652166362) (`workflow_dispatch` re-run by the parent on `81fe7d7`, success, 2026-09-11 22:02 UTC; the merge-push run 34634657453 on `6ce7b21` also success) and §A3 above · **Authority used:** read-only host reads (in-container commands run by the operator in their own console because this session's permission layer blocks `fly ssh console`; output read from the Terminal panel), non-ssh Fly reads, and local tests on `origin/main`. No write to either volume, no restart, no deploy, no migration, no `preflight`.
 
 ### Host reads (Step 2.1; the `--status` account token is redacted)
 
@@ -165,7 +165,7 @@ python scripts/validate_c1_monitoring_acceptance.py docs/notes/rail_build/M1_MON
 
 ## §A5 — Listener deployed, disarmed; identity at cap zero (2026-09-12)
 
-**Brief:** [A5 handoff](../../briefs/handoffs/2026-09-10-track-a-a5-claude-listener-deploy-disarmed.md) · **Currency:** clean detached worktree at `origin/main @ cf75e45` (`git status --porcelain` empty; `git diff origin/main --stat` empty; `git cat-file -e 31fd642^{tree}` OK — full history) · **Authority used:** `fly deploy` under the 2026-08-02 grant (run by the session from the clean checkout), read-only Fly commands, and the in-container commands below, which the operator ran in their own console because this session's permission layer blocks `fly ssh console` (output read from the Terminal panel; `--status` pastes carry `account=<redacted>`). **No `--arm`, no `--acknowledge-m1-unresolved`, no `--enable-test`, no POST, no daemon change.**
+**Brief:** [A5 handoff](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/handoffs/2026-09-10-track-a-a5-claude-listener-deploy-disarmed.md) · **Currency:** clean detached worktree at `origin/main @ cf75e45` (`git status --porcelain` empty; `git diff origin/main --stat` empty; `git cat-file -e 31fd642^{tree}` OK — full history) · **Authority used:** `fly deploy` under the 2026-08-02 grant (run by the session from the clean checkout), read-only Fly commands, and the in-container commands below, which the operator ran in their own console because this session's permission layer blocks `fly ssh console` (output read from the Terminal panel; `--status` pastes carry `account=<redacted>`). **No `--arm`, no `--acknowledge-m1-unresolved`, no `--enable-test`, no POST, no daemon change.**
 
 ### 2.1 Host read first (pre-condition 1)
 
@@ -235,7 +235,7 @@ Final in-container `--status` → `dry_run=True armed_until=None … m1_gate: st
 
 ## §A4-D — Daemon readiness (2026-09-12, second dispatch of the A4 brief)
 
-**Brief:** [A4 handoff](../../briefs/handoffs/2026-09-10-track-a-a4-claude-deployment-readiness-review.md) Steps 2.3b/2.4b · **Preconditions:** A1r and A1b merged (`fa02a13`), A2-D green on that merge SHA (push run [34660963201](https://github.com/Joshua-Asante/first-passage/actions/runs/34660963201)), A5 DONE (§A5, #352 `133f043`) · **Currency:** `origin/main @ 133f043` · **Authority used:** read-only — non-ssh Fly reads and local tests by the session; in-container reads operator-run in their own console (this session's permission layer blocks `fly ssh console`), output read from the Terminal panel; no write to either volume, no restart, no deploy.
+**Brief:** [A4 handoff](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/handoffs/2026-09-10-track-a-a4-claude-deployment-readiness-review.md) Steps 2.3b/2.4b · **Preconditions:** A1r and A1b merged (`fa02a13`), A2-D green on that merge SHA (push run [34660963201](https://github.com/Joshua-Asante/first-passage/actions/runs/34660963201)), A5 DONE (§A5, #352 `133f043`) · **Currency:** `origin/main @ 133f043` · **Authority used:** read-only — non-ssh Fly reads and local tests by the session; in-container reads operator-run in their own console (this session's permission layer blocks `fly ssh console`), output read from the Terminal panel; no write to either volume, no restart, no deploy.
 
 ### Fresh host reads (Step 2.3 re-run; `--status` account token redacted)
 
@@ -321,7 +321,7 @@ T1=$(date -u -d "$T0 + 60 seconds" +%Y-%m-%dT%H:%M:%SZ); while ! [ "$(date -u +%
 
 ## §A6 — Daemon deployed, inert (2026-09-12)
 
-**Brief:** [A6 handoff](../../briefs/handoffs/2026-09-10-track-a-a6-claude-daemon-deploy-inert.md) · **Preconditions:** A1b merged, A2-D green on `fa02a13`, §A4-D all GO (#354), A5 DONE (§A5) · **Currency:** clean detached worktree at `origin/main @ d6f8e84` (porcelain empty; equal to `origin/main` re-checked immediately before the deploy) · **Authority used:** `fly deploy` under the 2026-08-02 grant (session-run), read-only Fly commands; every in-container command operator-run in their own console (this session cannot invoke `fly ssh console`), output read from the Terminal panel; the config staging performed by the operator (Step 2.2b). **No `prepare`, no `enable`, no manifest, no source activation, no journal edit.**
+**Brief:** [A6 handoff](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/handoffs/2026-09-10-track-a-a6-claude-daemon-deploy-inert.md) · **Preconditions:** A1b merged, A2-D green on `fa02a13`, §A4-D all GO (#354), A5 DONE (§A5) · **Currency:** clean detached worktree at `origin/main @ d6f8e84` (porcelain empty; equal to `origin/main` re-checked immediately before the deploy) · **Authority used:** `fly deploy` under the 2026-08-02 grant (session-run), read-only Fly commands; every in-container command operator-run in their own console (this session cannot invoke `fly ssh console`), output read from the Terminal panel; the config staging performed by the operator (Step 2.2b). **No `prepare`, no `enable`, no manifest, no source activation, no journal edit.**
 
 ### 2.1 Listener disarm reconfirm
 

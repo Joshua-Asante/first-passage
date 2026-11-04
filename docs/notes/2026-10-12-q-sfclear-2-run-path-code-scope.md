@@ -74,7 +74,7 @@ This is the roadmap for later freeze, not a dispatch. **Common ownership:** Clau
 
 ## 3. TB-I3 synthetic interlock readiness
 
-Owner: [draft card](../briefs/handoffs/2026-10-03-tb-i3-synthetic-interlock-card-DRAFT.md), §11. **Not ready to freeze unchanged.**
+Owner: [draft card](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/handoffs/2026-10-03-tb-i3-synthetic-interlock-card-DRAFT.md), §11. **Not ready to freeze unchanged.**
 
 | Decision | Current answer / freeze prerequisite |
 |---|---|
@@ -96,7 +96,7 @@ Owner: [draft card](../briefs/handoffs/2026-10-03-tb-i3-synthetic-interlock-card
 
 ## 4. TB-I3-HOST status and remaining activation work
 
-The [HOST card](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/briefs/handoffs/2026-10-03-tb-i3-host-heartbeat-wiring-card-DRAFT.md) §12 freezes it on 2026-10-06 but still says no executor/dispatch was recorded. There is subsequent implementation evidence: [`8229d2ccf1e0f31c123c46a2306499088af2c14b`](https://github.com/Joshua-Asante/first-passage/commit/8229d2ccf1e0f31c123c46a2306499088af2c14b), on `origin/codex/tb-i3-host-build-20261006`, adds only `ops/c1_signal_daemon/book_host.py` and `tests/ops/test_book_host.py`. The build defines the binding, observer, deferred-mark facade and two-thread host. It is **not an ancestor of scoped main**. GitHub's commit-associated PR query and exact-branch PR query returned no PR. Report: **built on a branch; dispatch record and acceptance/PR not verified**. Do not say unbuilt merely because main lacks it, or infer dispatch authority from implementation bytes.
+The [HOST card](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/handoffs/2026-10-03-tb-i3-host-heartbeat-wiring-card-DRAFT.md) §12 freezes it on 2026-10-06 but still says no executor/dispatch was recorded. There is subsequent implementation evidence: [`8229d2ccf1e0f31c123c46a2306499088af2c14b`](https://github.com/Joshua-Asante/first-passage/commit/8229d2ccf1e0f31c123c46a2306499088af2c14b), on `origin/codex/tb-i3-host-build-20261006`, adds only `ops/c1_signal_daemon/book_host.py` and `tests/ops/test_book_host.py`. The build defines the binding, observer, deferred-mark facade and two-thread host. It is **not an ancestor of scoped main**. GitHub's commit-associated PR query and exact-branch PR query returned no PR. Report: **built on a branch; dispatch record and acceptance/PR not verified**. Do not say unbuilt merely because main lacks it, or infer dispatch authority from implementation bytes.
 
 Before this can contribute to host activation: recover the separate dispatch/return and revision-bound HH1–HH8 evidence; obtain exact-head review and disposition of the unmerged build; rerun affected timing checks after the actual four-source loop/live transport changes; bind the accepted timing digest before HB-L1; finish live route registration, notifier placement/restart ownership, image closure and real source/transport bindings; discharge HB-L1, HB-L2 and the host-kill drill. Independently, TB-I3 still owes S1/S2, the effective-activation acknowledgment, GO/M1/book-monitoring checks and the owner vector-stamp path. HOST's heartbeat success proves none of those activation gates.
 

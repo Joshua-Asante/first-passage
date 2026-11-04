@@ -6,5 +6,5 @@ Q-SFGROWTH-1 was re-scoped 2026-10-11 to Q-SFCLEAR-1, which was superseded befor
 Q-SFCLEAR-2, itself superseded before run by Q-SFCLEAR-3 (FROZEN 2026-10-14). The in-flight study and its inputs live in
 [`../sfclear_2026-10/`](../sfclear_2026-10/README.md).
 
-Owner: [Q-SFCLEAR-2 brief](../../../../docs/briefs/Q-SFCLEAR-2-personal-clearance-tradeify-book.md) (supersedes the [Q-SFCLEAR-1](../../../../docs/briefs/Q-SFCLEAR-1-personal-clearance-tradeify-book.md) and [Q-SFGROWTH-1](../../../../docs/briefs/Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md) briefs).
+Owner: [Q-SFCLEAR-2 brief](../../../../docs/briefs/Q-SFCLEAR-2-personal-clearance-tradeify-book.md) (supersedes the [Q-SFCLEAR-1](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/Q-SFCLEAR-1-personal-clearance-tradeify-book.md) and [Q-SFGROWTH-1](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/Q-SFGROWTH-1-self-funded-growth-portfolio-selection.md) briefs).
 Cited evidence: [sizing classification](PHASE0_SIZING_CLASSIFICATION.md); `PHASE0_MANIFEST_REF.json` binds the private pre-screen `SHA256SUMS` archived at first-passage-archive `67679dd`.
