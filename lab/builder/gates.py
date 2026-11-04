@@ -1,10 +1,15 @@
-"""Gate engine 5a-5g and the stage 8 holdout look (spec: Gate engine).
+"""Gate engine 5a-5f, the stage 8 holdout look and the 5g placement check (spec: Gate engine).
 
-Gates run in order on the development sessions and a card stops at its first fail. Each gate
+Gates 5a-5f run in order on the development sessions and a card stops at its first fail. Each gate
 records its value, threshold and pass/fail in the report, so a verdict traces to a number.
 THRESHOLDS are the spec's proposed defaults; they change only by PR with Joshua's approval, and
-the pre-registration freezes them before any card runs. The book's per-session Sharpe with the
-candidate added is reported for every card, as a description, not a gate.
+the pre-registration freezes them before any card runs. The card's development-window book
+statistics (``_book``) are reported for every card, as a description, not a gate.
+
+5g is portfolio fit (ten-step order, step 10; branch B, Joshua 2026-11-04). It is not a
+development gate: ``holdout_look`` runs it only after a holdout pass, on the book statistics
+already in the development report, and records ``placement: clear | fail`` beside the look's
+verdict. A placement fail rejects the placement, never the candidate.
 
 A card with an unresolved trade (an open position on a day with no bar at or after flat_at) in
 its evaluated sessions, or a 5d neighbour with one, gets verdict ``unresolved``: never a
@@ -24,7 +29,9 @@ from builder.cards import Card
 from builder.instruments import INSTRUMENTS
 
 K_SCOPES = ("instrument", "ledger")
-PLACEBO_LABEL = "5e placebo_rank (descriptive; timing shuffle with realised side and hold)"
+PLACEBO_LABEL = "5e placebo_rank (timing-only, not the mechanism discriminator; timing shuffle with realised side and hold)"
+COSTS_LABEL = "5b costs applied (not a gate)"
+PLACEMENT_LABEL = "5g placement (step 10; after a holdout pass, never a kill)"
 
 THRESHOLDS = {
     "5a_min_trades": 200,
@@ -35,7 +42,7 @@ THRESHOLDS = {
     "5e_placebo_runs": 1000,
     "5e_seed": 20261030,
     "5f_min_dsr": 0.95,
-    "5g_max_shared_loss_share": 0.50,  # backstop: share of the card's losing days that are also book losing days
+    "5g_max_shared_loss_share": 0.50,  # placement backstop: share of the card's losing days that are also book losing days
     "8_min_pf": 1.0,
 }
 
@@ -219,15 +226,14 @@ def evaluate(card: Card, bars, dev: list[str], ledger_path: Path, costs: Costs, 
     h1, h2 = set(dev[:half]), set(dev[half:])
     checks = [
         lambda: _gate(g, "5a sample", len(trades), T["5a_min_trades"], len(trades) >= T["5a_min_trades"]),
-        lambda: _gate(g, "5b costs", rep["cost_per_trade_usd"], "firm commission + 1 tick/side, applied", True),
+        lambda: _gate(g, COSTS_LABEL, rep["cost_per_trade_usd"], "firm commission + 1 tick/side, applied", True),
         lambda: _halves(g, card, trades, costs, h1, h2),
         lambda: _plateau(g, card, bars, dev, costs, float(v.sum()), closed),
         lambda: _gate(g, PLACEBO_LABEL, (s := placebo_beaten_share(card, days, trades, costs, T["5e_placebo_runs"],
                                                                     T["5e_seed"])), T["5e_min_beaten_share"],
                       s >= T["5e_min_beaten_share"]),
         lambda: _dsr_gate(g, x, k),
-        lambda: _book_gate(g, rep["book"]),
-    ]
+    ]  # 5g is not here: it is placement, run after a holdout pass (holdout_look)
     try:
         rep["stopped_at"] = next((g[-1]["gate"] for ch in checks if not ch()), None)
     except Unresolved as u:  # a 5d neighbour has no causal exit on some day
@@ -282,29 +288,59 @@ def _book(dev: list[str], x: np.ndarray, book: dict[str, float] | None) -> dict:
             "book_losing_share_on_active_days": float(lose[c != 0].mean()) if (c != 0).any() else 0.0}
 
 
+BOOK_KEYS = ("mean_on_book_losing_days", "shared_loss_share", "book_losing_share_on_active_days")
+
+
+def check_book_stats(b) -> None:
+    """The development report's ``book`` block has the shape ``_book`` writes, or GateError."""
+    ok = isinstance(b, dict) and type(b.get("sessions")) is int and b["sessions"] >= 0 \
+        and type(b.get("supplied")) is bool and (b["supplied"] or not b["sessions"])
+    if ok and b["sessions"]:  # only the mean is undefined (None) when the book has no losing day
+        ok = all(k in b for k in BOOK_KEYS) and all(
+            (k == "mean_on_book_losing_days" and b[k] is None)
+            or (not isinstance(b[k], bool) and isinstance(b[k], (int, float)) and math.isfinite(b[k]))
+            for k in BOOK_KEYS)
+    if not ok:
+        raise GateError(f"development report book statistics are malformed: {b!r}"[:300])
+
+
 def _book_gate(g, b: dict) -> bool:
     if not b["sessions"]:
         if b["supplied"]:  # fail closed: a book was given but covers no development session
-            return _gate(g, "5g book", "book supplied, no overlapping development sessions", "overlap required", False)
-        return _gate(g, "5g book", "book empty", "passes while the book is empty", True)
+            return _gate(g, PLACEMENT_LABEL, "book supplied, no overlapping development sessions", "overlap required",
+                         False)
+        return _gate(g, PLACEMENT_LABEL, "book empty", "passes while the book is empty", True)
     m = b["mean_on_book_losing_days"]
     ok = m is not None and m > 0 and b["shared_loss_share"] <= THRESHOLDS["5g_max_shared_loss_share"]
-    keys = ("mean_on_book_losing_days", "shared_loss_share", "book_losing_share_on_active_days")
-    return _gate(g, "5g book", {k: b[k] for k in keys},
+    return _gate(g, PLACEMENT_LABEL, {k: b[k] for k in BOOK_KEYS},
                  {"mean_on_book_losing_days": "> 0", "shared_loss_share": THRESHOLDS["5g_max_shared_loss_share"]}, ok)
 
 
+def placement(b: dict) -> dict:
+    """Step 10 portfolio fit on the development-window book statistics: ``placement`` is
+    ``clear`` or ``fail``, with the 5g record. It reads no data and never changes a verdict."""
+    check_book_stats(b)
+    g: list = []
+    return {"placement": "clear" if _book_gate(g, b) else "fail", "placement_gate": g[0]}
+
+
 def holdout_look(card: Card, bars, holdout: list[str], ledger_path: Path, run_id: str, costs: Costs,
-                 *, closed: frozenset[str]) -> dict:
+                 *, closed: frozenset[str], book: dict) -> dict:
     """Stage 8: one logged look per survivor. The look is ledgered before any holdout bar is read.
-    An unresolved holdout trade spends the look and fails it, reported with its count and dates."""
+    An unresolved holdout trade spends the look and fails it, reported with its count and dates.
+    ``book`` is the development report's book statistics; after a pass, 5g runs on them and sets
+    ``placement`` (``clear`` | ``fail``) beside the verdict. Without a pass ``placement`` is None."""
     check_dates(card, bars, holdout)
+    check_book_stats(book)  # before the look is spent
     ledger.append_holdout_look(ledger_path, run_id, card)
-    rep = {"card_sha256": card.sha256, "holdout_sessions": [holdout[0], holdout[-1], len(holdout)]}
+    rep = {"card_sha256": card.sha256, "holdout_sessions": [holdout[0], holdout[-1], len(holdout)],
+           "placement": None, "placement_gate": None}
     try:
         v = net(card, resolved(C.simulate(card, bars, holdout, closed), "holdout"), costs)
     except Unresolved as u:
         return {**rep, "verdict": "unresolved", "unresolved": u.report(), "pass": False}
     ok = v.sum() > 0 and pf(v) >= THRESHOLDS["8_min_pf"]
+    if ok:
+        rep.update(placement(book))
     return {**rep, "verdict": "pass" if ok else "fail", "trades": len(v), "net_usd_per_contract": float(v.sum()),
             "pf": pf(v), "pass": bool(ok)}
