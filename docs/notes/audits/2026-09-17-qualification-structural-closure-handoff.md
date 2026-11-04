@@ -16,7 +16,7 @@ not completion of the nine-task plan or qualification acceptance.
 - Branch: `codex/qualification-structural-closure`, pushed checkpoint
   `9a85772454a507da09903c0b2ca492a70301f0d8`.
 - Checkout: `C:/Users/joshu/multi_firm_operations/.worktrees/qualification-structural-closure`.
-- Governing [plan](../../superpowers/plans/2026-09-17-qualification-structural-closure.md)
+- Governing [plan](https://github.com/Joshua-Asante/first-passage/blob/afa537e04d241dd8e6529e401f4435671ea1a3a3/docs/superpowers/plans/2026-09-17-qualification-structural-closure.md)
   and [design](../../superpowers/specs/2026-09-17-qualification-structural-closure-design.md).
 - The user-directed return boundary is to observe existing Linux run
   [35296382825](https://github.com/Joshua-Asante/first-passage/actions/runs/35296382825),

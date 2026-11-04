@@ -1,6 +1,6 @@
 # PR 409 bounded execution correction
 
-Status: DESIGN APPROVED by the operator in the 2026-09-16 Codex conversation. Slice A implementation and local verification are recorded in the [Slice A execution evidence](../superpowers/plans/2026-09-16-pr409-ingress-correction.md#final-slice-a-acceptance--2026-09-16). Slices B-D implementation and whole-PR acceptance remain outstanding.
+Status: DESIGN APPROVED by the operator in the 2026-09-16 Codex conversation. Slice A implementation and local verification are recorded in the [Slice A execution evidence](https://github.com/Joshua-Asante/first-passage/blob/afa537e04d241dd8e6529e401f4435671ea1a3a3/docs/superpowers/plans/2026-09-16-pr409-ingress-correction.md#final-slice-a-acceptance--2026-09-16). Slices B-D implementation and whole-PR acceptance remain outstanding.
 
 Integration owner: the coordinating implementer of PR 409. Individual slice completion does not establish whole-PR acceptance.
 
@@ -59,7 +59,7 @@ Capacity reducer owns reservations and confirmed execution accounting. It does n
 
 Protection state separates desired protection, original protection owner, observed broker protection, and execution allocation. A protection owner can remain live after FIFO consumed its originating lot. A surviving lot whose protection was consumed does not authorize resurrecting that order. First attachment is eligible only for a never-protected surviving lot; amendments address live authorized protection owners.
 
-Proposed interfaces are introduced within these owners, not through new external endpoints. Slice A's exact proposed interfaces are specified in the [implementation plan](../superpowers/plans/2026-09-16-pr409-ingress-correction.md). Later slices must finalize their type/schema definitions against this contract before implementation.
+Proposed interfaces are introduced within these owners, not through new external endpoints. Slice A's exact proposed interfaces are specified in the [implementation plan](https://github.com/Joshua-Asante/first-passage/blob/afa537e04d241dd8e6529e401f4435671ea1a3a3/docs/superpowers/plans/2026-09-16-pr409-ingress-correction.md). Later slices must finalize their type/schema definitions against this contract before implementation.
 
 ## 3. Occurrence and attempt identity
 
@@ -136,7 +136,7 @@ Falsifier: if any trace sends before its evidence/authority prerequisites, chang
 Slice B now implements occurrence-bound dispatch, original protection ownership,
 independent synthetic working-order evidence, protective FIFO execution accounting,
 confirmation deadlines and the schema-2 recognition boundary. The [implementation
-record](../superpowers/plans/2026-09-16-pr409-protection-correction.md#7-implementation-and-acceptance-record-2026-09-16)
+record](https://github.com/Joshua-Asante/first-passage/blob/afa537e04d241dd8e6529e401f4435671ea1a3a3/docs/superpowers/plans/2026-09-16-pr409-protection-correction.md#7-implementation-and-acceptance-record-2026-09-16)
 contains the tests and review findings. Zero trailing offsets remain rejected.
 
 This establishes the bounded offline slice only. C's takeover ordering and D's

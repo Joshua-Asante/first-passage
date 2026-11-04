@@ -12,10 +12,10 @@ worktrees and uncommitted documents are preserved.
 Related documents:
 
 - [Structural assessment](../../notes/audits/2026-09-17-pr415-structural-assessment.md).
-- [Implementation plan](../plans/2026-09-17-qualification-structural-closure.md).
+- [Implementation plan](https://github.com/Joshua-Asante/first-passage/blob/afa537e04d241dd8e6529e401f4435671ea1a3a3/docs/superpowers/plans/2026-09-17-qualification-structural-closure.md).
 - [Existing N1 boundary design](2026-09-17-qualification-execution-boundary-design.md).
-- [Existing N1 boundary plan](../plans/2026-09-17-qualification-execution-boundary.md).
-- [Linux environment plan](../plans/2026-09-17-linux-isolation-test-environment.md).
+- [Existing N1 boundary plan](https://github.com/Joshua-Asante/first-passage/blob/afa537e04d241dd8e6529e401f4435671ea1a3a3/docs/superpowers/plans/2026-09-17-qualification-execution-boundary.md).
+- [Linux environment plan](https://github.com/Joshua-Asante/first-passage/blob/afa537e04d241dd8e6529e401f4435671ea1a3a3/docs/superpowers/plans/2026-09-17-linux-isolation-test-environment.md).
 
 This is a proposed successor for semantic policy, artifact meaning and acceptance
 coverage. It incorporates the N1 boundary's isolation/capture protocol with the

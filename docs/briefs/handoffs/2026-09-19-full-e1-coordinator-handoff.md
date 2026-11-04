@@ -22,7 +22,7 @@
 - [Governing specification](../../superpowers/specs/2026-09-17-protected-full-e1-campaign.md).
 - [S2 handoff and coordinator resource decisions](2026-09-19-full-e1-s2-budgeted-supervision.md).
 - [R1 handoff](2026-09-19-full-e1-s2-r1-recovery-authority.md) and [accepted independent review](2026-09-19-full-e1-s2-r1-review.md).
-- [Local S2 implementation plan](../../superpowers/plans/2026-09-19-s2-local-supervision.md).
+- [Local S2 implementation plan](https://github.com/Joshua-Asante/first-passage/blob/afa537e04d241dd8e6529e401f4435671ea1a3a3/docs/superpowers/plans/2026-09-19-s2-local-supervision.md).
 
 Historical starting-state paragraphs in the roadmap describe earlier recovery, not the current checkout. This publication branch includes the exact recovered Task1a/1b + accepted S1 through its base, then the incomplete S2 candidate + accepted local R1. Never restart at bare PR425 merge or reconstruct accepted predecessors from memory.
 

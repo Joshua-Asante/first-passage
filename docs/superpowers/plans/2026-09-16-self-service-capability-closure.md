@@ -10,7 +10,7 @@
 
 **Tech Stack:** Existing account/report UIs and documented read interfaces, immutable private captures, pinned Git artifacts, existing settlement/account-owner consumers and the post-413 operations launcher. No new production service or alternate evidence database.
 
-**Spec:** [PR 411 assessment plan](2026-09-16-pr411-capability-assessment-handoff.md), [capability decision CAP-20260916](../../briefs/phase4-preparation/2026-09-16/capability-decision.md), [feasibility design](../specs/2026-09-16-tradeify-settlement-order-feasibility-design.md); scope: capability assessment and the conditional integration handoff.
+**Spec:** [PR 411 assessment plan](https://github.com/Joshua-Asante/first-passage/blob/afa537e04d241dd8e6529e401f4435671ea1a3a3/docs/superpowers/plans/2026-09-16-pr411-capability-assessment-handoff.md), [capability decision CAP-20260916](../../briefs/phase4-preparation/2026-09-16/capability-decision.md), [feasibility design](../specs/2026-09-16-tradeify-settlement-order-feasibility-design.md); scope: capability assessment and the conditional integration handoff.
 
 ## Global constraints
 

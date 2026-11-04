@@ -45,8 +45,8 @@ Owners read:
 - [Full E1 governing design](2026-09-17-protected-full-e1-campaign.md).
 - [N1 boundary](2026-09-17-qualification-execution-boundary-design.md).
 - [Settlement/route feasibility](2026-09-16-tradeify-settlement-order-feasibility-design.md).
-- [Phase 3 completion](../plans/2026-09-17-phase3-completion-handoff.md).
-- [Phase 4 completion](../plans/2026-09-17-phase4-completion-handoff.md).
+- [Phase 3 completion](https://github.com/Joshua-Asante/first-passage/blob/afa537e04d241dd8e6529e401f4435671ea1a3a3/docs/superpowers/plans/2026-09-17-phase3-completion-handoff.md).
+- [Phase 4 completion](https://github.com/Joshua-Asante/first-passage/blob/afa537e04d241dd8e6529e401f4435671ea1a3a3/docs/superpowers/plans/2026-09-17-phase4-completion-handoff.md).
 - [Current E1 coordinator handoff](../../briefs/handoffs/2026-09-19-full-e1-coordinator-handoff.md).
 
 Joshua supplied a Tradeify support reply on September 19 to the September 16

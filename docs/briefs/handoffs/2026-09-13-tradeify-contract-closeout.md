@@ -8,7 +8,7 @@
 
 ## Current TB-I1 first-slice reconciliation — 2026-09-13
 
-**Execution base:** `f9427edfc42f5910726094022eb334d8119e5945`; plan commit `2374ae0d3f4f7a9607c4a7a56484808ff93d53dc`; branch `codex/tb-i1-book-policy`; local Python 3.14.3. See the [execution plan](../../superpowers/plans/2026-09-13-tb-i1-through-deployment.md). This section supersedes the readiness inventory and proposed decision shortcuts below; older sections are retained as historical observations, not current dispatch authority.
+**Execution base:** `f9427edfc42f5910726094022eb334d8119e5945`; plan commit `2374ae0d3f4f7a9607c4a7a56484808ff93d53dc`; branch `codex/tb-i1-book-policy`; local Python 3.14.3. See the [execution plan](https://github.com/Joshua-Asante/first-passage/blob/afa537e04d241dd8e6529e401f4435671ea1a3a3/docs/superpowers/plans/2026-09-13-tb-i1-through-deployment.md). This section supersedes the readiness inventory and proposed decision shortcuts below; older sections are retained as historical observations, not current dispatch authority.
 
 ### Closed technical conflicts
 

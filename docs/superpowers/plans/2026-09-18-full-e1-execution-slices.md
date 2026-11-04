@@ -526,7 +526,7 @@ After PR #433/#434 merged at `main@f2606b0`, the operator listed the remaining s
 
 ### GLM continuation — S2 integration return, 2026-09-20
 
-Executor: GLM, continuation implementation/integration owner per the [GLM continuation handoff](../../briefs/handoffs/2026-09-19-glm-s2-enforcement-continuation.md). This entry is a return for coordinator review; every stopping line above is unchanged and nothing here accepts anything.
+Executor: GLM, continuation implementation/integration owner per the [GLM continuation handoff](https://github.com/Joshua-Asante/first-passage/blob/afa537e04d241dd8e6529e401f4435671ea1a3a3/docs/briefs/handoffs/2026-09-19-glm-s2-enforcement-continuation.md). This entry is a return for coordinator review; every stopping line above is unchanged and nothing here accepts anything.
 
 **Run 4 disposition (35478031666, G1-only diagnostic at `efd91c4`): 11/12 in 1443 s** — record `0dd4ec44ef9544d9916f7ad09415a6fc`, exit 1/1, `source_stable=true`, `capture_complete=true`, both owned-cleanup receipts ok. `test_s2_shared_memory_oom_is_retained_last` passes with the non-zero-exit repair. The two remaining reds are confirmed **evidence-design defects, not enforcement defects**: (a) `payload_cpu` passed *vacuously* — the retained `<attempt>-payload-bound.json` shows peak **0.689 s over 296 samples of a ~297 s stopped window** (run 3: 0.549 s / 296), i.e. the two burners never ran; (b) `probe_that_exits_before_observation` failed because the guarded host kill lands on the **created** (not yet started) container as a docker 409 no-op, the guardian then observes and completes the work, and the fresh-*work* retry is refused ('compute phase already reserved' — one work per phase per campaign; the packet's own wording was fresh *admits*).
 

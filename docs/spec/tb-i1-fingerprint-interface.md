@@ -3,7 +3,7 @@
 This is the consumer contract for [policy_fingerprint.py](../../ops/c1_rail/policy_fingerprint.py),
 implementing [TB-P2's serialization contract](../adr/2026-09-12-tradeify-book-protection-instance-admission.md#fingerprint-serialization-contract-owned-implementation-frozen-before-tb-f1).
 It records engineering interfaces, not policy ratification, admission, FBR, EF or
-activation authority. The [active delivery plan](../superpowers/plans/2026-09-13-tb-i1-through-deployment.md)
+activation authority. The [former delivery plan, superseded 2026-10-16](https://github.com/Joshua-Asante/first-passage/blob/afa537e04d241dd8e6529e401f4435671ea1a3a3/docs/superpowers/plans/2026-09-13-tb-i1-through-deployment.md)
 owns the remaining gates.
 
 ## Producer and verifier use
