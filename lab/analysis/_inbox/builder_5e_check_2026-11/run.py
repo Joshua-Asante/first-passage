@@ -97,8 +97,8 @@ def main() -> int:
         d15 = float(np.interp(TARGET_S, xs, DRIFTS))
         ver = estimate(ex, [d15], VER_SEED)[d15]
         cal_rec = {"grid": {str(d): v for d, v in cal.items()}, "chosen_drift": d15, "verification": ver,
-                   "v2_zero_drift_gross_ok": abs(cal[0.0]["gross_annual_sharpe"]) <= 0.10,
-                   "v3_target_ok": abs(ver["net_annual_sharpe"] - TARGET_S) <= 0.10}
+                   "v2_zero_drift_gross_ok": bool(abs(cal[0.0]["gross_annual_sharpe"]) <= 0.10),
+                   "v3_target_ok": bool(abs(ver["net_annual_sharpe"] - TARGET_S) <= 0.10)}
         print("calibration done", round(time.time() - t0), "s", flush=True)
         cells = []
         for ci, (label, d) in enumerate((("zero_drift", 0.0), ("S1.5", d15))):
