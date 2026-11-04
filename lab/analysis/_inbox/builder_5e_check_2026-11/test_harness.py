@@ -10,16 +10,9 @@ sys.path[:0] = [str(ROOT / "lab"), str(ROOT / "core")]
 import numpy as np  # noqa: E402
 import pytest  # noqa: E402
 
-import importlib.util  # noqa: E402
+from research_utils.camp_import import load_camp_sibling  # noqa: E402
 
-# Load this camp's harness under a unique key only. research_utils.camp_import.load_camp_sibling
-# also publishes the bare name ``harness``, which another camp's plain ``import harness``
-# (builder_power_2026-11) would then pick up in the same pytest process.
-_spec = importlib.util.spec_from_file_location("_camp_builder_5e_check_2026_11_harness",
-                                               Path(__file__).resolve().parent / "harness.py")
-H = importlib.util.module_from_spec(_spec)
-sys.modules[_spec.name] = H
-_spec.loader.exec_module(H)
+H = load_camp_sibling("harness", __file__)
 
 
 @pytest.mark.parametrize("drift", [0.0, 2.0])
