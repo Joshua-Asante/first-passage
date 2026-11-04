@@ -21,17 +21,17 @@ from __future__ import annotations
 
 import hashlib
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 import numpy as np
 
 from builder import compile as C, data, ledger
-from builder.cards import Card
-from builder.instruments import INSTRUMENTS
+from builder.cards import Card, _timing_error
+from builder.instruments import DAY_END, INSTRUMENTS, minutes
 
 K_SCOPES = ("instrument", "ledger")
-PLACEBO_LABEL = "5e placebo_rank (timing-only, not the mechanism discriminator; timing shuffle with realised side and hold)"
+PLACEBO_LABEL = "5e placebo_rank (timing-only, not the mechanism discriminator; same-day window slide of the clock frame)"
 COSTS_LABEL = "5b costs applied (not a gate)"
 PLACEMENT_LABEL = "5g placement (step 10; after a holdout pass, never a kill)"
 
@@ -164,28 +164,96 @@ def reachability(k: int, n: int) -> dict:
             "basis": "5f only, normal approximation; a description, not a gate"}
 
 
-def placebo_beaten_share(card: Card, days: list[C.Day], trades: list[C.Trade], costs: Costs,
-                         runs: int, seed: int) -> float:
-    """Share of timing-shuffled runs whose net profit is below the card's. Each run keeps every
-    trade's day, side and holding length in bars, and redraws its entry bar uniformly from that
-    day's live entry bars; entry at that bar's open, exit at the open `hold` bars later (capped
-    at the flat bar), or the last close when the day has no flat bar."""
+# 5e null size (lesson M-17): the fewest valid slides (delta != 0) 5e accepts. Each run draws the
+# real window (delta 0) as well as the slides, so under per-session exchangeability of the window
+# nets the card's total and a run's total are identically distributed, and the zero-edge false
+# pass is the nominal 1 - 5e_min_beaten_share for any |S| >= 1. Two slides is the floor so that
+# the null rests on more than one alternative anchor.
+SLIDE_MIN = 2
+
+
+def slid(card: Card, delta: int) -> Card | None:
+    """The card with its whole clock frame moved ``delta`` 15m bars on the same day: the range's
+    offset (a first_n_bars range becomes the equivalent time_window), entry_cutoff and flat_at.
+    Every other rule is the card's. None for delta 0, a negative offset, an invalid timing, or a
+    flat_at whose next 15m bar open is at or after DAY_END: the trading day has no bar there, so
+    every slid trade a stop does not end is unresolved, and scoring those 0 would keep only the
+    stopped losers."""
+    off = int(card.p("offset_bars", 0)) + delta
+    cut, flat = minutes(card.entry_cutoff) + C.BAR_MIN * delta, minutes(card.flat_at) + C.BAR_MIN * delta
+    if delta == 0 or off < 0 or cut < 0 or -(-flat // C.BAR_MIN) * C.BAR_MIN >= minutes(DAY_END):
+        return None
+    step = next((s for n, _, s in card.params if n == "offset_bars"), 1)
+    ps = tuple(sorted([q for q in card.params if q[0] != "offset_bars"] + [("offset_bars", off, step)]))
+    c = replace(card, range="time_window", params=ps, entry_cutoff=f"{cut // 60:02d}:{cut % 60:02d}",
+                flat_at=f"{flat // 60:02d}:{flat % 60:02d}", sha256="", source="")
+    return None if _timing_error(c) else c
+
+
+def slides(card: Card) -> list[tuple[int, Card]]:
+    """5e's slide set S: every valid same-day shift of the card's clock frame, by delta."""
+    span = 24 * 60 // C.BAR_MIN
+    return [(d, c) for d in range(-span, span + 1) if (c := slid(card, d)) is not None]
+
+
+def slide_line(card: Card) -> dict:
+    """5e's null size, printed at registration beside D7's line: |S| (slides other than delta 0)
+    and the slid span. A description; 5e fails closed below SLIDE_MIN."""
+    s = slides(card)
+    return {"slides": len(s), "min_slides": SLIDE_MIN, "meets_min": len(s) >= SLIDE_MIN,
+            "windows_drawn": len(s) + 1,
+            "delta_bars": [s[0][0], s[-1][0]] if s else None,
+            "range_start": [s[0][1].range_start(), s[-1][1].range_start()] if s else None,
+            "flat_at": [s[0][1].flat_at, s[-1][1].flat_at] if s else None}
+
+
+def slide_matrix(S: list[tuple[int, Card]], bars, dev: list[str], costs: Costs,
+                 closed: frozenset[str] = frozenset()) -> tuple[np.ndarray, int, int]:
+    """net[session][slide] over the development sessions, with the counts of slid sessions that
+    were unresolved and skipped. Both contribute 0; neither raises."""
+    pos = {d: i for i, d in enumerate(dev)}
+    m = np.zeros((len(dev), len(S)))
+    unresolved = skipped = 0
+    for j, (_, c) in enumerate(S):
+        sk: dict[str, int] = {}
+        for day in C.days(c, bars, dev, sk, closed):
+            tr = C.simulate_day(c, day)
+            if any(t.unresolved for t in tr):
+                unresolved += 1
+            elif tr:
+                m[pos[day.date], j] = net(c, tr, costs).sum()
+        skipped += sum(sk.values())
+    return m, unresolved, skipped
+
+
+def placebo_beaten_share(card: Card, bars, dev: list[str], trades: list[C.Trade], costs: Costs,
+                         runs: int, seed: int, closed: frozenset[str] = frozenset()) -> dict:
+    """5e, the same-day window-slide placebo (lesson M-17). For each slide in S the shifted card
+    runs through compile.py on the development sessions, so each slid trade's side and entry use
+    only that day's bars up to its entry bar. Each run draws one window per session from S and the
+    card's own (delta 0), uniformly and independently, and sums the sessions' net; ``beaten_share`` is the share of runs below the
+    card's net. A session the slide skips, or whose slid trade is unresolved, contributes 0 (the
+    unresolved ones are counted). Fails closed (``beaten_share`` None, with ``reason``) below
+    SLIDE_MIN slides or on a zero-variance null."""
+    line = slide_line(card)
+    real = float(net(card, trades, costs).sum())
+    out = {**line, "real_net": real}
     if not trades:
-        return 0.0
-    by = {d.date: d for d in days}
-    pv, c = INSTRUMENTS[card.instrument].point_value, costs.per_trade(card.instrument)
-    rng = np.random.default_rng(seed)
-    tot = np.zeros(runs)
-    for t in trades:
-        d = by[t.date]
-        e = rng.integers(d.first, d.cutoff, size=runs)
-        x = np.minimum(e + (t.exit_i - t.entry_i), d.flat)
-        n = len(d.times)
-        exit_px = np.where(x < n, d.o[np.minimum(x, n - 1)], d.c[n - 1])
-        exit_px = np.where(x == e, d.c[e], exit_px)
-        tot += t.side * (exit_px - d.o[e]) * pv - c
-    real = net(card, trades, costs).sum()
-    return float((tot < real).mean())
+        return {**out, "beaten_share": 0.0, "reason": "no trades"}
+    S = slides(card)
+    if len(S) < SLIDE_MIN:
+        return {**out, "beaten_share": None,
+                "reason": f"{len(S)} valid slide(s), fewer than {SLIDE_MIN}: the 5e null is too small"}
+    m, unresolved, skipped = slide_matrix(S, bars, dev, costs, closed)
+    m = np.column_stack([daily(card, trades, dev, costs), m])  # delta 0, the card itself, is drawn too
+    pick = np.random.default_rng(seed).integers(0, len(S) + 1, size=(runs, len(dev)))
+    # USD at 1e-6: summation order must not split ties with the card or give a degenerate null variance
+    tot, real = np.round(m[np.arange(len(dev)), pick].sum(axis=1), 6), round(real, 6)
+    out.update(slid_unresolved_sessions=unresolved, slid_skipped_sessions=skipped,
+               null_mean=float(tot.mean()), null_sd=float(tot.std()))
+    if np.ptp(tot) == 0:
+        return {**out, "beaten_share": None, "reason": "the slide null has zero variance"}
+    return {**out, "beaten_share": float((tot < real).mean())}
 
 
 def _gate(gates: list, name: str, value, threshold, ok: bool) -> bool:
@@ -231,9 +299,9 @@ def evaluate(card: Card, bars, dev: list[str], ledger_path: Path, costs: Costs, 
         lambda: _gate(g, COSTS_LABEL, rep["cost_per_trade_usd"], "firm commission + 1 tick/side, applied", True),
         lambda: _halves(g, card, trades, costs, h1, h2),
         lambda: _plateau(g, card, bars, dev, costs, float(v.sum()), closed),
-        lambda: _gate(g, PLACEBO_LABEL, (s := placebo_beaten_share(card, days, trades, costs, T["5e_placebo_runs"],
-                                                                    T["5e_seed"])), T["5e_min_beaten_share"],
-                      s >= T["5e_min_beaten_share"]),
+        lambda: _gate(g, PLACEBO_LABEL, (s := placebo_beaten_share(card, bars, dev, trades, costs, T["5e_placebo_runs"],
+                                                                    T["5e_seed"], closed)), T["5e_min_beaten_share"],
+                      s["beaten_share"] is not None and s["beaten_share"] >= T["5e_min_beaten_share"]),
         lambda: _dsr_gate(g, x, k),
     ]  # 5g is not here: it is placement, run after a holdout pass (holdout_look)
     try:

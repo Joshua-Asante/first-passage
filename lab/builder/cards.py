@@ -68,6 +68,11 @@ class Card:
                 return v
         return default
 
+    def range_start(self) -> str:
+        """HH:MM at which the range opens."""
+        m = minutes(INSTRUMENTS[self.instrument].session_open) + 15 * int(self.p("offset_bars", 0))
+        return f"{m // 60:02d}:{m % 60:02d}"
+
     def range_end(self) -> str:
         """HH:MM at which the range closes and entries go live."""
         m = minutes(INSTRUMENTS[self.instrument].session_open) + 15 * (int(self.p("offset_bars", 0)) + int(self.p("n_bars")))

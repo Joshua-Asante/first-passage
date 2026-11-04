@@ -418,3 +418,15 @@ def test_reachability_line_never_changes_a_verdict(spec, tmp_path_factory, monke
 def test_an_undefined_reachability_line_is_recorded_not_raised(tmp_path):
     r = run.reach_line(tmp_path / "none.jsonl", "MCL", "instrument", 1)
     assert r["k"] == 0 and r["dev_sessions"] == 1 and "at least 2" in r["undefined"]
+
+
+def test_reports_carry_the_5e_slide_line_printed_before_any_card_is_evaluated(spec, capsys, monkeypatch):
+    path, s, _ = spec
+    seen = []
+    real_eval = gates.evaluate
+    monkeypatch.setattr(gates, "evaluate", lambda *a, **k: (seen.append(capsys.readouterr().out), real_eval(*a, **k))[1])
+    go(path, s)
+    rep = report(path)
+    c = cards.parse(Path(s["cards"][0]).read_text(encoding="utf-8"))
+    assert rep["slides_5e"] == gates.slide_line(c) and rep["slides_5e"]["slides"] >= 1
+    assert "slides_5e" in seen[0] and "reachability_5f" in seen[0]
