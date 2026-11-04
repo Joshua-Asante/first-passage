@@ -1,13 +1,14 @@
 """Strategy builder v1, build step 3: gates 5a-5f, report, holdout look and 5g placement (I-S2, I-S3, I-K3, I-G3..I-G6, I-L4)."""
 from __future__ import annotations
 
+import dataclasses
 import json
 
 import numpy as np
 import pytest
 
 from builder import cards, gates, ledger
-from tests.lab.test_builder.builder_inputs import CARD, panel
+from tests.lab.test_builder.builder_inputs import CARD, panel, walk_panel
 
 COSTS = gates.Costs(commission_per_side=1.06)
 
@@ -64,7 +65,8 @@ def test_random_walk_is_killed(tmp_path):
 def test_placebo_is_reproducible_and_seeded(tmp_path):
     rep1, *_ = run(tmp_path)
     rep2, *_ = run(tmp_path / "b")
-    assert rep1["gates"][4]["value"] == rep2["gates"][4]["value"] > 0.95
+    assert rep1["gates"][4]["value"] == rep2["gates"][4]["value"]
+    assert rep1["gates"][4]["value"]["beaten_share"] > 0.95
 
 
 def test_dsr_falls_as_k_rises():
@@ -114,7 +116,8 @@ def test_I_G4_plateau_needs_a_positive_base_and_names_skipped_neighbours(tmp_pat
 
 def test_I_G5_placebo_with_no_trades_is_zero():
     c = cards.parse(CARD)
-    assert gates.placebo_beaten_share(c, [], [], COSTS, 10, 1) == 0.0
+    b, dates = panel(5)
+    assert gates.placebo_beaten_share(c, b, dates, [], COSTS, 10, 1)["beaten_share"] == 0.0
 
 
 def test_I_G6_zero_variance_fails_5f_instead_of_crashing():
@@ -289,7 +292,7 @@ def test_placebo_is_labelled_timing_only_with_unchanged_threshold(tmp_path):
     rep, *_ = run(tmp_path)
     g = rep["gates"][4]
     assert g["gate"] == ("5e placebo_rank (timing-only, not the mechanism discriminator; "
-                         "timing shuffle with realised side and hold)")
+                         "same-day window slide of the clock frame)")
     assert g["threshold"] == 0.95 == gates.THRESHOLDS["5e_min_beaten_share"]
 
 
@@ -345,3 +348,145 @@ def test_reachability_floor_is_where_5f_flips_under_normal_moments():
 def test_reachability_needs_two_sessions():
     with pytest.raises(ValueError, match="at least 2"):
         gates.reachability(1, 1)
+
+
+# ---- 5e same-day window-slide placebo (lesson M-17; I-1..I-8 of the PR's invariant table)
+
+JUMP_CARD = """
+id: j-001
+family: orb
+instrument: MCL
+entry: {type: breakout, range: first_n_bars, side: both, order: stop}
+exit: {stop: range_opposite, target: none, flat_at: "11:00"}
+time: {entry_cutoff: "09:45"}
+params: {n_bars: {value: 2, step: 1}}
+"""
+WALK_CARD = JUMP_CARD.replace('flat_at: "11:00"', 'flat_at: "15:00"').replace('"09:45"', '"12:00"')
+
+
+def _old_timing_shuffle(card, days, trades, costs, runs, seed):
+    """The 5e placebo this PR replaces (main before it), kept here only as the regression's foil."""
+    by = {d.date: d for d in days}
+    pv, c = gates.INSTRUMENTS[card.instrument].point_value, costs.per_trade(card.instrument)
+    rng = np.random.default_rng(seed)
+    tot = np.zeros(runs)
+    for t in trades:
+        d = by[t.date]
+        e = rng.integers(d.first, d.cutoff, size=runs)
+        x = np.minimum(e + (t.exit_i - t.entry_i), d.flat)
+        n = len(d.times)
+        exit_px = np.where(x < n, d.o[np.minimum(x, n - 1)], d.c[n - 1])
+        exit_px = np.where(x == e, d.c[e], exit_px)
+        tot += t.side * (exit_px - d.o[e]) * pv - c
+    return float((tot < gates.net(card, trades, costs).sum()).mean())
+
+
+def test_5e_regression_the_slide_does_not_ride_the_breakout_that_chose_the_side():
+    """The 09:30 bar jumps out of the opening range; afterwards the day is a symmetric walk. The
+    old shuffle enters at that bar's open with the side the jump revealed and beats the card on
+    every run; every slide's range sits after the jump and earns nothing from it."""
+    c = cards.parse(JUMP_CARD)
+    b, dates = walk_panel(120, 1, jump=0.6)
+    trades = gates.C.simulate(c, b, dates)
+    assert _old_timing_shuffle(c, gates.C.days(c, b, dates), trades, COSTS, 1000, 1) == 0.0
+    r = gates.placebo_beaten_share(c, b, dates, trades, COSTS, 1000, 1)
+    assert r["beaten_share"] >= 0.95 and r["null_mean"] < 0 < r["real_net"] and r["null_sd"] > 0
+
+
+def test_5e_zero_edge_false_pass_is_near_the_threshold_tail():
+    """Symmetric zero-drift walk, |S| = 7. Exchangeable-window bound at |S| = 7 is 0.077 (the
+    draws exclude delta 0). Tolerance: at most 4 of 20 seeds pass (P(X >= 5 | p = 0.077) ~ 0.04)
+    and the mean share lies in [0.3, 0.7]."""
+    c = cards.parse(WALK_CARD)
+    assert gates.slide_line(c)["slides"] == 7
+    shares = []
+    for seed in range(20):
+        b, dates = walk_panel(150, 100 + seed)
+        shares.append(gates.placebo_beaten_share(c, b, dates, gates.C.simulate(c, b, dates), COSTS, 1000,
+                                                 seed)["beaten_share"])
+    shares = np.array(shares)
+    assert (shares >= gates.THRESHOLDS["5e_min_beaten_share"]).sum() <= 4 and 0.3 <= shares.mean() <= 0.7
+
+
+def test_5e_fails_closed_below_the_minimum_slide_count(tmp_path):
+    c = cards.parse(WALK_CARD.replace('flat_at: "15:00"', 'flat_at: "16:00"'))
+    line = gates.slide_line(c)
+    assert (line["slides"], line["meets_min"], line["delta_bars"]) == (3, False, [1, 3]) and gates.SLIDE_MIN == 5
+    b, dates = walk_panel(30, 3)
+    r = gates.placebo_beaten_share(c, b, dates, gates.C.simulate(c, b, dates), COSTS, 100, 1)
+    assert r["beaten_share"] is None and "fewer than 5" in r["reason"]
+    none = cards.parse(WALK_CARD.replace('flat_at: "15:00"', 'flat_at: "17:00"'))
+    assert gates.slides(none) == [] and gates.slide_line(none)["zero_edge_false_pass_bound"] is None
+
+
+def test_5e_fails_closed_on_a_zero_variance_null():
+    c = cards.parse(JUMP_CARD)
+    b, dates = walk_panel(40, 2, jump=0.6)
+    flat = b.copy()
+    late = flat.index.strftime("%H:%M") >= "09:45"
+    flat.loc[late, ["open", "high", "low", "close"]] = 70.0  # no slide ever breaks out
+    r = gates.placebo_beaten_share(c, flat, dates, gates.C.simulate(c, flat, dates), COSTS, 100, 1)
+    assert r["beaten_share"] is None and r["reason"] == "the slide null has zero variance"
+
+
+def test_5e_I3_a_slide_moves_only_the_clock_frame():
+    c = cards.parse(WALK_CARD)
+    s = gates.slid(c, 3)
+    diff = {f.name for f in dataclasses.fields(c) if getattr(c, f.name) != getattr(s, f.name)}
+    assert diff == {"range", "params", "entry_cutoff", "flat_at", "sha256", "source"}  # identity blanked, as neighbours
+    assert (s.range, s.entry_cutoff, s.flat_at, s.range_start()) == ("time_window", "12:45", "15:45", "09:45")
+    assert [q for q in s.params if q[0] != "offset_bars"] == list(c.params) and s.p("offset_bars") == 3
+    tw = cards.parse(WALK_CARD.replace("range: first_n_bars", "range: time_window").replace(
+        "params: {", "params: {offset_bars: {value: 2, step: 2}, "))
+    s2 = gates.slid(tw, -1)
+    assert s2.range == "time_window" and ("offset_bars", 1, 2) in s2.params and s2.flat_at == "14:45"
+
+
+def test_5e_I4_only_valid_slides():
+    c = cards.parse(WALK_CARD)
+    assert gates.slid(c, 0) is None and gates.slid(c, -1) is None  # delta 0; offset below 0
+    assert gates.slid(c, 8) is None  # flat_at 17:00 = DAY_END: no flat bar on any day
+    assert [d for d, _ in gates.slides(c)] == list(range(1, 8))
+    tw = cards.parse(WALK_CARD.replace("range: first_n_bars", "range: time_window").replace(
+        "params: {", "params: {offset_bars: {value: 2, step: 1}, "))
+    assert [d for d, _ in gates.slides(tw)] == [-2, -1] + list(range(1, 8))
+    assert all(cards._timing_error(s) is None for _, s in gates.slides(tw))
+
+
+def test_5e_I1_I2_slid_trades_are_causal_and_same_day():
+    c = cards.parse(WALK_CARD)
+    b, dates = walk_panel(12, 5)
+    S = gates.slides(c)
+    m, *_ = gates.slide_matrix(S, b, dates, COSTS)
+    other = b.copy()
+    other.loc[other.index.strftime("%Y-%m-%d") == dates[4], "close"] += 0.5  # perturb one day only
+    m2, *_ = gates.slide_matrix(S, other, dates, COSTS)
+    assert np.array_equal(np.delete(m, 4, 0), np.delete(m2, 4, 0))  # I-2
+    for _, s in S:  # I-1: bars after a slid trade's entry bar never change its side or entry
+        for d in gates.C.days(s, b, dates):
+            for t in gates.C.simulate_day(s, d)[:1]:
+                cut = dataclasses.replace(d, h=d.h.copy(), l=d.l.copy(), o=d.o.copy(), c=d.c.copy())
+                cut.h[t.entry_i + 1:] += 5; cut.l[t.entry_i + 1:] -= 5
+                t2 = gates.C.simulate_day(s, cut)[0]
+                assert (t2.side, t2.entry_i, t2.entry_px) == (t.side, t.entry_i, t.entry_px)
+
+
+def test_5e_I7_I8_holdout_untouched_and_unresolved_slides_count_zero(tmp_path):
+    rep, c, b, dates, _ = run(tmp_path)  # the panel ends 13:00: slides flat after it are unresolved
+    v = rep["gates"][4]["value"]
+    assert rep["verdict"] == "survivor" and v["slid_unresolved_sessions"] > 0 and rep["thresholds"] == gates.THRESHOLDS
+    dev = dates[:200]
+    tr = gates.C.simulate(c, b, dev)
+    later = b.copy()
+    later.loc[later.index.strftime("%Y-%m-%d") > dev[-1], "close"] += 1.0
+    assert (gates.placebo_beaten_share(c, b, dev, tr, COSTS, 200, 1)
+            == gates.placebo_beaten_share(c, later, dev, tr, COSTS, 200, 1))
+
+
+def test_5e_is_deterministic_and_seeded():
+    c = cards.parse(WALK_CARD)
+    b, dates = walk_panel(60, 9)
+    tr = gates.C.simulate(c, b, dates)
+    a1, a2 = (gates.placebo_beaten_share(c, b, dates, tr, COSTS, 500, 7) for _ in range(2))
+    assert a1 == a2
+    assert gates.placebo_beaten_share(c, b, dates, tr, COSTS, 500, 8)["null_mean"] != a1["null_mean"]
