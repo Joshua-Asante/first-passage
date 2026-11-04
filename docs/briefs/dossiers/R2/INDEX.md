@@ -2,7 +2,7 @@
 
 **R2 is held** (Joshua, 2026-11-04, verbatim: "go with option a, hold R2"). No R2 look is spent, so the composition below is not run. The hold, its reasons and the next wave's re-aim are owned by [generation note §11](../../../notes/2026-11-01-generation-phase-strengthening-DRAFT.md#11-updates-2026-11-04).
 
-**Status:** zero-K inputs to R2 (template Part A §A2–§A3, tasks T2–T3; [template](https://github.com/Joshua-Asante/first-passage/blob/0a4c5a92c33b1615cde2e39af85933e01e3992db/docs/briefs/pre-registration/TEMPLATE-builder-round.md), PR #1051 head `0a4c5a9`, unmerged). **K = 0:** no market data was read. It decides nothing: cells, firms and the round are Joshua's (Rule 3), and generation never blesses (Rule 25).
+**Status:** zero-K inputs to R2 (template Part A §A2–§A3, tasks T2–T3; [template](../../pre-registration/TEMPLATE-builder-round.md), PR #1051). **K = 0:** no market data was read. It decides nothing: cells, firms and the round are Joshua's (Rule 3), and generation never blesses (Rule 25).
 **Authority:** Joshua, 2026-11-04: "yes to all four, spawn the sessions" (a proposal to run parallel dossier sessions on top-ranked cells, ready for R2).
 **Date / base:** 2026-11-04, `main` at `8745b40`. **Budget (Rule 2):** ≤12 dossiers plus this index; ≤3 Codex review rounds; K = 0; six parallel research workers, every cited figure re-verified by the coordinator (below).
 **Public-file limits:** coarse session words only. Clock settings and parameter values belong to the private card design (T4, not done here). Template Part A is otherwise private. This public form is the operator task's choice, so it carries no card values.
