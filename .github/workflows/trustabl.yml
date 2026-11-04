@@ -1,0 +1,46 @@
+name: Trustabl
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+      - name: Scan agent reliability
+        id: trustabl
+        uses: trustabl/trustabl-action@d97575c864814bf4965fa2c72c044224d372723a # v0.4.3
+        # Establish a visible baseline before adopting a findings gate.
+        continue-on-error: true
+        with:
+          version: v0.1.15
+          rules-ref: bc96ca74ad8804e7aab2e8dbc3082d3df227ffc6
+          comment-on-pr: "false"
+          artifact-retention-days: "14"
+      - name: Check scan execution
+        if: ${{ always() && steps.trustabl.outcome == 'failure' }}
+        env:
+          SCAN_EXIT: ${{ steps.trustabl.outputs.exit-code }}
+        shell: bash
+        run: |
+          if [[ "$SCAN_EXIT" == "1" ]]; then
+            echo "::warning::Trustabl reported findings. Review the Security tab and scan artifacts."
+          else
+            echo "::error::Trustabl could not complete the scan. Review the scan step logs."
+            exit 1
+          fi
