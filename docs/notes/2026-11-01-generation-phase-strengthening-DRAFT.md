@@ -482,7 +482,7 @@ A forward confirm buys nothing over the fixed holdout for the equity micros. It 
 6. **R1** is re-registered on the current engine as **one MCL card** (Joshua: not run as pinned, 2026-11-03; re-scoped to one card, 2026-11-04; §11). That card uses MCL's single look.
 
 **Owners and next steps.**
-- Items 1–5 are applied by each round's registration. R2's is the first.
+- Items 1–5 are applied by each round's registration, in the form of the [builder round template](../briefs/pre-registration/TEMPLATE-builder-round.md). R2's is the first.
 - The report-only `reachability(k, n)` line in the builder's run report (D7's durable fix, §9.2) lands by its own PR.
 - The pre-2022 calendar extension (§9.3) gates any 2019-onward window.
 
