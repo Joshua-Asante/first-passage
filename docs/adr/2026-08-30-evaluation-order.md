@@ -218,3 +218,4 @@ Ruled by Joshua 2026-11-03 (pre-sitting); recorded effective 2026-11-08.
   5e gates despite its "descriptive" label (`gates.py:193-195`); 5h is unwired.
 - The review owed immediately since the 2026-10-24 cost-authority change
   (Requirement 5 deleted) is **discharged by this ruling**; the mapping is its open follow-up.
+- *Pointer, 2026-11-04:* the mapping's owner is [`lab/builder/README.md` §Ten-step mapping](../../lab/builder/README.md#ten-step-mapping-draft-pending-joshuas-5g-choice), a draft pending Joshua's 5g choice.
