@@ -64,3 +64,29 @@ def write(tmp_path, lines: list[str], name: str = "BAR_EXPORT.csv"):
     p.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return p, hashlib.sha256(p.read_bytes()).hexdigest()
 
+
+
+def walk_panel(n_days: int, seed: int, sd: float = 0.05, jump: float = 0.0,
+               start: str = "09:00", end: str = "16:45") -> tuple[pd.DataFrame, list[str]]:
+    """Weekday 15m MCL bars start-end ET: a symmetric random walk with per-bar sd `sd` and
+    symmetric wicks, on the 0.01 tick grid. With `jump` > 0, the 09:00-09:15 bars are a fixed
+    69.80-70.20 box and the 09:30 bar jumps `jump` up or down (a seeded coin) out of it: the
+    breakout of the opening range is the whole move, and every later bar is the same walk."""
+    rng = np.random.default_rng(seed)
+    dates = pd.bdate_range("2023-01-02", periods=n_days)
+    rows, idx = [], []
+    for d in dates:
+        px, s = 70.0, (1 if rng.random() < 0.5 else -1)
+        for t in pd.date_range(f"{d.date()} {start}", f"{d.date()} {end}", freq="15min", tz="America/New_York"):
+            hm = t.strftime("%H:%M")
+            if jump and hm in ("09:00", "09:15"):
+                o, h, l, c = 70.0, 70.2, 69.8, 70.0
+            else:
+                step = s * jump if jump and hm == "09:30" else float(rng.normal(0, sd))
+                o, c = px, round(px + step, 2)
+                w = np.abs(rng.normal(0, sd / 2, 2))
+                h, l = round(max(o, c) + w[0], 2), round(min(o, c) - w[1], 2)
+            px = c
+            rows.append((o, h, l, c)); idx.append(t)
+    b = pd.DataFrame(rows, columns=["open", "high", "low", "close"], index=pd.DatetimeIndex(idx))
+    return b, [str(d.date()) for d in dates]
