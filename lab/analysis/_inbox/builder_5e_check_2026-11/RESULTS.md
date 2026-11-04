@@ -6,6 +6,17 @@ drift and at a card net annual Sharpe of 1.53. Replacing only the side rule with
 coin lifts the pass rate to 0.72–0.998. The generator still carries a fill artefact (V2 miss), but
 it favours the card, so it cannot explain production's failures.
 
+> **Correction, 2026-11-04 (review on PR #1072).** Where this file says the failure comes "from the side
+> rule, not the generator" and that the fill artefact "cannot explain" production's failures (the
+> one-liner and the first two Reading bullets), read instead: **strong side-rule sensitivity on this
+> generator; generator-independent attribution remains untested.** The matched intervention holds
+> this generator fixed, so it isolates the side-rule contrast within it. It does not rule out an
+> interaction between the generator's path and fill assumptions (V2 missed; the card fills at
+> crossed levels while every placebo fills at bar opens) and the realised-side statistic, and it
+> does not show how the contrast transfers to #1067's generator or to a fill-consistent zero-edge
+> generator, which was not measured. The original wording below is kept as written (Rule 30); the
+> design, runner, harness and `results.json` are unchanged.
+
 - **Design:** [DESIGN.md](DESIGN.md), frozen at `c0314c1` (sha256 `7b805c02…`) before any run.
 - **Engine:** `main` `dfcfcb1`, engine sha256 `10f0eb19…` (in `results.json` `meta`). Production code
   is unchanged.
