@@ -1,4 +1,4 @@
-"""The 2009-2026 CME holiday calendar (pending Joshua's acceptance): it parses under the builder's loader and
+"""The 2009-2026 CME holiday calendar (accepted by Joshua 2026-11-04): it parses under the builder's loader and
 the strict v1 adapter, its 2016-2026 part equals the accepted file, and every 2009-2015 row cites a primary source."""
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ NEW = CAL / "cme_holiday_calendar_2009_2026.json"
 ACCEPTED = CAL / "cme_holiday_calendar_2016_2026.json"
 EVIDENCE = CAL / "evidence" / "2026-11-04-cme-2009-2015-wayback-captures.json"
 PINS = {
+    NEW: "067a7a5b73b07c55de1102be39c90e11fc6479d66e013c59592aa3d4a86efadd",
     ACCEPTED: "407d93bb815ee6b297b2b58d56a71724506f1304756d698bb9c6e52ca5b60ad4",
     CAL / "cme_holiday_calendar_2022_2026.json": "2698f2688cce582b08df58516fd770fa4a71a18de04870d9c14511731ea181e9",
 }
