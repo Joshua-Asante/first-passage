@@ -353,7 +353,7 @@ Weakness: the counterparty of (a)–(d) differs only by asset-class microstructu
 
 **Feed gaps, ranked by cells unlocked** [INF on counts]:
 1. More years for the existing six (§8.1). MCL and M2K also end 2026-07-02.
-2. **M6E**: offered at all four firms; removes 6J's full-size sizing problem.
+2. **M6E**: offered at Tradeify, Bulenox and MFFU; BluSky's markets page (article 17115915, 2026-09-23) lists 6E but not M6E ([export ranking](2026-11-04-instrument-export-ranking-DRAFT.md); correction 2026-11-04). It removes 6J's full-size sizing problem.
 3. Micro DAX (FDXM/FDXS): Tradeify only; the European session runs entirely before the flatten; outside the US-index raised bar.
 4. M6A.
 5. MES adds little: same product group as MNQ, and under the raised bar.
@@ -500,14 +500,14 @@ A forward confirm buys nothing over the fixed holdout for the equity micros. It 
 
 **Deployment order: open.** Joshua is reconsidering the 10-30 "scale first within Tradeify" ruling. Tradeify makes whatever book runs there Tradeify-only, so the best-evidenced book may reach further at firms without that rule. The premise is the [venue-fact register](2026-11-01-prop-firm-venue-fact-register-DRAFT.md)'s §E row 1, its top unverified assumption. A venue-terms check was commissioned on 2026-11-03: cross-firm use, copy and mirroring rules, external hedging, automation route and per-trader account caps at Bulenox, MFFU, BluSky and FXIFY. Its result decides the order.
 
-**Family-to-firm mapping: proposed, not decided:**
+**Family-to-firm mapping.** The FX rows were decided by Joshua on 2026-11-04 ("go with your recommendations on both"); the rest stays proposed. The deployment order still waits on the venue-terms check.
 
 | Firm | Family | Why | Watch |
 |---|---|---|---|
 | Tradeify | US-open index ORB | in flight; native NinjaScript | depends on the deployment-order decision |
-| BluSky | Metals: MGC level and compression breaks | MGC offered; full automation welcomed | end-of-day trail; barrier check (P5) first |
-| MFFU | FX: M6E continuation | cheapest M6E costs; avoids MFFU's funded metals cap | needs the M6E landing and a builder FX session open |
-| Bulenox | Second FX: 6J Asia-session continuation, or held | — | intraday-high trail is the harshest barrier; 6J full-size only |
+| BluSky | Metals: MGC, proposed | MGC offered; full automation welcomed | **R2 skips MGC** (Joshua, 2026-11-04): both MGC dossiers fail harvest Req 1, and the no-counterparty channel was not used |
+| MFFU | FX: **6J** (decided 2026-11-04; the Tokyo-fix card is held with R2, see §11) | R2's card ([R2 dossier index, PR #1061](https://github.com/Joshua-Asante/first-passage/pull/1061)); avoids MFFU's funded metals cap | 6J full-size only; venue legality re-checked for MFFU in the dossier |
+| Bulenox | FX: **M6E pre-fix** (decided 2026-11-04) | cheapest M6E costs ($0.50/side; MFFU $0.72, Tradeify $0.80, per `core/firm_rules.py` comments); a micro suits the harsh intraday-high trail | enters only after the M6E landing and if its pre-registration answers the EUR/USD fix-reversal re-proposal bar |
 | FXIFY | later | rules provisional | — |
 
 **Open questions:**
@@ -550,4 +550,20 @@ Pre-2016 depth (MGC to 2010, M6E to 2009, 6J to 2001) would raise those budgets 
 - The owed re-registration is re-scoped to **one MCL card** so that it is reachable under D7.
 - The card is chosen and justified **before** any result, from the registered eight and by stated rationale, never by outcome (Rules 23, 25).
 - Recorded at the owner: the [registration's status note](../briefs/pre-registration/2026-11-01-builder-r1-mcl-orb-registration.md).
+
+**R2 composition** (Joshua, 2026-11-04, "go with your recommendations on both"), recorded in the [R2 dossier index, PR #1061](https://github.com/Joshua-Asante/first-passage/pull/1061):
+- 6J Tokyo-fix (post-fix leg) was chosen as R2's card. Its spot USD/JPY cohort is admissible under [strategy_harvest §4a](../methodology/strategy_harvest.md#4a-spot-cohorts-for-same-pair-cme-fx-futures-ruling-2026-11-04).
+- M6E pre-fix enters only after its landing, and only if its pre-registration clears the fix-reversal bar. Its spot EUR/USD cohort is admissible under the same §4a conditions.
+- MGC is skipped.
+- No index card: MNQ, MYM and M2K hold. The overnight drift has decayed since 2021 (NY Fed, 2026-07-01), and intraday momentum is underpowered.
+
+**R2 held** (Joshua, 2026-11-04, verbatim: "go with option a, hold R2"). No R2 look is spent. Three reasons:
+- **6J fails on costs.** The MFFU venue re-check on PR #1061 found every 6J leg net negative at the builder's frozen 1 tick/side slip (`THRESHOLDS["5b_slippage_ticks_per_side"]`, 2 ticks round trip). The post-fix leg breaks even only below about 1.8 ticks of total round-trip slip.
+- **M6E is worse:** 0.7–1.0 tick of slip consumes it.
+- **The builder can't express either cell.** It has only ORB blocks.
+
+So running R2 would have spent one of 6J's lifetime looks on a card the arithmetic already fails (census mode 1). The next dossier wave is re-aimed:
+1. Rank cells by **cost headroom**: the cited per-event effect in ticks against all-in round-trip cost (commission plus 2 ticks of slip at the target firm). Then check power at the instrument's look budget.
+2. Include M6A and MES (chosen for export, 2026-11-04).
+3. Prefer mechanisms the builder can express, or ones that justify building a new block.
 

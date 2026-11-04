@@ -152,6 +152,19 @@ Published effects decay post-publication (McLean & Pontiff-class evidence) and a
 - When multiple derivations exist, plug the lowest defensible one and record the break-even (D5: power holds to δ/σ ≈ 0.062 — that margin is part of the verdict's honesty).
 - Record the **net-of-cost caveat** explicitly: published Sharpes are gross; net tradeability on the micro is *the campaign's* question, never the screen's answer (D5: only SPX-futures shown to survive tick costs in the cited literature).
 
+### 4a. Spot cohorts for same-pair CME FX futures (ruling 2026-11-04)
+
+**Ruling.** Joshua, 2026-11-04, verbatim: "go with your recommendation, option a". He was answering whether a spot-market cohort may supply Requirement 2's δ/σ for the CME future on the same currency pair. He admitted it, scoped as follows. Context: Codex round 1 on PR #1061 (R2 dossiers r2-6j-tokyofix, r2-m6e-prefix).
+
+A spot cohort is admissible for the CME FX future, or its micro, **on the same currency pair only**, when every condition holds:
+1. **Same pair.** USD/JPY spot for 6J; EUR/USD spot for 6E and M6E. No other spot→futures transplant, and no cross-pair or cross-instrument transplant: those stay inadmissible.
+2. **Explicit sign and quote conversion.** CME FX futures are quoted in USD per foreign unit, so 6J is the inverse of USD/JPY and its returns take the opposite sign. 6E and M6E move with EUR/USD.
+3. **Return terms.** δ/σ is stated in return terms, never pips, and the §4 decay haircut still applies.
+4. **Costs on the future.** Costs and entry slip are assessed on the futures contract, in the hours the cell actually trades (M-16), never from the spot cohort.
+5. **Disclosed cohort window.** The cohort's sample end date is stated. Survival after the cohort window is evidence only from the holdout and confirm, never from the cohort.
+
+Rationale: spot and futures on one pair are arbitrage-linked. Intraday, they differ only by a slowly moving interest-rate basis. The residual futures-specific risk is liquidity and cost, which condition 4 tests on the future itself.
+
 ## 5. Seed manifest (declaration template)
 
 Copy this block into the seed's admission artifact (lives with the inventory addition; one manifest per seed). The fields are the Phase-1 inventory §C declaration 5-tuple plus provenance. Provenance is **§2.3 rank** (channel 1–6), not §2.1's mechanism-class Tier A/B/C. Pre-rewrite fills that used `source + tier` against the old screenability list (Tier 1 = peer-reviewed/WP, Tier 2 = encyclopedias, Tier 3 = practitioner) stand; old Tier 3 ≡ rank 6.
