@@ -28,7 +28,7 @@ Status: R2 dossier (Part A §A2–§A3, tasks T2–T3) · 2026-11-04 · K = 0 (n
 === M2K x intraday-momentum ===
 ledger: ops/instruments/M2K.md
 verdict: untested — no prior on this cell.
-class finding (mechanism-wide, not specific to M2K): Baltussen-class intraday momentum is statistically ABSENT on modern MNQ — the cost-geometry thesis was real (hurdle fell 11.06→3.01 bp) but the OOS edge decayed negative (gross Sharpe +0.88→−0.13), corroborating the published post-2021 decay and an external 14-signal-family falsification (arXiv 2605.04004). [NQ.md N3](NQ.md)
+class finding (mechanism-wide, not specific to M2K): Baltussen-class intraday momentum is statistically ABSENT on modern MNQ — the cost-geometry thesis was real (hurdle fell 11.06→3.01 bp) but the OOS edge decayed negative (gross Sharpe +0.88→−0.13), corroborating the published post-2021 decay and an external 14-signal-family falsification (arXiv 2605.04004). [NQ.md N3](../../../../ops/instruments/NQ.md)
 BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
 cost hurdle: 11.89 bp/round-trip (panel-era median 1,897.20 => 11.89 bp/RT (recomputed 2026-07-28; supersedes illustrative index-2300 figure and withdrawn 10-30x margin claim). WARN Multiplier basis PENDING — 4x hurdle was Tradeify; venue de-scoped 2026-08-04; F3 ruled 2026-08-07 (no successor venue; Tradeify_Select_100K remains the environment for new strategies — docs/adr/2026-08-07-loop-s1-environment-ratification.md); friendly-firm per-side $0.50-$0.95; re-price against elected venue before this row gates anything if a future deployment lands outside Tradeify.) — VERIFY at #M2
 K bank: read ../../discovery_manifests/ — never trust a snapshot.

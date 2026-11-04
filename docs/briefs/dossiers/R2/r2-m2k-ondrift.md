@@ -29,9 +29,9 @@ exit=2
 === M2K x ict-liquidity ===
 ledger: ops/instruments/M2K.md
 verdict: untested — no prior on this cell.
-class finding (mechanism-wide, not specific to M2K): Sweep→same-direction-FVG→opposing-pool-draw direction is real on SPX500 (block-permutation p=0.0144) but fails robustness (drop-top-3 = −0.152R, 95% block-CI straddles 0). [SPX500.md D2](SPX500.md)
-class finding (mechanism-wide, not specific to M2K): — CORRECTED 2026-08-04; [... 1m FVG retrace finding, full text in [NOTES-M2K.md](sources/NOTES-M2K.md) consult log ...] [MNQ.md W3](MNQ.md) · [`RESULTS_1M_DIAG.md`](../../lab/analysis/_inbox/ict_mnq_2026-08/RESULTS_1M_DIAG.md)
-class finding (mechanism-wide, not specific to M2K): **Liquidity pools are anti-attractors**, replicated on three independent instruments [...] [MNQ.md N9](MNQ.md) · [`RESULTS.md`](../../lab/analysis/_inbox/ict_mnq_2026-08/RESULTS.md) §3
+class finding (mechanism-wide, not specific to M2K): Sweep→same-direction-FVG→opposing-pool-draw direction is real on SPX500 (block-permutation p=0.0144) but fails robustness (drop-top-3 = −0.152R, 95% block-CI straddles 0). [SPX500.md D2](../../../../ops/instruments/SPX500.md)
+class finding (mechanism-wide, not specific to M2K): — CORRECTED 2026-08-04; [... 1m FVG retrace finding, full text in [NOTES-M2K.md](sources/NOTES-M2K.md) consult log ...] [MNQ.md W3](../../../../ops/instruments/MNQ.md) · [`RESULTS_1M_DIAG.md`](../../../../lab/analysis/_inbox/ict_mnq_2026-08/RESULTS_1M_DIAG.md)
+class finding (mechanism-wide, not specific to M2K): **Liquidity pools are anti-attractors**, replicated on three independent instruments [...] [MNQ.md N9](../../../../ops/instruments/MNQ.md) · [`RESULTS.md`](../../../../lab/analysis/_inbox/ict_mnq_2026-08/RESULTS.md) §3
 BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
 cost hurdle: 11.89 bp/round-trip (panel-era median 1,897.20 => 11.89 bp/RT [...]) — VERIFY at #M2
 K bank: read ../../discovery_manifests/ — never trust a snapshot.

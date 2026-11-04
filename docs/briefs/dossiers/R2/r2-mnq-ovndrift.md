@@ -33,8 +33,8 @@ exit=2
 === MNQ x event-window-reversal ===
 ledger: ops/instruments/MNQ.md
 verdict: untested — no prior on this cell.
-class finding (mechanism-wide, not specific to MNQ): The settlement limb does not reproduce at useful magnitude — MYM's third-Friday derivative-settlement reversal cleared exact-coverage sourcing (84/87, 96.6% PASS) but both power legs sit below the 0.2139 floor and the tradable limb is negative in 2024–2026. [MYM.md M5](MYM.md)
-class finding (mechanism-wide, not specific to MNQ): *Auction limb (2026-07-27) — dies at the PROCUREMENT GATE, not on edge, on ANY instrument.* Closing-auction/MOC-imbalance is reject-at-bar for an instrument-independent reason, hence recorded as a class finding rather than a cell. [... full text in _consults.txt ...] Cheapest re-open is free: a published cohort δ for imbalance → index-futures response, citable without procurement. [F1 ruling](../../docs/briefs/programs/2026-07-27-f1-moc-imbalance-mym-ruling.md)
+class finding (mechanism-wide, not specific to MNQ): The settlement limb does not reproduce at useful magnitude — MYM's third-Friday derivative-settlement reversal cleared exact-coverage sourcing (84/87, 96.6% PASS) but both power legs sit below the 0.2139 floor and the tradable limb is negative in 2024–2026. [MYM.md M5](../../../../ops/instruments/MYM.md)
+class finding (mechanism-wide, not specific to MNQ): *Auction limb (2026-07-27) — dies at the PROCUREMENT GATE, not on edge, on ANY instrument.* Closing-auction/MOC-imbalance is reject-at-bar for an instrument-independent reason, hence recorded as a class finding rather than a cell. [... full text in _consults.txt ...] Cheapest re-open is free: a published cohort δ for imbalance → index-futures response, citable without procurement. [F1 ruling](../../programs/2026-07-27-f1-moc-imbalance-mym-ruling.md)
 BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
 cost hurdle: 3.01 bp/session (4x modern-era MNQ hurdle (D5-RECOST-1)) — VERIFY at #N6
 K bank: read ../../discovery_manifests/ — never trust a snapshot.

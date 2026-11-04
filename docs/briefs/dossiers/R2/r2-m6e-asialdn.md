@@ -45,7 +45,7 @@ $ python3 -I scripts/fp.py python scripts/instrument_profiles.py cell EURUSD pri
 ledger: ops/instruments/EURUSD.md
 venue: NOT TRADABLE at the live firm — FXIFY/DXTrade CFD venue closed 2026-07-10; no live venue for this instrument at present.
 verdict: untested — no prior on this cell.
-class finding (mechanism-wide, not specific to EURUSD): (M6A, 2026-08-22 — same day as minting): DL-2's TRAIN scoring closed AMBIGUOUS/ABANDONMENT the same day this id was minted — nominee V9 fails 3 of 4 nomination gates; a same-day geometric-feasibility diagnostic found the construction structurally infeasible on M6A and retired it for that instrument, with a stop-rule/re-proposal bar binding any successor. [`RESULTS.md`](../../lab/archive/dl2_m6a_pdhpdl_2026-08-22/RESULTS.md).
+class finding (mechanism-wide, not specific to EURUSD): (M6A, 2026-08-22 — same day as minting): DL-2's TRAIN scoring closed AMBIGUOUS/ABANDONMENT the same day this id was minted — nominee V9 fails 3 of 4 nomination gates; a same-day geometric-feasibility diagnostic found the construction structurally infeasible on M6A and retired it for that instrument, with a stop-rule/re-proposal bar binding any successor. [`RESULTS.md`](../../../../lab/archive/dl2_m6a_pdhpdl_2026-08-22/RESULTS.md).
 K bank: read ../../discovery_manifests/ — never trust a snapshot.
 prior: The London 16:00 WM/Reuters fix carries a genuine ~2bp gross post-fix reversal (reproducing the source paper's magnitude) but FXIFY retail all-in cost (~0.8 pip) exceeds the 0.277-pip best-of-grid break-even — the edge is real but not retail-tradeable. [#F1]
 exit=0
@@ -55,7 +55,7 @@ ledger: ops/instruments/M6A.md
 verdict: AMBIGUOUS-PARKED (2026-08-22)
   source: ../../lab/archive/dl2_m6a_pdhpdl_2026-08-22/RESULTS.md
   BLOCKING — a parked concept holds this cell and shares the instrument's anti-SNAG budget; address it (and any decision date) in the pre-registration.
-class finding (mechanism-wide, not specific to M6A): (M6A, 2026-08-22 — same day as minting): DL-2's TRAIN scoring closed AMBIGUOUS/ABANDONMENT the same day this id was minted — nominee V9 fails 3 of 4 nomination gates; a same-day geometric-feasibility diagnostic found the construction structurally infeasible on M6A and retired it for that instrument, with a stop-rule/re-proposal bar binding any successor. [`RESULTS.md`](../../lab/archive/dl2_m6a_pdhpdl_2026-08-22/RESULTS.md).
+class finding (mechanism-wide, not specific to M6A): (M6A, 2026-08-22 — same day as minting): DL-2's TRAIN scoring closed AMBIGUOUS/ABANDONMENT the same day this id was minted — nominee V9 fails 3 of 4 nomination gates; a same-day geometric-feasibility diagnostic found the construction structurally infeasible on M6A and retired it for that instrument, with a stop-rule/re-proposal bar binding any successor. [`RESULTS.md`](../../../../lab/archive/dl2_m6a_pdhpdl_2026-08-22/RESULTS.md).
 cost hurdle: 2.82 USD/round-trip (1-tick slip) (Stage-1 third-leg map Inputs: commission $0.91/side; RT 1t $2.82 / 2t $3.82; cost-tax 1t r=1 = 0.0902 (FLAG-COSTBIND vs own-panel floor 0.0891). Commission input disputed — core/firm_rules.py places M6A in the cheaper M6E/M6A $1.60-RT group, not the $1.82-RT index-micros group this figure derives from; correction disclosed but not yet applied, see docs/briefs/pre-registration/2026-08-22-deep-lane-dl2-m6a-pdhpdl-prereg.md §0.) — VERIFY at #A1
 K bank: read ../../discovery_manifests/ — never trust a snapshot.
 prior: Stage-1 Currencies SURVIVOR under FLAG-COSTBIND — cost-tax binds before the own-panel Clause-N floor on the pooled panel; Stage-2 ex-FOMC flips the binding constraint COST->POWER. [#A1]
@@ -65,7 +65,7 @@ $ python3 -I scripts/fp.py python scripts/instrument_profiles.py cell 6J prior-s
 === 6J x prior-session-breakout-continuation ===
 ledger: ops/instruments/6J.md
 verdict: untested — no prior on this cell.
-class finding (mechanism-wide, not specific to 6J): (M6A, 2026-08-22 — same day as minting): DL-2's TRAIN scoring closed AMBIGUOUS/ABANDONMENT the same day this id was minted — nominee V9 fails 3 of 4 nomination gates; a same-day geometric-feasibility diagnostic found the construction structurally infeasible on M6A and retired it for that instrument, with a stop-rule/re-proposal bar binding any successor. [`RESULTS.md`](../../lab/archive/dl2_m6a_pdhpdl_2026-08-22/RESULTS.md).
+class finding (mechanism-wide, not specific to 6J): (M6A, 2026-08-22 — same day as minting): DL-2's TRAIN scoring closed AMBIGUOUS/ABANDONMENT the same day this id was minted — nominee V9 fails 3 of 4 nomination gates; a same-day geometric-feasibility diagnostic found the construction structurally infeasible on M6A and retired it for that instrument, with a stop-rule/re-proposal bar binding any successor. [`RESULTS.md`](../../../../lab/archive/dl2_m6a_pdhpdl_2026-08-22/RESULTS.md).
 K bank: read ../../discovery_manifests/ — never trust a snapshot.
 prior: [Aegis-to-6J venue-transfer prior; its figures are elided from this copy because they describe the locked Aegis book (Rule 13). Read them at the owner, `ops/instruments/6J.md`.] [#J1]
 prior: [Venue sizing-throttle prior on Aegis; figures elided from this copy (Rule 13, locked sizing target). Read them at `ops/instruments/6J.md`.] [#J5]
