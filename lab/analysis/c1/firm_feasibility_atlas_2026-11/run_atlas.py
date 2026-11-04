@@ -98,10 +98,17 @@ def _git(*args) -> str:
 
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--smoke", action="store_true", help="tiny grid into --out (default scratch)")
-    ap.add_argument("--out", type=Path, default=HERE)
+    ap.add_argument("--smoke", action="store_true", help="tiny grid; requires --out")
+    ap.add_argument("--out", type=Path, default=None,
+                    help="output directory (default: this directory, full runs only)")
     ap.add_argument("--workers", type=int, default=os.cpu_count() or 1)
     a = ap.parse_args(argv)
+    if a.out is None:
+        if a.smoke:  # never let a smoke grid overwrite the committed atlas
+            ap.error("--smoke requires --out (a scratch directory)")
+        a.out = HERE
+    elif a.smoke and a.out.resolve() == HERE:
+        ap.error("--smoke must not write into the atlas directory")
 
     if A.HORIZON != HORIZON_CAP:
         raise SystemExit(f"design horizon {A.HORIZON} != engine HORIZON_CAP {HORIZON_CAP}")

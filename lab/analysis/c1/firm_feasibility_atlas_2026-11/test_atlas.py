@@ -109,3 +109,21 @@ def test_lookup_refuses_off_grid_and_excluded():
     lb = A.lookup("T_EX", expectancy_r=0.1, win_rate=0.5, trades_per_session=1.0,
                   risk_frac=0.1, rows=rows, include_lower_bound=True)
     assert lb["bust_is_lower_bound"] is True
+
+
+def test_smoke_run_refuses_the_atlas_directory():
+    run = load_camp_sibling("run_atlas", __file__)
+    with pytest.raises(SystemExit):
+        run.main(["--smoke"])
+    with pytest.raises(SystemExit):
+        run.main(["--smoke", "--out", str(run.HERE)])
+
+
+def test_report_worst_takes_min_of_both_pass_windows():
+    rep = load_camp_sibling("report", __file__)
+    base = {"tier": "T", "f": 0.1, "e": 0.1, "p": 0.5, "lam": 1.0, "mae": "mid", "pass": 0.6,
+            "bust": 0.1, "unresolved": 0.0, "ttp_p50": 50.0, "ttp_p90": 90.0,
+            "p_pass_22": 0.2, "p_pass_63": 0.4}
+    w = rep.worst_by_shape([base, {**base, "p_pass_22": 0.3, "p_pass_63": 0.3}])
+    r = w["T"][(0.1, 0.1, 0.5, 1.0, "mid")]
+    assert (r["p_pass_22"], r["p_pass_63"]) == (0.2, 0.3)

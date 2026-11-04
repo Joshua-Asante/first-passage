@@ -44,6 +44,7 @@ def worst_by_shape(rows):
             vals = [v for v in (cur[t], r[t]) if not math.isnan(v)]
             cur[t] = max(vals) if vals else math.nan
         cur["p_pass_22"] = min(cur["p_pass_22"], r["p_pass_22"])
+        cur["p_pass_63"] = min(cur["p_pass_63"], r["p_pass_63"])
     return out
 
 

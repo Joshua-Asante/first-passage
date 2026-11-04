@@ -25,7 +25,8 @@ net of costs.
 All 540 shapes × 19 configs (10,260 cells, 1,000 paths each, horizon 1,500 business days) ran
 through `scripts/fp.py python` in 3,707 s on 4 workers. The tracked tree was clean at `b7591a1`.
 `run_record.json` pins the sha256 of the engine, the firm rules and the data. The bucket-sum
-invariant held in every cell.
+invariant held in every cell. Its `run_atlas.py` hash is of the run revision `b7591a1`; a later edit
+(Codex review on #1069) changed only `--smoke`/`--out` argument handling, not the computation.
 
 **Slow cells:** 104 of the 597 FEASIBLE cells leave more than 1% of paths unresolved at 1,500
 days, and up to 45%. All of them have λ = 0.25 and f = 0.05. The label follows the frozen design
@@ -162,9 +163,9 @@ Cell: largest FEASIBLE `f` over all (p, λ, MAE), then in brackets how many of t
 | `Tradeify_Select_100K` | HIGH | 0.10 | 47.3 | 52.7 | 0.0 | 100 / 177 | 0.0 | 8.3 |
 | `Tradeify_Select_150K` | HIGH | 0.10 | 47.3 | 52.7 | 0.0 | 100 / 177 | 0.0 | 8.3 |
 | `Tradeify_Growth_100K` | HIGH | 0.10 | 52.1 | 47.9 | 0.0 | 88 / 163 | 0.2 | 13.4 |
-| `MFFU_Rapid_50K` | MEDIUM | 0.10 | 56.6 | 43.4 | 0.0 | 77 / 150 | 0.6 | 21.4 |
+| `MFFU_Rapid_50K` | MEDIUM | 0.10 | 56.6 | 43.4 | 0.0 | 77 / 150 | 0.6 | 21.2 |
 | `MFFU_Rapid_100K` | MEDIUM | 0.10 | 47.3 | 52.7 | 0.0 | 100 / 177 | 0.0 | 8.3 |
-| `BluSky_Premium_50K` | MEDIUM | 0.10 | 57.0 | 43.0 | 0.0 | 78 / 150 | 0.6 | 21.5 |
+| `BluSky_Premium_50K` | MEDIUM | 0.10 | 57.0 | 43.0 | 0.0 | 78 / 150 | 0.6 | 21.3 |
 | `BluSky_Premium_100K` | MEDIUM | 0.10 | 47.3 | 52.7 | 0.0 | 102 / 183 | 0.0 | 8.3 |
 | `FXIFY_Futures_Flex_150K` | PROVISIONAL | 0.10 | 57.9 | 42.1 | 0.0 | 111 / 219 | 0.0 | 8.3 |
 
