@@ -1,4 +1,4 @@
-"""The 2016-2026 CME holiday calendar extension (pending operator acceptance): it parses under the
+"""The 2016-2026 CME holiday calendar extension (accepted by Joshua 2026-11-04): it parses under the
 builder's loader and the strict v1 adapter, and its 2022-2026 part equals the accepted D19 file."""
 from __future__ import annotations
 
