@@ -9,6 +9,7 @@ so that no future session has to re-derive them.
 |---|---|
 | [`cme_holiday_calendar_2022_2026.json`](cme_holiday_calendar_2022_2026.json) | 85 dated entries, per product group (equity index · metals · FX): status, close time in ET, confidence, and a per-entry note. Plus three derived lists and a 13-item `unresolved` register. |
 | [`cme_holiday_calendar_2016_2026.json`](cme_holiday_calendar_2016_2026.json) | **Accepted by the operator, 2026-11-04.** The same schema and key sets, coverage 2016-01-01..2026-12-31: the 85 entries above copied verbatim, plus 67 entries for 2016–2021 (152 in all), re-derived lists, and 9 new `unresolved` items. See [the 2016–2026 extension](#20162026-extension-accepted-2026-11-04). |
+| [`cme_holiday_calendar_2009_2026.json`](cme_holiday_calendar_2009_2026.json) | **Pending Joshua's acceptance.** The same schema and key sets, coverage 2009-01-01..2026-12-31: the 152 entries above copied verbatim, plus 114 entries for 2009–2015 read from CME's own documents. See [the 2009–2026 extension](#20092026-extension-pending-operator-acceptance). |
 
 ## ⚠ Provenance is SECONDARY, not primary
 
@@ -159,6 +160,30 @@ The 2022–2026 file above stays byte-identical (sha256 `2698f268…a181e9`). R1
 - **Regime.** Before 2022 the US-holiday shape is 13:00 ET for equity, metals **and FX** alike: COMEX holiday sessions lengthened only from 2022, and CME FX still observed US-holiday early closes. Every encoding agrees on this.
 - **Energy (MCL) has no column.** `lab/research_utils/secondary_calendar_evidence.py` checks `cme_holiday_calendar/v1` with exact top-level and per-entry key sets, so an extra field would break a v1 consumer. The builder reads only `entries[].date`, so energy does not change what it skips. On 2016–2021 the energy encodings (`pmc` `CMEGlobex_Crude`, Lean `Future-nymex-MCL`) match the metals shape, except Christmas Eve, where `pmc` reads NORMAL. Adding energy columns needs a schema version, not a v1 edit.
 - **Informational rows.** The 2022–2026 part carries 20 all-NORMAL informational rows (for example Columbus Day and Veterans Day) and 4 weekend rows; the 2016–2021 part carries neither. Since PR #1048 (Joshua's option B, 2026-11-03), the builder closes an entry date only when at least one recorded status is not `NORMAL` (`lab/builder/data.py`). All-NORMAL rows therefore remove no session in either era, and the two eras are treated alike.
+
+## 2009–2026 extension (pending operator acceptance)
+
+Added 2026-11-04 for exports that reach further back (MGC 2010-10, M6E 2009-03). 6J's export reaches 2001-01; sessions before 2009 stay outside every calendar. **Not accepted yet:** no run should pin it until Joshua does, as D19 accepted the first file. The 2022–2026 and 2016–2026 files are unchanged, and runs still pin them by sha256.
+
+- **2016–2026:** copied verbatim from the accepted file. `tests/lab/test_builder/test_calendar_2009_extension.py` asserts equal entries and equal date membership.
+- **2009–2015: PRIMARY per entry.** Each row's `note` carries `provenance PRIMARY`, the URL and the access date. v1 allows no extra keys, and the strict adapter requires top-level `provenance: SECONDARY`, which is also accurate for the file as a whole.
+- **Route.** `www.cmegroup.com` answers this host with a 403 naming suspected scraping, so nothing was fetched from it. By Joshua's direction (2026-11-04), CME's documents were read as Internet Archive captures. Sandy also uses a CME filing at the CFTC and CME's press release. Hashes of the bytes read are in [`evidence/2026-11-04-cme-2009-2015-wayback-captures.json`](evidence/2026-11-04-cme-2009-2015-wayback-captures.json); the documents themselves are not stored here.
+- **Which revision.** CME revised these schedules, sometimes materially. The newest copy wins: CME's year-end archive zip where it holds a readable schedule, otherwise the latest capture. 2012's archive is Word files, so 2012 rests on the latest PDF. A row is MEDIUM when its newest schedule predates the session by more than 45 days, or for a named doubt (2009-11-27, 2012-10-05, 2012-10-30, 2013-01-01).
+- **Times.** Every close comes from a Globex schedule, never a settlement-time document. A holiday trading halt is recorded as that group's close, as in the later eras.
+
+**The disputes on PR #1045:**
+
+| Dispute | Resolution | Source |
+|---|---|---|
+| Lean's 11:30 vs 13:00 ET equity holiday close | **Lean was right until 2014.** CME's equity halt is 1030 CT = 11:30 ET through 2014-02-17, and 1200 CT = 13:00 ET from 2014-05-26. The libraries' 13:00 is wrong before that. | Each holiday's Globex schedule |
+| Lean-only Friday early closes | **Real.** FX closes at 1515 CT = 16:15 ET on the Friday before most Monday holidays, through 2015-05-22; CME's revised 2015-09-04 schedule is regular. Metals do the same from 2009-05-22 to 2011-01-14. Equity is regular. | Each holiday's Globex schedule |
+| Hurricane Sandy 2012-10-29/30 | **Neither encoding.** Equity closed at 0815 CT = 09:15 ET on both days, with a 1700 CT reopen on the 29th. Metals and FX stayed open on Globex; only the New York floor closed. | Submission No. 12-363, Clearing Advisory 12-464, CME press release |
+
+**Builder effect.** Under the status rule of PR #1048 any non-`NORMAL` group closes the date, so a 16:15 ET FX Friday removes that session for every product, including equity and metals strategies that traded a full day. 2009–2015 has more such dates than later years for that reason.
+
+**Energy (MCL) has no column**, as in the 2016–2026 file: `lab/research_utils/secondary_calendar_evidence.py` checks exact key sets, so adding one would break a v1 consumer.
+
+**Open residuals**, all in the file's `unresolved` array: the archive route itself; the 2012-10-30 close, known only from notices dated the day before; the Fridays before Columbus and Veterans Day in 2013–2015, which CME's schedules do not name; 2012's archive copies; and unscheduled closures, for which no sweep was run.
 
 ## Forward session file and typed overlay (TB-C1, first attended release)
 
