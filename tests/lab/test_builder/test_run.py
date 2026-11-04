@@ -239,7 +239,8 @@ def test_holdout_looks_survivors_in_card_id_order_on_the_pinned_window(spec):
     h = report(path, "g-001", "holdout")
     assert h["holdout_sessions"] == [dates[300], dates[379], 80] and h["split"] == s["data"]["MCL"]["split"]
     assert h["verdict"] in {"pass", "fail"} and h["dev_binding_sha256"] == report(path)["dev_binding_sha256"]
-    assert h["placement"] == ("clear" if h["pass"] else None)  # declared empty book: placement clears after a pass
+    assert h["placement"] == ("not_evaluated" if h["pass"] else None)  # book: null is never a clear
+    assert h["placement_gate"] is None and h["placement_book_sha256"] is None
 
 
 def _remark(path, rep: dict) -> None:
@@ -269,6 +270,7 @@ def test_a_book_the_card_does_not_fit_gives_a_look_and_placement_fail(spec, tmp_
     h = report(path, "g-001", "holdout")
     assert h["verdict"] == "pass" and h["pass"] and h["placement"] == "fail"  # CONFIRMED · placement-fail
     assert h["placement_gate"]["threshold"]["shared_loss_share"] == gates.THRESHOLDS["5g_max_shared_loss_share"]
+    assert h["placement_book_sha256"] == s["book"]["sha256"] and h["dev_binding_sha256"] == rep["dev_binding_sha256"]
 
 
 def test_holdout_refuses_a_survivor_without_book_statistics_before_any_look(spec):
