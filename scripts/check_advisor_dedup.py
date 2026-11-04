@@ -87,9 +87,8 @@ def _has_digit(token: str) -> bool:
     return any(c.isdigit() for c in token)
 MD_LINK_RE = re.compile(r"\[([^\]]*)\]\([^)]*\)")
 MD_SYNTAX_RE = re.compile(r"[`*_#\[\]()]")
-# A retired/superseded/withdrawn ADR's substantive body moves to docs/ltm/adr/
-# (scripts/retire_adr.py); only a short card-shape stub with this field remains
-# at docs/adr/<file>. Indexing the stub alone misses the body's actual content --
+# A legacy retired/superseded/withdrawn ADR's substantive body sits in docs/ltm/adr/;
+# only a short card-shape stub with this field remains at docs/adr/<file>. Indexing the stub alone misses the body's actual content --
 # for the newly retired Aegis ADR, body-specific vocabulary scores the stub 1 and
 # the archived body 8, silently missing this class of historical prior art.
 ADR_BODY_FIELD_RE = re.compile(r"^\*\*Body:\*\*\s*`([^`]+)`", re.M)

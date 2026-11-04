@@ -84,7 +84,7 @@ reads this table. Regenerate with
 `python scripts/check_repo_map_scripts_table.py --write`; `--check` exits 1 on drift.
 
 <!-- BEGIN generated: scripts-table -->
-_91 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_90 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 † = layer fallback (not in `scripts_layer`); Gate — = no `gates.yml` command runs the file and no module-run gate triggers on it (it may still run inside another gate's script).
 
@@ -170,7 +170,6 @@ _91 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/record_verification.py` | governance† | — | — |
 | `scripts/repo_hygiene.py` | governance† | — | — |
 | `scripts/repo_retrieve.py` | governance† | — | — |
-| `scripts/retire_adr.py` | governance† | — | — |
 | `scripts/roll_sessions.py` | governance† | `sessions-order` (path-conditional); `sessions-append-only` (path-conditional) | — |
 | `scripts/seal_account_snapshot.py` | governance† | — | — |
 | `scripts/session_divergence_hook.py` | governance† | — | — |

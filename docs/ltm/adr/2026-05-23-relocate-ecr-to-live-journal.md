@@ -111,6 +111,10 @@ surface) than later (larger surface).
 > **Owed action:** route this ADR through `scripts/retire_adr.py` (operator-gated; that tool
 > requires an `Accepted` successor declaring `Supersedes: <this> full`, which does not yet
 > exist). Flagged by the 2026-08-02 falsifier-input reachability census; no §4 edit made.
+>
+> **Addendum 2026-11-03:** `scripts/retire_adr.py` is deleted (org cleanup spec D13), so that
+> route no longer exists and the owed action lapses. Removal of this record, if ever wanted,
+> follows verified deletion with a `docs/adr/TOMBSTONES.md` row.
 
 ## §4 Falsifiable hypothesis
 

@@ -64,11 +64,9 @@ disposition and current owner to `docs/adr/TOMBSTONES.md`. Remove a legacy stub/
 pair together when both are cleared. A2 recognizes tombstoned predecessor names;
 A4 checks bodies still present, not deleted records.
 
-If keeping the legacy cold form, `scripts/retire_adr.py` remains available: hot
-stub with `Body:` pointer, matching cold Status in the LTM body, and reverse edge
-for supersession. A3 still validates that form. The helper is not a required
-intermediate step before verified deletion; never weaken its safety checks to
-avoid migrating a consumer.
+A3 still validates legacy cold forms already in the tree: hot stub with `Body:`
+pointer, matching cold Status in the LTM body, and reverse edge for supersession.
+New retirements use verified deletion.
 
 ## Verification
 
