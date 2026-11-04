@@ -176,11 +176,12 @@ def slid(card: Card, delta: int) -> Card | None:
     """The card with its whole clock frame moved ``delta`` 15m bars on the same day: the range's
     offset (a first_n_bars range becomes the equivalent time_window), entry_cutoff and flat_at.
     Every other rule is the card's. None for delta 0, a negative offset, an invalid timing, or a
-    flat_at at DAY_END: the trading day has no bar there, so every slid trade a stop does not end
-    is unresolved, and scoring those 0 would keep only the stopped losers."""
+    flat_at whose next 15m bar open is at or after DAY_END: the trading day has no bar there, so
+    every slid trade a stop does not end is unresolved, and scoring those 0 would keep only the
+    stopped losers."""
     off = int(card.p("offset_bars", 0)) + delta
     cut, flat = minutes(card.entry_cutoff) + C.BAR_MIN * delta, minutes(card.flat_at) + C.BAR_MIN * delta
-    if delta == 0 or off < 0 or cut < 0 or flat >= minutes(DAY_END):
+    if delta == 0 or off < 0 or cut < 0 or -(-flat // C.BAR_MIN) * C.BAR_MIN >= minutes(DAY_END):
         return None
     step = next((s for n, _, s in card.params if n == "offset_bars"), 1)
     ps = tuple(sorted([q for q in card.params if q[0] != "offset_bars"] + [("offset_bars", off, step)]))

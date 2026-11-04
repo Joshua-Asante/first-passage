@@ -448,6 +448,8 @@ def test_5e_I4_only_valid_slides():
     c = cards.parse(WALK_CARD)
     assert gates.slid(c, 0) is None and gates.slid(c, -1) is None  # delta 0; offset below 0
     assert gates.slid(c, 8) is None  # flat_at 17:00 = DAY_END: no flat bar on any day
+    odd = cards.parse(WALK_CARD.replace('flat_at: "15:00"', 'flat_at: "15:40"'))
+    assert [d for d, _ in gates.slides(odd)] == [1, 2, 3, 4]  # 16:55 would flat on a 17:00 bar, which never exists
     assert [d for d, _ in gates.slides(c)] == list(range(1, 8))
     tw = cards.parse(WALK_CARD.replace("range: first_n_bars", "range: time_window").replace(
         "params: {", "params: {offset_bars: {value: 2, step: 1}, "))
