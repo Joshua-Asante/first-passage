@@ -27,6 +27,9 @@ INSTRUMENT_SPECS: dict[str, InstrumentSpec] = {
     "GC": InstrumentSpec("GC", 100.0, 0.10, 10.00),
     "NG": InstrumentSpec("NG", 10_000.0, 0.001, 10.00),
     "MNG": InstrumentSpec("MNG", 1_000.0, 0.001, 1.00),
+    # CME Micro FX page, read 2026-11-04: "12,500 euros", "0.0001 USD per EUR",
+    # "$1.25 per contract" (cmegroup.com/markets/microsuite/fx).
+    "M6E": InstrumentSpec("M6E", 12_500.0, 0.0001, 1.25),
 }
 
 

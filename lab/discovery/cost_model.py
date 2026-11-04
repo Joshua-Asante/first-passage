@@ -44,7 +44,7 @@ COMMISSION_BINDINGS: dict[str, str] = {
     # FIRM_RULES[firm]["cost_per_side_usd_by_symbol"][symbol] where sourced
     **dict.fromkeys(("MCL", "MGC"), "firm_symbol_row"),
     **dict.fromkeys(("ZN", "ZB", "ZF", "CL", "NG", "6E", "ES", "NQ",
-                     "YM", "RTY", "GC", "MNG"), "unavailable"),
+                     "YM", "RTY", "GC", "MNG", "M6E"), "unavailable"),
 }
 CATEGORIES = frozenset({"index_micro", "firm_symbol_row", "unavailable"})
 # Compatibility views, never a second authored classification.
