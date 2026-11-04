@@ -29,7 +29,8 @@ jobs:
         continue-on-error: true
         with:
           version: v0.1.15
-          rules-ref: bc96ca74ad8804e7aab2e8dbc3082d3df227ffc6
+          # rules-ref accepts named tags/branches, not commit SHAs.
+          rules-ref: v0.8.0 # c4a3bc8104e4817b63c68b11792fe77b90d2cfbe
           comment-on-pr: "false"
           artifact-retention-days: "14"
       - name: Check scan execution
