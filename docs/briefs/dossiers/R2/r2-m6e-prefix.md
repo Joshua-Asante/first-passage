@@ -1,9 +1,9 @@
-# r2-m6e-prefix: M6E × fx-fix-dealer-prehedge-drift × MFFU
+# r2-m6e-prefix: M6E × fx-fix-dealer-prehedge-drift × Bulenox
 
 Status: R2 dossier (Part A §A2–§A3, tasks T2–T3) · 2026-11-04 · K = 0 (no data read) · decides nothing; generation never blesses (Rule 25)
 
 ## Cell
-- Instrument: M6E (CME E-micro EUR/USD; no repo ledger yet, landing owed; EURUSD.md is the nearest prior, labelled) · Mechanism: `fx-fix-dealer-prehedge-drift` (NEW; nearest existing `event-window-reversal`) · Provisional firm: MFFU Rapid (D10 proposed mapping, not decided) · Session: European open through the Frankfurt/ECB-concertation fix (London morning, before the US cash open). Direction is fixed a priori: short EUR (long USD) into the fix, flat at the fix.
+- Instrument: M6E (CME E-micro EUR/USD; no repo ledger yet, landing owed; EURUSD.md is the nearest prior, labelled) · Mechanism: `fx-fix-dealer-prehedge-drift` (NEW; nearest existing `event-window-reversal`) · Provisional firm: **Bulenox** (Joshua 2026-11-04 accepted the FX mapping Bulenox ← M6E: cheapest M6E costs, and a micro suits Bulenox's intraday-high trail. It is still proposed; deployment order waits on the venue-terms check). It was MFFU in the first draft · Session: European open through the Frankfurt/ECB-concertation fix (London morning, before the US cash open). Direction is fixed a priori: short EUR (long USD) into the fix, flat at the fix.
 - Event frequency: every session (one event per trading day). Source: Krohn–Mueller–Whelan document the pre-fix USD appreciation as an unconditional daily pattern, "consistently positive in all days of the week, weeks of the month as well as months of the year".
 - Primary declared expression is the pre-ECB leg only. The London-WMR post-fix leg and the Tokyo-fix legs were considered and set aside (sources/NOTES-M6E.md §3).
 
@@ -59,14 +59,30 @@ exit=1
 - Domain bars: the index-intraday OHLCV raised bar does not apply (FX, not an index). There is no FX domain bar in "Domain-level tail-exhaustion raised bars".
 - Family K bank (Req 3 disclosure): `discovery_manifests/fc_carry_6e6j6cl.json` K = 1, closed, combined 6E/6J/CL carry. Outside the manifest ledger: the EURUSD pattern-enum harness K = 450 (spot, closed DONE_WITH_CONCERNS), the D2 cost pre-screen and the B2.2 6E wake battery. Declared K_intrinsic for this cell: 1.
 
-## Venue legality at MFFU
-- Native route: own-settings automation allowed: "Traders may make use of automated trading strategies tailored to their own specific settings". HFT is banned. 8444599, read 2026-11-04 via a summarising fetch [W-x]. Envelope E6 assumes attended automation. **This window is US pre-dawn, so attended operation is an operational burden; flag it to the operator.**
-- Product offered: M6E is on the instrument list, "Total Cost Round Trip" $1.44, which is $0.72/side. Source: `core/firm_rules.py` comment citing 9735811, verified 2026-07-13; envelope re-verified 9735811 on 2026-10-02.
-- Flat-by: auto-liquidation at 16:10 ET, "4:10 PM EST" (9558251, envelope re-verified 2026-10-02). The session opens at 18:00 ET. The cell ends hours before that.
-- News: Tier 1 is "FOMC Meetings, FOMC Minutes, Employment Report, CPI". It is prohibited on Rapid and Pro Sim Funded and permitted on "All evaluations". The rule is "No positions or orders … 2 minutes before and after the release". No non-US or ECB event is listed (8230009, "Last updated August 31, 2026", read 2026-11-04 [W-x]). Collision: the window normally ends before the 08:30 ET US release slot. In the US/EU DST-mismatch weeks the fix lands later in ET and the window can span 08:30 ET. Sim-funded must then skip NFP and CPI days, so list the collision frequency (envelope E7).
-- Hold: intraday only. No overnight or weekend hold is needed (`weekend_holds: False`, firm_rules).
-- Fills: "Exploiting the absence of slippage and utilizing tight brackets to gain from favorable fills are not permitted" (8444599 [W-x]; register D9, 2026-10-30). The cell enters and exits on the clock with no tight brackets. Live fills on a thin European-morning M6E book may be worse than sim, so the backtest must charge live-realistic fills.
-- Cross-firm hedging / product group: MFFU says "MyFunded Futures prohibits hedging of any kind", meaning "both buy and sell positions on the same underlying asset, at the same time". A single-direction cell is compliant. The MFFU page states no rule on running the same strategy elsewhere [W-x]. Tradeify §4a: Currencies group = 6E, M6E, 6B, 6J, 6A, M6A, 6C, 6S, and opposing positions across "any accounts under your control" are banned. If any Tradeify account holds a long Currencies position (e.g. 6J) while this cell is short M6E, that is an opposing-direction breach on Tradeify's reading. Sign-coordinate it, or keep Currencies out of Tradeify.
+## Venue legality at Bulenox (re-checked 2026-11-04 for Joshua's Bulenox ← M6E mapping)
+- **Native route:** "If a trader chooses to connect to Rithmic through a Third-Party API or Trader Composite Software, a $100 monthly fee applies"; the fee "does not constitute approval of any specific algorithm, strategy, or software".
+  - The ToS adds: "any third-party algorithm, automated trading software, or other third-party trading technology must be reviewed and approved by the Bulenox management team before use". Whether a user-built strategy counts as "third-party" is not stated.
+  - FAQ: "Only user-built tools intended solely for the account owner's personal use are permitted."
+  - Platforms include "NinjaTrader Connection (Free License)" using "your Tradovate username and password". NinjaScript is not named.
+  - Sources: PR #1040 §1.1 [W-raw] 2026-11-03; envelope §4 Bulenox row (re-verified 2026-10-02).
+  - **Open:** ask Bulenox whether a user-built NinjaScript strategy needs approval (PR #1040 question set).
+- **Product offered:** M6E is listed. The envelope's 2026-10-02 re-read of Rates PDF "Updated Aug/11/2026" records "micro FX listed: M6A/M6B/M6E" but restates no M6E rate.
+  - The rate in the repo, M6E = 0.5 per side, comes from the Sept-2024 PDF (`core/firm_rules.py`, Bulenox UNIT NOTE).
+  - Re-read the current PDF before encoding (Rule 17).
+- **Size cap:** Bulenox_100K 12 contracts, "1 mini = 10 micros" (accounts-pricing, envelope 2026-10-02), so 120 M6E.
+- **Flat-by:** "All positions must be closed by 3:59 PM (CT)", which is 16:59 ET year-round (envelope §4, 2026-10-02). The cell is flat at the fix in the European morning, hours earlier.
+- **News:** "News trading allowed" (Bulenox pricing page, envelope 2026-10-02). There is no Tier-1 restriction, so MFFU's ±2-minute rule and its DST-week CPI/NFP collision no longer apply.
+- **Hold:** no overnight or weekend carry (`weekend_holds: False`). Inactivity: ≥1 trade per 5 trading days (`core/firm_rules.py`). The card trades daily.
+- **Drawdown:** Option 1 trails the high "including both realized and unrealized (open) profits" (envelope); the account page says "Tracked live during the session, commissions included" (register A1.1).
+  - This is the harshest trail, and the engine models it optimistically (register A1.1).
+  - A micro's small per-contract step is why Joshua's mapping prefers M6E here.
+- **Access clock:** "Access valid for 30 days" on a one-time fee (register A1.5, D14). This is a real deadline that no-deadline venues lack.
+- **Hedging:**
+  - Bulenox is SILENT: there is no hedging clause in its ToS, Risk Disclosure, FAQ or help sections (PR #1040 §1.1).
+  - The card is single-direction: short EUR into the fix.
+  - Tradeify ESA §6.7(c),(i) still binds if a Currencies book (for example a long M6E or 6E) runs at Tradeify in the same window.
+  - MFFU's broad same-underlying ban (6J at MFFU) does not touch EUR. r2-6j-tokyofix trades in the Globex evening, so the two FX cards do not overlap in time.
+- **Cross-firm use:** Bulenox is SILENT on running a strategy at another firm (PR #1040 §1.1).
 
 ## Distinctness
 - vs index ORB book: it differs on every axis. Instrument (M6E vs MNQ), product group (Currencies vs Equity Index), session (European morning vs US cash open), mechanism (clock-anchored benchmark-flow drift vs range breakout) and order type (time entry vs stop entry).
@@ -82,5 +98,5 @@ exit=1
   | 4 | 0.888 | 0.454 | 0.502 | yes, at the boundary |
   Normal approximation; 5f only, so every other gate lowers P(pass). The instrument's lifetime budget is 4 looks (generation note §11).
 - Power at expected event count (conditional on the spot-cohort ruling): N = 2,325 dev sessions × 1 event/session = 2,325. power = Φ(√2325 × 0.042 − 1.96) = Φ(48.22 × 0.0419 − 1.96) = Φ(0.060) = **0.52**. That is marginal. The break-even δ/σ for 0.50 is 1.96/48.22 = 0.0406. With the 32% haircut: Φ(3.274 − 1.96) = **0.91**. Unhaircut: 0.998.
-- Cost and entry-slip sensitivity (M-16, printed only): M6E tick 0.0001 = $1.25 (CME spec, quoted in the generation DRAFT §9.1; Rule 17 re-read owed at landing). The MFFU commission of $1.44 RT = **1.15 ticks RT**. The per-event gross mean takes −8.87%/252 = 3.52 bp; the 252-day annualisation is my assumption, not stated in the table note. At an assumed EUR/USD level of 1.0–1.2 that is 3.5–4.2 ticks unhaircut, **1.48–1.77 ticks after the 58% haircut**, and 2.39–2.87 ticks after 32%. Net of commission: **0.33–0.62 ticks** (58%) or 1.24–1.72 ticks (32%). So **0.3–0.6 tick of total entry-plus-exit slip consumes the screen effect.** That is less than crossing a one-tick spread once each way at half-spread per side. On M-16's terms the cell is cost-bound at the conservative haircut and survives only at the 32% reading. It is the same cost wall D2 hit.
+- Cost and entry-slip sensitivity (M-16, printed only): M6E tick 0.0001 = $1.25 (CME spec, quoted in the generation DRAFT §9.1; Rule 17 re-read owed at landing). The Bulenox commission of $1.00 RT = **0.80 ticks RT** ($0.50/side, Sept-2024 PDF; re-read owed). MFFU, the first draft's firm, is $1.44 = 1.15 ticks. The per-event gross mean takes −8.87%/252 = 3.52 bp; the 252-day annualisation is my assumption, not stated in the table note. At an assumed EUR/USD level of 1.0–1.2 that is 3.5–4.2 ticks unhaircut, **1.48–1.77 ticks after the 58% haircut**, and 2.39–2.87 ticks after 32%. Net of the Bulenox commission: **0.68–0.97 ticks** (58%) or 1.59–2.07 ticks (32%). So **about 0.7–1.0 tick of total entry-plus-exit slip consumes the screen effect** (0.3–0.6 at MFFU). That is less than crossing a one-tick spread once each way at half-spread per side. On M-16's terms the cell is cost-bound at the conservative haircut and survives only at the 32% reading. It is the same cost wall D2 hit.
 - Barrier feasibility: pending atlas (sibling session).

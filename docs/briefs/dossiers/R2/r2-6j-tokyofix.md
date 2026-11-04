@@ -1,9 +1,9 @@
-# r2-6j-tokyofix: 6J × tokyo-fix-usd-demand × Bulenox
+# r2-6j-tokyofix: 6J × tokyo-fix-usd-demand × MFFU
 
 Status: R2 dossier (Part A §A2–§A3, tasks T2–T3) · 2026-11-04 · K = 0 (no data read) · decides nothing; generation never blesses (Rule 25)
 
 ## Cell
-- Instrument: 6J (full-size; no M6J at any firm) · Mechanism: `tokyo-fix-usd-demand` (NEW; nearest existing `event-window-reversal`, then `turn-of-month`) · Provisional firm: Bulenox (D10 proposed mapping, not decided) · Session: CME Globex evening ET = Tokyo morning, from the Globex reopen into the Tokyo fix and from the fix into the European open
+- Instrument: 6J (full-size; no M6J at any firm) · Mechanism: `tokyo-fix-usd-demand` (NEW; nearest existing `event-window-reversal`, then `turn-of-month`) · Provisional firm: **MFFU** (Joshua 2026-11-04 accepted the FX mapping MFFU ← 6J; it is still proposed, and deployment order waits on the venue-terms check). It was Bulenox in the first draft · Session: CME Globex evening ET = Tokyo morning, from the Globex reopen into the Tokyo fix and from the fix into the European open
 - Event frequency: every session (the Tokyo fix is daily). Declared hypothesis band K_intrinsic ≤ 3, proposed: (H1) unconditional pre-fix yen weakness; (H2) unconditional post-fix reversal; (H3) the pre-fix leg on gotobi days only (5th/10th/15th/20th/25th/30th and month-end). Calendar estimate for H3: about 72 dates a year, about 29% of sessions (6 dates × 12 months ÷ ~250; shift rule for weekend dates not verified).
 
 ## Mechanism (harvest Req 1, path 1a)
@@ -56,15 +56,26 @@ The second-nearest id, `turn-of-month` (gotobi/month-end calendar), also returne
 - Domain bars: the index-intraday OHLCV raised bar does not apply (non-index instrument). No FX domain bar exists.
 - Family K bank (Req 3 disclosure): `fc_carry_6e6j6cl` K=1, closed (combined 6E/6J/CL). `t00_tradeify_book_lineage_2026_10_10` K=13, open (includes the Aegis 6J A-0 replay). Undisclosed-manifest informal 6J 15m 43-cell IS battery on 2026-08-25 (6J.md session log; contents not in repo). 6J `orb-ny-breakout` OOS-falsified (J16).
 
-## Venue legality at Bulenox
-- Native route: algos via Rithmic third-party API, "$100 monthly fee" (ops/prop_envelope_default.md §4, re-verified 2026-10-02). Strategy logic native to NinjaScript works through NT8 on Rithmic. The Tradeify-native rule does not bind Bulenox.
-- Product offered: full-size 6J only, $2.36/side all-in; "NO M6J row in Rates.pdf" (core/firm_rules.py; Rates PDF "Updated Aug/11/2026", envelope §4 2026-10-02). Bulenox_100K cap 120 micro-equivalents = 12 full-size 6J ("1 mini = 10 micros", accounts-pricing, envelope 2026-10-02).
-- Flat-by: "All positions must be closed by 3:59 PM (CT)" = 16:59 ET year-round (envelope §4, 2026-10-02). Both windows open and close within one CME trading day (Globex reopen to before the European open), so no position crosses the flat-by.
-- News: "News trading allowed" (Bulenox pricing page, envelope §4, 2026-10-02).
-- Hold: no overnight or weekend carry (`weekend_holds: False`, firm_rules.py). The cell is intra-session.
-- Inactivity: ≥1 trade per 5 trading days (firm_rules.py). H1/H2 trade daily. H3 alone leaves gaps of up to about 6–7 trading days (the 25th/30th to the 5th), which **may trip the rule** and would need a token trade.
-- Drawdown: Option 1 trails the high "including both realized and unrealized (open) profits" (envelope §4). This is the harshest barrier (register A1.1; the engine does not model it faithfully).
-- Cross-firm hedging / product group: Tradeify's Currencies group includes 6J and M6E (Tradeify 10495868, envelope §4a, re-read 2026-10-02). ESA §6.7(c),(i) bars opposing positions between a Tradeify account and an "External Account", including "any proprietary trading firm" (deep-dive DRAFT item 5). The cell is **two-sided**: short 6J pre-fix, long post-fix. While Aegis 6J or any Currencies-group book runs at Tradeify, a simultaneous opposite position is a compliance breach. The two books would need sign coordination or time separation.
+## Venue legality at MFFU (re-checked 2026-11-04 for Joshua's MFFU ← 6J mapping)
+- **Native route:** own-settings automation is allowed: "Traders may make use of automated trading strategies tailored to their own specific settings so long as these automated tools do not aim to exploit the favorable fills offered in the Simulated Environment".
+  - "High-frequency Trading is not allowed on our plans."
+  - Platforms include NinjaTrader and Tradovate. NinjaScript is not named.
+  - Sources: 8444599 (mod. 2026-10-30) and 8528335 ([cross-firm draft](https://github.com/Joshua-Asante/first-passage/pull/1040) §1.2, [W-raw] 2026-11-03); envelope §4 MFFU row (re-verified 2026-10-02).
+- **Product offered:** full-size 6J only, "NO M6J anywhere on the instrument list (full 6J $2.56/side)" (`core/firm_rules.py`, MFFU block, from article 9735811 verified 2026-07-13). The envelope re-verified the no-M6J finding on 2026-10-02 (9735811 dated 2026-08-24). The $2.56 figure is the 07-13 reading and must be re-read before encoding (Rule 17).
+- **Size cap:** Rapid 100K: "You may trade up to 8 minis and/or 80 micros total. Exceeding a total of 8 minis or its equivalent in micros (80 micros) can result in a BREACH" (13286542, verified 2026-07-22, `core/firm_rules.py`). That 6J counts as a mini under this cap is **inferred, not quoted**; confirm it before sizing.
+- **Flat-by:** "4:10 PM EST" auto-liquidation, 16:10 ET; the session opens at 18:00 ET (9558251, envelope re-verified 2026-10-02). On holiday half-days there is no auto-liquidation and late positions "will result in breaching of the account unless otherwise notified".
+  - The cell trades in the Globex evening (Tokyo morning) and is flat before the European open, hours inside the 16:10 limit. On holiday half-days the trader must check the calendar.
+- **News:** Tier 1 is "FOMC Meetings, FOMC Minutes, Employment Report, CPI".
+  - Tier 1 is prohibited on Rapid and Pro Sim Funded and permitted on "All evaluations", with a ±2-minute no-position rule (8230009, envelope 2026-10-02).
+  - The listed events are US releases in the US day, so the evening window does not collide.
+- **Hold:** intraday only (`weekend_holds: False`). Inactivity: "≥1 trade/week". The card trades daily.
+- **Drawdown:** the Rapid eval has an EOD trailing MLL; sim-funded is "Intra-day trailing" on the equity HWM (register D10). Which Rapid plan's consistency figure governs is open (register A2.1).
+- **Fills:** "Exploiting the absence of slippage and utilizing tight brackets to gain from favorable fills are not permitted" (8444599; register D9). The cell's edge is small per event (see Reach). A pass that rests on slippage-free sim fills would be non-compliant and would not carry to live, so the backtest must charge live-realistic fills.
+- **Hedging:**
+  - MFFU: "MyFundedFutures prohibits hedging of any kind … both buy and sell positions on the same underlying asset, at the same time" (12011241). The scope is unstated, so under Rule 17 it is read as reaching accounts at other firms (PR #1040 §1.2).
+  - The card is H2 only: long 6J after the fix, one direction.
+  - Tradeify ESA §6.7(c),(i) bars opposing Currencies-group positions between a Tradeify account and an External Account. If Aegis 6J or any Currencies book is short 6J at Tradeify in the same window, that is a breach on both firms' readings. Aegis's windows are private and were not read; the check is owed by a seat that may read them.
+- **Cross-firm use:** MFFU is SILENT on running a strategy at another firm (PR #1040 §1.2). Tradeify bars a strategy it hosts from running elsewhere, so this card must not also run at Tradeify.
 
 ## Distinctness
 - vs index ORB book: different instrument, product group (Currencies), session window (Tokyo morning, the Globex evening ET) and mechanism (scheduled fix flow, entered by clock, not by price break).
@@ -89,10 +100,10 @@ The second-nearest id, `turn-of-month` (gotobi/month-end calendar), also returne
   - break-even δ/σ for power 0.50 is 0.0406
   - H3: not computable (UNSCREENABLE). At N ≈ 670 gotobi sessions (calendar estimate) the break-even is δ/σ = 1.96/√670 = 0.076, which is 0.18 before the 0.42 haircut.
 - Cost and entry-slip sensitivity (M-16, printed only):
-  - Bulenox round-trip commission is 2 × $2.36 = $4.72 = **0.76 ticks** (tick $6.25).
+  - MFFU round-trip commission is 2 × $2.56 = $5.12 = **0.82 ticks** (tick $6.25). Bulenox, the first draft's firm, is $4.72 = 0.76 ticks.
   - One tick in bp = 0.005 × USDJPY level L (from ¥12.5M contract, $6.25 tick). L = 100 gives 0.50 bp; L = 150 gives 0.75 bp. These are illustrative levels, not cited figures.
   - Haircut per-event δ (annualized ÷ 252, an assumption) is pre-T 0.68 bp and post-T 1.32 bp:
-    - At L = 100: 1.35 and 2.65 ticks gross, leaving **0.60 / 1.89 ticks** of total round-trip slip before the effect is consumed.
-    - At L = 150: 0.90 and 1.76 ticks, leaving **0.15 / 1.01 ticks**.
-  - At the repo's 1 tick/side modelled slip (2 ticks RT), every leg is net ≤ 0 at L = 150, and only post-T survives at L = 100. Entry is time-triggered (market or limit), not a stop entry, so M-16's stop-slip mechanism applies only weakly. The binding question is the limit-vs-market fill.
+    - At L = 100: 1.35 and 2.65 ticks gross, leaving **0.53 / 1.83 ticks** at MFFU of total round-trip slip before the effect is consumed.
+    - At L = 150: 0.90 and 1.76 ticks, leaving **0.08 / 0.94 ticks**.
+  - At the repo's 1 tick/side modelled slip (2 ticks RT), **every leg is net negative at both illustrative levels**: post-T at L = 100 falls about 0.17 ticks short at MFFU. The coordinator corrected this in the 2026-11-04 re-check; the first draft wrongly said post-T survived at L = 100. The leg survives only with less than about 1.8 ticks of total round-trip slip, for example with limit fills. Entry is time-triggered (market or limit), not a stop entry, so M-16's stop-slip mechanism applies only weakly. The binding question is the limit-vs-market fill.
 - Barrier feasibility: pending atlas (sibling session).

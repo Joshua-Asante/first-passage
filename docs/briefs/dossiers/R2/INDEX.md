@@ -36,10 +36,36 @@ Columns:
 | | 2 | [r2-m2k-imom](r2-m2k-imom.md) | `intraday-momentum` × Tradeify | 1a | 0.024 | 0.15 (fails) | reserve |
 | MGC | 1 | [r2-mgc-cgb](r2-mgc-cgb.md) | `compression-gated-breakout` × BluSky | fails 1a and 1b | U | — | **R2 candidate, conditional:** enters only if Joshua admits a Req-1-failing cell through the builder or no-counterparty channel |
 | | 2 | [r2-mgc-pdhpdl](r2-mgc-pdhpdl.md) | `pdh-pdl-breakout-rth` × BluSky | fails 1a and 1b | U | — | reserve |
-| 6J | 1 | [r2-6j-tokyofix](r2-6j-tokyofix.md) | Tokyo-fix USD demand (NEW) × Bulenox | **1a met** | U on 6J (spot USDJPY only). If Joshua admits the spot cohort: H2 0.048, H1 0.034, H3 U | conditional: H2 **0.63**, H1 0.37 | **R2, conditional on Joshua's spot-cohort ruling:** card H2 (post-fix leg) only, K = 1 |
+| 6J | 1 | [r2-6j-tokyofix](r2-6j-tokyofix.md) | Tokyo-fix USD demand (NEW) × **MFFU** (was Bulenox) | **1a met** | U on 6J (spot USDJPY only). If Joshua admits the spot cohort: H2 0.048, H1 0.034, H3 U | conditional: H2 **0.63**, H1 0.37 | **R2, conditional on Joshua's spot-cohort ruling:** card H2 (post-fix leg) only, K = 1 |
 | | 2 | [r2-6j-psbc](r2-6j-psbc.md) | `prior-session-breakout-continuation` × Bulenox | 1b fails limb (iv) | U | — | reserve |
-| M6E | 1 | [r2-m6e-prefix](r2-m6e-prefix.md) | pre-ECB-fix dealer pre-hedge drift (NEW) × MFFU | **1a met** | U on M6E (spot EUR/USD only). If Joshua admits the spot cohort: 0.042 | conditional: **0.52** (marginal) | **R2, conditional:** on the same spot-cohort ruling, on the M6E repo landing, and on the pre-registration answering the EURUSD fix-reversal bar |
+| M6E | 1 | [r2-m6e-prefix](r2-m6e-prefix.md) | pre-ECB-fix dealer pre-hedge drift (NEW) × **Bulenox** (was MFFU) | **1a met** | U on M6E (spot EUR/USD only). If Joshua admits the spot cohort: 0.042 | conditional: **0.52** (marginal) | **R2, conditional:** on the same spot-cohort ruling, on the M6E repo landing, and on the pre-registration answering the EURUSD fix-reversal bar |
 | | 2 | [r2-m6e-asialdn](r2-m6e-asialdn.md) | Asia-range London break (NEW) × MFFU | fails 1a and 1b | U | — | reserve |
+
+## Decision (Joshua, 2026-11-04)
+
+Joshua, 2026-11-04, verbatim: "go with your recommendations on both". He was answering the coordinator, who relayed the two recommendations below to this session; they are recorded as relayed.
+
+1. **R2 composition.**
+   - **r2-6j-tokyofix (post-fix leg) is R2's card.**
+   - **r2-m6e-prefix** enters only after the M6E repo landing, and only if its pre-registration answers the EURUSD fix-reversal re-proposal bar.
+   - **MGC is skipped:** no no-counterparty-channel admission.
+   - **No index card in R2.** MNQ, MYM and M2K hold.
+2. **D10 FX mapping (proposed; deployment order still waits on the venue-terms check):** Bulenox ← M6E (cheapest at $0.50/side; a micro suits Bulenox's intraday-high trail better), and **MFFU ← 6J**.
+
+**Applied in this PR:**
+- r2-6j-tokyofix's venue limb is re-checked for MFFU, and r2-m6e-prefix's for Bulenox; both dossiers' target firms are updated.
+- The re-check changed:
+  - the 6J round-trip commission, from 0.76 to 0.82 ticks;
+  - the M6E round-trip commission, from 1.15 to 0.80 ticks;
+  - M6E's news and DST collision, which drops out at Bulenox;
+  - two new Bulenox items: the 30-day access window, and the ToS approval clause for "third-party" algorithms.
+- It also corrected the 6J cost reading: the post-fix leg is net negative at 1 tick/side slip at both illustrative levels.
+
+**Still open, and not covered by the relayed decision:**
+- The Codex round-1 Req 2 point: both FX cells' effect sizes are spot-pair cohorts, which makes them a spot→futures transplant. Until Joshua rules that the spot cohort is admissible, or a K-charging δ probe supplies a futures figure, the R2 card's screen reads UNSCREENABLE on the target cohort.
+- MFFU's count of a full-size 6J against its "8 minis" cap.
+- MFFU's 6J rate, $2.56/side from the 07-13 reading, needs a re-read.
+- Bulenox's current M6E rate needs a re-read: the PDF the repo cites is from Sept 2024.
 
 ## Reasoning
 
@@ -64,7 +90,7 @@ Columns:
 **6J: Tokyo fix, post-fix leg only.**
 - It is the only dossier with a named payer and a daily event whose cited cohort passes Req 4 after the haircut. That cohort is **spot USDJPY**, not 6J futures: KMW report futures only as a portfolio. Using it as 6J's screen figure is a spot→futures transplant under Req 2, admissible only by Joshua's ruling; without the ruling the cell is UNSCREENABLE and would need a K-charging probe. Krohn–Mueller–Whelan Table I, JPY: post-Tokyo +7.94%/yr, t 8.22, over 5,264 days, gives δ/σ 0.113 before the haircut and 0.048 after it, so power is 0.63.
 - Carding only H2 keeps K = 1 under D9's one-card rule. H1 fails power and H3 is unscreenable.
-- **Cost is the risk.** At the repo's 1 tick/side slip, the leg survives at a USDJPY level near 100 but not near 150 (dossier Reach).
+- **Cost is the risk.** At the repo's 1 tick/side slip, the leg is net negative at both illustrative USDJPY levels (100 and 150). It survives only with less than about 1.8 ticks of total round-trip slip at MFFU, for example with limit fills (dossier Reach; a worker-draft claim that it survived at 100 was corrected on 2026-11-04).
 - Disclosed advisory priors:
   - Q-INVENTORY-1 killed this source family on the now-deleted 4× cost law;
   - the EURUSD fix-reversal add-back bar names "a different fix (Tokyo/Frankfurt)".
@@ -81,8 +107,8 @@ Columns:
 ## Constraints across the dossiers (for D10, Joshua's)
 
 - **Firm slots under the 10-30 "one strategy per firm" reading:**
-  - 6J goes to Bulenox, M6E to MFFU and MGC to BluSky, with no clash.
-  - An index card would also want Bulenox (every index first pick moved off D10's Tradeify default, because Tradeify hosts ORB-MNQ and bars reuse at another firm) and would collide with 6J.
+  - Superseded by the decision below: 6J goes to MFFU and M6E to Bulenox. MGC is skipped in R2.
+  - An index card would want Bulenox (every index first pick moved off D10's Tradeify default, because Tradeify hosts ORB-MNQ and bars reuse at another firm), so it would now collide with M6E. No index card runs in R2.
 - **D10 premise correction:** D10 says MFFU has "cheapest M6E costs". The repo-held commissions say otherwise:
   - Bulenox $0.50/side;
   - MFFU $0.72/side ($1.44 round trip);
