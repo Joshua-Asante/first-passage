@@ -8,6 +8,8 @@
 
 ## Recommendation
 
+**Decision (Joshua, 2026-11-04, verbatim, relayed by the coordinator): "go with M6A and MES".** M6A and MES are chosen for export. ZC is deferred until a grains strategy justifies a separate calendar file. SIL and 6C are not taken now.
+
 Export these five now, 15m, BAR EXPORT v0.2, full depth (first available bar to the latest bar), using the §9.3 steps 1–3 landing as for M6E:
 
 | # | TradingView symbol | Export file stem (existing style) | Export range | Calendar extension needed | Lifetime builder looks (D7 + D9) |
