@@ -408,3 +408,14 @@ Joshua asked for this amendment on 2026-10-29 ("Amend the spec"), after a re-ins
 ### 10.3 Budget
 
 The §9 line is unchanged. D16 sits inside P1.3, and A3 sits inside P3.5. This amendment is one extra PR outside the 26.
+
+## 11. Amendment 2026-11-03
+
+Joshua approved these on 2026-11-03, in the consolidation planning session:
+
+| # | Change |
+|---|---|
+| B1 | **P2.3 allowed files:** add `.claude/skills/brief-authoring/references/adr.md`, `docs/ltm/adr/2026-05-23-relocate-ecr-to-live-journal.md`, `scripts/check_advisor_dedup.py` (comment) and `REPO_MAP.md` by regeneration. Drop the `scripts/README.md` row: it does not exist |
+| B2 | **New small leg:** remove `q_txg1_striker_mnq_inputs_present()` from `lab/research_utils/book_score.py`. It has no callers and a stale path |
+| B3 | **P1.5 scope:** "done `superpowers/plans`" also covers plans superseded but never finished, subject to the same reader, obligation and repoint checks |
+

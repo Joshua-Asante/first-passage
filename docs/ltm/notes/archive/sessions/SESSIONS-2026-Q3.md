@@ -3172,7 +3172,7 @@ token; Magdon-Ismail B.
 
 **Focus:** Stop `retire_adr.build_stub()` from dropping `**Tier:** light` so superseded light ADRs stay visible to hot-dir census greps.
 
-**Shipped:** branch `cursor/preserve-retire-adr-tier-0f0c` — [PR #812](https://github.com/Joshua-Asante/first-passage-archive/pull/812) — [`scripts/retire_adr.py`](../../../../../scripts/retire_adr.py) `extract_tier` + stub carry-forward; tests in [`tests/test_retire_adr.py`](../../../../../tests/test_retire_adr.py). No already-retired stub rewrites.
+**Shipped:** branch `cursor/preserve-retire-adr-tier-0f0c` — [PR #812](https://github.com/Joshua-Asante/first-passage-archive/pull/812) — [`scripts/retire_adr.py`](https://github.com/Joshua-Asante/first-passage/blob/8745b4026814071c097c22430ce89a62c014efbc/scripts/retire_adr.py) `extract_tier` + stub carry-forward; tests in [`tests/test_retire_adr.py`](https://github.com/Joshua-Asante/first-passage/blob/8745b4026814071c097c22430ce89a62c014efbc/tests/test_retire_adr.py). No already-retired stub rewrites.
 
 **Decisions/defects:** None — tool fix only. Convention owner: [ADR ceremony tiering](../../../../adr/2026-08-08-adr-ceremony-tiering.md).
 
