@@ -20,7 +20,7 @@
 
 ## Decisions before freeze
 
-**Ruled by Joshua, 2026-11-04, verbatim:** "go with A for the holdout, and your card rule". Decisions 1 and 2 are settled as A and the rule below. Decision 3 is open.
+**Ruled by Joshua, 2026-11-04, verbatim:** "go with A for the holdout, and your card rule". Decisions 1 and 2 are settled as A and the rule below. Decision 3, also Joshua's, 2026-11-04, verbatim: "keep R1's book".
 
 1. **Holdout window: A (ruled 2026-11-04).** No MCL window is demonstrably untouched.
    - MSL-S2A's explore read MCL through 2025-06-30 (a different construct; [closure](../closures/MSL-S2A-closure-falsified.md)).
@@ -34,7 +34,7 @@
 
    A is the split the 2026-11-04 reach figure assumed (0.84) and overlaps less read data. It contains the uncertified 2025-07..2026-06 period, and the registration discloses that exposure. Part A pins the dates from the landed export: `dev_end` is the session before the last 378, and `holdout_end` is the export's last session.
 2. **Card-selection rule (ruled 2026-11-04)**, outcome-free and applied locally from the card files only: the card the v3 pre-registration names as primary, if it names one; otherwise the card at the centre of the registered grid, so that every ±1 neighbour is valid for 5d. Part A records the rule, the card and why.
-3. **Book (open).** Recommended: keep R1's book series for the post-holdout placement check (5g, now placement only). Its `min_overlap` must hold on the new development window; if it does not, Joshua chooses a smaller `min_overlap` or `book: null`. Under PR #1058, `book: null` leaves placement `not_evaluated`, never a clear.
+3. **Book: R1's book series (ruled 2026-11-04)**, for the post-holdout placement check (5g, now placement only), pinned by its registered sha256. Its `min_overlap` must hold on the new development window; if it does not, the freeze stops and Joshua chooses a smaller `min_overlap` or `book: null`. Under PR #1058, `book: null` leaves placement `not_evaluated`, never a clear.
 
 ## Prerequisites (Must run locally)
 
