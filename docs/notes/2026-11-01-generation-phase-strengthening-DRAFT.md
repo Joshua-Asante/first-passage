@@ -409,7 +409,7 @@ M6E: 12,500 euros, tick 0.0001 = $1.25 ([CME contract specs](https://cmegroup.co
 
 **Durable fix.** A report-only `reachability(k, n)` line in the builder's run report, computed before any card is evaluated. D9 is now decided (§10.1), so it can land by its own PR.
 
-**R1** is frozen and stays as registered (Rule 23). Its floor is in §8.1. **Consequence under this rule:** R1 banks K = 8 on MCL, so no further MCL builder card is reachable on any MCL window (§9.3). The energy family needs pooling or a different instrument.
+**R1** is **not run as pinned** (Joshua, ruled 2026-11-03, recorded effective 2026-11-08: [registration status note](../briefs/pre-registration/2026-11-01-builder-r1-mcl-orb-registration.md)). Its re-registration on the current engine is owed and is a new freeze, so this rule applies to it. At K = 8 on MCL with D9's holdout it would not be reachable (floor 1.59; 9% pass at 0.89). At K = 1 it is (0.84; 54%). Joshua agreed on 2026-11-04 to re-scope it to one MCL card (§11).
 
 ### 9.3 D8, decided by Claude under Joshua's delegation
 
@@ -449,10 +449,10 @@ M6E: 12,500 euros, tick 0.0001 = $1.25 ([CME contract specs](https://cmegroup.co
 | Window | 70/30 split | All history for development, forward confirm |
 |---|---|---|
 | Equity micros, ~7.5 y | **K = 1** | K = 2 |
-| MCL, ~5.3 y | K = 1, **already spent** (R1 banked 8) | K = 1, already spent |
+| MCL, ~5.3 y | K = 1 (taken by R1's re-registration, §11) | K = 1 |
 | ~10 y (MGC / 6J / M6E if TradingView reaches) | K = 2 | K = 4 |
 
-With the current 70/30 split, each equity micro supports **one** honest builder card under D7, and a 10-year contract two. K = 8 is not reachable on any window. MCL, R1's instrument, has no reachable budget left. **The round-shape question (D9) is therefore mostly a budget-allocation question: which single look per instrument is worth spending, and whether to buy more looks with a forward confirm or with pooling.**
+With the current 70/30 split, each equity micro supports **one** honest builder card under D7, and a 10-year contract two. K = 8 is not reachable on any window. MCL, R1's instrument, has one look, which R1's re-registration takes (§11). **The round-shape question (D9) is therefore mostly a budget-allocation question: which single look per instrument is worth spending, and whether to buy more looks with a forward confirm or with pooling.**
 
 ## 10. D9 and D10: the discussion frame (no decision taken)
 
@@ -464,9 +464,9 @@ With the current 70/30 split, each equity micro supports **one** honest builder 
 
 | Development / holdout | Equity micros (~7.5 y) | ~10-year contracts | MCL (~5.3 y) |
 |---|---|---|---|
-| 70/30 (R1's shape) | 1 look | 2 looks | 1 (spent) |
-| **Fixed ~18-month holdout (~378 sessions), decided** | **2 looks** (development ≈ 1,512) | **3 looks** (≈ 2,142) | 1 (spent) |
-| All development, forward confirm | 2 looks | 4 looks | 1 (spent) |
+| 70/30 (R1's shape) | 1 look | 2 looks | 1 (R1's re-registration, §11) |
+| **Fixed ~18-month holdout (~378 sessions), decided** | **2 looks** (development ≈ 1,512) | **3 looks** (≈ 2,142) | 1 (R1's re-registration, §11) |
+| All development, forward confirm | 2 looks | 4 looks | 1 (R1's re-registration, §11) |
 
 A forward confirm buys nothing over the fixed holdout for the equity micros. It also needs the NinjaScript compiler, and matching a 378-session holdout takes about 18 months of forward trading. It stays a later stage, not the confirm.
 
@@ -479,7 +479,7 @@ A forward confirm buys nothing over the fixed holdout for the equity micros. It 
 3. **One mechanism discriminator per card, report-only for now.** It is declared at registration with its observable, null, direction and threshold (candidate-contract field). A result says whether the mechanism or the expression failed, which aims the reserve look. Making a clean discriminator fail terminal is a later decision.
 4. **`k_scope: instrument`.** A pooled multi-instrument card is allowed only by explicit registration choice and spends one look on **each** instrument it touches. Whether a pooled card can supply a firm is D10's question.
 5. **The D7 reachability line in every registration:** the 5f floor at banked K plus new cards, and the pass probability at true Sharpe 0.85 and 0.89.
-6. **R1 runs as frozen** (Rule 23). It spends MCL's budget, so energy re-enters only through a pooled card.
+6. **R1** is re-registered on the current engine as **one MCL card** (Joshua: not run as pinned, 2026-11-03; re-scoped to one card, 2026-11-04; §11). That card uses MCL's single look.
 
 **Owners and next steps.**
 - Items 1–5 are applied by each round's registration. R2's is the first.
@@ -494,14 +494,60 @@ A forward confirm buys nothing over the fixed holdout for the equity micros. It 
 - §9.3 reach by history;
 - the 10-30 rule: one strategy per firm; Tradeify scales by accounts.
 
-| Firm | Candidate family | For | Against |
-|---|---|---|---|
-| Tradeify | (a) US-open index ORB (in flight) | already the candidate; longest micro history | saturated domain bar (advisory); every other family must stay distinct from it |
-| Bulenox | (b) metals level and compression breaks (MGC) | MGC offered; likely long history; Select 100K's granularity wall does not apply here [INF] | no named payer; four MGC mean-reversion explores falsified (opposite shape) |
-| BluSky | (d) FX Asia/London continuation (M6E once exported) | M6E at all four firms; pre-US window most distinct from (a) | FX fix families dead; Aegis occupies 6J mean reversion (not M6E) |
-| MFFU | (c) energy session breaks (MCL) | MCL cost rows at MFFU | **No reachable MCL budget under D7** (5.3 y history; R1 banked 8). Needs a pooled card or another instrument |
+**Rulings so far:**
+- Joshua, 2026-11-03, verbatim: "For now we are not letting index stay Tradeify only. But we'll reevaluate when we expand to other firms."
+- The cross-firm hedging control still applies whenever index books run both at Tradeify and elsewhere (Tradeify ESA §6.7(c),(i); [deep-dive](2026-11-01-tradeify-venue-deep-dive-DRAFT.md#1-what-changed-in-the-picture) item 5). They must never hold opposite directions at the same moment.
 
-**Open questions for the discussion:**
-1. Energy: with MCL's builder budget spent, should MFFU take a different family (FX or metals), or should energy come back through a pooled card?
-2. Is "different instrument, session window and mechanism" enough distinctness for Joshua's reading of the exclusivity rule?
-3. Should one round carry one card per family (K = 1 each, four instruments), rather than two cards on one instrument?
+**Deployment order: open.** Joshua is reconsidering the 10-30 "scale first within Tradeify" ruling. Tradeify makes whatever book runs there Tradeify-only, so the best-evidenced book may reach further at firms without that rule. The premise is the [venue-fact register](2026-11-01-prop-firm-venue-fact-register-DRAFT.md)'s §E row 1, its top unverified assumption. A venue-terms check was commissioned on 2026-11-03: cross-firm use, copy and mirroring rules, external hedging, automation route and per-trader account caps at Bulenox, MFFU, BluSky and FXIFY. Its result decides the order.
+
+**Family-to-firm mapping: proposed, not decided:**
+
+| Firm | Family | Why | Watch |
+|---|---|---|---|
+| Tradeify | US-open index ORB | in flight; native NinjaScript | depends on the deployment-order decision |
+| BluSky | Metals: MGC level and compression breaks | MGC offered; full automation welcomed | end-of-day trail; barrier check (P5) first |
+| MFFU | FX: M6E continuation | cheapest M6E costs; avoids MFFU's funded metals cap | needs the M6E landing and a builder FX session open |
+| Bulenox | Second FX: 6J Asia-session continuation, or held | — | intraday-high trail is the harshest barrier; 6J full-size only |
+| FXIFY | later | rules provisional | — |
+
+**Open questions:**
+1. Energy: MCL's one look goes to R1's re-registration, which is ORB. Under the working distinctness test (different instrument, session window **and** mechanism) it shares ORB's mechanism with the index book, so it could not seed a separate firm on its own.
+2. Is "different instrument, session window and mechanism" enough distinctness for Joshua's reading of Tradeify's exclusivity rule?
+
+---
+
+## 11. Updates, 2026-11-04
+
+**Exports landed** (operator, 2026-11-03). There are 91 annual BAR EXPORT v0.2 pages, gitignored, none committed. Spans are in New York time; every final bar is at 16:45:
+
+| Symbol | First bar | Last bar | Pages |
+|---|---|---|---|
+| MNQ1! / MYM1! / M2K1! | 2019-05-05 | 2026-11-02 | 8 each |
+| MGC1! | 2010-10-04 | 2026-11-02 | 17 |
+| MCL1! | 2021-07-11 | 2026-11-02 | 6 |
+| 6J1! | 2001-01-22 | 2026-11-02 | 26 |
+| M6E1! | 2009-03-23 | 2026-11-02 | 18 |
+
+- The operator reports 2,016,728 bars validated with zero errors by a local script.
+- The repo validator run (§9.3 step 2), the `SHA256SUMS` delta and the M6E landing are owed to a local session. That run, not the local script, is the verification of record (Rule 21).
+
+**Calendar.**
+- Coverage stays **2016-01-01..2026-12-31** (Joshua, 2026-11-03: "Keep 2016, and go with option B"; PR #1045). For 2009–2015, the third-party encodings disagree on 3–8 dates a year, against 0–1 from 2016, so those years need CME's primary advisories, which the cloud cannot reach.
+- **Option B** (PR #1048): the builder closes a calendar date only when at least one recorded status is not `NORMAL`. It fails closed on a missing or unknown status, so the 20 informational 2022–2026 rows become traded sessions.
+- The reachability line (D7's durable fix) merged as PR #1042.
+
+**Lifetime builder looks per instrument under D7 and D9,** once #1045 and #1048 merge:
+
+| Instrument | Usable window | Looks |
+|---|---|---|
+| MNQ / MYM / M2K | 2019-05 → 2026-11 (~7.5 y) | 2 each |
+| MCL | 2021-07 → 2026-11 (~5.3 y) | 1 (R1's re-registration) |
+| MGC / M6E / 6J | 2016-01 → 2026-11 (~10.8 y; the calendar binds, not the export) | 4 each |
+
+Pre-2016 depth (MGC to 2010, M6E to 2009, 6J to 2001) would raise those budgets steeply. It needs a primary-sourced calendar extension first.
+
+**R1** (Joshua, 2026-11-04, agreeing to the recommendation):
+- The owed re-registration is re-scoped to **one MCL card** so that it is reachable under D7.
+- The card is chosen and justified **before** any result, from the registered eight and by stated rationale, never by outcome (Rules 23, 25).
+- Recorded at the owner: the [registration's status note](../briefs/pre-registration/2026-11-01-builder-r1-mcl-orb-registration.md).
+
