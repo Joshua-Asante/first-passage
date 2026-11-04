@@ -13,6 +13,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 import uuid
 
@@ -484,8 +485,31 @@ def windows_command(command):
     return [shell, '-NoProfile', '-NonInteractive', '-EncodedCommand', base64.b64encode(script.encode('utf-16-le')).decode()]
 
 
+# CLI reference: https://code.claude.com/docs/en/cli-reference#cli-flags
+# Exclude BOTH checkout settings sources; user and managed settings still apply.
+READ_ONLY_SETTINGS_ARGS = ('--setting-sources', 'user')
+
+
+def verify_hook_isolation_support(command):
+    """Reject unsupported CLIs before starting a session in the target checkout."""
+    try:
+        # --help does not start a session. Never probe in the untrusted checkout.
+        with tempfile.TemporaryDirectory(prefix='agent-handoff-probe-') as directory:
+            result = subprocess.run(
+                windows_command(command + [*READ_ONLY_SETTINGS_ARGS, '--help']),
+                cwd=directory, stdin=subprocess.DEVNULL, capture_output=True,
+                text=True, timeout=10, check=True,
+            )
+    except (OSError, subprocess.SubprocessError, UnicodeError) as exc:
+        raise HandoffError(f'Cannot establish project hook isolation: {exc}') from exc
+    if not any(line.split()[:1] == ['--setting-sources'] for line in result.stdout.splitlines()):
+        raise HandoffError('Cannot establish project hook isolation: CLI does not advertise --setting-sources')
+
+
 def cli_args(args, prompt, session, fresh_session):
     result = ['-p', '--output-format', 'stream-json', '--verbose']
+    if args.mode in ('ask', 'plan'):
+        result += READ_ONLY_SETTINGS_ARGS
     if args.mode == 'plan':
         result += ['--permission-mode', 'plan']
     elif args.mode == 'ask':
@@ -1299,6 +1323,8 @@ def run(args):
             if (directory / 'cancel.request').exists():
                 record.update(state='CANCELLED', error='Cancelled before provider launch')
             else:
+                if args.mode in ('ask', 'plan'):
+                    verify_hook_isolation_support(command)
                 actual_command = windows_command(command + cli_args(args, prompt, record['session_id'] if parent else None, fresh_session))
                 stdout_path = directory / 'stdout.jsonl'
                 stderr_path = directory / 'stderr.txt'
