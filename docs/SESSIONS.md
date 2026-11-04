@@ -169,7 +169,7 @@ historical number by merge commit or branch name, never by number alone. Owner:
 
 - **Focus:** Pre-A7 coordinator dispatch for the Tradeify portfolio (the operator's new name for the accepted four-strategy book): verify main/PR state, reconcile #356's delivered adapters/policy/emulator/parity against the umbrella's obligations, resolve the recorded strategy-behaviour discrepancies against the pinned Pine and the ports, produce TB-R2's export menu and TB-W1's warm-up requirements, and prepare the first Codex packets.
 - **Judgment:** the two ways of expressing "40 % of normal" (quantity-floor as built vs the sizing host's risk-scaled law) differ by a contract on roughly one Striker entry in ten, and only the risk-scaled law can be reproduced on a TradingView chart, so the export menu cannot freeze until the operator rules it; recorded as O-5 with a recommendation (law B for Striker, law A for Vanguard) rather than choosing. The Aegis fixed-8 rule was verified size-invariant in timing (121/121 captured bars and prices reproduced), so Aegis needs no further export. All 85 delivered book tests re-run green with the private inputs.
-- **Shipped:** [coordinator record](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-09-12-tradeify-portfolio-coordinator-dispatch-1.md) (verified state, completion matrix, decisions, packet dispositions) · [TB-R2 read + draft menu](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-09-12-track-b-scaling-faithfulness-read.md) · [snapshot-seal contract](spec/2026-09-12-tradeify-account-snapshot-seal-contract.md) + [TB-T1 packet](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/handoffs/2026-09-12-tb-t1-snapshot-sealer-packet.md) (READY, not launched) · umbrella rev 12 (§0.8 O-5..O-9, manifest statuses) · alias in the [acceptance record](notes/2026-09-10-tradeify-protection-selection.md#alias--the-tradeify-portfolio-recorded-2026-09-12) · STATE row 2.
+- **Shipped:** [coordinator record](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-09-12-tradeify-portfolio-coordinator-dispatch-1.md) (verified state, completion matrix, decisions, packet dispositions) · [TB-R2 read + draft menu](notes/2026-09-12-track-b-scaling-faithfulness-read.md) · [snapshot-seal contract](spec/2026-09-12-tradeify-account-snapshot-seal-contract.md) + [TB-T1 packet](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/handoffs/2026-09-12-tb-t1-snapshot-sealer-packet.md) (READY, not launched) · umbrella rev 12 (§0.8 O-5..O-9, manifest statuses) · alias in the [acceptance record](notes/2026-09-10-tradeify-protection-selection.md#alias--the-tradeify-portfolio-recorded-2026-09-12) · STATE row 2.
 - **Open / next:** operator rules O-5..O-9 (and O-1); then TB-R2 menu freeze and TB-S1 authoring; TB-I2 / TB-I3 stay BLOCKED on TB-S2 / TB-S3; A7 runs Sunday 2026-09-13 in its own session.
 
 ---
@@ -1715,7 +1715,7 @@ scored panels).
 
 **Decisions/defects:** H6 HOLD lifted. Dated exceptions: `pursuit-records` off `--tier check`; `pine-pin-provenance --base` stays in manifest-check. No branch protection. Queue row 3 opened and closed same session (succession: no auto-replace).
 
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/1r_estimation.md)).
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)).
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 
@@ -1729,7 +1729,7 @@ scored panels).
 
 **Decisions/defects:** The Use-3 SPAN+COT cascade thread was **conceded dead by its own proposer** at Use 4 ("nothing converts WHETHER into WHERE — demote to filter") — removed from the candidate lanes. Ox-alpha's "scoped overnight" relaxation recorded as mostly foreclosed by venue fact (flat-16:45 is a firm rule), not adopted. All plans `AWAITING GO` — per-phase gates; two operator bar-readings named inside Phase B (F1 re-proposal terms for the MOC lane; F3 "not a different fix" for the fix-wake lane).
 
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/1r_estimation.md)). Behind the queue: Phase A GO (A1 audit + A2 shape map, $0) and the parallel firm-repair Q GO are the sequence's next operator decisions.
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](methodology/1r_estimation.md)). Behind the queue: Phase A GO (A1 audit + A2 shape map, $0) and the parallel firm-repair Q GO are the sequence's next operator decisions.
 
 ---
 
@@ -1789,7 +1789,7 @@ sweep at `sims_per_seed=500` (frozen value is 10,000) under a real compute-budge
 **Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](adr/2026-07-17-c1-rail-build-account-registration-go.md)
 · [`M1`](adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound
 ([`Q-TRADECAP-1 closure`](briefs/closures/Q-TRADECAP-1-closure-resolved.md) ·
-[`1r_estimation.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/1r_estimation.md)).
+[`1r_estimation.md`](methodology/1r_estimation.md)).
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 

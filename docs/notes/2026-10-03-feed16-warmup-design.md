@@ -15,7 +15,7 @@
 ## 1. The problem
 
 - **The runtime has no warm-up path.** `FourLegRuntime` halts on any bar outside the bound session (`book_runtime.py:350–:353`). Without retained history, the first bar must be the session open, and "only the session's first bar may seed their state" (`:369–:373`). Today the adapters therefore start each session cold.
-- **The adapters were qualified warm.** Parity was proven from the panel origin, where the ports and the TradingView backtest start cold together ([scaling read §4](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-09-12-track-b-scaling-faithfulness-read.md) `:120–:140`). A cold adapter at a live session open does not have that state.
+- **The adapters were qualified warm.** Parity was proven from the panel origin, where the ports and the TradingView backtest start cold together ([scaling read §4](2026-09-12-track-b-scaling-faithfulness-read.md) `:120–:140`). A cold adapter at a live session open does not have that state.
 - **The live contract cannot carry history.** `ContractBarSource` forwards only bars inside the M5 deadline, and it latches `REFUSED` on any bar at or before the last forwarded `ts` outside its one-day memory (`late_bar_unverifiable`, contract `:21–:24`, `:338`). History therefore needs its own path into the adapters, never through the live source.
 - **Umbrella (H) already sets the shape:** state is "rebuilt by deterministic replay of the bar history from its TB-W1 warm-up boundary … before any emission resumes" (`:563`). FEED-16 decides where those bars come from.
 

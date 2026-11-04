@@ -128,7 +128,7 @@ Relative Markdown links are rebased from `docs/` to this archive directory; all 
 
 **Decisions/defects:** [impl plan](../../../../superpowers/plans/2026-08-23-p6-p10-residuals-implementation.md) · [Q-TOM-SPX-1 DEAD](../../../../briefs/closures/Q-TOM-SPX-1-closure-dead.md) · [turn-of-month-premium × SPX500](../../../../rejected_candidates.md).
 
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](../../../../briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/1r_estimation.md)). Residue (same exception): P6–P10 land complete; do not promote leftovers.
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](../../../../briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](../../../../methodology/1r_estimation.md)). Residue (same exception): P6–P10 land complete; do not promote leftovers.
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 
@@ -142,7 +142,7 @@ Relative Markdown links are rebased from `docs/` to this archive directory; all 
 
 **Decisions/defects:** Fails R1–R5 as a working-tree file (verdicts already in ledgers/closures; `rejected_candidates.md` does not cite it). Restore also blocked: tag is private-archive-only ([`docs/ltm/README.md`](../../../README.md)). Channel §2-B stays live on the ADR.
 
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](../../../../briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/1r_estimation.md)).
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](../../../../briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](../../../../methodology/1r_estimation.md)).
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 
@@ -156,7 +156,7 @@ Relative Markdown links are rebased from `docs/` to this archive directory; all 
 
 **Decisions/defects:** [`07-14 addendum`](../../../../adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-08-23-judgment-review). Drafts silent; re-review stays `@claude`.
 
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](../../../../briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/1r_estimation.md)).
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](../../../../briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](../../../../methodology/1r_estimation.md)).
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 
@@ -170,7 +170,7 @@ Relative Markdown links are rebased from `docs/` to this archive directory; all 
 
 **Decisions/defects:** Object-layer dryness stays on the viable-strategy sequence, not a new pain-point. Personas / Limb-A / S3–S7 stay parked.
 
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](../../../../briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/1r_estimation.md)).
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](../../../../briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](../../../../methodology/1r_estimation.md)).
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 
@@ -184,7 +184,7 @@ Relative Markdown links are rebased from `docs/` to this archive directory; all 
 
 **Decisions/defects:** Standing analog surface rejected (no successor ADR). Mapping-guardrails consolidation and the instance-4 GO record stay.
 
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](../../../../briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/1r_estimation.md)).
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](../../../../briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](../../../../methodology/1r_estimation.md)).
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 
@@ -519,7 +519,7 @@ top-ranked Pre-Q executed to verdict on operator GO, plus doc-hygiene.
 
 **Decisions/defects:** Pin `v0.23.0` @ `dc046e4`; no pip/runtime. Light ADR [`2026-08-23-nemo-guardrails-pin-not-runtime.md`](../../../../adr/2026-08-23-nemo-guardrails-pin-not-runtime.md) `Proposed`. Belt consolidated (audit action 4).
 
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](../../../../briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/1r_estimation.md)).
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](../../../../briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](../../../../methodology/1r_estimation.md)).
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 
@@ -533,7 +533,7 @@ top-ranked Pre-Q executed to verdict on operator GO, plus doc-hygiene.
 
 **Decisions/defects:** P0–P5 buildable set closed. W5 CI-from-gates / keep-20 / mass-CATALOG remain parked on their owners.
 
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](../../../../briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/1r_estimation.md)).
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](../../../../briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](../../../../methodology/1r_estimation.md)).
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 
@@ -547,7 +547,7 @@ top-ranked Pre-Q executed to verdict on operator GO, plus doc-hygiene.
 
 **Decisions/defects:** Quoted-path + pathlib-join (backslash continuations). Known reads present (guard.py CLAUDE.md; c1_rail_arm M1 artifact; register_search docs/). Row 3 closed on land. P4/P5 not auto-opened.
 
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](../../../../briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/1r_estimation.md)).
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](../../../../briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](../../../../methodology/1r_estimation.md)).
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 
@@ -561,7 +561,7 @@ top-ranked Pre-Q executed to verdict on operator GO, plus doc-hygiene.
 
 **Decisions/defects:** Durable atoms live in ADRs / lessons. Claude-project MEMORY is assistive-only, never §0. Not Approach B/C. Row 3 closed on land (succession: no auto-replace).
 
-**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](../../../../briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/1r_estimation.md)).
+**Open / next:** STATE queue: #1 B7-REFIRE Stage 1 + M1 ([`GO addendum`](../../../../adr/2026-07-17-c1-rail-build-account-registration-go.md) · [`M1`](../../../../adr/2026-07-22-c1-venue-native-monitoring-maturity.md)) · #2 Per-trade dollar-loss bound ([`Q-TRADECAP-1 closure`](../../../../briefs/closures/Q-TRADECAP-1-closure-resolved.md) · [`1r_estimation.md`](../../../../methodology/1r_estimation.md)).
 
 **Live-ops state:** unchanged — rail disarmed; no book.
 
@@ -2856,7 +2856,7 @@ token; Magdon-Ismail B.
 
 **Focus:** Close the search-blindness → new artifact → stale index loop (registry feed, amendment-first, Limb B FTS, liveness sweep, Rule 2 pointers, gate/CI diet). Live rail out of scope. Replayed onto the public seed; merged after [PR #1](https://github.com/Joshua-Asante/first-passage/pull/1).
 
-**Shipped:** branch `cursor/search-memory-liveness-2af2` — [PR #2](https://github.com/Joshua-Asante/first-passage/pull/2) — Rule 8.9/8.10 + addenda on [dedup-first](../../../../adr/2026-08-13-dedup-first-before-new-work.md) / [ceremony-tiering](../../../../adr/2026-08-08-adr-ceremony-tiering.md) / [W5](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md); [Q-XMEM-1](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/Q-XMEM-1-cross-surface-memory-sidecar-pilot.md) v1.2 Limb B; `scripts/repo_retrieve.py` + `scripts/sync_liveness_indexes.py`; INDEX CON-3/CON-4 repair. Mem0 T0 and local vector unpaid. Trip-log not replayed (`docs/notes/` omitted from the public seed).
+**Shipped:** branch `cursor/search-memory-liveness-2af2` — [PR #2](https://github.com/Joshua-Asante/first-passage/pull/2) — Rule 8.9/8.10 + addenda on [dedup-first](../../../../adr/2026-08-13-dedup-first-before-new-work.md) / [ceremony-tiering](../../../../adr/2026-08-08-adr-ceremony-tiering.md) / [W5](https://github.com/Joshua-Asante/first-passage/blob/4fb2b88f3b7d56d77463c43ba45c87ffadff6a31/docs/adr/2026-08-07-w5-governance-diet.md); [Q-XMEM-1](../../../../briefs/Q-XMEM-1-cross-surface-memory-sidecar-pilot.md) v1.2 Limb B; `scripts/repo_retrieve.py` + `scripts/sync_liveness_indexes.py`; INDEX CON-3/CON-4 repair. Mem0 T0 and local vector unpaid. Trip-log not replayed (`docs/notes/` omitted from the public seed).
 
 **Decisions/defects:** no new ADR. Rule 2 stays PROPOSED.
 
@@ -3004,7 +3004,7 @@ token; Magdon-Ismail B.
 
 **Focus:** Four independently verified dead-trigger surfaces (2026-08-14): delete lock-brief template; dormancy-mark 1R live-calibration + E1–E4; discharge lean-portfolio meta-layer falsifier.
 
-**Shipped:** branch `cursor/dormant-dead-trigger-docs-0ebd` — [PR #824](https://github.com/Joshua-Asante/first-passage-archive/pull/824) — [lock_decision.md deleted](../../../../../.claude/skills/brief-authoring/SKILL.md) · [1r_estimation](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/1r_estimation.md) · [lean-portfolio addendum](../../../../adr/2026-06-04-lean-portfolio-meta-layer.md) · [E1–E4](../../../../methodology/lessons/execution_lessons.md). $0 · K=0.
+**Shipped:** branch `cursor/dormant-dead-trigger-docs-0ebd` — [PR #824](https://github.com/Joshua-Asante/first-passage-archive/pull/824) — [lock_decision.md deleted](../../../../../.claude/skills/brief-authoring/SKILL.md) · [1r_estimation](../../../../methodology/1r_estimation.md) · [lean-portfolio addendum](../../../../adr/2026-06-04-lean-portfolio-meta-layer.md) · [E1–E4](../../../../methodology/lessons/execution_lessons.md). $0 · K=0.
 
 **Decisions/defects:** §4 falsifier of [lean-portfolio](../../../../adr/2026-06-04-lean-portfolio-meta-layer.md) recorded FIRED 2026-07-30 (ceremonial; children live). Owner: that ADR's 2026-08-14 addendum.
 

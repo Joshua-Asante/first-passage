@@ -318,7 +318,7 @@ the three earlier approvals remain unchanged. Review and amended freeze are owed
 The hash-verified Striker MYM reference activates the pinned Pine's native daily/
 total drawdown guard. Source reads on October 10 confirm `ddHit` (line 205) feeds
 entry eligibility (241) and position closure (368); `backtestMode` gates it.
-This agrees with the [prior source read](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-09-12-track-b-scaling-faithfulness-read.md#1--classification-per-leg-pine-line-refs-are-to-the-pinned-body).
+This agrees with the [prior source read](../../notes/2026-09-12-track-b-scaling-faithfulness-read.md#1--classification-per-leg-pine-line-refs-are-to-the-pinned-body).
 
 On amended re-freeze, this ruling supersedes section A's parenthetical claim that
 only the simulator's 15% halt is modeled: **normal mode excludes external Tradeify

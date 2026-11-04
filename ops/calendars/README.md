@@ -267,7 +267,7 @@ and [`ops/c1_rail/personal_calendar_binding.py`](https://github.com/Joshua-Asant
 is an operator act naming its digest. The binding pins every calendar and overlay digest and adds
 the refusals `binding_digest_mismatch` and `coverage_gap`; the loader's schedule-rule,
 first-release and ratification refusals pass through. Owner: the G0 card,
-`docs/briefs/handoffs/2026-10-12-personal-live-g0-calendar-card-DRAFT.md` (PR #809).
+[`2026-10-12-personal-live-g0-calendar-card-DRAFT.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/briefs/handoffs/2026-10-12-personal-live-g0-calendar-card-DRAFT.md) (PR #809).
 
 ### Capture identity and holiday halt evidence
 

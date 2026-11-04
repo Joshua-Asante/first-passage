@@ -8,7 +8,7 @@
 | [`regime_robustness_gate.md`](regime_robustness_gate.md) | Both-halves gate |
 | [`observation_routing.md`](observation_routing.md) | Notice / Observe routing |
 | [`rejected_signals.md`](rejected_signals.md) | Signal-level rejects |
-| [`1r_estimation.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/1r_estimation.md) | 1R estimation |
+| [`1r_estimation.md`](1r_estimation.md) | 1R estimation |
 | [`objective_composition_map.md`](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/methodology/objective_composition_map.md) | Objective composition |
 | [`backtest_live_shrinkage.md`](backtest_live_shrinkage.md) | Backtest→live shrinkage |
 | [`prefilter_rank_correlation_gate.md`](prefilter_rank_correlation_gate.md) | Prefilter rank-correlation gate |

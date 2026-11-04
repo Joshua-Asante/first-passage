@@ -3883,7 +3883,7 @@ carries. This section records those rulings as the campaign's authority; the umb
 | O-8 | Vanguard's post-holiday no-trade artefact is **kept as captured** for this attempt. Narrowed 2026-09-15 (operator-ratified): the latch mechanism is unchanged; its date membership is the provider-observed reset set, qualified through 2026-09-03 — see the [umbrella](../handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md#september-15--o-8-narrowed-by-the-step-3-provider-reset-correction-operator-ratified). |
 | O-9 | Effective-input provenance: (a) re-capture the five Inputs tabs per §47a if the charts still exist, else (b) accept the reconstructed set as RECONSTRUCTED with a per-export Inputs/Properties capture for every OP-1 export; never a manifest rewrite. |
 
-**Effect.** The TB-R2 export menu is **frozen** ([read §3](https://github.com/Joshua-Asante/first-passage/blob/415fff5f3872534f9fec5c2e2d7ff6b753c000b8/docs/notes/2026-09-12-track-b-scaling-faithfulness-read.md):
+**Effect.** The TB-R2 export menu is **frozen** ([read §3](../../notes/2026-09-12-track-b-scaling-faithfulness-read.md):
 seven owed exports — five Striker by scaling the Account Size input, two ORB at one contract with margin 0 % —
 Aegis and Vanguard none). TB-S1 is authorable on the ruled laws; TB-S2, TB-S3, TB-P1 and TB-P2 are authored on
 their manifest branches as separate PRs (2026-09-12). Nothing here authorizes implementation beyond a packet's
