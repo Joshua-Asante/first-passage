@@ -14,16 +14,16 @@
 | Firm | `Tradeify_Select_100K` (as R1); costs from `FIRM_RULES` per the builder README *Costs* rule |
 | Cells | one: MCL × opening-range breakout × Tradeify Select 100K. Session window and clock settings stay in Part A |
 | K | MCL builder bank 0 (R1 never ran; checked locally, prerequisite 2) + 1 new = **1**, `k_scope: instrument` (D9 item 4). `register_search` manifest `discovery_manifests/builder-r1-mcl-one-card.json`, opened at freeze before any data read: `--search-space-size 1 --alpha 0.05 --instrument MCL --lane mechanism-first` |
-| Multiplicity | M = 1, alpha 0.05; with one card the procedure is the raw test (Bonferroni and Holm coincide) |
+| Multiplicity | M = 1, alpha 0.05, applied to the Confirm test Part A freezes (A5). With one card no multiplicity adjustment applies; the engine's stage-8 pass is not that test |
 | Reach (D7), estimated | at K = 1 and about 960 development sessions: floor 0.843 annual, P(pass) 0.51 at 0.85 and 0.54 at 0.89, **reachable**. Estimate from calendar spans, not the export; the run's printed `reachability_5f` is the value of record |
 | Gate 5h | not run before Joshua's forward GO on a survivor (as R1) |
 
 ## Decisions for Joshua before freeze
 
-1. **Holdout window.** No demonstrably untouched MCL window of useful length exists.
+1. **Holdout window.** No MCL window is demonstrably untouched.
    - MSL-S2A's explore read MCL through 2025-06-30 (a different construct; [closure](../closures/MSL-S2A-closure-falsified.md)).
    - The MCL retain-mutate pilot's draft spec calls 2025-07-01..2026-06-30 an "uncertified historical replay, never independent OOS", because later exposure is unknown ([spec §2.2](../../spec/2026-10-30-mcl-retain-mutate-pilot-rev3-DRAFT.md#22-historical-exposure-uncertified-replay)). No read of it is recorded.
-   - Only 2026-07-03..2026-11-02 is newly exported and certainly unread, about 85 sessions: too short to confirm.
+   - 2026-07-03..2026-11-02 is newly exported (2026-11-03), about 85 sessions. Its exposure is unverified too, short of a local audit or operator attestation, and it is too short to confirm on its own.
 
    | Option | Holdout | Development (est.) | Floor at K = 1 | Bars read by MSL-S2A explore |
    |---|---|---|---|---|
@@ -51,7 +51,7 @@ The local session fills the template's Part A (PR #1051) as `PREREG-BUILDER-R1-O
 - **A3:** the reach line at the real development-session count.
 - **A4:** the card, its sha256 and the selection rationale (decision 2). The mechanism discriminator is report-only (D9 item 3): observable, null, direction, threshold, coverage.
 - **A5:**
-  - the Confirm statistic (the engine's stage-8 pass: positive net and `8_min_pf`);
+  - the Confirm statistic and its alpha-calibrated decision rule at alpha 0.05 (a significance test with a stated p-value method). The engine's stage-8 pass (positive net and `8_min_pf`) is a necessary condition only: it computes no p-value, and the [mapping's stage-8 row](../../../lab/builder/README.md#ten-step-mapping) says its raw pass/fail never maps to CONFIRMED by itself;
   - a holdout coverage floor;
   - the step-9 temporal battery, which is mandatory;
   - routing: `unresolved` or under-coverage → EVIDENCE-VOID, a failed statistic or battery → EXPRESSION-FAIL, all clear → CONFIRMED, and `placement: fail` → CONFIRMED · VENUE-FAIL(edition).
