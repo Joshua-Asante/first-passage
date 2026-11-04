@@ -13,7 +13,7 @@ working changes: `ops/c1_rail/book_policy.py` (`BookProtectionClock`),
 `ops/c1_rail/book_sizing_context.py` (`SettledClose`, `_session_mode`),
 `core/firm_rules.py`, TB-S1 section 3, and the B7 C1–C10 contract.
 Actual report headers and access are retained in the
-[producer probe](../notes/2026-09-15-packet1-producer-feasibility.md).
+[producer probe](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-15-packet1-producer-feasibility.md).
 
 1. **Initial peak:** B7 derives it from the Tradeify dashboard threshold and the
    kernel width. Statements never reconstruct that initial peak (D23).
@@ -243,6 +243,6 @@ producer, and a qualified producer is not deployment approval.
 
 The owner-side protocol above is implemented in `ops/c1_rail/book_settlement.py` with
 `ops/c1_rail/ed25519_verify.py`; see the
-[owner component record](../notes/2026-09-15-account-close-owner-component.md) for the exact
+[owner component record](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-15-account-close-owner-component.md) for the exact
 refusal set, tests and remaining qualification. This status line changes no
 requirement of this contract.

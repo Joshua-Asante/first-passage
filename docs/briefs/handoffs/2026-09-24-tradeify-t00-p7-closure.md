@@ -520,7 +520,7 @@ occurred.
 
 **Setup.** The executor worktree is `.claude/worktrees/t00-p7-tasks-3-4`, on `claude/t00-p7-tasks-3-4` at `34f5b12` with a clean tree.
 - `fp.ps1 doctor` passed on CPython 3.13.2 with 62 locked packages.
-- `check_brief --type handoff` on the [dispatch card](2026-09-30-t00-p7-tasks-3-4-dispatch.md) reported 0 HARD and 0 WARN violations.
+- `check_brief --type handoff` on the [dispatch card](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/briefs/handoffs/2026-09-30-t00-p7-tasks-3-4-dispatch.md) reported 0 HARD and 0 WARN violations.
 
 **§0.1 reverified; all MATCH.**
 - The six `SHA256SUMS` panel rows pass, and the Aegis attested-prefix panel is `8ae083d0…`.
@@ -548,7 +548,7 @@ Joshua gave these on 2026-09-30 by structured answer in the coordinating session
 > - Two residuals are carried by name: the 2025-11-28 Globex outage, and possible ad-hoc closures after 2026-05-28. The second is the non-conservative one.
 > - If the P7 hand-recompute day is chosen, it must not be a residual date.
 
-The coordinator's sequencing is [card §8.1](2026-09-30-t00-p7-tasks-3-4-dispatch.md#81--coordinator-sequencing-after-the-checkpoint-1-return-2026-09-30). The source-only design (Phase A) and the Task 3 source pack proceed in parallel. Signing, implementation and Task 4 wait for the accepted design.
+The coordinator's sequencing is [card §8.1](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/briefs/handoffs/2026-09-30-t00-p7-tasks-3-4-dispatch.md#81--coordinator-sequencing-after-the-checkpoint-1-return-2026-09-30). The source-only design (Phase A) and the Task 3 source pack proceed in parallel. Signing, implementation and Task 4 wait for the accepted design.
 
 #### Coordinator review 2026-09-30
 

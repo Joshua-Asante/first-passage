@@ -6,7 +6,7 @@
 > - **RC-4's parity basis is kept.** It is the emulator rules 1–8, which have no age-based cancel and under which ORB's export parity was obtained.
 > - **The implementation** (`ops/c1_rail/qualification/replay.py:507-509`, pinned by `tests/ops/qualification/test_replay.py:214-223`) is corrected by handoff H4, checkpoint (R). `replay.py` is the qualification `replay_kernel` (`ops/c1_rail/qualification/trust_domain.py:142`), so the correction is an E1 freeze-inventory change, verified before freeze.
 >
-> This amendment does not accept a replay implementation. It changes no RC-8 schedule rule. Disposition: [2026-09-27 note](../notes/2026-09-27-orb-fence-ruling6-disposition.md).
+> This amendment does not accept a replay implementation. It changes no RC-8 schedule rule. Disposition: [2026-09-27 note](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-27-orb-fence-ruling6-disposition.md).
 
 > **Attended incident amendment, recorded 2026-09-15 UTC:** [TB-S3 rev9](2026-09-14-tb-s3-halt-resume-contract.md) governs injected incident/restart scenarios: stop future runtime mutations, retain unknown requests, require manual intervention and verified reconciliation before fresh operator resume. Normal strategy, protection/takeover and RC-8 scheduled flatten remain; rev8 schedule section 5 is unchanged. Do not invent operator-response/outage frequencies or use manual incident outcomes as ordinary strategy parity. Incident traces are integration evidence; shared calendar/schedule/cost and fingerprint requirements still apply before F1. This amendment does not accept a replay implementation.
 

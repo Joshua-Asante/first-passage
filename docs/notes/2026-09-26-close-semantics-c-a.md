@@ -225,9 +225,9 @@ The ruling defers X-5, and no drill is authorized. This section describes value 
 
 ## 6. Draft vendor question (for the operator to send; not sent)
 
-*Operator ruling 2026-09-26 (in session): finalized for the operator to send, keeping the nine questions below and adding one request as item 10. The final text, the reply-handling rules and where the reply is retained are in the [vendor-question note](2026-09-26-crosstrade-close-semantics-vendor-question.md). The draft below is kept as drafted.*
+*Operator ruling 2026-09-26 (in session): finalized for the operator to send, keeping the nine questions below and adding one request as item 10. The final text, the reply-handling rules and where the reply is retained are in the [vendor-question note](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-26-crosstrade-close-semantics-vendor-question.md). The draft below is kept as drafted.*
 
-*Operator ruling 2026-09-27 (in session):* the text to send is now the revised message in the [vendor-question note](2026-09-26-crosstrade-close-semantics-vendor-question.md) §1, built on the research in the [2026-09-27 addendum](#addendum-2026-09-27--public-source-and-browser-research-governs-where-it-narrows-statuses-unchanged-unless-stated); the 2026-09-26 text is kept there, superseded for sending. It has not been sent. The draft below is still kept as drafted.
+*Operator ruling 2026-09-27 (in session):* the text to send is now the revised message in the [vendor-question note](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-26-crosstrade-close-semantics-vendor-question.md) §1, built on the research in the [2026-09-27 addendum](#addendum-2026-09-27--public-source-and-browser-research-governs-where-it-narrows-statuses-unchanged-unless-stated); the 2026-09-26 text is kept there, superseded for sending. It has not been sent. The draft below is still kept as drafted.
 
 **To:** CrossTrade support. The evaluation account has no native Tradovate API access (T08 §7.4), so CrossTrade is the party that makes the `liquidateposition` call. The question asks CrossTrade to name any answer that depends on Tradovate. **Constraints:** no account identifiers. Retain the written reply as original bytes (Gate A A12). Sending needs the operator's own decision; no agent contacts a vendor.
 
@@ -326,7 +326,7 @@ A written answer would be a vendor statement, subject to coordinator acceptance.
 
 Not used: GitHub code search (it needs sign-in), CrossTrade's Discord, logged-in CrossTrade pages and the API Playground. Previously blocked and now read: the Tradovate help-centre articles, help.tradeify.co and the apextraderfunding.com help centre.
 
-**A.7 Vendor question.** Every item still has an unanswered part, so none is dropped. By the operator's ruling of 2026-09-27 (in session), the revised message is the text to send. It is in the [vendor-question note](2026-09-26-crosstrade-close-semantics-vendor-question.md) §1, with the 2026-09-26 text preserved there as superseded for sending. It has not been sent. The operator sends it himself, and the reply-handling rules are unchanged. §6 above stays as drafted.
+**A.7 Vendor question.** Every item still has an unanswered part, so none is dropped. By the operator's ruling of 2026-09-27 (in session), the revised message is the text to send. It is in the [vendor-question note](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-26-crosstrade-close-semantics-vendor-question.md) §1, with the 2026-09-26 text preserved there as superseded for sending. It has not been sent. The operator sends it himself, and the reply-handling rules are unchanged. §6 above stays as drafted.
 
 ## Addendum 2026-10-02 — C-a selection register (PROPOSED, for operator acceptance)
 
@@ -344,7 +344,7 @@ Not used: GitHub code search (it needs sign-in), CrossTrade's Discord, logged-in
 
 **Abbreviations.**
 - CS: this note.
-- VQ: the [vendor question](2026-09-26-crosstrade-close-semantics-vendor-question.md).
+- VQ: the [vendor question](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-26-crosstrade-close-semantics-vendor-question.md).
 - BD: the [B–D packet](2026-09-26-tradeify-bd-decision-packet.md).
 - RS: the [multi-leg rail spec](../spec/2026-09-12-c1-multi-leg-rail-extension-spec.md).
 - HR: the [halt/resume contract](../spec/2026-09-14-tb-s3-halt-resume-contract.md).

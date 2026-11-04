@@ -2,7 +2,7 @@
 
 **Status:** PREPARED 2026-09-27 by [handoff H3](2026-09-27-staged-acceptance-handoffs.md#h3--orb-lifecycle-and-fence-disposition-owner-text-for-ruling-7-h4-card). **Not dispatched.** It becomes dispatchable only after the coordinator accepts:
 - H3's owner text (the dated 2026-09-27 amendments to the rail spec, the replay spec and the edition pre-registration);
-- H3's [disposition note](../../notes/2026-09-27-orb-fence-ruling6-disposition.md);
+- H3's [disposition note](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-27-orb-fence-ruling6-disposition.md);
 - this card, including its answer to disposition Q3.
 
 At dispatch the coordinator records the dispatch revision in §10 and runs the pre-dispatch read ([surface-allocation ADR](../../adr/2026-07-14-cc-cursor-surface-allocation.md#decision), *Action classes and the authority block*).
@@ -65,7 +65,7 @@ acceptance:
 
 ## 0. Read first (report before any code; otherwise `NEEDS_CONTEXT`)
 
-1. `AGENTS.md`. Then [Ruling 7](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-7--orb-lifecycle-l1-reaffirmed-and-the-account-fence-classification-contract-2026-09-27) verbatim, and the [H3 disposition note](../../notes/2026-09-27-orb-fence-ruling6-disposition.md) §1–§5.
+1. `AGENTS.md`. Then [Ruling 7](../programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-7--orb-lifecycle-l1-reaffirmed-and-the-account-fence-classification-contract-2026-09-27) verbatim, and the [H3 disposition note](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-27-orb-fence-ruling6-disposition.md) §1–§5.
 2. The owner text as amended 2026-09-27:
    - [rail spec](../../spec/2026-09-12-c1-multi-leg-rail-extension-spec.md): the header callout, the §1 `pending` row marker, S2, S4 and AC-8;
    - [replay spec](../../spec/2026-09-12-tradeify-synchronized-replay-spec.md): the header callout and RC-9.
@@ -265,7 +265,7 @@ A synthetic return never marks the fence obligation resolved.
 
 ## Review and fix round (2026-09-27)
 
-Findings are labelled as in the [disposition note's fix round](../../notes/2026-09-27-orb-fence-ruling6-disposition.md#review-and-fix-round-2026-09-27), which records the outcome of each. The ones that changed this card:
+Findings are labelled as in the [disposition note's fix round](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-27-orb-fence-ruling6-disposition.md#review-and-fix-round-2026-09-27), which records the outcome of each. The ones that changed this card:
 - **B-F1 applied:** case 2's node is renamed `test_fresh_working_evidence_after_staleness_reclassifies_known_working` and asserts classification only (Q2 stays open).
 - **B-F2 applied:** §1 lists the untraced consumers as unchanged and directs a new predicate at `:621`; the first §7 stop is reworded.
 - **B-F5 applied as Q4:** carried in §4.

@@ -226,7 +226,7 @@ Generation and ratification are ordered events: the loader parses and retains
 predate generation; this does not authorize historical admission.
 
 This component is extracted under the approved
-[PR 395 split](../../docs/superpowers/specs/2026-09-15-pr395-component-split.md).
+[PR 395 split](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/superpowers/specs/2026-09-15-pr395-component-split.md).
 Its legacy source evidence warning remains visible; extracting the calendar
 does not qualify settlement or activate the book.
 

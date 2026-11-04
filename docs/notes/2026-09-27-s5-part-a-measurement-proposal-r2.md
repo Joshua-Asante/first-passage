@@ -428,7 +428,7 @@ The Σ-only row allows about 168× the ~25 s estimate before failing (arithmetic
 
 ### 10.3 D2 falsifier (owner: S5 draft §2.3)
 
-The owner text in full ([S5 decision draft](2026-09-26-s5-decision-draft.md) line 228): "**Falsifier:** revisit the uniform model if PART_A's maximum-expansion CPU cannot be bounded ahead of time. That would mean a ceiling covering maximum expansion either fails the Σ-feasibility check against any admissible cap or cannot be measured before S5 is released."
+The owner text in full ([S5 decision draft](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-26-s5-decision-draft.md) line 228): "**Falsifier:** revisit the uniform model if PART_A's maximum-expansion CPU cannot be bounded ahead of time. That would mean a ceiling covering maximum expansion either fails the Σ-feasibility check against any admissible cap or cannot be measured before S5 is released."
 
 It has two limbs. r2 classifies them as follows. This follows the H1 card's stop classification (handoffs lines 116-121: "Σ arithmetic fails at every admissible value … the last is the D2 falsifier"), which names the stop class returned during step (b). The card does not amend the owner's definition, and neither does this note.
 

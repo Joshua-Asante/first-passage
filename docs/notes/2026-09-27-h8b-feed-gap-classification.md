@@ -19,7 +19,7 @@ Inputs, read in place:
 
 | Input | SHA-256 | Check |
 |---|---|---|
-| `calendar-gap-queue.json` (the pinned queue) | `509346d604999baf270a26091727883e1ca583bf03e504028a6654eb86b35328` | matches the pin at [execution domain](2026-09-15-packet1-execution-domain.md) `:502` |
+| `calendar-gap-queue.json` (the pinned queue) | `509346d604999baf270a26091727883e1ca583bf03e504028a6654eb86b35328` | matches the pin at [execution domain](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-15-packet1-execution-domain.md) `:502` |
 | `regular-session-gap-screen.json` (the 171 screen) | `54d6e96d3664ca3af972c43cae2651d9f29503099e30e52161262d11ddacaf24` | bound in the private `step3-evidence-index-v3.json`; reproduces 27 / 46 / 49 / 49 = 171 residual and 3,972 regular-only intervals (`:689–:691`) |
 | `6J_M15.csv` | `94d237cca3290cd9066d04d921ddeec1a3af941fff11dba8c7efd6c2c32a54bc` | equals the queue's `panel_sha256` |
 | `MGC_M15.csv` | `c5487470a5a9c8c69303587e5a598f9c66eb28d614695d7d78a4aee918fa6aad` | same |

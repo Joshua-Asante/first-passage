@@ -225,7 +225,7 @@ Operator-directed follow-up: identify protection inputs and their owners between
 
 ### Striker source recovered and verified
 
-The retrieval pointer already exists in [T10 source reconciliation](2026-09-21-t10-phase1-source-reconciliation.md) and [T00 P7 closure](../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md). Read the retained file at:
+The retrieval pointer already exists in [T10 source reconciliation](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-21-t10-phase1-source-reconciliation.md) and [T00 P7 closure](../briefs/handoffs/2026-09-24-tradeify-t00-p7-closure.md). Read the retained file at:
 
 `lab/analysis/c1/tradeify_seven_strategy_phase1_2026-09/inputs/private_overrides/op1/2026-09-14-seven/step3-coverage/corrected-ports/dj30_mym_p250.py`
 

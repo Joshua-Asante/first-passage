@@ -6,7 +6,7 @@
 
 **Base:** `origin/main` `b5571a9`. Every `file:line` is at that commit unless marked otherwise. `ops/c1_rail/book_account_owner.py` last changed `18107a75` (2026-10-02); `book_incident_irm_live_page.py` last changed `eebd37ba` (2026-10-04). **The executor's base is later:** it is cut after P-L1, protection-health and (per D-2) GC-5 have merged, so Phase 0 re-anchors every line.
 
-**Parent scope:** [live size-vector wiring scope](../../notes/2026-10-11-live-size-vector-wiring-scope.md) (PR #773) §2 and §5 row P-L2. The successor [build card](2026-10-10-t00-successor-screen-build-card-DRAFT.md) §3.1 owns the vector interfaces. The screen authority defines the hash this card must reproduce: `size_vector_sha256 = sha256(canonical_json_bytes(sizing))` (`screen_authority.py:401-432`). **Prerequisite:** [P-L1](2026-10-11-live-size-vector-p-l1-sizing-context-card-DRAFT.md) merged (`BookSizingBinding.size`).
+**Parent scope:** [live size-vector wiring scope](../../notes/2026-10-11-live-size-vector-wiring-scope.md) (PR #773) §2 and §5 row P-L2. The successor [build card](2026-10-10-t00-successor-screen-build-card-DRAFT.md) §3.1 owns the vector interfaces. The screen authority defines the hash this card must reproduce: `size_vector_sha256 = sha256(canonical_json_bytes(sizing))` (`screen_authority.py:401-432`). **Prerequisite:** [P-L1](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/briefs/handoffs/2026-10-11-live-size-vector-p-l1-sizing-context-card-DRAFT.md) merged (`BookSizingBinding.size`).
 
 **Authority:** G-1 and G-2 are recorded; G-3 waits on the J-4 build gate and the `book_account_owner.py` queue (§11).
 

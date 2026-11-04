@@ -42,7 +42,7 @@ The account owner retains UNKNOWN intent before transport and still exposes
 adapter remains necessary. Manual operation does not supply it.
 
 Owners read:
-- [Full E1 governing design](2026-09-17-protected-full-e1-campaign.md).
+- [Full E1 governing design](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/superpowers/specs/2026-09-17-protected-full-e1-campaign.md).
 - [N1 boundary](2026-09-17-qualification-execution-boundary-design.md).
 - [Settlement/route feasibility](2026-09-16-tradeify-settlement-order-feasibility-design.md).
 - [Phase 3 completion](../plans/2026-09-17-phase3-completion-handoff.md).

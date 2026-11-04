@@ -121,7 +121,7 @@ This is a gated program plan. Fully design the next independently deliverable sl
 
 **Execution checkpoint:** [intake progress and bounded emulator correction](https://github.com/Joshua-Asante/first-passage/blob/128989543d94d38d0962ee2d3c37eac7384efa8a/docs/notes/2026-09-15-tradeify-packet1-intake-progress.md). Corrected O-N collected under Joshua's decision to preserve the pinned source; seven diagnostic comparisons match. Formal admission/shared-law parity and calendar/settlement acceptance remain open.
 
-**Continuation:** [execution domain and evidence status](../../notes/2026-09-15-packet1-execution-domain.md)
+**Continuation:** [execution domain and evidence status](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-15-packet1-execution-domain.md)
 records the unchanged-source attestation, September 30 forward horizon, shared-law
 and finite-margin diagnostics, reviewed exact-byte admission runner, offline sealer,
 five Striker summary reconciliations and remaining acceptance gaps. Packet 1 is open.
@@ -153,7 +153,7 @@ acceptance. Preserve the implemented/tested components and existing evidence.
    cannot stand in for missing facts. Resolve any needed contract amendment before
    implementing a producer; private account access retains its authorization gate.
    **2026-09-15 probe:** actual balance/cash report access demonstrated. See
-   [producer feasibility](../../notes/2026-09-15-packet1-producer-feasibility.md)
+   [producer feasibility](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-15-packet1-producer-feasibility.md)
    for retained evidence, source limits and concrete unblock requirements.
    **Follow-up:** [calendar/account resolution](../../notes/2026-09-15-calendar-account-contract-resolution.md)
    records the product/date inventory, four actual Labor Day product observations,
@@ -173,7 +173,7 @@ acceptance. Preserve the implemented/tested components and existing evidence.
    **2026-09-15:** both fresh ORB summaries reconcile; all seven case records PASS
    under D17/D32. O-P's inactive add inputs are supported by pinned-source control
    flow and equal fresh panels at captured/pinned settings. Original exports stay
-   unchanged. See [Step 2 evidence](../../notes/2026-09-15-packet1-execution-domain.md#packet-1-step-2--orb-summary-reconciliation).
+   unchanged. See [Step 2 evidence](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-15-packet1-execution-domain.md#packet-1-step-2--orb-summary-reconciliation).
 3. **Close startup and provider-data coverage.** Apply the operator-authorized
    [calendar/parity amendment](../../notes/2026-09-15-calendar-parity-separation-amendment.md).
    Bind the calculation origin/endpoints, complete provider bar exports and
@@ -216,7 +216,7 @@ acceptance. Preserve the implemented/tested components and existing evidence.
 
 **Step 3 is complete and independently accepted** under the
 [amendment](../../notes/2026-09-15-calendar-parity-separation-amendment.md).
-The [acceptance record](../../notes/2026-09-15-packet1-step3-acceptance.md)
+The [acceptance record](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-15-packet1-step3-acceptance.md)
 binds retained provider coverage, source/settings provenance, complete cold
 initializers and the reviewed evidence contract. All nine reference replays pass:
 3,632 matched trades, zero exclusions and resolved terminal state. The selected
@@ -225,7 +225,7 @@ remain recorded separately, without replacing original data or applying toleranc
 Direct observations corrected provider resets and open-entry fee accounting in
 the candidate runtime. Original private ports remain preserved; Step 6 must use
 the reviewed candidate identities. Historical evidence remains in the
-[execution-domain record](../../notes/2026-09-15-packet1-execution-domain.md).
+[execution-domain record](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-15-packet1-execution-domain.md).
 Next is Step 4 calendar permission, followed by Step 5 settlement and Step 6
 finite-margin/shared-law checks and combined bundle admission. These and live
 activation retain their separate gates.

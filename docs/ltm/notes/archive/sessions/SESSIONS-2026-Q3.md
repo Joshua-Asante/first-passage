@@ -180,7 +180,7 @@ Relative Markdown links are rebased from `docs/` to this archive directory; all 
 
 **Focus:** Decision. Operator rejected the Proposed NeMo pin ADR; borrow principles as needed. Ox-alpha consulted on pin-versus-inspiration.
 
-**Shipped:** teardown of `docs/agent_rails/` · `check_agent_rails.py` · `fetch_nemo_guardrails.py` · Proposed ADR. Refuse-trail: [`N-2026-08-23-nemo-guardrails-reconciliation.md`](../../../../notes/notice/N-2026-08-23-nemo-guardrails-reconciliation.md). Consult: [`N-2026-08-23-ox-alpha-analog-pin-vs-inspiration.md`](../../../../notes/notice/N-2026-08-23-ox-alpha-analog-pin-vs-inspiration.md).
+**Shipped:** teardown of `docs/agent_rails/` · `check_agent_rails.py` · `fetch_nemo_guardrails.py` · Proposed ADR. Refuse-trail: [`N-2026-08-23-nemo-guardrails-reconciliation.md`](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/notice/N-2026-08-23-nemo-guardrails-reconciliation.md). Consult: [`N-2026-08-23-ox-alpha-analog-pin-vs-inspiration.md`](../../../../notes/notice/N-2026-08-23-ox-alpha-analog-pin-vs-inspiration.md).
 
 **Decisions/defects:** Standing analog surface rejected (no successor ADR). Mapping-guardrails consolidation and the instance-4 GO record stay.
 
@@ -515,7 +515,7 @@ top-ranked Pre-Q executed to verdict on operator GO, plus doc-hygiene.
 
 **Focus:** Decision. Operator GO for a constrained 4th mapping instance: download NeMo and reconcile with existing rails.
 
-**Shipped:** [`rails.yml`](../../../../agent_rails/rails.yml) · [`check_agent_rails.py`](../../../../../scripts/check_agent_rails.py) · [`fetch_nemo_guardrails.py`](../../../../../scripts/fetch_nemo_guardrails.py) · [`N-2026-08-23`](../../../../notes/notice/N-2026-08-23-nemo-guardrails-reconciliation.md) · [`external_mapping_guardrails.md`](../../../../methodology/external_mapping_guardrails.md).
+**Shipped:** [`rails.yml`](../../../../agent_rails/rails.yml) · [`check_agent_rails.py`](../../../../../scripts/check_agent_rails.py) · [`fetch_nemo_guardrails.py`](../../../../../scripts/fetch_nemo_guardrails.py) · [`N-2026-08-23`](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/notice/N-2026-08-23-nemo-guardrails-reconciliation.md) · [`external_mapping_guardrails.md`](../../../../methodology/external_mapping_guardrails.md).
 
 **Decisions/defects:** Pin `v0.23.0` @ `dc046e4`; no pip/runtime. Light ADR [`2026-08-23-nemo-guardrails-pin-not-runtime.md`](../../../../adr/2026-08-23-nemo-guardrails-pin-not-runtime.md) `Proposed`. Belt consolidated (audit action 4).
 

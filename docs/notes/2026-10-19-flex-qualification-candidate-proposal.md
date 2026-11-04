@@ -114,7 +114,7 @@ This section is a **derived input** to the coordinator's dated FXIFY-vs-FundedNe
 | Account life | **Concludes after the 5th reward.** Lifetime ceiling 5 × $4,000 × 95% ≈ **$19,000 net** ($20,000 if the cap applies after the share; UNV). Reaching it needs about $24,000–$40,000 of simulated profit (UNV: the low end applies if unwithdrawn profit counts). Live transition is discretionary, with conflicting criteria | No stated end. At the cap, $2,700–$3,000 net per cycle needs $6,000 of profit in the first cycle and $3,000–$6,000 of new profit in each later one (UNV). Live transition discretionary |
 | Floor after the first payout | Set to $150,100 | Locks at the start balance |
 
-**Data cost decides both.** CME non-display licensing for automated use is unresolved (ticket #04738415). The [feed-cost note](2026-10-11-feed-cost-sanity-check.md) §1 lists, per month: $0 if not required; $661 (A9, if eligible); $1,408 (A8, the safe reading; $1,453 from January 2027); and $1,864 (A1, if CME requires it).
+**Data cost decides both.** CME non-display licensing for automated use is unresolved (ticket #04738415). The [feed-cost note](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-10-11-feed-cost-sanity-check.md) §1 lists, per month: $0 if not required; $661 (A9, if eligible); $1,408 (A8, the safe reading; $1,453 from January 2027); and $1,864 (A1, if CME requires it).
 - At $1,408, FundedNext's whole net ceiling covers about 13.5 months of data cost across evaluation and funded stages. At $1,864 it covers about 10 months, so a 12-month evaluation alone would exceed it.
 - One FXIFY cap cycle covers about 1.4–2.1 months of data cost across those rows.
 - At $0, both can be worth operating.

@@ -4,11 +4,11 @@
 
 **Status:** a PROPOSAL. Neither card is edited by this note:
 - The [TB-I3 interlock card](../briefs/handoffs/2026-10-03-tb-i3-synthetic-interlock-card-DRAFT.md) is a DRAFT owned by its freezing coordinator. It takes amendments only at its freeze.
-- The [TB-I3-HOST card](../briefs/handoffs/2026-10-03-tb-i3-host-heartbeat-wiring-card-DRAFT.md) is FROZEN (2026-10-06), and a frozen card stays frozen (AGENTS.md "Continuous improvement" item 2).
+- The [TB-I3-HOST card](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/briefs/handoffs/2026-10-03-tb-i3-host-heartbeat-wiring-card-DRAFT.md) is FROZEN (2026-10-06), and a frozen card stays frozen (AGENTS.md "Continuous improvement" item 2).
 
 This note authorizes nothing.
 
-**Parent:** the [scope note](2026-10-11-live-size-vector-wiring-scope.md) §2 ("Activation proof") and §5 row P-L4. This note **corrects** that row. Siblings: [P-L1](../briefs/handoffs/2026-10-11-live-size-vector-p-l1-sizing-context-card-DRAFT.md) and [P-L2](../briefs/handoffs/2026-10-11-live-size-vector-p-l2-owner-binding-card-DRAFT.md).
+**Parent:** the [scope note](2026-10-11-live-size-vector-wiring-scope.md) §2 ("Activation proof") and §5 row P-L4. This note **corrects** that row. Siblings: [P-L1](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/briefs/handoffs/2026-10-11-live-size-vector-p-l1-sizing-context-card-DRAFT.md) and [P-L2](../briefs/handoffs/2026-10-11-live-size-vector-p-l2-owner-binding-card-DRAFT.md).
 
 ## 1. Finding that reshapes P-L4
 
@@ -23,7 +23,7 @@ So whoever constructs the owner binding is the live route packet. That packet's 
 |---|---|
 | TB-I3 interlock (DRAFT) | **A-1 to A-4** below: the GO carries the vector hash, plus a synthetic, production-refusing equality seam at arm and boot |
 | TB-I3-HOST (FROZEN) | **None.** It does not build, read or forward the owner binding, so nothing in it can carry the vector. Amending a frozen card would add a footprint its §5 forbids |
-| Live route packet (unwritten) | **R-SV** (§4; full requirement in the [R-SV proposal](2026-10-11-r-sv-live-route-size-vector-requirement-PROPOSAL.md)): the loader and the stamp read-back. It is carried into that card when it is written |
+| Live route packet (unwritten) | **R-SV** (§4; full requirement in the [R-SV proposal](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-10-11-r-sv-live-route-size-vector-requirement-PROPOSAL.md)): the loader and the stamp read-back. It is carried into that card when it is written |
 
 ## 2. Where the expected hash lives (decision D-A, Joshua)
 
@@ -82,7 +82,7 @@ When the live route packet's card is written, it carries the following.
 
 - **Loader.**
   - The daemon config references the sizing artifact by path and `sha256`. It never holds a copy of the values.
-  - The artifact is the r3d startup policy v2's `sizing`, delivered by the mechanism the live packet chooses for private non-`.py` inputs. *Corrected 2026-10-11:* R-J guard (iii) keeps every non-`.py` port-root file out of the image, so the overlay is not an existing path. See the [R-SV proposal](2026-10-11-r-sv-live-route-size-vector-requirement-PROPOSAL.md) D-SV-1.
+  - The artifact is the r3d startup policy v2's `sizing`, delivered by the mechanism the live packet chooses for private non-`.py` inputs. *Corrected 2026-10-11:* R-J guard (iii) keeps every non-`.py` port-root file out of the image, so the overlay is not an existing path. See the [R-SV proposal](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-10-11-r-sv-live-route-size-vector-requirement-PROPOSAL.md) D-SV-1.
   - The loader verifies the bytes' SHA-256 and then calls `book_policy.validate_size_vector`. It does not reimplement parsing.
   - It passes the resulting `SizeVector` as the owner binding's `size_vector` (P-L2).
   - Absence, a digest mismatch or a non-canonical encoding refuses the boot to disarmed.

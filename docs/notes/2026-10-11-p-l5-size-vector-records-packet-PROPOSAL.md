@@ -7,7 +7,7 @@
 **Parents:**
 - [scope note](2026-10-11-live-size-vector-wiring-scope.md) §5 row P-L5;
 - [P-L4 proposal](2026-10-11-p-l4-tb-i3-amendments-PROPOSAL.md) (D-A);
-- [R-SV](2026-10-11-r-sv-live-route-size-vector-requirement-PROPOSAL.md).
+- [R-SV](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-10-11-r-sv-live-route-size-vector-requirement-PROPOSAL.md).
 
 ## 1. What P-L5 is, and who executes it
 

@@ -4,7 +4,7 @@
 review-status entries: five Codex review rounds on PR #241, the fifth returning no findings). No
 code has been written or executed against this design. No real L5 statistic, on either instrument,
 has been inspected before or during authoring or review. This document freezes B2–B5 of
-[`docs/superpowers/plans/2026-08-31-q-volregime-next-step.md`](../../../../docs/superpowers/plans/2026-08-31-q-volregime-next-step.md).
+[`docs/superpowers/plans/2026-08-31-q-volregime-next-step.md`](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/superpowers/plans/2026-08-31-q-volregime-next-step.md).
 The next gate is Packet C1's own pilot GO — a separate operator decision, not implied by this
 status (see §7).
 

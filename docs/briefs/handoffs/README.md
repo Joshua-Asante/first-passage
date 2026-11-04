@@ -23,5 +23,5 @@ The eleven packets PR #444 committed on 2026-09-20 from previously untracked fil
 | `2026-09-19-full-e1-s1-budget-recovery.md` | COMPLETED — S1 accepted (PR #428) |
 | `2026-09-19-glm-s2-enforcement-continuation.md`, `…-glm-s2-linux-diagnostic-steering.md` | COMPLETED — S2 continuations; returns in the execution-slices ledger |
 | [`2026-09-19-jev-experimentation-claude.md`](https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/docs/briefs/handoffs/2026-09-19-jev-experimentation-claude.md) | REMOVED 2026-10-15 — unrelated to the Tradeify deployment track; the pilot falsified its saving prediction and no integration was enabled (pinned blob) |
-| `2026-09-22-full-e1-coordinator-handoff.md`, `2026-09-24-full-e1-coordinator-handoff.md`, `2026-09-25-full-e1-claude-continuation.md` | HISTORICAL — coordinator snapshots; the coordinator role is assigned per session (surface-allocation ADR Addendum 2026-10-28) |
+| `2026-09-24-full-e1-coordinator-handoff.md` (the 09-22 and 09-25 snapshots are removed; see [Removal batches](../../ltm/README.md#removal-batches)) | HISTORICAL — coordinator snapshots; the coordinator role is assigned per session (surface-allocation ADR Addendum 2026-10-28) |
 

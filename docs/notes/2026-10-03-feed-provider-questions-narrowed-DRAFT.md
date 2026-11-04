@@ -4,7 +4,7 @@
 *2026-10-10:* §4.0 and §4.6 reframed to own-assets trading with two same-broker destinations per [ADR 2026-10-09](../adr/2026-10-09-self-funded-tradovate-lane-reopen.md); §4.1-§4.5 held as fallback. Nothing sent.
 **Authority:** Joshua's request of 2026-10-03 (about 19:31Z), relayed by coordinator (2) to coordinator (3). It supersedes the attended-outreach plan.
 **Serves, does not replace (Rule 7):** the [#583 note](2026-10-01-feed-provider-questions-DRAFT.md) (question set Q1–Q12, recording rules §4, rulings D-Q1…D-Q7), which coordinator (3) owns and will integrate. This note does not edit it.
-**Evidence:** [companion matrix](2026-10-03-feed-provider-questions-narrowed-matrix.md), one row per (provider variant, question), every source retrieved 2026-10-03.
+**Evidence:** [companion matrix](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-10-03-feed-provider-questions-narrowed-matrix.md), one row per (provider variant, question), every source retrieved 2026-10-03.
 
 ## Summary
 

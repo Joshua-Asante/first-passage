@@ -21,7 +21,7 @@ clarifications and actual source qualification. It is not a production capabilit
 Historical: September 1, 2022 through September 2, 2026. Forward: September 3–30,
 2026. Products: 6J, MGC, MYM, MNQ. Immutable D19 remains unchanged.
 
-The [coverage inventory](2026-09-15-calendar-coverage-inventory.json) expands the
+The [coverage inventory](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-15-calendar-coverage-inventory.json) expands the
 secondary calendar's **74 candidate dates into 296 product/date checks**. It is
 explicitly incomplete and is not a runtime calendar. The four September 7, 2026
 product rows now have actual product-level event observations. The remaining 292

@@ -128,7 +128,7 @@ accept the changed acceptance method before its first decision-bearing use.
 Owning records:
 
 - [Attended-release plan](../superpowers/plans/2026-09-14-tradeify-attended-release.md)
-- [Execution-domain evidence](2026-09-15-packet1-execution-domain.md)
+- [Execution-domain evidence](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-15-packet1-execution-domain.md)
 - [Calendar/account contract](2026-09-15-calendar-account-contract-resolution.md)
 - [Bundle intake interface](../briefs/handoffs/2026-09-14-seven-bundle-runtime-interface-plan.md)
 - [Track B umbrella](../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md)

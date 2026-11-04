@@ -125,8 +125,8 @@ Packet 1 Step 3 and are superseded for the 6J leg. The accepted 6J input is the
 separately attested 88-bar-prefix derivative, not the original 23:00Z first
 session; the other three legs retain the 2022-09-01 00:00Z origin. Cold
 initialization for all nine references is bound by the
-[Step 3 acceptance record](2026-09-15-packet1-step3-acceptance.md); the
-[historical audit trail](2026-09-15-packet1-execution-domain.md#step-3--initial-panel-and-startup-audit-2026-09-15)
+[Step 3 acceptance record](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-15-packet1-step3-acceptance.md); the
+[historical audit trail](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-15-packet1-execution-domain.md#step-3--initial-panel-and-startup-audit-2026-09-15)
 is evidence only. The accepted boundary is a Step 3 replay claim, not warm-restart
 or live-recovery acceptance.
 

@@ -11,7 +11,7 @@
 > - the `W` row, the consistency matrix, AC-3, AC-5, S5 and the `CLOSE` bullet;
 > - positive-lookup resolution of an unknown dispatch, which stays separately held.
 >
-> **Where #519's proposed clarification differs at the one-bar boundary, the ruling's words govern.** The divergence and the open questions are in the [disposition note](../notes/2026-09-27-orb-fence-ruling6-disposition.md).
+> **Where #519's proposed clarification differs at the one-bar boundary, the ruling's words govern.** The divergence and the open questions are in the [disposition note](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-27-orb-fence-ruling6-disposition.md).
 >
 > **Scope.** This amendment is owner text applied under Ruling 7's authorization. It is not a new rev8/rev9 ratification and implements nothing:
 > - the synthetic repair and the qualification replay correction are handoff H4;
@@ -164,7 +164,7 @@ The following rules refine §1 and govern every sequence and acceptance case abo
 
 **O-8 applied:** the live Vanguard adapter keeps the TradingView daily-key latch (`pine_ta.tv_daily_key`) exactly as ported; the daemon's US-holiday table is the frozen set the ports use and is part of the active-leg digest.
 
-**O-8 narrowed 2026-09-15 (Packet 1 Step 3 acceptance; operator-ratified 2026-09-15, instruction "ratify O-8 narrowing"):** the latch mechanism is unchanged and remains part of the active-leg digest. Its date membership is no longer the NYSE holiday list but the provider daily-reset grouping set recorded in `pine_ta.US_MARKET_HOLIDAYS_2022_2027` after direct MGC/MYM provider reset markers: 2023-04-07, 2025-01-09 and 2026-04-03 reset on the provider and were removed; every retained reference replay still matches exactly. The set is qualified only through 2026-09-03; rows beyond that date are unqualified carry-over, and forward trading permission belongs to the TB-C1 session calendar, never to this table. See the [Step 3 acceptance](../notes/2026-09-15-packet1-step3-acceptance.md).
+**O-8 narrowed 2026-09-15 (Packet 1 Step 3 acceptance; operator-ratified 2026-09-15, instruction "ratify O-8 narrowing"):** the latch mechanism is unchanged and remains part of the active-leg digest. Its date membership is no longer the NYSE holiday list but the provider daily-reset grouping set recorded in `pine_ta.US_MARKET_HOLIDAYS_2022_2027` after direct MGC/MYM provider reset markers: 2023-04-07, 2025-01-09 and 2026-04-03 reset on the provider and were removed; every retained reference replay still matches exactly. The set is qualified only through 2026-09-03; rows beyond that date are unqualified carry-over, and forward trading permission belongs to the TB-C1 session calendar, never to this table. See the [Step 3 acceptance](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-15-packet1-step3-acceptance.md).
 
 **Rev9 acceptance mapping:** S6–S9 and all AC cases involving incidents/restart require whole-book intervention, a confirmed local all-mutation fence or explicit unconfirmed-fence block, retained requests and fresh operator resume only after qualified reconciliation. Production automatic incident CLOSE/AMEND/ATTACH is deferred. Ordinary/scheduled CLOSE scope, normal protection/takeover and E1–E3 requirements remain; old test names do not preserve automatic incident dispatch, session clearing or per-leg outage recovery. *[Adopted 2026-10-02, operator ruling 2026-10-02 (sitting 2): for the first release, "deferred" reads "not performed" ([§1.1a](#11a-rev9-pointer-sweep) P8).]*
 
@@ -348,7 +348,7 @@ These lines still describe a runtime close inside an incident (the register's ro
   - **S4 and AC-8:** aligned to L1.
   - **§5 addendum entry** for the fail-closed change (operator answer to H3 Q4); the stale boundary is operator-confirmed as inclusive.
 
-  Unchanged: the halt/resume §5 cutoff overlay, the `W` row, the matrix, AC-3, AC-5, S5 and `CLOSE`. No revision number changes. The synthetic repair and the replay correction (H4), the real producer, route integration and the ordinary-unknown halt (T09/TB-I3) remain separate. Disposition and open questions: [2026-09-27 disposition note](../notes/2026-09-27-orb-fence-ruling6-disposition.md).
+  Unchanged: the halt/resume §5 cutoff overlay, the `W` row, the matrix, AC-3, AC-5, S5 and `CLOSE`. No revision number changes. The synthetic repair and the replay correction (H4), the real producer, route integration and the ordinary-unknown halt (T09/TB-I3) remain separate. Disposition and open questions: [2026-09-27 disposition note](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-09-27-orb-fence-ruling6-disposition.md).
 
 - 2026-09-14 rev8 — replace session auto-clear and separate loss/kill recovery with one durable listener permission and operator resume; choose shared schedule formula and consolidate ratification decisions. Runtime implementation and formal approvals remain separate.
 

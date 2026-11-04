@@ -5,7 +5,7 @@
 **Ruling served:** operator, 2026-10-02 (sitting 2), FEED-16: warm-up comes from provider history (Q11); the history-to-live seam is checked in the shadow window; live-only is the fallback. The design is due before shadow collection, with a hard stop at T16. The ruling's record at checklist T14 Checkpoint (`:286`) travels in coordinator (2)'s batch PR and is not on `main` yet.
 **Owners (Rule 7):**
 - the [frozen equivalence spec](../spec/2026-09-27-cme-execution-feed-equivalence-test-DRAFT.md) (`721be61`) for the verdict;
-- the [OPEN-binding packet](2026-10-02-feed-spec-open-parameter-binding-packet.md) (#617) for OPEN-3, OPEN-6, OPEN-7 and OPEN-11;
+- the [OPEN-binding packet](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-10-02-feed-spec-open-parameter-binding-packet.md) (#617) for OPEN-3, OPEN-6, OPEN-7 and OPEN-11;
 - the [H8 note](2026-09-27-feed-provider-neutral-preparation.md) for the later-binding rule (§3) and the shadow topology (§4);
 - A9-PREP ([#619](https://github.com/Joshua-Asante/first-passage/pull/619), head `77373bd`, open) for the live `BarSource` contract;
 - the [umbrella](../briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md) TB-S3 (H) (`:563`) and TB-W1 for restart and warm-up depth.

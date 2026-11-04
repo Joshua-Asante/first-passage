@@ -4,8 +4,8 @@
 
 **Sources:**
 - the [scope note](2026-10-11-live-size-vector-wiring-scope.md);
-- the cards [P-L1](../briefs/handoffs/2026-10-11-live-size-vector-p-l1-sizing-context-card-DRAFT.md), [P-L2](../briefs/handoffs/2026-10-11-live-size-vector-p-l2-owner-binding-card-DRAFT.md) and [P-L3](../briefs/handoffs/2026-10-11-live-size-vector-p-l3-emulator-parity-card-DRAFT.md);
-- the proposals [P-L4](2026-10-11-p-l4-tb-i3-amendments-PROPOSAL.md), [R-SV](2026-10-11-r-sv-live-route-size-vector-requirement-PROPOSAL.md) and [P-L5](2026-10-11-p-l5-size-vector-records-packet-PROPOSAL.md);
+- the cards [P-L1](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/briefs/handoffs/2026-10-11-live-size-vector-p-l1-sizing-context-card-DRAFT.md), [P-L2](../briefs/handoffs/2026-10-11-live-size-vector-p-l2-owner-binding-card-DRAFT.md) and [P-L3](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/briefs/handoffs/2026-10-11-live-size-vector-p-l3-emulator-parity-card-DRAFT.md);
+- the proposals [P-L4](2026-10-11-p-l4-tb-i3-amendments-PROPOSAL.md), [R-SV](https://github.com/Joshua-Asante/first-passage/blob/33310e10e1575792ad5b8722b80b78ae72207504/docs/notes/2026-10-11-r-sv-live-route-size-vector-requirement-PROPOSAL.md) and [P-L5](2026-10-11-p-l5-size-vector-records-packet-PROPOSAL.md);
 - the [ADR addendum](../adr/2026-09-12-tradeify-book-protection-instance-admission.md#addendum-2026-10-11--the-books-size-vector-in-ef-and-the-deployment-go-proposed);
 - the [personal-clearance plan](2026-10-11-personal-clearance-plan-tradeify-book.md) (#785).
 
