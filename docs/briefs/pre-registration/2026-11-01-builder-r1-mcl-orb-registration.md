@@ -4,7 +4,7 @@
 
 **Status note 2026-11-08.** Ruled by Joshua 2026-11-03 (pre-sitting); recorded effective 2026-11-08. R1 is **not run as pinned**; its re-registration on the current engine is owed, with K recorded in a `register_search` manifest in `discovery_manifests/`, the [candidate contract's](../../adr/2026-08-30-candidate-contract.md#contract-fields-and-freezes) sole machine K ledger. Reason: engine `a0d33b6` predates the current required run-schema keys (`lab/builder/run.py:41,93-95`) and the causal-exit fix (`dfe8900`).
 
-**Addendum 2026-11-04.** Joshua agreed that the owed re-registration is re-scoped to **one MCL card**. At K = 8 on MCL its 5f floor is not reachable under D7: floor 1.59 vs the 0.89 bar, with D9's fixed ~18-month holdout. At K = 1 it is reachable (0.84). The card is chosen from the registered eight by stated rationale before any result, never by outcome. Analysis: [generation note §9.2, §11](../../notes/2026-11-01-generation-phase-strengthening-DRAFT.md#11-updates-2026-11-04).
+**Addendum 2026-11-04.** Joshua agreed that the owed re-registration is re-scoped to **one MCL card**. At K = 8 on MCL its 5f floor is not reachable under D7: floor 1.59 vs the 0.89 bar, with D9's fixed ~18-month holdout. At K = 1 it is reachable (0.84). The card is chosen from the registered eight by stated rationale before any result, never by outcome. Analysis: [generation note §9.2, §11](../../notes/2026-11-01-generation-phase-strengthening-DRAFT.md#11-updates-2026-11-04). The re-registration's draft is [2026-11-04-builder-r1-mcl-one-card-reregistration-DRAFT.md](2026-11-04-builder-r1-mcl-one-card-reregistration-DRAFT.md).
 
 | Item | Value |
 |---|---|
