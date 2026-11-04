@@ -1,7 +1,8 @@
 """5e placebo diagnostic, T1 and T2 (zero K, synthetic data only; DESIGN.md is frozen before any run).
 
 Production code is called, never changed: ``compile.days``/``simulate_day`` make the card's trades,
-``gates.net`` prices them and ``gates.placebo_beaten_share`` is the production 5e statistic. The only
+``gates.net`` prices them and ``frozen_placebo.placebo_beaten_share`` is the production 5e statistic
+as it stood before #1074 (engine ``10f0eb19…``; #1074 replaced it with the window slide). The only
 re-implementation is ``beaten_shares``, which repeats the production placebo's draw sequence
 exactly (validated path by path against the production function, V1) so that two diagnostic side
 rules can share the same entry-bar and hold draws:
@@ -24,6 +25,9 @@ import pandas as pd
 from builder import cards, gates
 from builder import compile as C
 from builder.instruments import INSTRUMENTS
+from research_utils.camp_import import load_camp_sibling
+
+FROZEN = load_camp_sibling("frozen_placebo", __file__)
 
 FIRM = "Tradeify_Select_100K"
 CARD_TEXT = """
@@ -87,7 +91,7 @@ def card_trades(bars, ds):
 def beaten_shares(days, trades, runs: int, seed: int, aux: np.random.Generator) -> dict[str, float]:
     """Beaten share under each side rule. The production draw sequence (rng = default_rng(seed),
     one ``integers(first, cutoff, size=runs)`` call per trade in trade order) is repeated exactly,
-    so ``realised`` equals gates.placebo_beaten_share. ``aux`` supplies coin flips and midpoint
+    so ``realised`` equals frozen_placebo.placebo_beaten_share. ``aux`` supplies coin flips and midpoint
     ties only, so it never perturbs the shared entry-bar draws."""
     pv, cost = INSTRUMENTS[CARD.instrument].point_value, COSTS.per_trade(CARD.instrument)
     by = {d.date: d for d in days}
@@ -119,7 +123,7 @@ def path_result(rng: np.random.Generator, aux: np.random.Generator, drift: float
     if any(t.unresolved for t in trades):
         return {"unresolved": True}
     T = gates.THRESHOLDS
-    prod = gates.placebo_beaten_share(CARD, days, trades, COSTS, T["5e_placebo_runs"], T["5e_seed"])
+    prod = FROZEN.placebo_beaten_share(CARD, days, trades, COSTS, T["5e_placebo_runs"], T["5e_seed"])
     sh = beaten_shares(days, trades, T["5e_placebo_runs"], T["5e_seed"], aux)
     x = gates.daily(CARD, trades, ds, COSTS)
     gross = sum(t.points for t in trades) * INSTRUMENTS["MNQ"].point_value
