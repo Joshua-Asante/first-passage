@@ -10,7 +10,7 @@
 
 **Decision (Joshua, 2026-11-04, verbatim, relayed by the coordinator): "go with M6A and MES".** M6A and MES are chosen for export. ZC is deferred until a grains strategy justifies a separate calendar file. SIL and 6C are not taken now.
 
-Export these five now, 15m, BAR EXPORT v0.2, full depth (first available bar to the latest bar), using the §9.3 steps 1–3 landing as for M6E:
+**To export now: M6A and MES only** (rows 1 and 3), at 15m, BAR EXPORT v0.2, full depth (first available bar to the latest bar), using the §9.3 steps 1–3 landing as for M6E. The table is the ranked recommendation the decision was made from; rows 2, 4 and 5 are not to be exported under it.
 
 | # | TradingView symbol | Export file stem (existing style) | Export range | Calendar extension needed | Lifetime builder looks (D7 + D9) |
 |---|---|---|---|---|---|
@@ -22,7 +22,7 @@ Export these five now, 15m, BAR EXPORT v0.2, full depth (first available bar to 
 
 Symbol prefixes are TradingView's `source_id` from its public symbol search (read 2026-11-04). They match the admitted files' prefixes for MNQ (`CME_MINI`), MGC (`COMEX_MINI`), MCL (`NYMEX`) and 6J (`CME`) in [`SHA256SUMS`](../../core/data/tv_exports/cme/SHA256SUMS). The MCL file stem `NYMEX_MCL1` drops the `!`; the others keep it.
 
-**If only three:** M6A, ZC, MES. M6A is the strongest on every axis but distinctness from M6E. ZC opens a product group no book touches, at the cost of a calendar extension. MES is the cheapest landing and gives the Tradeify scaling family new looks.
+**Pre-decision recommendation, if only three:** M6A, ZC, MES. M6A is the strongest on every axis but distinctness from M6E. ZC opens a product group no book touches, at the cost of a calendar extension. MES is the cheapest landing and gives the Tradeify scaling family new looks.
 
 Each new symbol also needs, at landing and not before (create-on-touch, as §9.3 step 4 lists for M6E): a `PRICE_COL_BY_INSTRUMENT` entry, an `INSTRUMENT_SPECS` row with a fresh Rule 17 CME quote, an instrument ledger (M6A, MES exist; ZC, SIL, 6C are new) and a regenerated `PROFILES.md`. Every builder card on any of them reads the ledger first and appends a disposition (Rule 27).
 
