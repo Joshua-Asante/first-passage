@@ -24,9 +24,9 @@ Price levels convert bp to ticks and are **illustrative, not market reads**: MES
 
 ## The trade-off, in one line per instrument
 
-A daily cell needs δ/σ ≥ 0.051 (index micros) or ≥ 0.041 (the others) after the haircut for power 0.50. For a ratio ≥ 1.5 at that δ/σ, the trading window's σ must be at least 1.5 × cost ÷ δ/σ:
+A daily cell needs δ/σ ≥ 0.051 (index micros) or ≥ 0.041 (the others) after the haircut for power 0.50. Both bars together mean: haircut mean per event ≥ 1.5 × cost (in bp) **and** δ/σ ≥ that break-even. The table shows the window σ needed **if δ/σ sits exactly at the break-even** (σ ≥ 1.5 × cost ÷ δ/σ). It is conditional: a signal with twice the δ/σ needs half the σ, so a stronger signal on a shorter window can qualify.
 
-| Instrument | Cost (bp, bracket) | Window σ needed (bp) | Reading |
+| Instrument | Cost (bp, bracket) | Window σ needed at break-even δ/σ (bp) | Reading |
 |---|---|---|---|
 | MES | 1.4–2.9 | 43–85 | 35–70% of LM's 24-hour SPX σ (1.215%): a long intraday hold [INF] |
 | MNQ | 0.7–1.8 | 20–52 | the cheapest index in bp at the high level; a shorter window could do [INF] |
@@ -37,7 +37,7 @@ A daily cell needs δ/σ ≥ 0.051 (index micros) or ≥ 0.041 (the others) afte
 | M6E | 2.3–2.8 | 86–103 | about 3× KMW's fix-window σ |
 | M6A | 4.0–5.0 | 148–185 | about 6× KMW's fix-window σ |
 
-So a survivor needs **a multi-hour or full-session directional window on an index micro or MGC, with a daily gross Sharpe of about 0.12 or more before the haircut (about 1.9 a year)**. No cited cohort in this pass offers one. Larger moves come only with rarer events, and those lose power faster than they gain headroom.
+So a survivor needs **a haircut per-event mean of at least 1.5 × cost with δ/σ at or above the power break-even**. At the break-even that means a multi-hour or full-session window on an index micro or MGC (a gross daily Sharpe of about 0.12 before the haircut, about 1.9 a year); a higher-δ/σ signal can do it on a shorter window. No cited cohort in this pass offers either. Larger moves come only with rarer events, and those lose power faster than they gain headroom.
 
 ## Screen table (all 28 cells screened out; negative knowledge)
 
@@ -59,7 +59,7 @@ Ratio and slip are given at both ends of the bracket. "Slip allowed" is the tota
 | I11 | MES, M2K, MYM × ORB / opening auction | U | U | — | U | ok | I (MES), Y | no futures cohort; Req 1 fails (no payer, 1b unshown) | index raised bar; MYM ORC FALSIFIED |
 | G1 | MGC × intraday momentum (BDLM GC) | U (no mean) | U | — | 0.09 | ok | N | power; no per-event mean | R2 NOTES-MGC |
 | G2 | MGC × ORB / compression / PDH-PDL | U | U | — | U | ok | Y | Req 1 fails; no gold cohort | R2: skipped by Joshua |
-| G3 | MGC × gold fix | U | U | — | U | ok | N | event-window DEAD on MGC | Q-INVENTORY-1 K-wall row |
+| G3 | MGC × gold PM-fix public direction (Caminschi–Heaney GC, pre-2015 reform; MGC.md, `DELTA_EXTRACTION_R8.md`) | 0.55–1.35 bp | 0.15–1.07 (0.22–1.57 at BluSky's $0.50 eval rate) | 0.75 (2.15 at the eval rate), high end only | U (no σ in the extraction) | ok | N | ratio fails at the low end at both rates; power unscreenable; the 2015 auction reform is an adverse decay input not yet applied; the 3.21 bp top includes an end-block the extraction calls untimeable | 4× cost-law SCREEN-FAIL 2026-08-10 (deleted law; advisory). The Q-INVENTORY-1 K-kill was withdrawn by the K-bank ADR |
 | F1 | 6J × post-Tokyo-fix (KMW JPY) | 1.3 bp | 0.63–0.94 | 0.4–1.0 | 0.63 | ok | N | ratio | R2 card, held |
 | F2 | 6J × pre-Tokyo-fix | 0.7 bp | 0.32–0.48 | ≤ 0.1 | 0.37 | ok | N | ratio; power | — |
 | F3 | 6J × Tokyo reversal, two legs (KMW Table VII) | 2.0 bp | 0.47–0.71 | 0.1–1.0 | 0.81 | ok | N | ratio | — |
@@ -100,6 +100,6 @@ Venue note for any future event cell: Tradeify allows news trading on all accoun
 
 ## What this aims next
 
-- **Cohort search, narrowed:** published futures cohorts for full-session or multi-hour directional signals on index micros or gold with a gross daily Sharpe ≥ ~0.12. Nothing weaker can clear both bars at these costs.
+- **Cohort search, narrowed:** published futures cohorts on index micros or gold whose haircut per-event mean is ≥ 1.5 × cost with δ/σ at or above the power break-even: a multi-hour or full-session window at a gross daily Sharpe of about 0.12, or a shorter window with proportionally higher δ/σ.
 - **Cost side:** an M-16 fill-slip read (limit vs market) on 6J and M6E in their fix hours. Only that could move F1, F3 or F8 (each needs ≤ ~1 tick of total round-trip slip), and it is already owed under §4a condition 4.
 - **Owed after this screen:** ledger dispositions (Rule 27) for the eight instruments, at T8 by a seat that holds `governance.author` for them. This PR edits no ledger.

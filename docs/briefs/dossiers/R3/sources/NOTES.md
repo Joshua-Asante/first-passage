@@ -74,3 +74,9 @@ Derivation notes (mine, not the papers'):
 - I1: δ/σ uses the "more than 4.5" t over 131 events (0.393), below the table's mean/σ (0.402). Events in development ≈ 1,492 × 8/252 ≈ 47.
 - I1b and I2 carry no extra haircut: the I1b figure is post-publication, and I2's register power (0.22) is quoted as the register gives it.
 - 6J and M6A signs: KMW Table I reports foreign-currency appreciation as positive, which carries over to 6J (USD per JPY) and to M6A/M6E unchanged (§4a condition 2).
+
+## G3 re-screen (added after Codex round 1)
+
+Input: [`lab/analysis/harvest/tnec_l2_sourcing_2026-08-10/DELTA_EXTRACTION_R8.md`](../../../../../lab/analysis/harvest/tnec_l2_sourcing_2026-08-10/DELTA_EXTRACTION_R8.md) and `ops/instruments/MGC.md` (row "Benchmark-fix-window flow"): the causal public expression's residue is "1.32–3.21 bp (all fixes)" on the Caminschi–Heaney GC cohort (pre-2015 auction reform); the 3.21 top is a "generous top (incl. untimeable end-block)". No σ or t for that expression, so power is UNSCREENABLE.
+
+Arithmetic: haircut 0.42× gives 0.55–1.35 bp. MGC ticks: 0.55 bp at 1,200 (0.833 bp/tick) = 0.67 ticks; 1.35 bp at 3,500 (0.286 bp/tick) = 4.72 ticks. Ratio at BluSky NT-proxy cost 4.40 ticks: 0.15–1.07; at the $0.50 eval rate (3.00 ticks): 0.22–1.57. RT slip allowed for 1.5 at the high end: 4.72 ÷ 1.5 − 2.40 = 0.75 ticks (NT) or − 1.00 = 2.15 ticks (eval). It fails the both-ends rule at either rate, before the adverse post-reform decay.
