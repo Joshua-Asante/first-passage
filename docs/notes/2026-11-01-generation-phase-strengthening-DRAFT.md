@@ -506,7 +506,7 @@ A forward confirm buys nothing over the fixed holdout for the equity micros. It 
 |---|---|---|---|
 | Tradeify | US-open index ORB | in flight; native NinjaScript | depends on the deployment-order decision |
 | BluSky | Metals: MGC, proposed | MGC offered; full automation welcomed | **R2 skips MGC** (Joshua, 2026-11-04): both MGC dossiers fail harvest Req 1, and the no-counterparty channel was not used |
-| MFFU | FX: **6J Tokyo-fix, post-fix leg** (decided 2026-11-04) | R2's card ([R2 dossier index, PR #1061](https://github.com/Joshua-Asante/first-passage/pull/1061)); avoids MFFU's funded metals cap | 6J full-size only; venue legality re-checked for MFFU in the dossier |
+| MFFU | FX: **6J Tokyo-fix, post-fix leg** (decided 2026-11-04; cell conditional on the spot-cohort ruling, §11) | R2's card ([R2 dossier index, PR #1061](https://github.com/Joshua-Asante/first-passage/pull/1061)); avoids MFFU's funded metals cap | 6J full-size only; venue legality re-checked for MFFU in the dossier |
 | Bulenox | FX: **M6E pre-fix** (decided 2026-11-04) | cheapest M6E costs ($0.50/side; MFFU $0.72, Tradeify $0.80, per `core/firm_rules.py` comments); a micro suits the harsh intraday-high trail | enters only after the M6E landing and if its pre-registration answers the EUR/USD fix-reversal re-proposal bar |
 | FXIFY | later | rules provisional | — |
 
@@ -552,7 +552,7 @@ Pre-2016 depth (MGC to 2010, M6E to 2009, 6J to 2001) would raise those budgets 
 - Recorded at the owner: the [registration's status note](../briefs/pre-registration/2026-11-01-builder-r1-mcl-orb-registration.md).
 
 **R2 composition** (Joshua, 2026-11-04, "go with your recommendations on both"), recorded in the [R2 dossier index, PR #1061](https://github.com/Joshua-Asante/first-passage/pull/1061):
-- 6J Tokyo-fix (post-fix leg) is R2's card.
-- M6E pre-fix enters only after its landing, and only if its pre-registration clears the fix-reversal bar.
+- 6J Tokyo-fix (post-fix leg) is R2's card, **conditional**: its effect size comes from a spot USD/JPY cohort. That is a spot→futures transplant under harvest Req 2, so the cell cannot freeze until Joshua rules on spot-cohort admissibility, or a K-charging δ probe supplies a futures figure (Codex round 1 on PR #1061).
+- M6E pre-fix enters only after its landing, only if its pre-registration clears the fix-reversal bar, and under the same spot-cohort condition (spot EUR/USD).
 - MGC is skipped.
 - No index card: MNQ, MYM and M2K hold. The overnight drift has decayed since 2021 (NY Fed, 2026-07-01), and intraday momentum is underpowered.
