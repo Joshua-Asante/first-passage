@@ -1,0 +1,95 @@
+=== MYM x daily-range-state-persistence ===
+ledger: ops/instruments/MYM.md
+venue: NOT TRADABLE at the live firm — AUTHORIZED-but-venue-less incumbent (Striker DJ30 MYM edition); no live book to correlate new work against — check venue_note before book-correlation gate.
+verdict: AMBIGUOUS-PARKED (2026-08-29)
+  source: ../../docs/notes/notice/N-2026-08-29-mym-rangestate-persistence.md
+  BLOCKING — a parked concept holds this cell and shares the instrument's anti-SNAG budget; address it (and any decision date) in the pre-registration.
+class finding (mechanism-wide, not specific to MYM): (corrected battery, OFFICIAL): GC (parent, train era 2010–2019) top-quintile TR → elevated next-day TR: **NULL (driving L2 + L4)** — obs 0.5299 at the **8.4th percentile** of GC's own linear-ACF surrogate band (the earlier "near-miss" framing is retracted: the rate sat below the zero-mechanism benchmark's center); by-year 5/9 > 0.50 vs required 7. Ledger cell `DEAD` (re-proposal bar: the corrected battery + a different construction or longer panel). [MGC.md G4](MGC.md) · [`RESULTS_S1A.md`](../../lab/analysis/_inbox/rangestate_gc_2026-08/RESULTS_S1A.md) §6
+class finding (mechanism-wide, not specific to MYM): (corrected battery, OFFICIAL): CL (parent, train era 2010–2019) top-quintile TR → elevated next-day TR: **SIGNAL-GENERIC** — presence passes (CI lb 0.5651; halves; L4 boundary-exact 6/8 under the rule's own n_cond<20 exclusion, a disclosed prediction-miss adjudicated rules-govern); attribution GENERIC (obs at the 69th percentile of its own linear-ACF band, p_upper 0.3107) — **canon-attributed volatility clustering, SURVIVAL-ONLY durability. NOT a mechanism; does NOT discharge MCL's mechanism-owed status; NOT a conditioner license** (ADDENDUM-1 A6 rails travel with any quote; the crisis>calm per-year ordering and drop-cluster diagnostic are mandatory co-quotes). **Conditioner-engineering branch PARKED** — [`Q-CONDVAL-1`](../../docs/briefs/closures/Q-CONDVAL-1-closure-falsified.md) `FALSIFIED` 2026-08-18 (committed C−U 0.130 < frozen `L_star` 0.423 at the N-EDGE cell; O2 discharged). Finding stands. [MCL.md C4/C5/C6](MCL.md) · [`RESULTS_S1B.md`](../../lab/analysis/_inbox/rangestate_mcl_2026-08/RESULTS_S1B.md) §5
+class finding (mechanism-wide, not specific to MYM): (lighter-weight reuse, M=200 not the frozen M=1,000 — disclosed): MYM (index-futures, full Globex-day session TR, 2020-07→2026-07) top-quintile TR → elevated next-session TR: **SIGNAL-GENERIC** — presence passes (n_cond=332; CI lb 0.6028; halves 0.6928/0.6627, both >0.50); attribution GENERIC (obs 0.6777 at the **22nd percentile** of its own linear-ACF surrogate band — below the band's own median, not a near-miss). Third instrument scored under the class, second SIGNAL-GENERIC of three (GC NULL, CL SIGNAL-GENERIC, MYM SIGNAL-GENERIC) — the modal outcome so far. **Not pursued as a conditioner** — the sibling CL SIGNAL-GENERIC already failed the downstream cost-effectiveness test (`Q-CONDVAL-1`, cited above); ledger cell `AMBIGUOUS-PARKED`, matching CL's own cell state for the identical verdict shape. [MYM.md](MYM.md) · [`N-2026-08-29-mym-rangestate-persistence.md`](../../docs/notes/notice/N-2026-08-29-mym-rangestate-persistence.md) · [`c1_results.json`](../../lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/c1_results.json)
+class finding (mechanism-wide, not specific to MYM): (MNQ, 2026-08-29 — backfilled on reconciliation pass): MNQ's own same-day score of this class reused the frozen corrected battery verbatim as a new instrument leaf. Raw gateHit **0.6867** (n_cond=332) beats both prior instruments (GC 0.5299, CL 0.6282) on presence limbs L1–L3, but this instrument's own by-year floor (L4) is structurally **AMBIGUOUS** (only 6 of the required 7 full calendar years qualify at n_cond≥20) and the attribution limb (L5) **VOIDs** — the IAAFT diagnostic gate fails at both iter=100 and iter=500, byte-identically, with the escalation ladder's Schreiber end-matching trim finding no improving offset. **Not a fourth verdict alongside NULL/SIGNAL-GENERIC/SIGNAL-GENERIC — uncertified**, the exact failure mode the corrected battery exists to catch (a naive L1–L3-only read would have called this SIGNAL). Ledger cell `AMBIGUOUS-PARKED`, re-open trigger is operator-scoped (panel extended to ≥7 full years, or a fresh surrogate-class design per the frozen spec's own O5 remedy) — not calendar-triggered. [MNQ.md](MNQ.md) · [`N-2026-08-29-mnq-daily-range-persistence.md`](../../docs/notes/notice/N-2026-08-29-mnq-daily-range-persistence.md)
+BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
+BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
+cost hurdle: 6.57 bp/event (4x Tradeify hurdle) — VERIFY at #M6
+K bank: read ../../discovery_manifests/ — never trust a snapshot.
+prior: Not a barren instrument — the incumbent locked leg is profitable here; one narrow continuation expression failed. [#M1]
+exit=1
+=== MYM x event-window-reversal ===
+ledger: ops/instruments/MYM.md
+venue: NOT TRADABLE at the live firm — AUTHORIZED-but-venue-less incumbent (Striker DJ30 MYM edition); no live book to correlate new work against — check venue_note before book-correlation gate.
+verdict: DEAD (2026-07-21)
+  source: ../../docs/briefs/closures/MYM-3FPS-1-closure-falsified.md
+  BLOCKING — the re-proposal bar below must be met and addressed in the pre-registration.
+class finding (mechanism-wide, not specific to MYM): The settlement limb does not reproduce at useful magnitude — MYM's third-Friday derivative-settlement reversal cleared exact-coverage sourcing (84/87, 96.6% PASS) but both power legs sit below the 0.2139 floor and the tradable limb is negative in 2024–2026. [MYM.md M5](MYM.md)
+class finding (mechanism-wide, not specific to MYM): *Auction limb (2026-07-27) — dies at the PROCUREMENT GATE, not on edge, on ANY instrument.* Closing-auction/MOC-imbalance is reject-at-bar for an instrument-independent reason, hence recorded as a class finding rather than a cell. It is **not** killed by the free-data classification (the signal is exchange-licensed, unlike LETF EOD rebalance whose signal is public-AUM-derivable) nor by the a4 category prior (a published **signed** imbalance is not participant-category splitting) — those non-kills are stated so a future session does not borrow the wrong one. What binds: free-data route 1 requires **demonstrating** a vol-orthogonal, within-era-robust edge (F1 had no δ at all — unclaimed, not cleared); the order-flow modality is parenthesised to the standing *"don't buy explanatory data before a survivor justifies it"* rule (Avenue-A qualifying triple unmet; *scoped-not-procured*); and harvest Req 2 independently renders it UNSCREENABLE with the δ-extraction probe route **circular** (it needs the gated data). Cheapest re-open is free: a published cohort δ for imbalance → index-futures response, citable without procurement. [F1 ruling](../../docs/briefs/programs/2026-07-27-f1-moc-imbalance-mym-ruling.md)
+BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
+BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
+cost hurdle: 6.57 bp/event (4x Tradeify hurdle) — VERIFY at #M6
+K bank: read ../../discovery_manifests/ — never trust a snapshot.
+prior: Not a barren instrument — the incumbent locked leg is profitable here; one narrow continuation expression failed. [#M1]
+exit=1
+=== MYM x intraday-momentum ===
+ledger: ops/instruments/MYM.md
+venue: NOT TRADABLE at the live firm — AUTHORIZED-but-venue-less incumbent (Striker DJ30 MYM edition); no live book to correlate new work against — check venue_note before book-correlation gate.
+verdict: untested — no prior on this cell.
+class finding (mechanism-wide, not specific to MYM): Baltussen-class intraday momentum is statistically ABSENT on modern MNQ — the cost-geometry thesis was real (hurdle fell 11.06→3.01 bp) but the OOS edge decayed negative (gross Sharpe +0.88→−0.13), corroborating the published post-2021 decay and an external 14-signal-family falsification (arXiv 2605.04004). [NQ.md N3](NQ.md)
+BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
+BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
+cost hurdle: 6.57 bp/event (4x Tradeify hurdle) — VERIFY at #M6
+K bank: read ../../discovery_manifests/ — never trust a snapshot.
+prior: Not a barren instrument — the incumbent locked leg is profitable here; one narrow continuation expression failed. [#M1]
+exit=1
+=== MYM x opening-range-continuation ===
+ledger: ops/instruments/MYM.md
+venue: NOT TRADABLE at the live firm — AUTHORIZED-but-venue-less incumbent (Striker DJ30 MYM edition); no live book to correlate new work against — check venue_note before book-correlation gate.
+verdict: DEAD (2026-07-16)
+  source: ../../docs/briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md
+  BLOCKING — the re-proposal bar below must be met and addressed in the pre-registration.
+class finding (mechanism-wide, not specific to MYM): Session-aware continuation on MYM failed on seven independent grounds at once (D2–D8, N=403) — placebo p=0.2144, gross/cost ratio 0.693 against a 4.00 bar, net −0.0210R. D3 is arithmetically unrescuable by sizing (gross/cost reduces to 0.655; contracts and stop-width cancel out). [MYM.md M2/M3](MYM.md)
+BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
+BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
+cost hurdle: 6.57 bp/event (4x Tradeify hurdle) — VERIFY at #M6
+K bank: read ../../discovery_manifests/ — never trust a snapshot.
+prior: Not a barren instrument — the incumbent locked leg is profitable here; one narrow continuation expression failed. [#M1]
+exit=1
+FATAL: unknown mechanism 'overnight-drift-european-open'. Declare it NEW in MECHANISMS.md.
+exit=2
+=== MYM x overnight-gap-magnitude-range-conditioning ===
+ledger: ops/instruments/MYM.md
+venue: NOT TRADABLE at the live firm — AUTHORIZED-but-venue-less incumbent (Striker DJ30 MYM edition); no live book to correlate new work against — check venue_note before book-correlation gate.
+verdict: AMBIGUOUS-PARKED (2026-08-30)
+  source: ../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md
+  BLOCKING — a parked concept holds this cell and shares the instrument's anti-SNAG budget; address it (and any decision date) in the pre-registration.
+class finding (mechanism-wide, not specific to MYM): (corrected — stratified design, 2026-08-29, AUTHORITATIVE): same design correction as `overnight-range-day-session-transfer` (marginal comparison → stratify on `bias_hist`, measure lift within stratum). Within `bprime=0` (n=1,010): lift **+0.1404** (0.5526 vs 0.4122). Within `bprime=1` (n=297): lift **+0.0672** (0.7766 vs 0.7094) — **the sign itself flips positive** in both strata. Block-bootstrap on the minimum stratified lift: mean **+0.0594**, 95% CI **[−0.0419, +0.1477]**, p(lift≤0)=0.1247 / null-calibrated p(null≥obs)=0.0086 (within-stratum circular-shift of the gap predictor, distinct rotations enumerated, identity included; n_null=1304 from the sibling joint-gate cache vs original n=1307; 3-day difference disclosed; per-stratum null p=0.00099 / 0.152). **First operator ruling, 2026-08-30** ("go with INCREMENT, ... the null-calibrated test is the more reliable one") read this as a blanket INCREMENT off the blended p=0.0086 figure. **That figure was itself defective (Codex review, PR #211):** `circular_shift_null_min_lift` computes p=0.0086 as the *product* of the two per-stratum tail probabilities, which tests the sharp joint null that both strata are simultaneously zero — not the disjunctive composite null a "both strata" claim needs to reject. The correct test is an intersection-union test (the **max** of the per-stratum p's): max(0.00099, 0.152) = 0.152, not significant. **Corrected disposition — split by stratum:** `bprime=0` (day-history NOT elevated): **INCREMENT** — the within-stratum p=0.00099 is properly scoped and decisive, the same operator principle (null-calibrated over bootstrap CI) correctly applied. `bprime=1` (day-history elevated): **not established** — p=0.152 does not reject. A meaningfully weaker signal than the sibling overnight-range candidate's +0.2186 even in its decisive stratum. The `bprime=0` result is nested under `Q-RANGEXFER-1` as the new (2026-08-30) hypothesis clause `H-RANGEXFER-1.b-MYM`, distinct from `H-RANGEXFER-1.a-MYM`'s overnight-calm-restricted claim (a different estimand). First instrument scored under this id. [MYM.md](MYM.md) · [`N-2026-08-29-mym-gap-magnitude-rth-range.md`](../../docs/notes/notice/N-2026-08-29-mym-gap-magnitude-rth-range.md)
+BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
+BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
+cost hurdle: 6.57 bp/event (4x Tradeify hurdle) — VERIFY at #M6
+K bank: read ../../discovery_manifests/ — never trust a snapshot.
+prior: Not a barren instrument — the incumbent locked leg is profitable here; one narrow continuation expression failed. [#M1]
+exit=1
+=== MYM x overnight-range-day-session-transfer ===
+ledger: ops/instruments/MYM.md
+venue: NOT TRADABLE at the live firm — AUTHORIZED-but-venue-less incumbent (Striker DJ30 MYM edition); no live book to correlate new work against — check venue_note before book-correlation gate.
+verdict: AMBIGUOUS-PARKED (2026-08-30)
+  source: ../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md
+  BLOCKING — a parked concept holds this cell and shares the instrument's anti-SNAG budget; address it (and any decision date) in the pre-registration.
+class finding (mechanism-wide, not specific to MYM): (corrected — stratified design, 2026-08-29, AUTHORITATIVE): MYM $0 cheap falsifier for spec un-pause precondition 2 ("does overnight-state conditioning beat matched day-session-history conditioning?"), run properly as a **stratify-on-`bias_hist`, measure-lift- within-stratum** design after adversarial review caught that a marginal-rate comparison does not test "matched conditioning" — two correlated predictors can show near-identical marginal rates while one still carries large incremental information. Within `bprime=0` (n=1,010): lift **+0.3178** (0.6963 vs 0.3785). Within `bprime=1` (n=297): lift **+0.2207** (0.8607 vs 0.6400). Block-bootstrap on the minimum stratified lift: mean **+0.2186**, 95% CI **[+0.1042, +0.3216]**, p(lift≤0)=0.00025 / null-calibrated p(null≥obs)=3.4×10⁻⁶ (within-stratum circular-shift of the overnight predictor, distinct rotations enumerated, identity included; n_null=1304 from the sibling joint-gate cache vs original n=1307). Per-stratum null p=0.00099 / 0.00338. **INCREMENT — decisive; verdict unchanged under the corrected null.** Un-pause precondition 2 is now CLEARED; conditions 3 (joint-surrogate null design, adversarial-reviewed) and 4 (operator GO) remain outstanding before any full battery. First instrument scored under this role; ledger cell `AMBIGUOUS-PARKED` (GRADUATE-eligible, Pre-Q deferred — no frozen forward test executing). [MYM.md](MYM.md) · [`N-2026-08-29-mym-overnight-rth-range-transfer.md`](../../docs/notes/notice/N-2026-08-29-mym-overnight-rth-range-transfer.md)
+BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
+BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
+cost hurdle: 6.57 bp/event (4x Tradeify hurdle) — VERIFY at #M6
+K bank: read ../../discovery_manifests/ — never trust a snapshot.
+prior: Not a barren instrument — the incumbent locked leg is profitable here; one narrow continuation expression failed. [#M1]
+exit=1
+=== MYM x pdh-pdl-failed-break-reclaim ===
+ledger: ops/instruments/MYM.md
+venue: NOT TRADABLE at the live firm — AUTHORIZED-but-venue-less incumbent (Striker DJ30 MYM edition); no live book to correlate new work against — check venue_note before book-correlation gate.
+verdict: DEAD (2026-08-13)
+  source: ../../docs/briefs/closures/MSL-C1-closure-falsified.md
+  BLOCKING — the re-proposal bar below must be met and addressed in the pre-registration.
+class finding (mechanism-wide, not specific to MYM): MYM explore **FALSIFIED** (both-arms CI &lt; 0) — [C1 RESULTS](../../lab/archive/msl_c1_mym_2026-08/RESULTS_g2.md) · [closure](../../docs/briefs/closures/MSL-C1-closure-falsified.md). M2K unpaid path [OPERATOR-KILL](../../docs/briefs/closures/MSL-C3-closure-operator-kill.md) (B4 declined; class not killed at C3). **M2K dual-axis explore FALSIFIED 2026-08-13** (Axis A both-arms IS 95% CI entirely &lt; 0; long n=293 CI [−0.256, −0.038]; short n=295 CI [−0.307, −0.089]; pooled −0.171R) — [closure](../../docs/briefs/closures/MSL-C3-K2-closure-falsified.md) · [RESULTS](../../lab/archive/msl_c3_m2k_2026-08/RESULTS_g2.md). Does not clear or reopen the MYM explore kill.
+BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
+BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
+cost hurdle: 6.57 bp/event (4x Tradeify hurdle) — VERIFY at #M6
+K bank: read ../../discovery_manifests/ — never trust a snapshot.
+prior: Not a barren instrument — the incumbent locked leg is profitable here; one narrow continuation expression failed. [#M1]
+exit=1
