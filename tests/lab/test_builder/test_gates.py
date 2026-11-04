@@ -124,8 +124,10 @@ def test_I_G6_zero_variance_fails_5f_instead_of_crashing():
 
 
 def look(tmp_path, book=None, n_hold=50, **kw):
-    """Development report, then the holdout look on the last ``n_hold`` sessions with its book stats."""
-    rep, c, b, dates, p = run(tmp_path, book=book, **kw)
+    """Development report on all but the last ``n_hold`` sessions, then the holdout look on those
+    sessions with the report's book stats; the two windows are disjoint."""
+    _, all_dates = panel(260)
+    rep, c, b, dates, p = run(tmp_path, book=book, dates=all_dates[:-n_hold], **kw)
     return rep, gates.holdout_look(c, b, dates[-n_hold:], p, "run-1", COSTS, closed=frozenset(), book=rep["book"])
 
 
@@ -134,7 +136,7 @@ def test_book_placement_clear_and_descriptive_book_sharpe(tmp_path):
     rng = np.random.default_rng(3)
     rep, h = look(tmp_path, book={d: float(rng.normal(20, 200)) for d in dates})
     b = rep["book"]
-    assert b["sessions"] == 260 and b["book_s_with_card"] > b["book_s"]
+    assert b["sessions"] == 210 and b["book_s_with_card"] > b["book_s"]
     assert rep["verdict"] == "survivor" and all(g["gate"][:2] != "5g" for g in rep["gates"])
     assert h["pass"] and h["placement"] == "clear"
     assert h["placement_gate"]["gate"] == gates.PLACEMENT_LABEL and h["placement_gate"]["pass"]
@@ -171,6 +173,14 @@ def test_declared_empty_book_clears_placement(tmp_path):
     assert h["placement"] == "clear" and h["placement_gate"]["value"] == "book empty"
 
 
+def test_placement_reads_only_the_development_window(tmp_path):
+    _, dates = panel(260)
+    dev = {d: 100.0 for d in dates[:-50]}  # no development losing day: placement fails closed
+    _, h1 = look(tmp_path / "a", book=dev)
+    _, h2 = look(tmp_path / "b", book={**dev, **{d: -500.0 for d in dates[-50:]}})  # holdout-window losses
+    assert h1["placement"] == h2["placement"] == "fail" and h1["placement_gate"] == h2["placement_gate"]
+
+
 def test_placement_runs_only_after_a_holdout_pass(tmp_path):
     _, dates = panel(260)
     rep, c, b, all_dates, p = run(tmp_path, book={d: 100.0 for d in dates})
@@ -181,7 +191,11 @@ def test_placement_runs_only_after_a_holdout_pass(tmp_path):
 
 @pytest.mark.parametrize("bad", [None, {}, {"sessions": 3, "supplied": True}, {"sessions": 0, "supplied": "yes"},
                                  {"sessions": 2, "supplied": True, "mean_on_book_losing_days": 1.0,
-                                  "shared_loss_share": None, "book_losing_share_on_active_days": 0.5}])
+                                  "shared_loss_share": None, "book_losing_share_on_active_days": 0.5},
+                                 {"sessions": 2, "supplied": True, "mean_on_book_losing_days": 1.0,
+                                  "shared_loss_share": -1.0, "book_losing_share_on_active_days": 0.5},
+                                 {"sessions": 2, "supplied": True, "mean_on_book_losing_days": 1.0,
+                                  "shared_loss_share": 0.2, "book_losing_share_on_active_days": 1.5}])
 def test_malformed_book_statistics_are_refused_before_the_look(tmp_path, bad):
     rep, c, b, dates, p = run(tmp_path)
     with pytest.raises(gates.GateError, match="malformed"):

@@ -299,7 +299,7 @@ def check_book_stats(b) -> None:
         ok = all(k in b for k in BOOK_KEYS) and all(
             (k == "mean_on_book_losing_days" and b[k] is None)
             or (not isinstance(b[k], bool) and isinstance(b[k], (int, float)) and math.isfinite(b[k]))
-            for k in BOOK_KEYS)
+            for k in BOOK_KEYS) and all(0 <= b[k] <= 1 for k in BOOK_KEYS[1:])  # the two shares
     if not ok:
         raise GateError(f"development report book statistics are malformed: {b!r}"[:300])
 
