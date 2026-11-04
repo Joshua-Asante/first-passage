@@ -555,12 +555,12 @@ A forward confirm buys nothing over the fixed holdout for the equity micros. It 
 | 6J | 26 | 593,680 | 2001-01-22T20:00Z | 2026-11-02T21:45Z | PASS | `c141d5d1dd4cbf438388bcf55134e803f04ddafe0de50c72b919022443e9cb6f` |
 | M6E | 18 | 409,380 | 2009-03-23T19:00Z | 2026-11-02T21:45Z | PASS | `d3c31df89b600a7fe468c1f9d453042184aafec670ca543a3ccf6e22ddbacbc0` |
 | MES | 8 | 176,734 | 2019-05-05T22:00Z | 2026-11-03T21:45Z | PASS | `e224eb8fe8b0cb7fa4760ecbcfb618a109c57f117ede41bbeb9ec758d65ccc4d` |
-| M6A | 18 | 377,701 (counted) | 2009-03-23T19:00Z | 2026-11-03T21:45Z | **FAIL** | none |
+| M6A (from 2011) | 16 | 361,533 | 2011-01-02T23:00Z | 2026-11-03T21:45Z | PASS | `cd5d016ff59ca5782d2811d1a6bb90b3ba3095bb93972c445e2df12eb84a2e3d` |
 
 - The seven 11-03 symbols sum to 2,016,728 bars, matching the operator's report.
-- **M6A is not landed.** Verbatim: `validate_bar_export_v2: page=1 row=4663 field=open: must be finite and positive`. 37 bars have O/H/L/C all `0.0000`, all in `…_2026-11-03 (1).csv`, from 2010-04-25 18:30 to 2010-04-26 15:15 New York. As a diagnostic, not a verification, the other 17 pages pass together. Its mid-session first bar is TradingView's depth, not a defect.
+- **M6A landed from 2011 only, by operator ruling (2026-11-04).** The full 18-page set (377,701 bars, from 2009-03-23T19:00Z) failed first. The 2009 page (4,781 bars) and 2010 page (11,387 bars) are excluded and unregistered. Verbatim: `validate_bar_export_v2: page=1 row=4663 field=open: must be finite and positive`. 37 bars have O/H/L/C all `0.0000`, all in `…_2026-11-03 (1).csv`, from 2010-04-25 18:30 to 2010-04-26 15:15 New York. The 2009 page is clean but would sit alone before a year-long gap. The August pages start in 2022, so they cannot fill the window.
 - Mintick and pointvalue match CME for all nine symbols (read 2026-11-04). M6E, M6A, MES, MNQ, M2K and 6J are from CME pages. MYM, MGC and MCL are from search summaries of CME pages, because their spec tables did not render.
-- `SHA256SUMS`: +126 rows, −0. That is these 99 pages plus 27 pages exported 2026-11-01 (MZC, MZS, MZW, MHG, SIL, MNG), which were on disk and unregistered, and which this landing did not validate.
+- `SHA256SUMS`: +142 rows, −0. That is these 115 pages plus 27 pages exported 2026-11-01 (MZC, MZS, MZW, MHG, SIL, MNG), which were on disk and unregistered, and which this landing did not validate.
 - The M15 panels were not refreshed. Closures and identity ledgers pin the current panel hashes, and the producer overwrites those bytes in place.
 
 **Calendar.**
