@@ -432,8 +432,6 @@ docs/ltm/notes/archive/sessions/SESSIONS-2026-Q3.md -> lab/archive/p2_replay_202
 docs/ltm/notes/archive/sessions/SESSIONS-2026-Q3.md -> lab/archive/xindex_rv_recon_2026-07/COST_DRYRUN_ES_RTY_2026-08-18.md [missing-file]	1
 docs/ltm/notes/archive/sessions/SESSIONS-2026-Q3.md -> scripts/check_agent_rails.py [missing-file]	1
 docs/ltm/notes/archive/sessions/SESSIONS-2026-Q3.md -> scripts/fetch_nemo_guardrails.py [missing-file]	1
-docs/ltm/notes/archive/sessions/SESSIONS-2026-Q3.md -> scripts/retire_adr.py [missing-file]	1
-docs/ltm/notes/archive/sessions/SESSIONS-2026-Q3.md -> tests/test_retire_adr.py [missing-file]	1
 docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md -> docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-08-23-judgment-review [missing-anchor]	1
 docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md -> docs/adr/2026-07-28-c1-disaster-stop-payload-supported.md [missing-file]	1
 docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md -> docs/adr/2026-08-03-lifecycle-ladder-intermediate-rung.md [missing-file]	1
