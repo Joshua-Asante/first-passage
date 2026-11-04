@@ -536,7 +536,7 @@ A forward confirm buys nothing over the fixed holdout for the equity micros. It 
 - **Option B** (PR #1048): the builder closes a calendar date only when at least one recorded status is not `NORMAL`. It fails closed on a missing or unknown status, so the 20 informational 2022–2026 rows become traded sessions.
 - The reachability line (D7's durable fix) merged as PR #1042.
 
-**Lifetime builder looks per instrument under D7 and D9,** once #1045 and #1048 merge:
+**Lifetime builder looks per instrument under D7 and D9** (#1045 and #1048 merged):
 
 | Instrument | Usable window | Looks |
 |---|---|---|
@@ -551,7 +551,7 @@ Pre-2016 depth (MGC to 2010, M6E to 2009, 6J to 2001) would raise those budgets 
 - The card is chosen and justified **before** any result, from the registered eight and by stated rationale, never by outcome (Rules 23, 25).
 - Recorded at the owner: the [registration's status note](../briefs/pre-registration/2026-11-01-builder-r1-mcl-orb-registration.md).
 
-**R2 composition** (Joshua, 2026-11-04, "go with your recommendations on both"), recorded in the [R2 dossier index, PR #1061](https://github.com/Joshua-Asante/first-passage/pull/1061):
+**R2 composition** (Joshua, 2026-11-04, "go with your recommendations on both"), recorded in the [R2 dossier index](../briefs/dossiers/R2/INDEX.md) (PR #1061):
 - 6J Tokyo-fix (post-fix leg) was chosen as R2's card. Its spot USD/JPY cohort is admissible under [strategy_harvest §4a](../methodology/strategy_harvest.md#4a-spot-cohorts-for-same-pair-cme-fx-futures-ruling-2026-11-04).
 - M6E pre-fix enters only after its landing, and only if its pre-registration clears the fix-reversal bar. Its spot EUR/USD cohort is admissible under the same §4a conditions.
 - MGC is skipped.
@@ -566,4 +566,23 @@ So running R2 would have spent one of 6J's lifetime looks on a card the arithmet
 1. Rank cells by **cost headroom**: the cited per-event effect in ticks against all-in round-trip cost (commission plus 2 ticks of slip at the target firm). Then check power at the instrument's look budget.
 2. Include M6A and MES (chosen for export, 2026-11-04).
 3. Prefer mechanisms the builder can express, or ones that justify building a new block.
+
+**R3 found no card** ([R3 index](../briefs/dossiers/R3/INDEX.md), PR #1066). All 28 cells fail cost headroom or power, so every lifetime look stays in reserve.
+
+**Dossier-wave entry test** (Joshua, 2026-11-04, verbatim: "yes to the R3 entry test and the §11 pointer PR"). A new dossier wave runs only when one of these holds:
+- A cited cohort meets [R3's frontier](../briefs/dossiers/R3/INDEX.md#the-trade-off-in-one-line-per-instrument): a haircut per-event mean of at least 1.5 × all-in round-trip cost, with δ/σ at or above the instrument's power break-even. At the break-even that means a multi-hour or full-session window on an index micro or MGC; a higher-δ/σ signal qualifies on a shorter window.
+- Fill evidence shows an FX fix leg can trade within the slip its R3 row allows.
+
+The test is K = 0 arithmetic, run before any dossier is written (census mode 1).
+
+**Gate-stack calibration** (K = 0, synthetic; [RESULTS](../../lab/analysis/_inbox/builder_power_2026-11/RESULTS.md), PR #1067):
+- 5c binds. At K = 1–2 the whole stack sits 0.1–0.3 below the 5f closed form, so D7's reachability line is an upper bound there.
+- The 5e timing placebo is unreachable on synthetic breakout bars (look-ahead through the realised side). Joshua, 2026-11-04, verbatim: "go with your recommendation on 5e, window slide". A same-day window-slide placebo (lesson M-17) replaces it in a builder PR, before R1's re-registration freezes the gates.
+- 5g placement rarely clears at latent book correlation 0.3. Open: whether its cap should be read against its independence baseline.
+
+**Deployment bar** (K = 0, synthetic; [firm atlas RESULTS](../../lab/analysis/c1/firm_feasibility_atlas_2026-11/RESULTS.md), PR #1069):
+- With risk sized to the drawdown allowance, the profit-target ÷ drawdown ratio decides feasibility, and bust, not pass, binds.
+- Nothing clears the bust ceiling at 0.05 R net per trade or less. A low-win-rate breakout family needs about 0.20 R net.
+- Bulenox is excluded from the lookup: the engine does not model its intraday-high trail.
+- Inference: because feasibility barely differs by firm, D10's deployment order (§10.2) turns on venue terms and costs.
 
