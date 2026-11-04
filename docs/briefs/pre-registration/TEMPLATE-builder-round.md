@@ -59,7 +59,8 @@ A4 Card and mechanism test (T4)
   Mechanism test (status per D9): the candidate contract's discriminator fields (observable and statistic · null · expected direction · threshold · coverage and power), measured independently of the payoff
 
 A5 Pre-registered routing (T7)
-  Gates: as the engine applies them (gates.py, THRESHOLDS cited not restated; venue.py 5h; holdout.py), each placed in the ten-step order by the prerequisite mapping and its listed exceptions
+  Gates: as the engine applies them (gates.py 5a–5g, THRESHOLDS cited not restated; holdout.py), each placed in the ten-step order by the prerequisite mapping and its listed exceptions
+  Gate 5h (venue.py) is a standalone module, not wired into gates.py or run.py (builder README): state whether and how this round runs it; the form does not imply it is enforced
   Run integrity: the builder's fail-closed rules (unresolved trades, input DataError) and the evaluation order's EVIDENCE-VOID rule
   Mechanism test: record its outcome under the full Confirm taxonomy, with its precedence (evaluation-order §Confirm verdicts). While the test is not terminal (D9), a typed outcome neither ends a mechanism line nor rescues a card. The builder verdict governs, and any consequence of the typed outcome is Joshua's decision
   Survivor: to Joshua for the forward GO; nothing else is blessed (Rule 25)
