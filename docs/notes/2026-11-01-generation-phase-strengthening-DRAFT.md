@@ -506,7 +506,7 @@ A forward confirm buys nothing over the fixed holdout for the equity micros. It 
 |---|---|---|---|
 | Tradeify | US-open index ORB | in flight; native NinjaScript | depends on the deployment-order decision |
 | BluSky | Metals: MGC, proposed | MGC offered; full automation welcomed | **R2 skips MGC** (Joshua, 2026-11-04): both MGC dossiers fail harvest Req 1, and the no-counterparty channel was not used |
-| MFFU | FX: **6J Tokyo-fix, post-fix leg** (decided 2026-11-04; spot cohort admitted under strategy_harvest §4a) | R2's card ([R2 dossier index, PR #1061](https://github.com/Joshua-Asante/first-passage/pull/1061)); avoids MFFU's funded metals cap | 6J full-size only; venue legality re-checked for MFFU in the dossier |
+| MFFU | FX: **6J** (decided 2026-11-04; the Tokyo-fix card is held with R2, see §11) | R2's card ([R2 dossier index, PR #1061](https://github.com/Joshua-Asante/first-passage/pull/1061)); avoids MFFU's funded metals cap | 6J full-size only; venue legality re-checked for MFFU in the dossier |
 | Bulenox | FX: **M6E pre-fix** (decided 2026-11-04) | cheapest M6E costs ($0.50/side; MFFU $0.72, Tradeify $0.80, per `core/firm_rules.py` comments); a micro suits the harsh intraday-high trail | enters only after the M6E landing and if its pre-registration answers the EUR/USD fix-reversal re-proposal bar |
 | FXIFY | later | rules provisional | — |
 
@@ -552,7 +552,18 @@ Pre-2016 depth (MGC to 2010, M6E to 2009, 6J to 2001) would raise those budgets 
 - Recorded at the owner: the [registration's status note](../briefs/pre-registration/2026-11-01-builder-r1-mcl-orb-registration.md).
 
 **R2 composition** (Joshua, 2026-11-04, "go with your recommendations on both"), recorded in the [R2 dossier index, PR #1061](https://github.com/Joshua-Asante/first-passage/pull/1061):
-- 6J Tokyo-fix (post-fix leg) is R2's card. Its effect size comes from a spot USD/JPY cohort, which Joshua admitted on 2026-11-04 for same-pair CME FX futures under stated conditions ([strategy_harvest §4a](../methodology/strategy_harvest.md#4a-spot-cohorts-for-same-pair-cme-fx-futures-ruling-2026-11-04)).
+- 6J Tokyo-fix (post-fix leg) was chosen as R2's card. Its spot USD/JPY cohort is admissible under [strategy_harvest §4a](../methodology/strategy_harvest.md#4a-spot-cohorts-for-same-pair-cme-fx-futures-ruling-2026-11-04).
 - M6E pre-fix enters only after its landing, and only if its pre-registration clears the fix-reversal bar. Its spot EUR/USD cohort is admissible under the same §4a conditions.
 - MGC is skipped.
 - No index card: MNQ, MYM and M2K hold. The overnight drift has decayed since 2021 (NY Fed, 2026-07-01), and intraday momentum is underpowered.
+
+**R2 held** (Joshua, 2026-11-04, verbatim: "go with option a, hold R2"). No R2 look is spent. Three reasons:
+- **6J fails on costs.** The MFFU venue re-check on PR #1061 found every 6J leg net negative at the builder's frozen 1 tick/side slip (`THRESHOLDS["5b_slippage_ticks_per_side"]`, 2 ticks round trip). The post-fix leg breaks even only below about 1.8 ticks of total round-trip slip.
+- **M6E is worse:** 0.7–1.0 tick of slip consumes it.
+- **The builder can't express either cell.** It has only ORB blocks.
+
+So running R2 would have spent one of 6J's lifetime looks on a card the arithmetic already fails (census mode 1). The next dossier wave is re-aimed:
+1. Rank cells by **cost headroom**: the cited per-event effect in ticks against all-in round-trip cost (commission plus 2 ticks of slip at the target firm). Then check power at the instrument's look budget.
+2. Include M6A and MES (chosen for export, 2026-11-04).
+3. Prefer mechanisms the builder can express, or ones that justify building a new block.
+
