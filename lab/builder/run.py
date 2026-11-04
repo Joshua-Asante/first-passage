@@ -22,8 +22,7 @@ its session dates, and the book must cover ``min_overlap`` development sessions 
 instrument before any card is evaluated. Each instrument's D7 reachability line (gate 5f's
 floor at the K 5f will use and the development-session count; ``gates.reachability``) is then
 printed and carried in every report as ``reachability_5f``, a description only; beside it, each
-card's 5e null size (``gates.slide_line``: the valid same-day slides, their span and the
-zero-edge false-pass bound) is printed and carried as ``slides_5e``, so a card whose clock frame
+card's 5e null size (``gates.slide_line``: the valid same-day slides and their span) is printed and carried as ``slides_5e``, so a card whose clock frame
 admits fewer than ``gates.SLIDE_MIN`` slides is seen to fail 5e before a look. Reports land in
 ``out/<card id>.report.json`` with a one-line verdict each, and each report's sha256, in
 ``out/verdict.json`` with the development binding (``binding``) and its sha256. The marker is

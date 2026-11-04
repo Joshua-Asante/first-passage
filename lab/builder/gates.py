@@ -164,11 +164,12 @@ def reachability(k: int, n: int) -> dict:
             "basis": "5f only, normal approximation; a description, not a gate"}
 
 
-# 5e null size (lesson M-17): the fewest valid slides 5e accepts. The draws exclude the real
-# window (delta 0), so at zero edge with exchangeable windows the beaten share's z-score has
-# variance (k+1)/(k-1) for k slides, and the false-pass rate is 1 - Phi(z95 * sqrt((k-1)/(k+1))).
-# k = 5 gives 0.090, k = 4 gives 0.101: 5 is the fewest that keeps it within twice the nominal 0.05.
-SLIDE_MIN = 5
+# 5e null size (lesson M-17): the fewest valid slides (delta != 0) 5e accepts. Each run draws the
+# real window (delta 0) as well as the slides, so under per-session exchangeability of the window
+# nets the card's total and a run's total are identically distributed, and the zero-edge false
+# pass is the nominal 1 - 5e_min_beaten_share for any |S| >= 1. Two slides is the floor so that
+# the null rests on more than one alternative anchor.
+SLIDE_MIN = 2
 
 
 def slid(card: Card, delta: int) -> Card | None:
@@ -195,17 +196,14 @@ def slides(card: Card) -> list[tuple[int, Card]]:
 
 
 def slide_line(card: Card) -> dict:
-    """5e's null size, printed at registration beside D7's line: |S|, the slid span and the
-    zero-edge false-pass bound at that |S|. A description; 5e fails closed below SLIDE_MIN."""
-    from statistics import NormalDist
+    """5e's null size, printed at registration beside D7's line: |S| (slides other than delta 0)
+    and the slid span. A description; 5e fails closed below SLIDE_MIN."""
     s = slides(card)
-    k = len(s)
-    z = NormalDist().inv_cdf(THRESHOLDS["5e_min_beaten_share"])
-    return {"slides": k, "min_slides": SLIDE_MIN, "meets_min": k >= SLIDE_MIN,
+    return {"slides": len(s), "min_slides": SLIDE_MIN, "meets_min": len(s) >= SLIDE_MIN,
+            "windows_drawn": len(s) + 1,
             "delta_bars": [s[0][0], s[-1][0]] if s else None,
             "range_start": [s[0][1].range_start(), s[-1][1].range_start()] if s else None,
-            "flat_at": [s[0][1].flat_at, s[-1][1].flat_at] if s else None,
-            "zero_edge_false_pass_bound": 1 - NormalDist().cdf(z * math.sqrt((k - 1) / (k + 1))) if k else None}
+            "flat_at": [s[0][1].flat_at, s[-1][1].flat_at] if s else None}
 
 
 def slide_matrix(S: list[tuple[int, Card]], bars, dev: list[str], costs: Costs,
@@ -231,8 +229,8 @@ def placebo_beaten_share(card: Card, bars, dev: list[str], trades: list[C.Trade]
                          runs: int, seed: int, closed: frozenset[str] = frozenset()) -> dict:
     """5e, the same-day window-slide placebo (lesson M-17). For each slide in S the shifted card
     runs through compile.py on the development sessions, so each slid trade's side and entry use
-    only that day's bars up to its entry bar. Each run draws one slide per session, uniformly and
-    independently, and sums the sessions' net; ``beaten_share`` is the share of runs below the
+    only that day's bars up to its entry bar. Each run draws one window per session from S and the
+    card's own (delta 0), uniformly and independently, and sums the sessions' net; ``beaten_share`` is the share of runs below the
     card's net. A session the slide skips, or whose slid trade is unresolved, contributes 0 (the
     unresolved ones are counted). Fails closed (``beaten_share`` None, with ``reason``) below
     SLIDE_MIN slides or on a zero-variance null."""
@@ -246,11 +244,13 @@ def placebo_beaten_share(card: Card, bars, dev: list[str], trades: list[C.Trade]
         return {**out, "beaten_share": None,
                 "reason": f"{len(S)} valid slide(s), fewer than {SLIDE_MIN}: the 5e null is too small"}
     m, unresolved, skipped = slide_matrix(S, bars, dev, costs, closed)
-    pick = np.random.default_rng(seed).integers(0, len(S), size=(runs, len(dev)))
-    tot = m[np.arange(len(dev)), pick].sum(axis=1)
+    m = np.column_stack([daily(card, trades, dev, costs), m])  # delta 0, the card itself, is drawn too
+    pick = np.random.default_rng(seed).integers(0, len(S) + 1, size=(runs, len(dev)))
+    # USD at 1e-6: summation order must not split ties with the card or give a degenerate null variance
+    tot, real = np.round(m[np.arange(len(dev)), pick].sum(axis=1), 6), round(real, 6)
     out.update(slid_unresolved_sessions=unresolved, slid_skipped_sessions=skipped,
                null_mean=float(tot.mean()), null_sd=float(tot.std()))
-    if not tot.std() > 0:
+    if np.ptp(tot) == 0:
         return {**out, "beaten_share": None, "reason": "the slide null has zero variance"}
     return {**out, "beaten_share": float((tot < real).mean())}
 

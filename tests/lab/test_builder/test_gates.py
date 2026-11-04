@@ -394,8 +394,8 @@ def test_5e_regression_the_slide_does_not_ride_the_breakout_that_chose_the_side(
 
 
 def test_5e_zero_edge_false_pass_is_near_the_threshold_tail():
-    """Symmetric zero-drift walk, |S| = 7. Exchangeable-window bound at |S| = 7 is 0.077 (the
-    draws exclude delta 0). Tolerance: at most 4 of 20 seeds pass (P(X >= 5 | p = 0.077) ~ 0.04)
+    """Symmetric zero-drift walk, |S| = 7. Drawing delta 0 too makes the null exact, so the false
+    pass is the nominal 0.05. Tolerance: at most 3 of 20 seeds pass (P(X >= 4 | p = 0.05) ~ 0.016)
     and the mean share lies in [0.3, 0.7]."""
     c = cards.parse(WALK_CARD)
     assert gates.slide_line(c)["slides"] == 7
@@ -405,27 +405,29 @@ def test_5e_zero_edge_false_pass_is_near_the_threshold_tail():
         shares.append(gates.placebo_beaten_share(c, b, dates, gates.C.simulate(c, b, dates), COSTS, 1000,
                                                  seed)["beaten_share"])
     shares = np.array(shares)
-    assert (shares >= gates.THRESHOLDS["5e_min_beaten_share"]).sum() <= 4 and 0.3 <= shares.mean() <= 0.7
+    assert (shares >= gates.THRESHOLDS["5e_min_beaten_share"]).sum() <= 3 and 0.3 <= shares.mean() <= 0.7
 
 
 def test_5e_fails_closed_below_the_minimum_slide_count(tmp_path):
-    c = cards.parse(WALK_CARD.replace('flat_at: "15:00"', 'flat_at: "16:00"'))
+    c = cards.parse(WALK_CARD.replace('flat_at: "15:00"', 'flat_at: "16:30"'))
     line = gates.slide_line(c)
-    assert (line["slides"], line["meets_min"], line["delta_bars"]) == (3, False, [1, 3]) and gates.SLIDE_MIN == 5
+    assert (line["slides"], line["windows_drawn"], line["meets_min"], line["delta_bars"]) == (1, 2, False, [1, 1])
+    assert gates.SLIDE_MIN == 2
     b, dates = walk_panel(30, 3)
     r = gates.placebo_beaten_share(c, b, dates, gates.C.simulate(c, b, dates), COSTS, 100, 1)
-    assert r["beaten_share"] is None and "fewer than 5" in r["reason"]
+    assert r["beaten_share"] is None and "fewer than 2" in r["reason"]
     none = cards.parse(WALK_CARD.replace('flat_at: "15:00"', 'flat_at: "17:00"'))
-    assert gates.slides(none) == [] and gates.slide_line(none)["zero_edge_false_pass_bound"] is None
+    assert gates.slides(none) == [] and gates.slide_line(none)["delta_bars"] is None
 
 
-def test_5e_fails_closed_on_a_zero_variance_null():
+def test_5e_fails_closed_on_a_zero_variance_null(monkeypatch):
+    """Every slide nets what the card nets on every session: each run's total is the card's."""
     c = cards.parse(JUMP_CARD)
     b, dates = walk_panel(40, 2, jump=0.6)
-    flat = b.copy()
-    late = flat.index.strftime("%H:%M") >= "09:45"
-    flat.loc[late, ["open", "high", "low", "close"]] = 70.0  # no slide ever breaks out
-    r = gates.placebo_beaten_share(c, flat, dates, gates.C.simulate(c, flat, dates), COSTS, 100, 1)
+    tr = gates.C.simulate(c, b, dates)
+    x = gates.daily(c, tr, dates, COSTS)
+    monkeypatch.setattr(gates, "slide_matrix", lambda S, *a, **k: (np.tile(x[:, None], (1, len(S))), 0, 0))
+    r = gates.placebo_beaten_share(c, b, dates, tr, COSTS, 100, 1)
     assert r["beaten_share"] is None and r["reason"] == "the slide null has zero variance"
 
 
