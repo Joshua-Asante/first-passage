@@ -130,7 +130,8 @@ def series_path(rng: np.random.Generator, S: float, n: int, h: int, q: float, sh
     with tempfile.TemporaryDirectory() as td, series_holdout(hold_trades):
         lp = Path(td) / "ledger.jsonl"
         ledger.append_cards(lp, "power", [CARD])
-        look = gates.holdout_look(CARD, None, hold_d, lp, "power", COSTS, closed=frozenset(), book=book)
+        look = gates.holdout_look(CARD, None, hold_d, lp, "power", COSTS, closed=frozenset(), book=book,
+                                  book_sha256="synthetic-book")
     out["holdout"] = bool(look["pass"])
     out["placement"] = look["placement"]  # None unless the look passed
     out["placement_any"] = gates.placement(book)["placement"]  # same rule on every path, for 5g's own rate
@@ -205,6 +206,7 @@ def bar_path(rng: np.random.Generator, drift: float, n: int, h: int, ks: tuple[i
         out["5f_k"] = {k: gates._dsr_gate([], x, k) for k in ks}
         # the look is taken for every path so the holdout's own rate is measured; the stack
         # counts it only where 5a-5f passed
-        look = gates.holdout_look(CARD, b, hold, lp, "power", COSTS, closed=frozenset(), book=rep["book"])
+        look = gates.holdout_look(CARD, b, hold, lp, "power", COSTS, closed=frozenset(), book=rep["book"],
+                                  book_sha256=None)
         out["holdout"] = bool(look["pass"])
     return out

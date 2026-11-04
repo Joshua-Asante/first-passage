@@ -4,6 +4,7 @@ One-liner: research input only (K = 0, synthetic). 5c binds at realistic Sharpe.
 
 - **Design:** [DESIGN.md](DESIGN.md), frozen at `f5bd556` before any run.
 - **Engine:** `main` at `8745b40`, where 5g runs after the holdout as placement (branch B, #1054). Engine sha256 is in each results JSON's `meta`.
+- **Engine change after the run:** `31d719f` (no-book placement is `not_evaluated`; the pinned book sha256 is recorded) leaves every measured rule unchanged. The series layer always supplies a book, and the bar layer uses no placement. The harness passes the new `book_sha256` argument.
 - **Data:** synthetic only; no vendor, private or real-strategy input was read.
 - **Runs:** cloud container, `python -I scripts/fp.py python …`, Python 3.13.18, 4 processes.
   - Series layer: 84 cells in 1,153 s ([`results_series.json`](results_series.json)).
