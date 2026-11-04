@@ -239,6 +239,7 @@ def test_holdout_looks_survivors_in_card_id_order_on_the_pinned_window(spec):
     h = report(path, "g-001", "holdout")
     assert h["holdout_sessions"] == [dates[300], dates[379], 80] and h["split"] == s["data"]["MCL"]["split"]
     assert h["verdict"] in {"pass", "fail"} and h["dev_binding_sha256"] == report(path)["dev_binding_sha256"]
+    assert h["placement"] == ("clear" if h["pass"] else None)  # declared empty book: placement clears after a pass
 
 
 def _remark(path, rep: dict) -> None:
@@ -256,6 +257,26 @@ def test_holdout_skips_cards_that_did_not_survive(spec):
     go(path, s)
     _remark(path, {**report(path), "verdict": "killed"})
     assert go(path, s, holdout) == 0 and looks(s) == [] and not (path.parent / "out" / "g-001.holdout.json").exists()
+
+
+def test_a_book_the_card_does_not_fit_gives_a_look_and_placement_fail(spec, tmp_path):
+    path, s, dates = spec
+    s["book"] = {**book_file(tmp_path, {d: 100.0 for d in dates[:300]}), "min_overlap": 300}  # no losing day
+    go(path, s)
+    rep = report(path)
+    assert rep["verdict"] == "survivor" and all(g["gate"][:2] != "5g" for g in rep["gates"])
+    assert go(path, s, holdout) == 0 and len(looks(s)) == 1
+    h = report(path, "g-001", "holdout")
+    assert h["verdict"] == "pass" and h["pass"] and h["placement"] == "fail"  # CONFIRMED · placement-fail
+    assert h["placement_gate"]["threshold"]["shared_loss_share"] == gates.THRESHOLDS["5g_max_shared_loss_share"]
+
+
+def test_holdout_refuses_a_survivor_without_book_statistics_before_any_look(spec):
+    path, s, _ = spec
+    two_cards(path, s)
+    go(path, s)
+    _remark(path, {k: v for k, v in report(path).items() if k != "book"})  # g-001 sorts after a-002
+    refused(path, s, "g-001: development report book statistics are malformed")
 
 
 def _new_file(tmp_path, name, src: Path) -> dict:

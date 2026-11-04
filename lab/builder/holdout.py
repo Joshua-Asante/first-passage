@@ -5,9 +5,13 @@ attempt: ``out/verdict.json`` (deleted by builder.run before it ledgers, written
 rename) must carry the sha256 that ``run.binding`` recomputes from run.yaml and the engine now,
 list exactly run.yaml's cards with each report's sha256, and every report must match its sha256,
 carry the same binding sha256, this run_id and a final verdict (survivor | killed | unresolved).
-The survivors are the cards whose report verdict is ``survivor``. Looks are taken in card-id
-order, each ledgered (``ledger.append_holdout_look``) before its holdout bars are simulated, and
-each writes ``out/<card id>.holdout.json``.
+The survivors are the cards whose report verdict is ``survivor``; each survivor's report must
+carry well-formed book statistics, checked for every survivor before the first look. Looks are
+taken in card-id order, each ledgered (``ledger.append_holdout_look``) before its holdout bars
+are simulated, and each writes ``out/<card id>.holdout.json``. After a holdout pass, gate 5g
+(step 10 portfolio fit) runs on the development-window book statistics in the card's report, so
+no new data is read, and sets ``placement: clear | fail`` in the holdout file; the look's
+verdict is unchanged (``gates.holdout_look``).
 """
 from __future__ import annotations
 
@@ -40,8 +44,9 @@ def _differences(old, new, at="") -> list[str]:
     return [] if old == new else [at.rstrip(".")]
 
 
-def survivors(s: dict, cs: list, cost: dict) -> list:
-    """The cards with a survivor report, in card-id order, after checking the binding and every report."""
+def survivors(s: dict, cs: list, cost: dict) -> list[tuple]:
+    """(card, development report) for each survivor, in card-id order, after checking the binding,
+    every report and each survivor's book statistics."""
     out = Path(s["out"])
     _, marker = _read(out / "verdict.json")
     bind = run.binding(s, cs, cost)
@@ -66,7 +71,11 @@ def survivors(s: dict, cs: list, cost: dict) -> list:
                 or rep.get("card_sha256") != c.sha256 or rep.get("verdict") not in FINAL:
             raise HoldoutError(f"{c.id}: no final development report for this binding")
         if rep["verdict"] == "survivor":
-            keep.append(c)
+            try:
+                gates.check_book_stats(rep.get("book"))
+            except gates.GateError as e:
+                raise HoldoutError(f"{c.id}: {e}") from None
+            keep.append((c, rep))
     return keep
 
 
@@ -76,16 +85,17 @@ def main(argv: list[str]) -> int:
     cost = run.costs(s, sorted({c.instrument for c in cs}))
     keep = survivors(s, cs, cost)
     cal = data.load_calendar(Path(s["calendar"]["path"]), s["calendar"]["sha256"])
-    loaded = {i: run.load_data(s, i, cal) for i in sorted({c.instrument for c in keep})}
+    loaded = {i: run.load_data(s, i, cal) for i in sorted({c.instrument for c, _ in keep})}
     out = Path(s["out"])
-    for c in keep:
+    for c, rep in keep:
         bars, _, hold, summary = loaded[c.instrument]
-        look = gates.holdout_look(c, bars, hold, Path(s["ledger"]), s["run_id"], cost[c.instrument], closed=cal.closed)
+        look = gates.holdout_look(c, bars, hold, Path(s["ledger"]), s["run_id"], cost[c.instrument], closed=cal.closed,
+                                  book=rep["book"])
         look.update(card_id=c.id, run_id=s["run_id"], split=s["data"][c.instrument]["split"],
                     data_sha256=summary["sha256"], calendar_sha256=cal.sha256,
                     dev_binding_sha256=run.binding_sha256(run.binding(s, cs, cost)))
         (out / f"{c.id}.holdout.json").write_text(json.dumps(look, indent=1), encoding="utf-8")
-        print({k: look[k] for k in ("card_id", "verdict", "pass")})
+        print({k: look[k] for k in ("card_id", "verdict", "pass", "placement")})
     return 0
 
 

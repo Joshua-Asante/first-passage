@@ -1,4 +1,4 @@
-"""Strategy builder v1, build step 3: gates 5a-5g, report and holdout look (I-S2, I-S3, I-K3, I-G3..I-G6, I-L4)."""
+"""Strategy builder v1, build step 3: gates 5a-5f, report, holdout look and 5g placement (I-S2, I-S3, I-K3, I-G3..I-G6, I-L4)."""
 from __future__ import annotations
 
 import json
@@ -43,7 +43,8 @@ def test_firm_costs_come_from_firm_rules_and_refuse_missing_rows():
 def test_clean_edge_survives_every_gate_and_report_is_traceable(tmp_path):
     rep, *_ = run(tmp_path)
     assert rep["verdict"] == "survivor" and rep["stopped_at"] is None
-    assert [g["gate"][:2] for g in rep["gates"]] == ["5a", "5b", "5c", "5d", "5e", "5f", "5g"]
+    assert [g["gate"][:2] for g in rep["gates"]] == ["5a", "5b", "5c", "5d", "5e", "5f"]  # 5g is placement, after holdout
+    assert rep["gates"][1]["gate"] == "5b costs applied (not a gate)" and rep["gates"][1]["pass"]
     assert all({"value", "threshold", "pass"} <= set(g) for g in rep["gates"])
     assert rep["k"] == 1 and len(rep["engine_sha256"]) == 64 and rep["data_sha256"] == "sha-test"
     assert rep["skipped_days"] == {}
@@ -122,52 +123,95 @@ def test_I_G6_zero_variance_fails_5f_instead_of_crashing():
     assert g[0]["value"].startswith("undefined")
 
 
-def test_book_gate_and_descriptive_book_sharpe(tmp_path):
+def look(tmp_path, book=None, n_hold=50, **kw):
+    """Development report on all but the last ``n_hold`` sessions, then the holdout look on those
+    sessions with the report's book stats; the two windows are disjoint."""
+    _, all_dates = panel(260)
+    rep, c, b, dates, p = run(tmp_path, book=book, dates=all_dates[:-n_hold], **kw)
+    return rep, gates.holdout_look(c, b, dates[-n_hold:], p, "run-1", COSTS, closed=frozenset(), book=rep["book"])
+
+
+def test_book_placement_clear_and_descriptive_book_sharpe(tmp_path):
     _, dates = panel(260)
     rng = np.random.default_rng(3)
-    book = {d: float(rng.normal(20, 200)) for d in dates}
-    rep, *_ = run(tmp_path, book=book)
+    rep, h = look(tmp_path, book={d: float(rng.normal(20, 200)) for d in dates})
     b = rep["book"]
-    assert b["sessions"] == 260 and b["book_s_with_card"] > b["book_s"]
-    assert rep["gates"][-1]["gate"] == "5g book" and rep["gates"][-1]["pass"]
+    assert b["sessions"] == 210 and b["book_s_with_card"] > b["book_s"]
+    assert rep["verdict"] == "survivor" and all(g["gate"][:2] != "5g" for g in rep["gates"])
+    assert h["pass"] and h["placement"] == "clear"
+    assert h["placement_gate"]["gate"] == gates.PLACEMENT_LABEL and h["placement_gate"]["pass"]
 
 
-def test_book_gate_statistics_when_card_loses_with_the_book(tmp_path):
+def test_book_statistics_when_card_loses_with_the_book(tmp_path):
     rep0, c, bars, dates, p = run(tmp_path)
     x = gates.daily(c, gates.C.simulate(c, bars, dates), dates, COSTS)
     book = {d: (-500.0 if i % 2 else 100.0) for i, d in enumerate(dates)}
     shadow = gates._book(dates, -np.abs(x), book)  # a card that loses every day it trades
     assert shadow["shared_loss_share"] == pytest.approx(0.5, abs=0.05) and shadow["mean_on_book_losing_days"] < 0
     assert shadow["book_losing_share_on_active_days"] == pytest.approx(0.5, abs=0.05)
+    assert gates.placement(shadow)["placement"] == "fail"
 
 
-def test_I_K3_book_without_losing_days_fails_5g_closed(tmp_path):
+def test_I_K3_book_without_losing_days_fails_placement_closed(tmp_path):
+    # also the gate-level case of a card failing fit: its look is taken, verdicts intact, placement fail
     _, dates = panel(260)
-    rep, *_ = run(tmp_path, book={d: 100.0 for d in dates})
-    assert rep["book"]["mean_on_book_losing_days"] is None
-    assert rep["stopped_at"] == "5g book" and not rep["gates"][-1]["pass"]
+    rep, h = look(tmp_path, book={d: 100.0 for d in dates})
+    assert rep["verdict"] == "survivor" and rep["book"]["mean_on_book_losing_days"] is None
+    assert h["pass"] and h["placement"] == "fail" and not h["placement_gate"]["pass"]
 
 
 @pytest.mark.parametrize("book", [{"2019-01-02": -100.0}, {}])
-def test_I_K2_supplied_book_without_overlap_fails_5g_closed(tmp_path, book):
-    rep, *_ = run(tmp_path, book=book)
-    assert rep["stopped_at"] == "5g book" and not rep["gates"][-1]["pass"]
+def test_I_K2_supplied_book_without_overlap_fails_placement_closed(tmp_path, book):
+    rep, h = look(tmp_path, book=book)
+    assert rep["verdict"] == "survivor" and rep["book"] == {"sessions": 0, "supplied": True}
+    assert h["pass"] and h["placement"] == "fail"
+    assert h["placement_gate"]["value"] == "book supplied, no overlapping development sessions"
 
 
-def test_declared_empty_book_passes_5g(tmp_path):
-    rep, *_ = run(tmp_path)
-    assert rep["gates"][-1]["value"] == "book empty" and rep["gates"][-1]["pass"]
+def test_declared_empty_book_clears_placement(tmp_path):
+    rep, h = look(tmp_path)
+    assert h["placement"] == "clear" and h["placement_gate"]["value"] == "book empty"
+
+
+def test_placement_reads_only_the_development_window(tmp_path):
+    _, dates = panel(260)
+    dev = {d: 100.0 for d in dates[:-50]}  # no development losing day: placement fails closed
+    _, h1 = look(tmp_path / "a", book=dev)
+    _, h2 = look(tmp_path / "b", book={**dev, **{d: -500.0 for d in dates[-50:]}})  # holdout-window losses
+    assert h1["placement"] == h2["placement"] == "fail" and h1["placement_gate"] == h2["placement_gate"]
+
+
+def test_placement_runs_only_after_a_holdout_pass(tmp_path):
+    _, dates = panel(260)
+    rep, c, b, all_dates, p = run(tmp_path, book={d: 100.0 for d in dates})
+    h = gates.holdout_look(c, _halt(b, all_dates, [all_dates[-3]]), all_dates[-50:], p, "run-1", COSTS,
+                           closed=frozenset(), book=rep["book"])
+    assert h["verdict"] == "unresolved" and h["placement"] is None and h["placement_gate"] is None
+
+
+@pytest.mark.parametrize("bad", [None, {}, {"sessions": 3, "supplied": True}, {"sessions": 0, "supplied": "yes"},
+                                 {"sessions": 2, "supplied": True, "mean_on_book_losing_days": 1.0,
+                                  "shared_loss_share": None, "book_losing_share_on_active_days": 0.5},
+                                 {"sessions": 2, "supplied": True, "mean_on_book_losing_days": 1.0,
+                                  "shared_loss_share": -1.0, "book_losing_share_on_active_days": 0.5},
+                                 {"sessions": 2, "supplied": True, "mean_on_book_losing_days": 1.0,
+                                  "shared_loss_share": 0.2, "book_losing_share_on_active_days": 1.5}])
+def test_malformed_book_statistics_are_refused_before_the_look(tmp_path, bad):
+    rep, c, b, dates, p = run(tmp_path)
+    with pytest.raises(gates.GateError, match="malformed"):
+        gates.holdout_look(c, b, dates[-50:], p, "run-1", COSTS, closed=frozenset(), book=bad)
+    assert not any(e["kind"] == "holdout_look" for e in ledger.read(p))
 
 
 def test_I_L5_holdout_look_is_logged_once_and_checks_dates_first(tmp_path):
     rep, c, b, dates, p = run(tmp_path)
     with pytest.raises(gates.GateError, match="not sessions"):
-        gates.holdout_look(c, b, ["2030-01-01"], p, "run-1", COSTS, closed=frozenset())
+        gates.holdout_look(c, b, ["2030-01-01"], p, "run-1", COSTS, closed=frozenset(), book=rep["book"])
     assert not any(e["kind"] == "holdout_look" for e in ledger.read(p))
-    look = gates.holdout_look(c, b, dates[-50:], p, "run-1", COSTS, closed=frozenset())
+    look = gates.holdout_look(c, b, dates[-50:], p, "run-1", COSTS, closed=frozenset(), book=rep["book"])
     assert look["pass"] and look["verdict"] == "pass" and look["trades"] == 50
     with pytest.raises(ledger.LedgerError, match="already"):
-        gates.holdout_look(c, b, dates[-50:], p, "run-1", COSTS, closed=frozenset())
+        gates.holdout_look(c, b, dates[-50:], p, "run-1", COSTS, closed=frozenset(), book=rep["book"])
 
 
 def test_time_window_range_and_atr_stop_compile():
@@ -216,16 +260,18 @@ def test_k_scope_ledger_counts_cards_across_instruments(tmp_path):
         run(tmp_path, k_scope="family")
 
 
-def test_placebo_is_labelled_descriptive_with_unchanged_threshold(tmp_path):
+def test_placebo_is_labelled_timing_only_with_unchanged_threshold(tmp_path):
     rep, *_ = run(tmp_path)
     g = rep["gates"][4]
-    assert g["gate"] == "5e placebo_rank (descriptive; timing shuffle with realised side and hold)"
+    assert g["gate"] == ("5e placebo_rank (timing-only, not the mechanism discriminator; "
+                         "timing shuffle with realised side and hold)")
     assert g["threshold"] == 0.95 == gates.THRESHOLDS["5e_min_beaten_share"]
 
 
 def test_unresolved_holdout_trade_spends_the_look_and_fails_it(tmp_path):
     rep, c, b, dates, p = run(tmp_path)
-    look = gates.holdout_look(c, _halt(b, dates, [dates[-3]]), dates[-50:], p, "run-1", COSTS, closed=frozenset())
+    look = gates.holdout_look(c, _halt(b, dates, [dates[-3]]), dates[-50:], p, "run-1", COSTS, closed=frozenset(),
+                              book=rep["book"])
     assert look["verdict"] == "unresolved" and not look["pass"]
     assert look["unresolved"] == {"source": "holdout", "count": 1, "dates": [dates[-3]]}
     assert sum(e["kind"] == "holdout_look" for e in ledger.read(p)) == 1
