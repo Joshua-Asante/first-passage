@@ -34,7 +34,7 @@ Columns:
 | | 2 | [r2-mym-intraday-momentum](r2-mym-intraday-momentum.md) | `intraday-momentum` × Bulenox | 1a | 0.023 | 0.14 (fails) | reserve |
 | M2K | 1 | [r2-m2k-ondrift](r2-m2k-ondrift.md) | overnight drift (NEW) × Bulenox | 1a, partly met | U (no Russell cohort) | — | **Hold** |
 | | 2 | [r2-m2k-imom](r2-m2k-imom.md) | `intraday-momentum` × Tradeify | 1a | 0.024 | 0.15 (fails) | reserve |
-| MGC | 1 | [r2-mgc-cgb](r2-mgc-cgb.md) | `compression-gated-breakout` × BluSky | fails 1a and 1b | U | — | **R2 candidate, conditional:** enters only if Joshua admits a Req-1-failing cell through the builder or no-counterparty channel |
+| MGC | 1 | [r2-mgc-cgb](r2-mgc-cgb.md) | `compression-gated-breakout` × BluSky | fails 1a and 1b | U | — | **Skipped in R2** (Joshua, 2026-11-04: no no-counterparty-channel admission) |
 | | 2 | [r2-mgc-pdhpdl](r2-mgc-pdhpdl.md) | `pdh-pdl-breakout-rth` × BluSky | fails 1a and 1b | U | — | reserve |
 | 6J | 1 | [r2-6j-tokyofix](r2-6j-tokyofix.md) | Tokyo-fix USD demand (NEW) × **MFFU** (was Bulenox) | **1a met** | U on 6J (spot USDJPY only). If Joshua admits the spot cohort: H2 0.048, H1 0.034, H3 U | conditional: H2 **0.63**, H1 0.37 | **R2, conditional on Joshua's spot-cohort ruling:** card H2 (post-fix leg) only, K = 1 |
 | | 2 | [r2-6j-psbc](r2-6j-psbc.md) | `prior-session-breakout-continuation` × Bulenox | 1b fails limb (iv) | U | — | reserve |
@@ -46,8 +46,8 @@ Columns:
 Joshua, 2026-11-04, verbatim: "go with your recommendations on both". He was answering the coordinator, who relayed the two recommendations below to this session; they are recorded as relayed.
 
 1. **R2 composition.**
-   - **r2-6j-tokyofix (post-fix leg) is R2's card.**
-   - **r2-m6e-prefix** enters only after the M6E repo landing, and only if its pre-registration answers the EURUSD fix-reversal re-proposal bar.
+   - **r2-6j-tokyofix (post-fix leg) is R2's card.** It stays conditional on the open spot-cohort ruling below.
+   - **r2-m6e-prefix** enters only after the M6E repo landing, and only if its pre-registration answers the EURUSD fix-reversal re-proposal bar. It is also conditional on the spot-cohort ruling.
    - **MGC is skipped:** no no-counterparty-channel admission.
    - **No index card in R2.** MNQ, MYM and M2K hold.
 2. **D10 FX mapping (proposed; deployment order still waits on the venue-terms check):** Bulenox ← M6E (cheapest at $0.50/side; a micro suits Bulenox's intraday-high trail better), and **MFFU ← 6J**.
@@ -61,7 +61,7 @@ Joshua, 2026-11-04, verbatim: "go with your recommendations on both". He was ans
   - two new Bulenox items: the 30-day access window, and the ToS approval clause for "third-party" algorithms.
 - It also corrected the 6J cost reading: the post-fix leg is net negative at 1 tick/side slip at both illustrative levels.
 
-**Still open, and not covered by the relayed decision:**
+**Still open, and not covered by the relayed decision** (the coordinator put the spot-cohort question to Joshua on 2026-11-04):
 - The Codex round-1 Req 2 point: both FX cells' effect sizes are spot-pair cohorts, which makes them a spot→futures transplant. Until Joshua rules that the spot cohort is admissible, or a K-charging δ probe supplies a futures figure, the R2 card's screen reads UNSCREENABLE on the target cohort.
 - MFFU's count of a full-size 6J against its "8 minis" cap.
 - MFFU's 6J rate, $2.56/side from the 07-13 reading, needs a re-read.
@@ -82,7 +82,7 @@ Joshua, 2026-11-04, verbatim: "go with your recommendations on both". He was ans
   - it is long-only and outside the ORB window, so it cannot oppose ORB-MNQ under Tradeify ESA §6.7.
   - Its likely result is a null that the card's discriminator would attribute to the mechanism.
 
-**MGC: cgb first, as a conditional candidate.**
+**MGC: cgb ranks first; skipped in R2 by Joshua's decision.**
 - Neither MGC cell has a payer or a 1b-grade record, and no gold intraday cohort exists for either construct.
 - cgb ranks first on the drawdown-allowance wall (`MGC.md` W5): a stop at the opposite edge of a compression range is narrow by construction, while a PDH/PDL stop is about one prior-day range.
 - MGC has four looks, so a card here is cheapest in reach terms. But a cell that fails Req 1 is "not a seed" under harvest §1, so admitting it through the builder is Joshua's channel call.
