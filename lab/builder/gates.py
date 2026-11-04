@@ -9,7 +9,9 @@ statistics (``_book``) are reported for every card, as a description, not a gate
 5g is portfolio fit (ten-step order, step 10; branch B, Joshua 2026-11-04). It is not a
 development gate: ``holdout_look`` runs it only after a holdout pass, on the book statistics
 already in the development report, and records ``placement: clear | fail`` beside the look's
-verdict. A placement fail rejects the placement, never the candidate.
+verdict, with the pinned book's sha256. A placement fail rejects the placement, never the
+candidate. A run that declares no book (``book: null``) gets ``placement: not_evaluated``, never
+a clear (follow-up to the same ruling: no silent passes).
 
 A card with an unresolved trade (an open position on a day with no bar at or after flat_at) in
 its evaluated sessions, or a 5d neighbour with one, gets verdict ``unresolved``: never a
@@ -304,12 +306,19 @@ def check_book_stats(b) -> None:
         raise GateError(f"development report book statistics are malformed: {b!r}"[:300])
 
 
+def check_book_identity(b: dict, book_sha256: str | None) -> None:
+    """A supplied book comes with its pinned sha256 and a declared-empty one with None, or GateError."""
+    if b["supplied"] != (book_sha256 is not None):
+        raise GateError(f"book statistics (supplied={b['supplied']}) do not match the pinned book sha256 {book_sha256!r}")
+
+
 def _book_gate(g, b: dict) -> bool:
-    if not b["sessions"]:
-        if b["supplied"]:  # fail closed: a book was given but covers no development session
-            return _gate(g, PLACEMENT_LABEL, "book supplied, no overlapping development sessions", "overlap required",
-                         False)
-        return _gate(g, PLACEMENT_LABEL, "book empty", "passes while the book is empty", True)
+    """5g on a supplied book's statistics. There is no rule for no book: that is not evaluated."""
+    if not b["supplied"]:
+        raise GateError("5g needs a supplied book; without one placement is not evaluated")
+    if not b["sessions"]:  # fail closed: a book was given but covers no development session
+        return _gate(g, PLACEMENT_LABEL, "book supplied, no overlapping development sessions", "overlap required",
+                     False)
     m = b["mean_on_book_losing_days"]
     ok = m is not None and m > 0 and b["shared_loss_share"] <= THRESHOLDS["5g_max_shared_loss_share"]
     return _gate(g, PLACEMENT_LABEL, {k: b[k] for k in BOOK_KEYS},
@@ -318,23 +327,29 @@ def _book_gate(g, b: dict) -> bool:
 
 def placement(b: dict) -> dict:
     """Step 10 portfolio fit on the development-window book statistics: ``placement`` is
-    ``clear`` or ``fail``, with the 5g record. It reads no data and never changes a verdict."""
+    ``clear`` or ``fail``, with the 5g record, or ``not_evaluated`` (no gate record) when the run
+    declares no book. It reads no data and never changes a verdict."""
     check_book_stats(b)
+    if not b["supplied"]:
+        return {"placement": "not_evaluated", "placement_gate": None}
     g: list = []
     return {"placement": "clear" if _book_gate(g, b) else "fail", "placement_gate": g[0]}
 
 
 def holdout_look(card: Card, bars, holdout: list[str], ledger_path: Path, run_id: str, costs: Costs,
-                 *, closed: frozenset[str], book: dict) -> dict:
+                 *, closed: frozenset[str], book: dict, book_sha256: str | None) -> dict:
     """Stage 8: one logged look per survivor. The look is ledgered before any holdout bar is read.
     An unresolved holdout trade spends the look and fails it, reported with its count and dates.
     ``book`` is the development report's book statistics; after a pass, 5g runs on them and sets
-    ``placement`` (``clear`` | ``fail``) beside the verdict. Without a pass ``placement`` is None."""
+    ``placement`` (``clear`` | ``fail``, or ``not_evaluated`` without a book) beside the verdict.
+    Without a pass ``placement`` is None. ``book_sha256`` is the run's pinned book (None for
+    ``book: null``) and is recorded as ``placement_book_sha256``."""
     check_dates(card, bars, holdout)
     check_book_stats(book)  # before the look is spent
+    check_book_identity(book, book_sha256)
     ledger.append_holdout_look(ledger_path, run_id, card)
     rep = {"card_sha256": card.sha256, "holdout_sessions": [holdout[0], holdout[-1], len(holdout)],
-           "placement": None, "placement_gate": None}
+           "placement": None, "placement_gate": None, "placement_book_sha256": book_sha256}
     try:
         v = net(card, resolved(C.simulate(card, bars, holdout, closed), "holdout"), costs)
     except Unresolved as u:

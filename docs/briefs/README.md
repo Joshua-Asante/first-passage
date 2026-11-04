@@ -8,6 +8,7 @@ prior work.
 | [`INDEX.md`](INDEX.md) | Open / dormant roster + recently-closed pointers |
 | `Q-*.md` | Open (or retained) question briefs |
 | [`programs/`](programs/) | Dated program/slate/plan/ruling/review leftovers and GSUB inventories — new files of this class land here, not at root |
+| [`dossiers/`](dossiers/) | Zero-K cell dossiers for builder rounds (template Part A §A2–§A3), one folder per round with an `INDEX.md` |
 | [`closures/`](closures/) | Hot closures |
 | [`pre-registration/`](pre-registration/) | Frozen contracts |
 | [`handoffs/`](handoffs/) | Coordinator / worker handoff briefs |

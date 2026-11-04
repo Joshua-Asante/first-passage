@@ -10,8 +10,10 @@ carry well-formed book statistics, checked for every survivor before the first l
 taken in card-id order, each ledgered (``ledger.append_holdout_look``) before its holdout bars
 are simulated, and each writes ``out/<card id>.holdout.json``. After a holdout pass, gate 5g
 (step 10 portfolio fit) runs on the development-window book statistics in the card's report, so
-no new data is read, and sets ``placement: clear | fail`` in the holdout file; the look's
-verdict is unchanged (``gates.holdout_look``).
+no new data is read, and sets ``placement: clear | fail`` in the holdout file, or
+``not_evaluated`` when run.yaml declares ``book: null``, with ``placement_book_sha256`` (the
+pinned book, inside the same ``dev_binding_sha256``); the look's verdict is unchanged
+(``gates.holdout_look``). Gate 5h (``venue.py``) would attach at this stage; it is not wired.
 """
 from __future__ import annotations
 
@@ -73,6 +75,7 @@ def survivors(s: dict, cs: list, cost: dict) -> list[tuple]:
         if rep["verdict"] == "survivor":
             try:
                 gates.check_book_stats(rep.get("book"))
+                gates.check_book_identity(rep["book"], None if s["book"] is None else s["book"]["sha256"])
             except gates.GateError as e:
                 raise HoldoutError(f"{c.id}: {e}") from None
             keep.append((c, rep))
@@ -90,7 +93,7 @@ def main(argv: list[str]) -> int:
     for c, rep in keep:
         bars, _, hold, summary = loaded[c.instrument]
         look = gates.holdout_look(c, bars, hold, Path(s["ledger"]), s["run_id"], cost[c.instrument], closed=cal.closed,
-                                  book=rep["book"])
+                                  book=rep["book"], book_sha256=None if s["book"] is None else s["book"]["sha256"])
         look.update(card_id=c.id, run_id=s["run_id"], split=s["data"][c.instrument]["split"],
                     data_sha256=summary["sha256"], calendar_sha256=cal.sha256,
                     dev_binding_sha256=run.binding_sha256(run.binding(s, cs, cost)))
