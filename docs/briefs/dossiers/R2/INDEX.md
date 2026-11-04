@@ -1,5 +1,7 @@
 # R2 cell dossiers: index and per-instrument ranking
 
+**R2 is held** (Joshua, 2026-11-04, verbatim: "go with option a, hold R2"). No R2 look is spent, so the composition below is not run. The hold, its reasons and the next wave's re-aim are owned by [generation note §11](../../../notes/2026-11-01-generation-phase-strengthening-DRAFT.md#11-updates-2026-11-04).
+
 **Status:** zero-K inputs to R2 (template Part A §A2–§A3, tasks T2–T3; [template](https://github.com/Joshua-Asante/first-passage/blob/0a4c5a92c33b1615cde2e39af85933e01e3992db/docs/briefs/pre-registration/TEMPLATE-builder-round.md), PR #1051 head `0a4c5a9`, unmerged). **K = 0:** no market data was read. It decides nothing: cells, firms and the round are Joshua's (Rule 3), and generation never blesses (Rule 25).
 **Authority:** Joshua, 2026-11-04: "yes to all four, spawn the sessions" (a proposal to run parallel dossier sessions on top-ranked cells, ready for R2).
 **Date / base:** 2026-11-04, `main` at `8745b40`. **Budget (Rule 2):** ≤12 dossiers plus this index; ≤3 Codex review rounds; K = 0; six parallel research workers, every cited figure re-verified by the coordinator (below).
@@ -36,16 +38,16 @@ Columns:
 | | 2 | [r2-m2k-imom](r2-m2k-imom.md) | `intraday-momentum` × Tradeify | 1a | 0.024 | 0.15 (fails) | reserve |
 | MGC | 1 | [r2-mgc-cgb](r2-mgc-cgb.md) | `compression-gated-breakout` × BluSky | fails 1a and 1b | U | — | **Skipped in R2** (Joshua, 2026-11-04: no no-counterparty-channel admission) |
 | | 2 | [r2-mgc-pdhpdl](r2-mgc-pdhpdl.md) | `pdh-pdl-breakout-rth` × BluSky | fails 1a and 1b | U | — | reserve |
-| 6J | 1 | [r2-6j-tokyofix](r2-6j-tokyofix.md) | Tokyo-fix USD demand (NEW) × **MFFU** (was Bulenox) | **1a met** | H2 0.048 · H1 0.034 · H3 U (spot USD/JPY cohort, admitted under harvest §4a) | H2 **0.63** · H1 0.37 | **R2's card** (Joshua, 2026-11-04): H2, the post-fix leg, only; K = 1 |
+| 6J | 1 | [r2-6j-tokyofix](r2-6j-tokyofix.md) | Tokyo-fix USD demand (NEW) × **MFFU** (was Bulenox) | **1a met** | H2 0.048 · H1 0.034 · H3 U (spot USD/JPY cohort, admitted under harvest §4a) | H2 **0.63** · H1 0.37 | Chosen as R2's card (Joshua, 2026-11-04): H2, the post-fix leg, only; K = 1. **Not run: R2 held** (top) |
 | | 2 | [r2-6j-psbc](r2-6j-psbc.md) | `prior-session-breakout-continuation` × Bulenox | 1b fails limb (iv) | U | — | reserve |
-| M6E | 1 | [r2-m6e-prefix](r2-m6e-prefix.md) | pre-ECB-fix dealer pre-hedge drift (NEW) × **Bulenox** (was MFFU) | **1a met** | 0.042 (spot EUR/USD cohort, admitted under harvest §4a) | **0.52** (marginal) | **R2, conditional:** on the M6E repo landing, and on the pre-registration answering the EURUSD fix-reversal bar |
+| M6E | 1 | [r2-m6e-prefix](r2-m6e-prefix.md) | pre-ECB-fix dealer pre-hedge drift (NEW) × **Bulenox** (was MFFU) | **1a met** | 0.042 (spot EUR/USD cohort, admitted under harvest §4a) | **0.52** (marginal) | **R2, conditional:** on the M6E repo landing, and on the pre-registration answering the EURUSD fix-reversal bar. **Not run: R2 held** (top) |
 | | 2 | [r2-m6e-asialdn](r2-m6e-asialdn.md) | Asia-range London break (NEW) × MFFU | fails 1a and 1b | U | — | reserve |
 
 ## Decision (Joshua, 2026-11-04)
 
 Joshua, 2026-11-04, verbatim: "go with your recommendations on both". He was answering the coordinator, who relayed the two recommendations below to this session; they are recorded as relayed.
 
-1. **R2 composition.**
+1. **R2 composition** (not run: R2 is held, see top).
    - **r2-6j-tokyofix (post-fix leg) is R2's card.**
    - **r2-m6e-prefix** enters only after the M6E repo landing, and only if its pre-registration answers the EURUSD fix-reversal re-proposal bar.
    - **MGC is skipped:** no no-counterparty-channel admission.
@@ -61,7 +63,7 @@ Joshua, 2026-11-04, verbatim: "go with your recommendations on both". He was ans
   - two new Bulenox items: the 30-day access window, and the ToS approval clause for "third-party" algorithms.
 - It also corrected the 6J cost reading: the post-fix leg is net negative at 1 tick/side slip at both illustrative levels.
 
-**Spot-cohort ruling.** Joshua, 2026-11-04, verbatim: "go with your recommendation, option a". Same-pair spot cohorts are admissible for CME FX futures under five conditions. The owner is [strategy_harvest §4a](https://github.com/Joshua-Asante/first-passage/pull/1064), on PR #1064, unmerged. Applied here:
+**Spot-cohort ruling.** Joshua, 2026-11-04, verbatim: "go with your recommendation, option a". Same-pair spot cohorts are admissible for CME FX futures under five conditions. The owner is [strategy_harvest §4a](../../../methodology/strategy_harvest.md#4a-spot-cohorts-for-same-pair-cme-fx-futures-ruling-2026-11-04) (PR #1064). Applied here:
 - The 6J and M6E cohort limbs read "admitted under §4a", and each dossier shows the five conditions. The 6J sign conversion is explicit: Table I's signs carry over to 6J, so H2 is long 6J.
 - Owed before either card freezes (§4a condition 4): an M-16 fill-slip read on the future in the cell's hours.
 - These rows were removed from the UNSCREENABLE table.
@@ -92,7 +94,7 @@ Joshua, 2026-11-04, verbatim: "go with your recommendations on both". He was ans
 - MGC has four looks, so a card here is cheapest in reach terms. But a cell that fails Req 1 is "not a seed" under harvest §1, so admitting it through the builder is Joshua's channel call.
 
 **6J: Tokyo fix, post-fix leg only.**
-- It is the only dossier with a named payer and a daily event whose cited cohort passes Req 4 after the haircut. That cohort is **spot USD/JPY**: KMW report futures only as a portfolio. It is admitted as a same-pair spot cohort under [harvest §4a](https://github.com/Joshua-Asante/first-passage/pull/1064) (Joshua, 2026-11-04). The dossier shows the five §4a conditions; the M-16 slip read on the 6J future in the cell's hours is owed. Krohn–Mueller–Whelan Table I, JPY: post-Tokyo +7.94%/yr, t 8.22, over 5,264 days, gives δ/σ 0.113 before the haircut and 0.048 after it, so power is 0.63.
+- It is the only dossier with a named payer and a daily event whose cited cohort passes Req 4 after the haircut. That cohort is **spot USD/JPY**: KMW report futures only as a portfolio. It is admitted as a same-pair spot cohort under [harvest §4a](../../../methodology/strategy_harvest.md#4a-spot-cohorts-for-same-pair-cme-fx-futures-ruling-2026-11-04) (Joshua, 2026-11-04). The dossier shows the five §4a conditions; the M-16 slip read on the 6J future in the cell's hours is owed. Krohn–Mueller–Whelan Table I, JPY: post-Tokyo +7.94%/yr, t 8.22, over 5,264 days, gives δ/σ 0.113 before the haircut and 0.048 after it, so power is 0.63.
 - Carding only H2 keeps K = 1 under D9's one-card rule. H1 fails power and H3 is unscreenable.
 - **Cost is the risk.** At the repo's 1 tick/side slip, the leg is net negative at both illustrative USDJPY levels (100 and 150). It survives only with less than about 1.8 ticks of total round-trip slip at MFFU, for example with limit fills (dossier Reach; a worker-draft claim that it survived at 100 was corrected on 2026-11-04).
 - Disclosed advisory priors:
