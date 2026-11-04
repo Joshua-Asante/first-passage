@@ -1,6 +1,6 @@
 ---
 name: inqhiori
-description: Methodology for structural, low-reversibility, or statistically-gated investigation. Trigger on INQHIORI, The Algorithm, D-S-A pre-Q gate, Notice/Inquire phases, gate audits, observation routing, or framework refinement. Also fires when authoring decision briefs, proposing structural changes, formulating Inquire-phase questions, auditing deletion criteria, or evaluating whether artefacts are load-bearing vs ceremonial. Methodology layer only — does NOT modify strategy code, allocations, dd_protection, or MC calibration. Tactical/recoverable/tempo work runs outside this skill (the `ooda-loop` skill was retired 2026-10-24; live execution follows `c1-rail`); exit this skill if a request needs speed over rigor. Hand off to prop-firm-challenge for firm-rule/MC/dd_protection facts, c1-rail for live-ops facts, and pinescript-v6 for strategy code. Loop-selection canon: docs/methodology/inqhiori-canon.md (§14 three-loop binding).
+description: Methodology for structural, low-reversibility, or statistically-gated investigation. Trigger on INQHIORI, The Algorithm, D-S-A pre-Q gate, Notice/Inquire phases, gate audits, observation routing, or framework refinement. Also fires when authoring decision briefs, proposing structural changes, formulating Inquire-phase questions, auditing deletion criteria, or evaluating whether artefacts are load-bearing vs ceremonial. Also use (§14) when the user's question leaves a load-bearing dimension unresolved — "best"/"good"/"worth it" with no stated metric, an unstated candidate pool or venue/tier/clock, an unclear decision the answer feeds, or an unspecified evidence standard (synthesize existing results vs spend fresh runs/K) — and different resolutions would change the answer or the work; on "refine my question", "improve my question", "sharpen this question"; or when a review question, ADR draft, pre-registration brief or falsifier/kill-rule reading feels like one hard yes/no but arguing it directly stalls — a "does X count toward Y" dispute, an ambiguous-edge governance ruling, two people sharing the facts but reaching opposite verdicts, or a proposed rule motivated by a "gap" that may be an unsearched composition of existing rules. Skip §14 when the question is already sharp on all four dimensions. Methodology layer only — does NOT modify strategy code, allocations, dd_protection, or MC calibration. Tactical/recoverable/tempo work runs outside this skill (the `ooda-loop` skill was retired 2026-10-24; live execution follows `c1-rail`); exit this skill if a request needs speed over rigor. Hand off to prop-firm-challenge for firm-rule/MC/dd_protection facts, c1-rail for live-ops facts, and pinescript-v6 for strategy code. Loop-selection canon: docs/methodology/inqhiori-canon.md (§14 three-loop binding).
 ---
 
 # INQHIORI — Recursive investigation loop with D-S-A pre-Q gate
@@ -292,3 +292,71 @@ Keep these short. The point is the criterion update; everything else is provenan
 - **The gate is user-gated at D.** Both clients propose deletions; Joshua authorizes. Same discipline as The Algorithm proper.
 - **When in doubt about which domain D-S-A is operating in, ask.** Domain conflation is the failure mode this skill exists to prevent.
 - **Do not silently substitute a permitted D-test that produces the same deletion as a forbidden one.** That is the Iran-Hormuz failure replayed. If the deletion is real, a structural permitted test will catch it.
+
+---
+
+## 14. Refine or decompose the question first
+
+Merged 2026-11-03 from the retired `refine-question` skill ([tombstone](../../../docs/adr/TOMBSTONES.md#2026-11-03-refine-question-merge)). This is the lightweight conversational front door: it applies to any question, needs no loop selection or §3 headers, and changes no repo state. If refinement reveals a gated investigation, continue at §0; if the refined question is really a Pre-Q brief, hand off to `brief-authoring`. Factual premises in the question get `verify-source` checks before options are built.
+
+### Refine a question the asker left ambiguous
+
+An ambiguous question silently answered is a reading **chosen for** the user. Refinement costs one click; an answer to the wrong question costs the whole answer.
+
+**Fire** when ≥1 dimension is unresolved **and** different resolutions change the answer or the work. Otherwise pass through silently, with no "your question was fine" ceremony.
+
+1. **Decision link** — what decision does the answer feed?
+2. **Success criterion** — "best/good/worth it" by what metric (e.g. 1−P(bust), post-funding expectancy, p99 DD, time-to-pass)?
+3. **Cohort/scope** — which candidate pool, venue/tier key, clock (EOD vs intraday-honest), window?
+4. **Evidence standard** — synthesize existing RESULTS, or spend fresh runs/K?
+
+**The move** (one `AskUserQuestion` call):
+
+1. Identify the dominant ambiguity. Resolve what standing decisions already foreclose; flag a reading an ADR bars as barred in its description, never offer it as live.
+2. Present 2–4 candidate refined questions, each committing to a different resolution and stating what it assumes. Recommended reading first, labeled "(Recommended)".
+3. Orthogonal unknowns (rare) ride along as a second question in the same call. Use `multiSelect: true` only when readings are complementary ("answer both"), not exclusive.
+4. The selection is the confirmation: restate the refined question in one line, route to the owning domain skill and answer. No second confirmation pass.
+
+**Options.** Each is a different resolution, never a paraphrase: if two would not produce materially different answers or work, merge them. Max 4. "Other" free text is built in; don't add an "Other" option.
+
+**Don't rationalize.** If you are choosing among readings, the intent wasn't clear. "Assuming you mean…" still spends the full answer on an unpicked reading, and a later correction costs a full re-answer. Red flag: about to answer "best", "good", "worth it" or "should we" with no stated metric.
+
+### Decompose a question that is clear but contested
+
+Use this when the question is clear to the asker but contested on the merits. It produces a decomposition and a recombination map, then a verdict; it does not replace Rule 0, `verify-source`, `handoff-verify` or `pre-ratification-adversarial-panel`. A bundled question inside an oversize brief comes here before `work-decomposition` cuts the work.
+
+**Discipline.** Treat every felt paradox as a hypothesis that it contains multiple axes. Extract candidate axes, check each can flip independently, answer each under the evidentiary standard it earns, then write down which final calls depend on which sub-answers. Two sub-questions are separable if either can flip without forcing the other. A genuine coupling is never eliminated: name it and carry it into the map.
+
+**Fire** when a question resists a clean verdict and shows one of these tells:
+
+| Pattern | Tell | Separates into |
+|---|---|---|
+| **Semantics vs. consequences** | "Does this breach the rule?", while the dispute is about what follows a finding. | (a) does the rule's text reach this case, (b) given either finding, the prescribed disposition. |
+| **Empirical vs. semantic vs. anchoring** | "Did the event count?", with factual and interpretive doubt traded against each other and a prior finding treated as settling both. | (a) what happened, (b) does the definition cover events of that kind, (c) the prior finding's weight: binding, presumptive or informative. |
+| **Status vs. warrant** | A closed finding attacked with later facts, or defended as "reasonable at the time" to protect its truth now. | (a) is the condition true now, (b) was the finding justified on the evidence then. Warranted-then and false-now can both hold. |
+| **Transparency vs. content** | Review fixes on how a source was described while nobody checks what moved, or vice versa. | (a) was the description of sources/mechanism/limits accurate, (b) did the substantive thing happen. Either can fail alone. |
+| **Exhaustiveness assumption** | "There's no clause for this, so it's unresolvable / the rules conflict." | Drop the assumption that the rules are exhaustive or that overlaps conflict; check whether two clauses already compose to decide it. |
+| **Fact-time vs. judgment-time** | "Is it compliant?" with no stated instant: deadlines, "we didn't know then", retroactive rules. | Peg every predicate to a clock and information state: as of when, known by whom, under which data vintage. |
+| **Process vs. outcome** | Due process invoked against a fine outcome, or a bad outcome excused by clean process. | (a) was procedure followed, (b) is the result right on the merits. They license different remedies (redo vs. accept-with-note). |
+| **Case vs. rule** | A sensible one-off resisted as "bad precedent", or a good rule rejected for one hardship. | Decide the instance under the rule as it stands; log the rule-level concern as a separate flagged recommendation. |
+| **Merits vs. burden** | "Is it true?" when the dispute is who had to produce evidence. | The merits record vs. who bore the burden and whether it was met; a failed burden can decide with no merits finding. |
+
+Also fire on: mixed argument registers (empirical evidence answering a definitional dispute, or a factual objection answered procedurally); agreement on facts and rule text with opposite verdicts; a predicate ("compliant", "counts", "breached") with no clock or data vintage; an old finding retried against new facts with no warranted-then / false-now split; or one yes/no about to feed a closure doc, a lifecycle change and a precedent citation at once.
+
+**The check** (before writing the analysis):
+
+- [ ] Rewrite the question as 2–4 sub-questions, each answerable by **one** evidence type (empirical / semantic / procedural-historical / normative).
+- [ ] For each pair, ask whether A can flip while B holds. Keep the flips; write down genuine couplings.
+- [ ] Time- and vintage-index every predicate.
+- [ ] Test exhaustiveness: does dropping "the rulebook has no row for this" reveal a composition that covers it?
+- [ ] Live-question probe: "if I could learn exactly one more fact, which would most change the call?" If it isn't what the framed question asks, re-anchor before writing.
+- [ ] Draw the recombination map: which outputs (retire / reopen / notify / no-op) depend on which sub-answers, before drafting the verdict.
+
+**Stop if you think:**
+
+- "It's one question": if two people share the facts and disagree, or your intuition flips on something "irrelevant", it is already two.
+- "The prior finding settles this": it settles warrant-then, not status-now, and maybe not warrant if its weight was never stated.
+- "We need a new rule": check composition first; most gaps are two existing clauses nobody combined.
+- "Splitting is overkill": test whether the split changes a downstream output or standard of proof. If not, merge back; if so, it was owed.
+- "I'll note my read and go to the verdict": a bundled verdict smuggles in every sub-claim the loudest side assumed. Decompose first, even briefly.
+- "This avoids deciding": the method ends in a map and a verdict. If you're not converging, you're doing something else.
