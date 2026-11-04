@@ -498,21 +498,33 @@ A forward confirm buys nothing over the fixed holdout for the equity micros. It 
 - Joshua, 2026-11-03, verbatim: "For now we are not letting index stay Tradeify only. But we'll reevaluate when we expand to other firms."
 - The cross-firm hedging control still applies whenever index books run both at Tradeify and elsewhere (Tradeify ESA §6.7(c),(i); [deep-dive](2026-11-01-tradeify-venue-deep-dive-DRAFT.md#1-what-changed-in-the-picture) item 5). They must never hold opposite directions at the same moment.
 
-**Deployment order: open.** Joshua is reconsidering the 10-30 "scale first within Tradeify" ruling. Tradeify makes whatever book runs there Tradeify-only, so the best-evidenced book may reach further at firms without that rule. The premise is the [venue-fact register](2026-11-01-prop-firm-venue-fact-register-DRAFT.md)'s §E row 1, its top unverified assumption. A venue-terms check was commissioned on 2026-11-03: cross-firm use, copy and mirroring rules, external hedging, automation route and per-trader account caps at Bulenox, MFFU, BluSky and FXIFY. Its result decides the order.
+**Deployment order** (Joshua, 2026-11-04, verbatim: "go with your recommendations on both"):
+- **Tradeify first, for now.** The 10-30 order of expansion stands. The [venue-terms note](2026-11-03-cross-firm-exclusivity-and-account-caps-DRAFT.md) (PR #1040) found Bulenox, MFFU and BluSky silent on running one strategy at several firms, and Futureify permissive only for copying in. No current BluSky page states that automation is permitted. Silence is not permission (Rule 17).
+- **Reopen trigger.** Revisit the order when both hold:
+  - at least two of Bulenox, MFFU, BluSky and Futureify confirm in writing that a user-built automated strategy may run there while the same strategy runs at another firm, and that automation is permitted on that route;
+  - a book has passed its holdout.
 
-**Family-to-firm mapping.** The FX rows were decided by Joshua on 2026-11-04 ("go with your recommendations on both"); the rest stays proposed. The deployment order still waits on the venue-terms check.
+  The upside is slots: one book gets 5 at Tradeify (8 with V2 Select 300K), against 16–18 across the other four (note §3).
+- **Owed by Joshua** (agents never contact firms): send the support questions in note §4, plus one for Tradeify: does the same logic on a different instrument count as a distinct strategy?
+
+**Distinct books** (same ruling):
+- A book is distinct from one running at Tradeify only if its trading logic differs. Different sizing, risk limits or weights do not make it distinct (Tradeify, 2026-10-08 and 2026-10-12, quoted in note §1.5).
+- D4b's reading, "Portfolios adapted to each firm's rules are treated as distinct strategies" (2026-09-28, relayed; [origin log](2026-10-15-deployment-decision-origin-log.md)), is retired where "adapted" means sizing or weights only.
+- Until Tradeify answers the instrument question, the same logic on a different instrument counts as the same strategy. R1's MCL ORB shares ORB logic with the index ORB, so it cannot seed another firm while the index ORB runs at Tradeify.
+
+**Family-to-firm mapping.** The FX rows were decided by Joshua on 2026-11-04 ("go with your recommendations on both"); the rest stays proposed. The deployment order is set above (Tradeify first, with a reopen trigger).
 
 | Firm | Family | Why | Watch |
 |---|---|---|---|
-| Tradeify | US-open index ORB | in flight; native NinjaScript | depends on the deployment-order decision |
+| Tradeify | US-open index ORB | in flight; native NinjaScript | first in the deployment order (2026-11-04) |
 | BluSky | Metals: MGC, proposed | MGC offered; full automation welcomed | **R2 skips MGC** (Joshua, 2026-11-04): both MGC dossiers fail harvest Req 1, and the no-counterparty channel was not used |
-| MFFU | FX: **6J** (decided 2026-11-04; the Tokyo-fix card is held with R2, see §11) | R2's card ([R2 dossier index, PR #1061](https://github.com/Joshua-Asante/first-passage/pull/1061)); avoids MFFU's funded metals cap | 6J full-size only; venue legality re-checked for MFFU in the dossier |
+| MFFU | FX: **6J** (decided 2026-11-04; the Tokyo-fix card is held with R2, see §11) | R2's card ([R2 dossier index](../briefs/dossiers/R2/INDEX.md)); avoids MFFU's funded metals cap | 6J full-size only; venue legality re-checked for MFFU in the dossier |
 | Bulenox | FX: **M6E pre-fix** (decided 2026-11-04) | cheapest M6E costs ($0.50/side; MFFU $0.72, Tradeify $0.80, per `core/firm_rules.py` comments); a micro suits the harsh intraday-high trail | enters only after the M6E landing and if its pre-registration answers the EUR/USD fix-reversal re-proposal bar |
 | FXIFY | later | rules provisional | — |
 
 **Open questions:**
-1. Energy: MCL's one look goes to R1's re-registration, which is ORB. Under the working distinctness test (different instrument, session window **and** mechanism) it shares ORB's mechanism with the index book, so it could not seed a separate firm on its own.
-2. Is "different instrument, session window and mechanism" enough distinctness for Joshua's reading of Tradeify's exclusivity rule?
+1. Energy: MCL's one look goes to R1's re-registration, which is ORB. Answered by the distinct-books ruling above: while the index ORB runs at Tradeify, an MCL ORB cannot seed another firm.
+2. Is a different instrument enough distinctness under Tradeify's rule? Logic is the test (above). Whether the same logic on a different instrument counts is the Tradeify support question owed above.
 
 ---
 
