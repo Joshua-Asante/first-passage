@@ -28,8 +28,12 @@ boundary. ``dev_start`` is optional (R1's specs predate it); bars before it may 
 warm-up only.
 
 The calendar (``ops/calendars/cme_holiday_calendar_2022_2026.json``) is read for exactly
-``CALENDAR_FIELDS``: the schema, the coverage window and every ``entries[].date``, whatever its
-status. Every evaluated session must lie inside the coverage window.
+``CALENDAR_FIELDS``: the schema, the coverage window, every ``entries[].date`` and every entry's
+``*_status`` fields. An entry date is closed (not traded) only when at least one recorded status
+is not ``NORMAL``; a row whose every status is ``NORMAL`` is informational and leaves the session
+in place (operator decision 2026-11-03, option B on PR #1045). An entry with no ``*_status``
+field, or a status outside ``CALENDAR_STATUSES``, aborts the load. Every evaluated session must
+lie inside the coverage window.
 """
 from __future__ import annotations
 
@@ -49,7 +53,9 @@ from builder.instruments import DAY_END, EXPORT_TZ, INSTRUMENTS
 
 NY = "America/New_York"
 CALENDAR_SCHEMA = "cme_holiday_calendar/v1"
-CALENDAR_FIELDS = ("schema", "coverage_start", "coverage_end", "entries[].date")
+CALENDAR_FIELDS = ("schema", "coverage_start", "coverage_end", "entries[].date", "entries[].*_status")
+# the status values the admitted calendar uses (cme_holiday_calendar_2022_2026.json); nothing else loads
+CALENDAR_STATUSES = frozenset({"EARLY_CLOSE", "FULL_CLOSURE", "NORMAL"})
 BAR_MS = 15 * 60 * 1000
 COLUMNS = ("Trade number", "Type", "Signal", "Price USD")
 TYPES = {"Entry long", "Entry short", "Exit long", "Exit short"}
@@ -201,7 +207,7 @@ def _iso(v) -> bool:
 
 @dataclass(frozen=True)
 class Calendar:
-    closed: frozenset[str]   # every entries[].date: sessions on these dates are not traded
+    closed: frozenset[str]   # entry dates with a non-NORMAL status: sessions on these dates are not traded
     start: str
     end: str
     sha256: str
@@ -210,6 +216,17 @@ class Calendar:
         out = [d for d in sessions if not self.start <= d <= self.end]
         if out:
             raise DataError(f"{what}: sessions outside the calendar coverage {self.start}..{self.end}: {out[:5]}")
+
+
+def _entry_closed(path: Path, e: dict) -> bool:
+    """True when any recorded ``*_status`` is not NORMAL; refuses a row with none or an unknown one."""
+    statuses = [v for k, v in e.items() if isinstance(k, str) and k.endswith("_status")]
+    if not statuses:
+        raise DataError(f"{path}: entry {e['date']} has no *_status field")
+    bad = sorted({repr(v) for v in statuses if not isinstance(v, str) or v not in CALENDAR_STATUSES})
+    if bad:
+        raise DataError(f"{path}: entry {e['date']} has status {bad}; allowed {sorted(CALENDAR_STATUSES)}")
+    return any(v != "NORMAL" for v in statuses)
 
 
 def load_calendar(path: Path, sha256: str) -> Calendar:
@@ -226,9 +243,9 @@ def load_calendar(path: Path, sha256: str) -> Calendar:
     if not isinstance(entries, list) or not entries or any(not isinstance(e, dict) or not _iso(e.get("date"))
                                                            for e in entries):
         raise DataError(f"{path}: entries must be a non-empty list of objects with a YYYY-MM-DD date")
-    closed = frozenset(e["date"] for e in entries)
-    if any(not d["coverage_start"] <= x <= d["coverage_end"] for x in closed):
+    if any(not d["coverage_start"] <= e["date"] <= d["coverage_end"] for e in entries):
         raise DataError(f"{path}: an entry date lies outside the coverage window")
+    closed = frozenset(e["date"] for e in entries if _entry_closed(path, e))
     return Calendar(closed, d["coverage_start"], d["coverage_end"], sha256)
 
 
