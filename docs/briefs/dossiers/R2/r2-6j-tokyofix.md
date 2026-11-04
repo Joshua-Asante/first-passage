@@ -15,18 +15,25 @@ Status: R2 dossier (Part A §A2–§A3, tasks T2–T3) · 2026-11-04 · K = 0 (n
 ## Effect priors (Req 2)
 | Source (date accessed) | Cohort | Figure | Transplant? |
 |---|---|---|---|
-| Krohn, Mueller & Whelan, *Foreign Exchange Fixings and Returns Around the Clock*, Bank of Canada SWP 2021-48 (J. Finance 2024 version not opened); https://www.bankofcanada.ca/wp-content/uploads/2021/10/swp2021-48.pdf (2026-11-04) | spot USDJPY, Refinitiv RTH mid quotes, 1999-01..2019-12, 5,264 daily obs | Table I JPY: pre-T −4.06%/yr (t −5.87); post-T +7.94%/yr (t +8.22). Table VII JPY Tokyo reversal (pre+post): mean 12.00%/yr (t 10.12), 57% of days positive | **Yes: spot → futures.** The cohort is the parent spot pair, and KMW report no single-currency futures row (Table III's CME futures figure is a EUR/GBP/JPY portfolio). Under harvest Req 2 a spot cohort is not the target instrument's own cohort, so it is admissible only by Joshua's ruling (Rule 3). 6J is the reciprocal of USDJPY, so the sign flips. |
+| Krohn, Mueller & Whelan, *Foreign Exchange Fixings and Returns Around the Clock*, Bank of Canada SWP 2021-48 (J. Finance 2024 version not opened); https://www.bankofcanada.ca/wp-content/uploads/2021/10/swp2021-48.pdf (2026-11-04) | spot USDJPY, Refinitiv RTH mid quotes, 1999-01..2019-12, 5,264 daily obs | Table I JPY: pre-T −4.06%/yr (t −5.87); post-T +7.94%/yr (t +8.22). Table VII JPY Tokyo reversal (pre+post): mean 12.00%/yr (t 10.12), 57% of days positive | Spot → futures, same pair: **admitted under [strategy_harvest §4a](https://github.com/Joshua-Asante/first-passage/pull/1064)** (Joshua, 2026-11-04: "go with your recommendation, option a"; PR #1064, unmerged). KMW report no single-currency futures row; Table III's CME figure is a EUR/GBP/JPY portfolio. Sign conversion: §4a condition 2 below. |
 | same, Table III | CME futures dollar portfolio (EUR, GBP, JPY), 2006-01..2019-12 | pre-T −4.06 (t −8.93), post-T 5.61 (t 10.00) | Futures support at **portfolio** level only. The JPY futures leg is not reported alone. |
 | same, Table II | dollar portfolio, 2014–2019 subsample | pre-T −1.59 (t −2.64), post-T 2.08 (t 2.25) | used only as an in-sample decay ratio |
 | Ito & Yamada, *Puzzles in the Forex Tokyo "Fixing"*, CJEB WP 352 (2016), J. Int. Econ. 109 (2017) 214–234; https://business.columbia.edu/sites/default/files-efs/imce-uploads/Research/Research_Papers/WP_352.Ito-Yamada.Tokyo_Fixing_Puzzles.pdf (2026-11-04) | USDJPY, EBS, 1999–2013 (sample varies by test) | a short long/short window either side of the fix: "the average return becomes 1.8bp"; "particularly high at 5th and 10th days" (Figure 6, graphical, no number). Table 5's 5th/10th-day dummy is significant, but on the gap between the **bank fix and the market price**, which is not a tradable return | target pair; gotobi limb has no number |
 | Bessho, Sugimoto & Suzuki, arXiv 2301.13204 (2023); https://arxiv.org/html/2301.13204v1 (2026-11-04) | USDJPY, EBS per-minute, 2018–2020 | gotobi pre-fix strategy N=185, PF 1.46, W 0.60 (with filter N=65, PF 2.62); non-gotobi PF 0.51. No mean, σ or t-stat | target pair; PF and win rate only, so no δ/σ is derivable |
 
 - Decay haircut: keep 0.42× (a 58% decline). Source: McLean & Pontiff (2016, J. Finance 71(1)): "Portfolio returns are 26% lower out-of-sample and 58% lower post-publication" (https://Www.Gwern.net/doc/economics/2016-mclean.pdf, 2026-11-04). KMW's own decay agrees: δ/σ for the dollar portfolio in 2014–19 against the full sample is 0.45× (pre-T) and 0.49× (post-T), from Table II/I t-stats with N≈1,316 a subsample. That is a portfolio-level ratio, applied to JPY. The dev window (2016–2026) lies mostly after the KMW sample, so this is a conservative central reading, not a bound.
-- Screen figure: **UNSCREENABLE on the target cohort pending Joshua's ruling** on the spot-parent transplant above. A δ probe on the 6J panel would supply it (charges K). Conditional reading, if the ruling admits the spot cohort: δ/σ = t/√N with N = 5,264:
+- Screen figure (same-pair spot cohort, admitted under §4a): δ/σ = t/√N with N = 5,264:
   - H1 pre-T: 5.87/72.55 = 0.0809 → ×0.42 = **0.034**
   - H2 post-T: 8.22/72.55 = 0.1133 → ×0.42 = **0.048**
   - H1+H2 reversal (Table VII): 10.12/72.55 = 0.1395 → ×0.42 = 0.059 (disclosed, not a separate limb)
   - H3 gotobi-conditional: **UNSCREENABLE.** No target-cohort mean/σ was found. Supplying it needs a δ-extraction probe (the 6J panel with a gotobi dummy on the pre-fix window, which charges K) or opening Akiyama et al. 2021 (JAFEE 19, in Japanese; not opened).
+
+- **§4a conditions** (owner: strategy_harvest §4a, PR #1064):
+  1. Same pair: **satisfied.** USD/JPY spot for 6J.
+  2. Sign and quote conversion: **satisfied.** KMW quote `s` as JPY per USD, but Table I reports `−Δs`: "Positive values imply the foreign currency appreciates versus the U.S. dollar" (KMW Table I note). 6J is quoted in USD per JPY, so Table I's signs carry over to 6J unchanged. Post-fix +7.94%/yr is a 6J rise, so H2 is **long 6J**; pre-fix −4.06%/yr is a 6J fall, so H1 would be short. Against the USD/JPY quote itself, the sign flips.
+  3. Return terms: **satisfied.** δ/σ is the t-statistic over √N of log-return means, and the 58% §4 haircut is applied.
+  4. Costs on the future, in the cell's hours: **partly satisfied, partly owed.** The MFFU commission on 6J is computed below (0.82 ticks round trip). The slip used is the repo default of 1 tick/side; it was never measured on 6J in the Globex evening, when Tokyo-morning liquidity on the CME book is thinner. **Owed before freeze:** an M-16 fill-slip read on the 6J future in the cell's hours.
+  5. Cohort window: **disclosed.** KMW sample January 1999 to December 2019. The development window (2016-01 onward) overlaps the cohort for 2016–2019. Survival after 2019 is evidence only from the holdout and confirm, never from the cohort.
 
 ## Prior consult (advisory, Rule 26)
 ```text
@@ -93,7 +100,6 @@ The second-nearest id, `turn-of-month` (gotobi/month-end calendar), also returne
   | 4 | 0.888 | 0.454 | 0.502 | yes, at the boundary |
   Normal approximation; 5f only, so every other gate lowers P(pass). The instrument's lifetime budget is 4 looks (generation note §11).
 - Power at expected event count, using power = Φ(√N·|δ|/σ − 1.96) with N = 2,325 dev sessions (√N = 48.22):
-  - All figures below are conditional on the spot-cohort ruling.
   - H1 pre-T: Φ(48.22×0.034 − 1.96) = Φ(−0.32) = **0.37** (fails 0.50)
   - H2 post-T: Φ(48.22×0.048 − 1.96) = Φ(0.33) = **0.63** (passes)
   - reversal H1+H2: Φ(0.87) = 0.81
