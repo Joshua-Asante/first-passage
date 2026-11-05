@@ -1,11 +1,20 @@
-# ORB-MNQ payability line (orb_mnq · eodadv) — PARK
+# ORB-MNQ payability line (orb_mnq · eodadv) — SUBTRACT
 
-**Class:** (b) parked lane · **Standing:** PARK
-**re-entry:** new payability / cost-geometry evidence at an admissible venue
-**expiry:** 2026-11-08 (converts to SUBTRACT absent explicit operator renewal — ADR §2.3)
+**Class:** (b) parked lane · **Standing:** SUBTRACT
+**Disposition 2026-11-08:** the PARK lapsed to SUBTRACT at its 2026-11-08 expiry (GRAND ADR
+§2.3). Ruled by Joshua 2026-11-03 (pre-sitting); recorded effective 2026-11-08.
+**Former re-entry (PARK, lapsed):** new payability / cost-geometry evidence at an admissible venue
+**Re-entry armor (GRAND ADR §2.3):** out-of-frame evidence plus an attached falsifier, recorded
+through a governance channel.
+**Still citable:** this record stays citable (for example by the ORB v7 prereg's disclosure). ORB
+O-0 and the Tradeify release are different expressions and are unaffected.
 **Aim served (if re-entered):** A2
-**Residuals:** `lab/analysis/orb/orb_mnq_2026-07/`, `eodadv_mnq_2026-08/` stay hot; `sessconf_mnq_2026-08` continues live under pursuit a3 (not parked — distinct lane)
-**Test applied:** expired-park-shaped (T2 payability FIRED 2026-08-03, 15:30 exit barred; the prior repo park lacked both re-entry and expiry fields — this record supplies them for the first time per ADR §2.3)
+**Residuals:** `lab/analysis/orb/orb_mnq_2026-07/` keeps only `RESULTS.md`; `eodadv_mnq_2026-08`
+is archived (retrievable via its `archive_url` in [`lab/ARCHIVED.json`](../../lab/ARCHIVED.json));
+`sessconf_mnq_2026-08` continues live under pursuit a3 (not parked — distinct lane). The "ORB
+decay re-scope" obligation moved to its owner, the
+[venue de-scope ADR §6](../adr/2026-08-04-tradeify-venue-descope-eval-included.md#addendum-2026-11-08--orb-decay-re-scope-obligation-owned-here).
+**Test applied (at PARK):** expired-park-shaped (T2 payability FIRED 2026-08-03, 15:30 exit barred; the prior repo park lacked both re-entry and expiry fields — this record supplies them for the first time per ADR §2.3)
 
 **Ratified:** 2026-08-09 (GSUB-1 Phase 3)
 **Source:** [`GSUB-1 inventory`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/programs/GSUB-1-inventory-and-dispositions.md) row b3

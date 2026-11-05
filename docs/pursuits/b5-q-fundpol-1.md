@@ -3,7 +3,7 @@
 **Class:** (b) parked lane · **Standing:** PARK
 **re-entry:** F3 registers a successor venue → the thread's own note already states this requires
 a fresh derivation, not this brief rescheduled
-**expiry:** 2026-11-08 (converts to SUBTRACT absent explicit operator renewal — ADR §2.3)
+**expiry:** 2027-02-08, renewed 2026-08-16 (RENEWED note below; [STATE §2027-02-08](../../STATE.md#2027-02-08)) (converts to SUBTRACT absent explicit operator renewal — ADR §2.3)
 **Aim served (if re-entered):** A1
 **Residuals:** §1–§5 analysis retained as worked method (explicitly, in the thread's own dormancy
 note); §8 pre-registration (K frozen = 4) and P1/P2 discharges stay unspent, not carried forward
