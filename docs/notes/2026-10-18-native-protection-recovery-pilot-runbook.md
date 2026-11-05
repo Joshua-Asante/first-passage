@@ -18,7 +18,7 @@
 | Accepted rule | Native adaptation | Changed? |
 |---|---|---|
 | One durable `HALTED`/`RUNNING` owner; every start is HALTED (rev9 §1) | The account owner's append-only journal holds the permission state, generation and a dirty epoch. A stored `RUNNING` never grants authority at start. | Owner moves into the native runtime |
-| Every mutation passes one serializer (rev9 §1) | All orders for the account go through the account owner. No second strategy instance, ATM template or chart-trader action may hold orders on the account during a pilot session. | Stricter: one owner per account |
+| Every mutation passes one serializer (rev9 §1) | All orders for the account go through the account owner. No second strategy instance, ATM template or chart-trader action may hold orders on the account during a pilot session. *2026-11-05: for the Aegis + ORB pair the bar applies only to instances on one instrument, and a static per-leg split of caps replaces §2.1–§2.2 (§5).* | Stricter: one owner per account |
 | Reserve before send; whole or refuse; unresolved reservations count (capacity §4) | Unchanged. Reserve in the journal before submit; partial fills move only filled quantity; an unknown request keeps its full reservation. | No |
 | Settled-close mode selected once per session; never resize carried positions (capacity §3) | Unchanged. Mode is read from the journal's last accepted settled close, not from intraday account values. | No; trigger/scale unbound |
 | Incident → durable halt, intervention, no runtime close/cancel/amend (rev9 §1, §3; A12 F1(c)) | Replaced by D-N1: on an incident the owner latches HALT, then may close only exposure it knows exactly (§2.8). Anything uncertain still goes to the operator. | **Yes** (D-N1) |
@@ -33,12 +33,16 @@
 
 ### 2.1 Simultaneous strategy entries
 
+*2026-11-05: for the Aegis + ORB pair the bar applies only to instances on one instrument, and a static per-leg split of caps replaces §2.1–§2.2 (§5).*
+
 1. One account owner hosts every selected leg for that account, with a fixed leg priority. Several strategies may run on one account wherever the firm's rules allow it (D-N3). Separate strategy instances sharing one account are not admitted: their positions are tracked separately, so the account can net flat or reverse while each instance still holds protective orders.
 2. Priority is the strategies' expected-value rank, highest first (D-N2). The rank is a fixed, strictly ordered list bound at portfolio selection and unchanged during a session. Signals that complete on the same bar are admitted in that order, one at a time. Each admission sees every earlier reservation from that bar, so a lower-ranked signal is refused, never clipped, when a higher-ranked one has used the room.
 3. One leg per instrument per account. If the selected portfolio has two legs on one instrument, they are refused; `serialize` is rejected until a ruling defines it (D-N14). Opposing positions in one instrument are refused; firms commonly prohibit hedging (bind per firm).
 4. Adds count as entries. They need a confirmed executed base, never an accepted order (capacity §2).
 
 ### 2.2 Shared exposure limits
+
+*2026-11-05: replaced for the Aegis + ORB pair by the static per-leg split (§5).*
 
 Accounted usage = confirmed open quantity + every outstanding entry and add reservation, including partial, unknown and recovery-pending ones. Admit only if every limit holds after the request:
 
@@ -116,6 +120,8 @@ On an incident the owner may close positions itself, within these bounds (adapte
 | P1 | Isolated local simulation account, no firm connection | P0 accepted; the host isolation steps from the 10-17 canary | Every case in §4 run on the real platform, with its incorrect variant detected |
 | P2 | One attended session on the admitted firm account | Below | §2.7 verified flat; review recorded |
 
+*2026-11-05: for the first Tradeify eval sessions, a signed page and pre-session check replace this gate and an attended check replaces M1 (§5).*
+
 **P2 entry gate:** portfolio and account selected; every `⟨L-…⟩` bound by the owning record; firm admission for native automation on that account; this instance's own M1 acceptance (it cannot inherit the incumbent's); P1 accepted; per-session operator GO and attendance; `D` within `W`.
 
 **Stop rules:** any incident ends automation for the session (A11.2). One session, then a recorded review before another. Two failed corrections of the same control stop the pilot track for redesign.
@@ -146,6 +152,8 @@ None of these has native evidence today. Each is INCONCLUSIVE until its named te
 | U-18 | The firm route reduces a working close's and a protective stop's quantity, and the native callbacks report the new working quantity (`OrderState`, `ProtectionState`) within `outcome_window` (§6.10, SM-2, SM-3) | Reduce each on the real connection; compare the callbacks with reads A and B | none |
 
 ## 5. Decisions
+
+Operator exception, 2026-11-05 (Joshua: "we can cut steps to the bare bones", "Yes, adopt it"): the [checklist addendum](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-11-05--bare-bones-eval-path) replaces the P2 entry gate and M1 for the first Tradeify eval sessions, narrows the second-instance bar to same-instrument, and replaces §2.1–§2.2 for the Aegis + ORB pair with a static per-leg split. Cap values stay private.
 
 Operator rulings, 2026-10-18 (Joshua, in session):
 
