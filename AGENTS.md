@@ -14,10 +14,12 @@ Docs removed in the 2026-11 governance cut are in git history at main commit
 
 ## Money controls (hard rules)
 
-1. **No live orders without Joshua's direction.** Agents may place, exit or cancel
-   orders, including through computer use, only when he directs. **Exception:** the
-   weekly account-preservation round trip runs under his standing, revocable GO
-   (2026-10-25). An agent may place it with no per-trade direction.
+1. **No live orders without Joshua's direction.** Agents, Codex included, may act
+   on the Tradeify eval (place, exit or cancel orders, including through computer
+   use) only when he directs, and every eval session needs its own GO.
+   **Exception:** the weekly account-preservation round trip runs under his
+   standing, revocable GO (2026-10-25). An agent may place it with no per-trade
+   direction.
 2. **No arming, live spend or deployment without his explicit GO for that session.**
    The c1 Python rail is retired (2026-10-29). Its Fly apps were destroyed
    2026-11-05. Nothing is rebuilt, redeployed, armed or bound to an account under it.
@@ -27,7 +29,10 @@ Docs removed in the 2026-11 governance cut are in git history at main commit
    `core/dd_protection.py`, the locked allocations in `core/firm_rules.py`, and
    locked Pine sources are not edited without Joshua's explicit approval.
    `dd_protection` validates its constants at import.
-5. **Spending money** (subscriptions, data, compute) needs Joshua's approval.
+5. **Eval sessions follow the forward stop rule** in
+   `docs/briefs/pre-registration/2026-10-31-tradeify-forward-stop-rule-registration.md`.
+   It stays as is, or changes only by a new registration before session 1.
+6. **Spending money** (subscriptions, data, compute) needs Joshua's approval.
 
 ## Data and credentials (hard rules)
 
@@ -38,8 +43,9 @@ This repository is **public**.
 - **Private sources** (Pine and the runtime ports listed in
   `core/strategies/BOOK_SOURCES.sha256`, and `effective_inputs.json`) are read only
   in place, in Joshua's primary checkout. Never copy, quote, edit or upload them.
-- **Codex never receives** Pine, runtime ports, `effective_inputs.json` or account
-  data.
+- **Codex never receives** Pine, runtime ports, `effective_inputs.json`, strategy
+  parameters or account data. Exception: it may see account data on screen while it
+  acts on the eval; it writes none of it to logs or files.
 - **Backtest dollar figures** go only in lab `RESULTS` files, never in PR text or
   STATE.
 - **Data changes** under `core/data/` carry a matching `SHA256SUMS` update. Don't
