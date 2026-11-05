@@ -2,11 +2,13 @@
 
 **Status:** DRAFT for review; documentation only; not an admission, authorization or clearance.
 
+**2026-11-05 reply update (derived from the [evidence owner](2026-11-03-cross-firm-exclusivity-and-account-caps-DRAFT.md#16-support-replies-read-2026-11-05)):** Futureify answers the independent-use limb of U4a affirmatively and confirms external-account reverse-trading scope. BluSky affirms automation in evaluation, Sim Funded and Live Brokerage and independent same-strategy use elsewhere; prior review and platforms remain unanswered. Tradeify's instrument-only distinction answer and MFFU's qualified response are explicitly AI-authored. These update the question statuses below, not eligibility/clearance. Other dated first-cut rows remain historical; current program decisions are at the [program owner](../adr/2026-07-12-prop-portfolio-four-friendly-firms.md#evidence-note-2026-11-05--support-replies-and-expansion-order-no-new-ruling).
+
 First cut, due 2026-10-23; final 2026-10-30 (drafted 2026-10-19). It is not §4 evidence. Owner: the Claude deployment coordinator ([ledger, 2026-10-17](../superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-transfer--claude-deployment-coordinator-2026-10-17)).
 
 **Related:** [FXIFY Flex vs FundedNext source note](2026-10-19-fxify-flex-vs-fundednext-futures-source-status.md) · [Tradeify checklist addendum 2026-10-19](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-19--no-book-lineage-configuration-has-an-evidence-case-for-the-tradeify-evaluation) (merged [#876](https://github.com/Joshua-Asante/first-passage/pull/876)) · [four-firm ADR](../adr/2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-10-16--operator-rulings-50-ceiling-fresh-4-candidate-orb-mnq-v7-fxify-futures-flex-registration-accepted) (addendum 2026-10-16).
 
-**Where things stand:** no firm tier has a strategy that is qualified and admitted to run. Tradeify is the only registered venue with a chosen native route, but no strategy is bound to it and its licence and admission questions are open. FXIFY Futures Flex has been directed into the registry but does not count toward §4. FundedNext Futures is only a comparison basis, with no registry row and no rule sheet. Questions to both firms are drafted and have not been sent. ORB MNQ v7 solo is paused (checklist 10-19 :978).
+**10-19 first-cut snapshot (not current posture):** no firm tier has a strategy that is qualified and admitted to run. Tradeify is the only registered venue with a chosen native route, but no strategy is bound to it and its licence and admission questions are open. FXIFY Futures Flex has been directed into the registry but does not count toward §4. FundedNext Futures is only a comparison basis, with no registry row and no rule sheet. Questions to both firms are drafted and have not been sent. ORB MNQ v7 solo is paused (checklist 10-19 :978).
 
 **Grades:** facts come from merged owner records on `main` (3fcccf9; [#877](https://github.com/Joshua-Asante/first-passage/pull/877) facts from its merge, 5be6ea1, 2026-10-20T00:41Z, 10-19 ET; campaign §62 and the ORB-HC-1 closure read at 2be3bc6) unless marked as follows:
 - **PR**: an open, unmerged PR.
@@ -32,9 +34,11 @@ This register holds no account figures, P&L or strategy details.
 
 **Tradeify decision record.** A future Tradeify-only strategy is decided through the coordinator's Tradeify unattended-operation roadmap (r2, 2026-10-19). It is PRIVATE and kept outside the repo. Its public owners are the checklist addenda of 10-16 and 10-19. The first decision on it is Joshua's: fund the lane or park it. Its exact open blockers are §4 rows T1–T10. The roadmap expects the 10-30 strategy gate to read NO-GO; that is an inference, not a verdict.
 
-## 2. Firm questions (drafted, not sent)
+## 2. Firm questions (original drafts and later reply status)
 
 The questions are in the [#877 question draft](2026-10-19-flex-firm-questions-DRAFT.md), merged at 5be6ea1. Joshua funded them on 2026-10-19 as Step 3 item 1. Joshua sends both emails from his own account; agents send nothing. Replies come to this register, keyed by question ID.
+
+**Later, narrower outreach:** the 11-05 mailbox read verifies a separate Futureify email asking only independent strategy reuse and the external-account scope of reverse trading. It does not establish that the eight-question FXIFY draft below was sent. F-1105 answers U4a's other-prop independent-use limb and part of FX-N3 (account reach only). It does not answer copy-out, personal-brokerage reuse, product classification, one-sided bets or overexposure. B-1105 and M-1105 concern separate BluSky/MFFU questions at the evidence owner. No reply here adopts the proposed reading rules below or creates a clause-citation prerequisite.
 
 **Email 1, FundedNext (7):**
 - FN-3: automation and hosting on Challenge and Funded; approval when the host IP differs from the dashboard IP (2.1.7).
@@ -61,7 +65,7 @@ The questions are in the [#877 question draft](2026-10-19-flex-firm-questions-DR
 - FN-13 and FX-N5 (data for automated use) wait on the CME clarification.
 
 **Proposed additions (for the #877 author; not in the merged draft, so they need a follow-up edit before the emails go out).** These close source-note gaps:
-1. **FXIFY copy-out:** may the same owner run a strategy independently, not copied, on a personal account or other own accounts? This is source-note U4a. It restores the reuse half of venue-note Q8, which FX-N8 drops.
+1. **FXIFY independent use / copy-out (U4a):** the other-prop independent-use limb is answered yes by F-1105. Copy-out and personal-account reuse remain unanswered; they are distinct questions. See [U4a](2026-10-19-fxify-flex-vs-fundednext-futures-source-status.md).
 2. **FX-8 payout limb:** does the lock also apply when a payout is processed on a Flex funded account? This is C2f; the funded page says nothing about it, and FX-8 does not ask it.
 3. **FN-11 detail:** which live-pool rule governs Flex, five cycles on one account or 15 rewards across the profile? What happens to accounts and simulated profit at transition, and when are refunds paid? Does the $10,000 cap limit how many live accounts follow 5 eligible funded accounts? This covers U1a–U1e.
 4. **Un-defer FN-12:** does terms 2.2.5 bar one owner from running the same strategy on several own accounts? This is U4b.

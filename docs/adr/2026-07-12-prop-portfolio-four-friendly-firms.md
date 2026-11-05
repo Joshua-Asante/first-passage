@@ -442,6 +442,33 @@ Clearance is read on the intraday-honest clock with `headline_bust`. The pre-reg
 - Every candidate, evidence, qualification and authorization boundary recorded at its owner.
 - Nothing is armed, deployed or authorized by this addendum.
 
+## Evidence note 2026-11-05 — support replies and expansion order (no new ruling)
+
+Joshua requested that the received replies and their impact on the multi-firm
+approach be recorded. The [reply evidence owner](../notes/2026-11-03-cross-firm-exclusivity-and-account-caps-DRAFT.md#16-support-replies-read-2026-11-05)
+records the original questions, dated answers, author types and unanswered scope.
+
+- Futureify and BluSky support affirm independent use of an owned strategy at
+  another prop firm. This strengthens the basis for researching a shared strategy
+  among those venues, provided that strategy is not also used at Tradeify.
+- Tradeify's **AI** answer treats the same logic on different instruments as the
+  same strategy. It establishes no symbol-only exception to existing exclusivity
+  guidance and is not human adjudication of a named strategy pair.
+- MFFU's **AI** answer is qualified and incomplete; Bulenox remains unanswered.
+  The hypothetical 16–18 non-Tradeify funded slots in the evidence note remain a
+  cap comparison, not established deployable capacity. Futureify's reply expressly
+  includes external accounts in its reverse-trading restriction; independent
+  execution does not waive any firm's cross-account hedging rules.
+
+**Decision impact:** the 2026-10-30 Tradeify-first ruling stands. A different first
+venue or expansion order would be Joshua's decision; it has not been selected.
+The 2026-11-03 ruling recorded effective 11-08 below also stands: multi-firm
+success claim/mandate research-only, Tradeify scaling continues as program work.
+These are venue answers, not §4 performance evidence or execution clearance.
+BluSky review/platform details, MFFU qualifications and other unanswered items
+remain at the evidence owner; no new release gate, firm registration or
+candidate/route admission is created here.
+
 ## Addendum 2026-11-08 — §4 falsifier fires; consequence narrowed by operator ruling (Accepted)
 
 Ruled by Joshua 2026-11-03 (pre-sitting, in the Claude session preparing the 11-08 sitting); recorded effective 2026-11-08.
@@ -474,4 +501,5 @@ Ruled by Joshua 2026-11-03 (pre-sitting, in the Claude session preparing the 11-
 | 2026-10-28 | Addendum (Accepted, operator ruling): the §4 5.0% bust ceiling is scoped to this program's falsifier and does not bind account operating objectives; no value or §4 text changed | Joshua (ruling) + Claude Code (record) |
 | 2026-10-29 | Addendum (Accepted, operator ruling): one program, the multi-firm operation; the owned Select 100K evaluation is its first step; the personal-account objective is removed. §4, its ceiling and scope, and the 11-08 date are unchanged | Joshua + Claude Code |
 | 2026-10-30 | Same addendum, operator ruling added: scale first within Tradeify; later firms need distinct strategies sourced through research. §4 unchanged | Joshua + Claude Code |
+| 2026-11-05 | Evidence note links the four support replies and their limits: Futureify/BluSky independent-use answers inform research; Tradeify-first and the 11-03 ruling effective 11-08 remain unchanged. No new ruling or clearance | Codex (record) |
 | 2026-11-08 | Addendum (Accepted, operator ruling 2026-11-03): §4 primary falsifier fires; consequence narrowed — the multi-firm success claim and mandate are research-only, scaling within Tradeify stays program work; R6 restoration declined; ORB MNQ v7 withdrawn as the §4 candidate; the 08-22 `PARTIAL` addendum inapplicable. §1–§4 text unedited | Joshua (ruling) + Claude Code (record) |

@@ -1,9 +1,10 @@
 # Cross-firm exclusivity and per-trader account caps: Bulenox, MFFU, BluSky, Futureify (ex-FXIFY Futures), Tradeify — DRAFT
 
-**Status:** DRAFT read-and-record. It decides nothing and edits no firm row, envelope cell, register row or locked surface ([Rule 3](../operational_rules.md#rule-3--the-operator-decides-grants-are-literal), [Rule 16](../operational_rules.md#rule-16--firm-rules-one-source-and-a-pre-flight)). Nothing here is accepted into an owner record ([Rule 17](../operational_rules.md#rule-17--venue-facts-quote-source-date-scope)).
+**Status:** DRAFT analysis with a **2026-11-05 support-evidence update** at §1.6, recorded on Joshua's instruction. Support answers inform the multi-firm approach; they admit no candidate, route or firm tier and change no operator ruling ([Rule 3](../operational_rules.md#rule-3--the-operator-decides-grants-are-literal), [Rule 16](../operational_rules.md#rule-16--firm-rules-one-source-and-a-pre-flight)). This note owns the new reply evidence; linked owners carry its consequences.
 **Date:** 2026-11-03 · **Author:** Claude Code (cloud) · **Repo base:** `main` at `315ea66`.
 **Question (Rule 9):** do the other firms allow one strategy to run across firms, and how many accounts may one trader hold at each? **Decision it informs:** Joshua's reconsideration of the 2026-10-30 "Order of expansion" ([four-firm ADR, Addendum 2026-10-29](../adr/2026-07-12-prop-portfolio-four-friendly-firms.md)). Context: the same ADR's [Addendum 2026-11-08](../adr/2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-11-08--4-falsifier-fires-consequence-narrowed-by-operator-ruling-accepted) demotes the multi-firm mandate to research-only; scaling within Tradeify continues.
 **Budget (Rule 2):** one research pass (primary pages for five firms) and one self-review; then, on Joshua's request to dig deeper, one second pass (every remaining primary page and terms document, plus a read-only mailbox search) and one self-review; $0; K = 0; no firm contacted, no account touched. Stopped at the bound.
+**Update budget (2026-11-05, Codex):** one source/owner reconciliation pass, one focused verification pass, at most two corrections; $0; K = 0. Independent review is not claimed.
 
 ## How the pages were read
 
@@ -16,7 +17,7 @@
   - Web search was used only to look for primary pages missed; its results were vendor and review sites and are not cited.
 - **[mail]:** Tradeify support replies, read 2026-11-03 from Joshua's Gmail (read-only), quoted verbatim. This is venue guidance, not a clause, as in the [route record](../briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-30--tradeify-answers-on-native-ownership-exclusivity-and-source-review).
   - Searches: mail to or from Bulenox, MFFU, BluSky and FXIFY Futures/Futureify, and sent mail naming any of them.
-  - Result: no correspondence with those four firms' futures support, so **none of the §4 questions has been sent from this mailbox**. FXIFY CFD account and marketing mail exists; it was not opened.
+  - Result **as of 2026-11-03:** no correspondence with those four firms' futures support. The later sends and replies are recorded in §1.6; §4 now tracks their scope. FXIFY CFD account and marketing mail was not opened.
 
 **Dedup (Rule 8).** Searches run before reading:
 
@@ -37,7 +38,7 @@ Found and reused, not re-derived: Tradeify's cross-firm answer (route record [Ad
 
 ## 1. Per-firm evidence (items 1–6)
 
-All rows **[W-raw]**, accessed 2026-11-03. "SILENT" means no page read states a rule; it is not permission (Rule 17).
+§1.1–§1.5 preserve the **2026-11-03 page/mail read**; §1.6 supplies later support evidence. "SILENT" in those dated page rows means no page read states a rule, not that the later mailbox is silent. It is not permission (Rule 17).
 
 ### 1.1 Bulenox
 
@@ -102,21 +103,49 @@ Sources: `futureify.com/faqs/<category>/<slug>/`, all 48 articles (second pass),
 
 ---
 
+### 1.6 Support replies read 2026-11-05
+
+**Provenance and coverage.** The original sent questions and full reply threads
+were read directly in Joshua's Gmail, not inferred from chat summaries. Source
+locators below give firm, exact subject and UTC timestamp; raw replies and message
+identifiers stay in the mailbox. A search on 2026-11-05, before 15:35 UTC, for mail
+after 2026-11-04 naming Tradeify, Futureify, BluSky, MyFundedFutures or MFFU returned
+14 messages, with no further results page. The later Tradeify follow-up at 13:19:39
+adds no policy answer. BluSky's ticket-closure notification at 14:40:29 adds no
+permission. No newer substantive reply was found. This covers that mailbox and
+search window, not other addresses or firm chat widgets. Public terms were not
+re-fetched in this update; §1.1–§1.5 retain their original access date.
+
+| Ref / original subject | Received (UTC) / author type | Question and operative reply (short verbatim excerpts) | Scope and limit |
+|---|---|---|---|
+| **T-1105** — Tradeify, “Question about what counts as a distinct strategy” | 2026-11-05 01:19:38; explicitly attributed to the firm's **AI agent** | Asked whether the same trading logic on different futures instruments counts as distinct strategies across firms. Answer: “the policy still treats it as the same underlying strategy.” The answer says using that strategy elsewhere while it also runs at Tradeify conflicts with exclusive use | **General / stage-unqualified support interpretation.** A symbol change supplies no exclusivity exception on this guidance. Not human compliance adjudication or an approval of any named strategy. The 13:19:39 AI follow-up only offers clarification |
+| **F-1105** — Futureify, “Questions about running a strategy at another firm, and the September 10 GTC” | 2026-11-05 02:23:58; named support representative, no AI attribution | Q1 asked whether the same owned strategy can run independently, without copying trades, at another prop firm while trading at Futureify. “Yes, it can for your initial question!” Q2 asked whether reverse trading on separate accounts includes other prop firms or brokers. “Yes, it also involves other external accounts in your name.” | **General / stages not separated.** Affirmative for the independent-use scenario and external-account reach of reverse trading. No clause cited. Copy-out, route/platform and candidate approval are not answered. Despite the subject, the sent body did not ask about which GTC governs existing accounts |
+| **B-1105** — BluSky, “Questions about automated trading and accounts at other firms” | 2026-11-05 14:40:25; named support representative after the support handoff | Q1 asked about fully automated execution in evaluation, Sim Funded and Live Brokerage, and prior review. “yes it is allowed in all stages”. Q2 asked about the same owned automated strategy running independently, without copying trades, at another prop firm and exclusivity. “yes you can do so” | **Evaluation / Sim Funded / Live Brokerage** for automation; affirmative for the independent cross-firm scenario. No clause cited. Prior review was asked but not expressly answered; platforms were not asked in this sent email and are not specified. Copying/mirroring, hedging and the exact execution setup are not cleared |
+| **M-1105** — MFFU, “Questions about automated trading and accounts at other firms” | 2026-11-05 01:33:17; footer explicitly attributes the answer to the firm's **AI agent** | Asked about independent same-strategy use, external-account hedging and API/bridge restrictions or fees. “You may run your own automated strategy on MFFU accounts.” “MFFU rules do not mention exclusivity for using the same strategy elsewhere.” It also says coordinating identical or opposite trades across unconnected accounts is prohibited, and answers yes to the same-underlying account-to-account hedging question. For APIs/bridges: “The documentation does not list specific restrictions or fees for third-party APIs or bridges.” | **General / stages not separated**, except an express live-automation CME qualification. Own automation remains conditional on trading rules, no exploitation of favorable simulated fills, no HFT and, live, CME guidelines. The coordination qualification leaves the independent-use scenario incompletely resolved. Absence of documented restrictions/fees is not affirmative API/bridge permission or a zero-fee promise. No human adjudication or specific Terms §23.1.3.3 interpretation; cited links are firm blog articles |
+
+**Evidence effect.** F-1105 and B-1105 are affirmative support answers to the
+scenarios actually asked. Their lack of a clause citation is recorded, not turned
+into a new rejection rule. T-1105 and M-1105 retain their explicit AI attribution.
+None of the four replies is firm-wide execution clearance, a waiver of another
+firm's restrictions or Joshua's selection of an expansion order.
+
 ## 2. Reading: does the evidence support "other firms allow one strategy across firms"?
 
-**Not yet, and the second pass did not change that.** No primary page or terms document read prohibits it outside Tradeify. Only Futureify says anything permissive, and that covers copying in. Bulenox, MFFU and BluSky are silent across every public page and terms document now read, and silence is not permission (Rule 17). The remaining answers can only come from the firms (§4) or from the non-public funded-stage agreements.
+**Partly, after the 2026-11-05 replies.** Futureify and BluSky support affirm independent use of the same owned strategy at another prop firm (§1.6). This supports researching reuse among those venues for a strategy not simultaneously used at Tradeify. It does not establish permission across all four non-Tradeify firms: Bulenox remains unanswered and MFFU's AI answer is qualified. The original public-page silence has not become blanket execution clearance.
 
 | Firm | Cross-firm use of one strategy | Cross-firm opposing positions | Note |
 |---|---|---|---|
 | Bulenox | **SILENT** | **SILENT** | ToS requires approval of a "third-party algorithm" before use; scope unclear |
-| MFFU | **SILENT** | **PROHIBITED, read broad** ("hedging of any kind"; Terms §23.1.3.3; scope unstated, Rule 17) | Copiers incl. "External copy trading solutions" allowed; Terms bar copying "in a manner that provides an unfair advantage" |
-| BluSky | **SILENT** | **PROHIBITED** across prop firms, correlated products included | Copier "Yes" vs conduct-policy mirroring ban |
-| Futureify | **ALLOWED for copy-in** (quoted); independent run and copy-out SILENT | **PROHIBITED, read broad** ("separate accounts"; scope unstated, Rule 17) | Rename; new GTC |
-| Tradeify | **PROHIBITED** (quoted) | **PROHIBITED** incl. External Accounts | Baseline |
+| MFFU | **QUALIFIED / INCOMPLETE AI answer** (M-1105): no exclusivity mentioned, but coordination barred | **PROHIBITED** on the broad page reading; AI reply affirms account-to-account reach | API/bridge restriction and fee silence remains unresolved |
+| BluSky | **AFFIRMATIVE SUPPORT ANSWER** for independent own-strategy use (B-1105) | **PROHIBITED** across prop firms, correlated products included (§1.3) | Automation affirmed for the three asked stages; prior review/platforms unresolved; copier/mirroring conflict remains |
+| Futureify | **AFFIRMATIVE SUPPORT ANSWER** for independent own-strategy use (F-1105); copy-in separately allowed; copy-out unanswered | **PROHIBITED**, external accounts in the trader's name expressly included by F-1105 | Rename/GTC applicability and other route questions remain separate |
+| Tradeify | **PROHIBITED** on existing guidance; same logic on different instruments still the same strategy per T-1105 (**AI**) | **PROHIBITED** incl. External Accounts | Another firm's yes cannot waive Tradeify's restriction |
 
-**A rule that binds either ordering (inference):** Tradeify's ESA §6.7 and BluSky's hedging page both expressly reach accounts at other firms. MFFU's and Futureify's bans name no account scope, so they are read broad too (Rule 17) until questions M2 and F2 are answered. Distinct books at any two of these four firms must therefore never hold opposing positions in the same underlying at the same time. The scope differs by firm: the whole Product Group at Tradeify, correlated products at BluSky, and the same underlying at MFFU. This constraint applies whichever firm gets the best-evidenced book. Bulenox has no hedging clause on the pages read, so it stays SILENT (question B4).
+**A constraint that binds either ordering (inference):** Tradeify's ESA §6.7 and BluSky's hedging page expressly reach other-firm accounts. Futureify now expressly includes external accounts in the trader's name; MFFU's AI answer supports the existing broad reading. Independent execution or distinct strategies do not remove those cross-account prohibitions. The product scope differs: Tradeify Product Groups, correlated products at BluSky, the same underlying at MFFU; Futureify's reply clarifies account reach without supplying a new product taxonomy. Bulenox stays unanswered (B4). This records existing venue constraints; it specifies no new release gate or coordination implementation.
 
-**What a distinct Tradeify book must be ([mail], inference from the quotes in §1.5).** Tradeify says different sizing, risk limits or weights do not make a strategy distinct, while "distinct strategies (different logic)" may share one engine. So book B for Tradeify needs different trading logic from book A, not a re-sized or re-weighted copy. This bears on the operator ruling recorded as D4b in the [origin log](2026-10-15-deployment-decision-origin-log.md) (2026-09-28, as relayed in an agent report; the log notes Joshua's own words are absent: "Portfolios adapted to each firm's rules are treated as distinct strategies"). The 10-08 reply contradicts that reading where "adapted" means only sizing or weights. Joshua decides whether D4b stands (Rule 3).
+**What a distinct Tradeify book must be ([mail], inference from §1.5 and T-1105).** Existing guidance rejects sizing, risk-limit and weight changes as sufficient; the new AI answer also rejects an instrument change with the same logic. Different logic may share an engine on the older guidance, but that does not waive Tradeify's native-route restriction. These are support interpretations, not human adjudication of a named pair of strategies. The historical D4b entry in the [origin log](2026-10-15-deployment-decision-origin-log.md) remains historical, with its attribution limit; this update neither rewrites it nor uses it as current clearance.
+
+**Accepted direction remains the owner record:** Joshua's 2026-10-30 Tradeify-first scaling ruling and the 2026-11-03 ruling recorded effective 11-08 in the [program ADR](../adr/2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-11-08--4-falsifier-fires-consequence-narrowed-by-operator-ruling-accepted). The latter narrows the falsifier's consequence to the multi-firm success claim/mandate, retaining Tradeify scaling as program work. These replies are venue evidence, not §4 performance evidence. Researching a shared non-Tradeify strategy is better supported; switching the first venue or expansion order remains an option for Joshua, not an accepted proposal. No new decision is needed merely to record these replies.
 
 ## 3. Scaling comparison (inference, caps only; no P&L)
 
@@ -131,14 +160,14 @@ A "slot" is one simultaneously held funded-stage (sim-funded or Master-level) ac
 | Futureify | 5 minus active evaluations |
 | **Four non-Tradeify firms** | **16** (MFFU at 3, Futureify at 5 funded) to **18** (MFFU at 5) |
 
-- **Tradeify-first** (ruling of 2026-10-30): book A gets **5** slots (8 with V2 300K). The other firms need a distinct book B, which gets 16–18 slots, if B exists.
-- **Other-firms-first:** book A gets **16–18** slots, provided cross-firm use is allowed at each of the four firms. That is the SILENT readings above, and Bulenox's approval clause. Tradeify gets book B, with 5 slots, and B must differ from A in logic, not only in sizing or weights (§2).
-- **With both books,** the total is the same, 21–23 slots. The ordering only decides which book gets the larger share: A gets 5 or 16–18. **With one book only,** the choice is 5 slots against 16–18.
+- **Tradeify-first** (ruling of 2026-10-30): book A's funded-stage cap is **5** slots (8 with V2 300K). A distinct book B has a hypothetical combined cap of 16–18 elsewhere, subject to each firm's permissions and book fit; existence of B alone is insufficient.
+- **Other-firms-first (comparison only, not selected):** book A gets **16–18** slots only if cross-firm use is allowed at all four firms. Futureify and BluSky now answer the independent-use question affirmatively; Bulenox and MFFU still prevent treating this full total as permitted capacity. Tradeify gets distinct book B under §2's guidance.
+- **With both books,** the conditional arithmetic ceiling is the same, 21–23 slots (excluding V2 300K extras). Ordering allocates the caps between books; it does not establish permission or feasibility. **With one book only,** 5 versus 16–18 is likewise a conditional cap comparison.
 - **Not counted here:** live-stage limits, which are small and discretionary everywhere (MFFU merges to one live account; BluSky 2 live, not concurrent with sim; Bulenox and Tradeify by review). Also not counted: eval throughput, fees, and whether one book even fits each firm's rules (flat-by times, products, drawdown type). These caps are an upper bound on parallel accounts, not a forecast.
 
 ## 4. Support questions for Joshua to send
 
-Agents never contact firms. Each question names no strategy, size, parameter or account. Status after the second pass: **open** (no public text answers it), **narrowed** (public text answers part; the question now asks only the rest) or **partly answered**. None has been sent from Joshua's mailbox (see How the pages were read).
+**Status updated 2026-11-05.** The mailbox contains questions sent at 01:18:52 (Tradeify), 01:20:04 (Futureify), 01:22:15 (BluSky) and 01:32:35 UTC (MFFU) on 11-05 (11-04 in the sent headers' UTC−08 offset). Only the subsets described below were sent. No new outreach is authorized or performed by this record update. Bulenox questions remain unverified as sent in the searched window.
 
 **Bulenox**
 1. *Open.* May I run my own user-built automated strategy on my Bulenox accounts while running the same strategy, independently and not copied, on accounts at another prop firm? Is there any exclusivity requirement?
@@ -149,41 +178,35 @@ Agents never contact firms. Each question names no strategy, size, parameter or 
 6. *New.* Your Connection page says "Bulenox accounts run on the Tradovate platform", but the Qualification page links every account to one Rithmic User ID. Which platforms does a new account get, and can one account use both?
 
 **MFFU**
-1. *Open.* May I run my own automated strategy on MFFU accounts while the same strategy runs independently at another prop firm? Is there any exclusivity requirement?
-2. *Open.* Do "hedging of any kind" and Terms §23.1.3.3 include opposing positions between an MFFU account and an account I hold at another prop firm or a personal brokerage account?
+1. *Sent; qualified AI answer (M-1105).* Own automation allowed and no exclusivity mentioned; the coordination prohibition leaves independent cross-firm use incompletely resolved.
+2. *Sent; AI answer affirmative on account-to-account reach (M-1105).* Same-underlying opposing positions prohibited. No human adjudication or clause-specific explanation.
 3. *Narrowed.* Your copy-trading article allows "External copy trading solutions", and Terms §23.1.3.3 bars copying across accounts "in a manner that provides an unfair advantage or manipulates simulated results". Is copying into MFFU from an account I own at another prop firm allowed, and what would make it an "unfair advantage"?
-4. *Open.* On which platforms may a fully automated strategy run in evaluation, sim-funded and live (for example a NinjaTrader strategy)? Are third-party APIs or bridges restricted, and are there fees? May I read the Simulated Trader Agreement before passing?
+4. *API/bridge and fee limb sent; incomplete AI answer (M-1105).* Documentation silence does not resolve permissions or fees. Stage/platform detail and access to the Simulated Trader Agreement were not asked in that email and remain open.
 
 **BluSky**
-1. *Open.* May I run my own automated strategy on BluSky accounts while the same strategy runs independently at another prop firm? Is there any exclusivity requirement?
+1. *Sent; affirmative support answer (B-1105)* for the same owned strategy running independently, without copying, at another prop firm. No broader waiver inferred.
 2. *Open.* Your Multiple Accounts page shows "Yes" under "Trade Copier Allowed", but the Ethical Trading & Conduct Policy forbids "Account Mirroring: Copying trades from another trader, account, or signal provider". Which governs? May I copy between my own BluSky accounts, or from an account I own at another firm?
-3. *Open, and now the first BluSky question.* No current BluSky page or term states that automated trading is permitted at all. Is fully automated strategy execution permitted in evaluation, Sim Funded and Live Brokerage? On which platforms, and does it need any review?
+3. *Stages/review sent; partly answered (B-1105).* Automation affirmed for evaluation, Sim Funded and Live Brokerage. Prior review not expressly answered; platforms were not in the sent question and remain unspecified.
 4. *Open.* Your hedging page bans opposing or "correlated" positions across accounts "with different prop firms". Which products count as correlated beyond the ES/NQ example (for example MNQ against MYM)? Does the ban apply when the two strategies are independent?
 
 **Futureify**
-1. *Open.* Independent run and copy-out. This is the existing **U4a** question, restated: may the same strategy run independently, not copied, at another prop firm while it trades at Futureify?
-2. *Open.* Does "Reverse Trading … on separate accounts" include accounts at other prop firms or brokers?
-3. *Partly answered.* The rename is visible on the site, and the Flex 150K figures are unchanged (§1.4). Ask only this: does the GTC dated September 10, 2026 now govern FXIFY Futures accounts bought before the rename?
+1. *Independent-run limb sent and answered yes (F-1105).* This advances **U4a** only for the owned strategy running independently, without copying trades, at another prop firm. Copy-out and personal-brokerage reuse were not asked and remain unanswered.
+2. *Sent and answered yes (F-1105).* External accounts in the trader's name are included in reverse trading.
+3. *Applicability still open.* The rename and Flex figures were read in §1.4. The sent email's subject mentions the September 10 GTC, but its body does not ask whether it governs pre-rename accounts; no answer discharges that question.
 
-## 5. What this implies for the register's §E row 1 (proposed, not edited)
+## 5. Register impact recorded 2026-11-05
 
-[Register §E row 1](2026-11-01-prop-firm-venue-fact-register-DRAFT.md#e-unverified-assumptions-ranked): "Other firms impose no Tradeify-style native-only or cross-firm exclusivity rule", C 3, L 2, K 1, score 6.
+[Register §E row 1](2026-11-01-prop-firm-venue-fact-register-DRAFT.md#e-unverified-assumptions-ranked) now points to §1.6 and the remaining questions in §4. Independent reuse is partly answered; native-only/API/bridge and stage-specific questions are separate. The earlier proposal to rescore the row was not adopted; the historical prioritization is not a new operator ruling.
 
-Proposed replacement for the "Moved since the study?" cell, and the cost-to-check:
-
-> **Partly answered (web, 2026-11-03, [this note](2026-11-03-cross-firm-exclusivity-and-account-caps-DRAFT.md)).** No Bulenox, MFFU, BluSky or Futureify page read states a cross-firm exclusivity or native-only rule. Futureify expressly allows copying in from the same owner's account at another prop firm. Bulenox, MFFU and BluSky are silent, and silence is not permission. New: Bulenox's ToS requires management approval of a "third-party algorithm" before use; BluSky's hedging ban reaches accounts "with different prop firms"; MFFU's Terms bar copying or hedging across accounts with no account-scope limit; and no current BluSky page states that automation is permitted. A second pass over every public help article and terms document of the four firms found nothing further. The first check is now the support questions in §4 of this note, so K becomes 2 (firm-side question), and the score becomes 3 × 2 ÷ 2 = 3.
-
-The register's owner decides. No quote here supports changing L.
-
-## 6. Flags for other owners (not acted on)
+## 6. Flags for other owners
 
 - **FXIFY row** (`core/firm_rules.py` `FXIFY_Futures_Flex_150K`; rule sheet): the site and product name changed to Futureify, and a new GTC (September 10, 2026, sha256 `2c7b3997…`) replaces the hashed Dec 2024 PDF. The Flex 150K figures read unchanged (§1.4). Re-verify under Rule 16 on Joshua's direction.
 - **Origin log D4b and the Tradeify book:** Tradeify's 10-08 and 10-12 replies (§1.5) bear on whether a re-sized or re-weighted portfolio counts as a distinct strategy (§2). The 10-12 reply is not yet in any owner record; the [10-10 note](2026-10-10-tradeify-exclusive-use-replies.md) holds the 10-08 one.
-- **Envelope §4 BluSky row:** the "Semi-automated and full automated" welcome was not re-found in any of BluSky's 73 articles, its FAQ or its Terms of Use; BluSky now has a dedicated cross-firm hedging page (17679634, 2026-10-20), and its copier table conflicts with the conduct policy.
+- **Envelope §4 BluSky row:** the earlier automation wording was not re-found on 11-03. B-1105 now supplies affirmative support evidence for the three asked stages; the overlay links that limited answer. The dedicated cross-firm hedging page and copier/conduct-policy conflict remain separate.
 - **Envelope §4a (hedging as candidate E8):** primary text now exists for MFFU, BluSky and Futureify hedging (§1). The ADR that graduation requires still needs Bulenox's answer (question 4).
 - **Register D11:** the Bulenox cap is now read verbatim on three pages (§1.1).
 
-## Self-review
+## 2026-11-03 self-review (historical)
 
 - Every quote is copied from page text fetched this session; no model summarised any. Dates are as the page shows them; Bulenox pages carry none.
 - Rule 13 and Rule 20: no account data, Pine, port, `effective_inputs.json` or research figure appears. The only dollar figure is Bulenox's published "$100 monthly fee", quoted.

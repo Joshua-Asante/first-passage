@@ -45,6 +45,12 @@ historical number by merge commit or branch name, never by number alone. Owner:
 ---
 
 
+## 2026-11-05a — prop-firm replies reconciled; expansion ruling preserved
+
+Read the original questions/replies and checked for newer mail. [Evidence owner](notes/2026-11-03-cross-firm-exclusivity-and-account-caps-DRAFT.md#16-support-replies-read-2026-11-05): Futureify/BluSky affirm independent reuse; Tradeify's different-instrument answer and MFFU's qualified answer are AI guidance. [Program impact](adr/2026-07-12-prop-portfolio-four-friendly-firms.md#evidence-note-2026-11-05--support-replies-and-expansion-order-no-new-ruling): stronger research basis for non-Tradeify reuse, no change to Joshua's expansion order or execution authority. K = 0; no outreach or spend. Independent review remains outstanding.
+
+---
+
 ## 2026-10-09a — size-feasibility FEASIBLE; tree step 2
 
 - **Focus:** return and route the size-feasibility check (session 2026-10-08a).
