@@ -411,3 +411,15 @@ Recorded 2026-10-30 from Joshua's Gmail by the coordinating Claude session, from
 - **Cross-firm use, ruled:** Joshua ruled on 2026-10-30 that the program scales first within Tradeify and that other firms get distinct strategies sourced through research. The canonical record is the four-firm program ADR addendum in PR #992.
 - Data-provider details are in the [vendor ticket log](../../notes/2026-10-01-feed-provider-questions-DRAFT.md#41-answer-table-replies-to-2026-10-10).
 - Nothing is enabled, sent or authorized by this addendum.
+
+## Addendum 2026-11-05 — different-instrument answer is AI guidance
+
+The [reply evidence owner, T-1105](../../notes/2026-11-03-cross-firm-exclusivity-and-account-caps-DRAFT.md#16-support-replies-read-2026-11-05)
+records the original question and Tradeify's 01:19:38 UTC reply: the same logic
+on different instruments is still the same strategy for cross-firm exclusivity.
+The answer is explicitly AI-authored; the 13:19:39 follow-up adds no policy
+answer. This is support interpretation, not human compliance adjudication or a
+named-candidate approval. Futureify/BluSky's affirmative answers do not waive
+Tradeify's restriction. The [program owner's evidence note](../../adr/2026-07-12-prop-portfolio-four-friendly-firms.md#evidence-note-2026-11-05--support-replies-and-expansion-order-no-new-ruling)
+preserves Joshua's Tradeify-first ruling. Native-route and source-review decisions
+above are unchanged.

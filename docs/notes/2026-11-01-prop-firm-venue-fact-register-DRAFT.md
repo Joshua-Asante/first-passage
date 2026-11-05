@@ -4,6 +4,8 @@
 **Date:** 2026-11-01 · **Author:** Claude Code (cloud) · **Repo base:** `main` at `2bc54b2`.
 **Budget (Rule 2):** one dig pass (repo sweep plus public firm pages) and one self-review; $0; K = 0. Stopped at the bound.
 
+**Support update 2026-11-05:** §E row 1 now links the [original reply evidence](2026-11-03-cross-firm-exclusivity-and-account-caps-DRAFT.md#16-support-replies-read-2026-11-05). The earlier web reads keep their dates and limits; this update does not re-verify unrelated venue facts or adopt the draft's proposed rescore.
+
 ## How to read this
 
 **Source labels**
@@ -114,11 +116,11 @@ Sweep commands used: `grep -rIn` for those literals over `core ops lab/discovery
 
 ## E. Unverified assumptions, ranked
 
-Score = cost-if-wrong × likelihood-wrong ÷ cost-to-check, each 1–3. Cost-to-check: 1 = read a page or a file; 2 = a re-run, an engine change, or an operator- or firm-side question; 3 = money or live trading. Ties are ordered by cost-if-wrong, then by relevance to the Tradeify-first ruling.
+Score = cost-if-wrong × likelihood-wrong ÷ cost-to-check, each 1–3. Cost-to-check: 1 = read a page or a file; 2 = a re-run, an engine change, or an operator- or firm-side question; 3 = money or live trading. Ties are ordered by cost-if-wrong, then by relevance to the Tradeify-first ruling. Scores/order retain the 11-01 prioritization; the dated status update below does not re-rank them.
 
 | Rank | Assumption | C | L | K | Score | First check | Moved since the study? |
 |---|---|---|---|---|---|---|---|
-| 1 | Other firms impose no Tradeify-style native-only or cross-firm exclusivity rule | 3 | 2 | 1 | 6 | Read Bulenox, MFFU, BluSky, FXIFY ToS bot and ownership clauses (MFFU 8444599 allows own automation; BluSky bans mirroring) | Unchanged |
+| 1 | Other firms impose no Tradeify-style native-only or cross-firm exclusivity rule | 3 | 2 | 1 | 6 | Read the [11-05 replies and remaining questions](2026-11-03-cross-firm-exclusivity-and-account-caps-DRAFT.md#4-support-questions-for-joshua-to-send) | **Partly answered (support, 11-05):** Futureify and BluSky affirm independent own-strategy use elsewhere; BluSky also affirms automation in evaluation, Sim Funded and Live Brokerage, with prior review/platforms unanswered. MFFU's AI answer remains qualified; Bulenox unanswered. Tradeify's AI answer rejects an instrument-only distinction for the same logic. No blanket native-route/API/bridge or cross-firm execution clearance follows |
 | 2 | Funded-stage and payout rules are known well enough to value a pass | 3 | 2 | 1 | 6 | Accept §I.3–I.4 and D10 into an owner record | **Partly answered** by §I.3–I.4 and D10 (web, unaccepted) |
 | 3 | The MFFU Rapid row's clock and consistency belong to one plan | 2 | 3 | 1 | 6 | Decide which MFFU page governs (A2.1); ask MFFU if needed | Sharpened: the firm's own pages conflict |
 | 4 | **Sim fills are at least as hard as backtest fills** (1 tick/side) | 3 | 3 | 2 | 4.5 | Attended demo fill study, under operator direction | **Raised:** MFFU states sim fills are favourable and slippage-free (D9). A backtest may be harsher than the eval sim, but such a pass won't carry to live, and exploiting it is barred |

@@ -462,6 +462,7 @@ Short names used in the entries:
 - Result: F-6(a) row updated; X-1 CP-3 carries operator's five-condition attestation (PR #542).
 - Unc.: May be operator-originated (class 3) or rejecting the agent's soft suggestion (class 2); neither established; possible duplicate of a venue entry.
 - Sources: docs/notes/2026-09-27-route-commissioning-session-packet.md:79; commit 69cf00b; commit 92cae00
+- **Later evidence, 2026-11-05 (no reclassification):** [T-1105](2026-11-03-cross-firm-exclusivity-and-account-caps-DRAFT.md#16-support-replies-read-2026-11-05) is an AI support interpretation rejecting different instruments as sufficient when logic is unchanged. D4b's historical attribution remains as recorded; current expansion direction is Joshua's [Tradeify-first ruling and its evidence update](../adr/2026-07-12-prop-portfolio-four-friendly-firms.md#evidence-note-2026-11-05--support-replies-and-expansion-order-no-new-ruling), not a new ruling inferred from this reply.
 
 **D4c** · 2026-09-29 · **class 1** — X-1: narrow A-11 exception (non-disableable firm risk liquidation as external actor, X-1 only); evening window withdrawn; CP-3 after R-1 on preservation trade.
 - Rec.: Codex-drafted X-1 packet §2 (narrow exception) and §6 item 4 (R-1 first), committed 4825831 at 16:25Z, before ruling record 107094a at 17:08Z.
