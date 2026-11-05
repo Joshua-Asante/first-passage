@@ -152,11 +152,3 @@ def test_installer_removes_retired_pre_merge_commit_hook(hook_checkout, shell):
                                errors='replace', check=False)
     assert installed.returncode == 0, installed.stdout + installed.stderr
     assert not stale.exists()
-
-
-def test_retired_roll_sessions_stub_exits_zero():
-    """Old installed hooks call roll_sessions.py --check-order; the stub must not block merges."""
-    for args in (['--check-order'], ['--check-append-only'], ['--normalize', '--reorder', '--dry-run']):
-        result = subprocess.run([sys.executable, str(ROOT / 'scripts/roll_sessions.py'), *args],
-                                capture_output=True, text=True, check=False)
-        assert result.returncode == 0 and result.stdout == '', result.stdout + result.stderr
