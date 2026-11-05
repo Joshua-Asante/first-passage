@@ -91,7 +91,7 @@ Joshua, 2026-11-04, verbatim: "go with your recommendations on both". He was ans
 **MGC: cgb ranks first; skipped in R2 by Joshua's decision.**
 - Neither MGC cell has a payer or a 1b-grade record, and no gold intraday cohort exists for either construct.
 - cgb ranks first on the drawdown-allowance wall (`MGC.md` W5): a stop at the opposite edge of a compression range is narrow by construction, while a PDH/PDL stop is about one prior-day range.
-- MGC has four looks, so a card here is cheapest in reach terms. But a cell that fails Req 1 is "not a seed" under harvest §1, so admitting it through the builder is Joshua's channel call.
+- MGC was listed with four looks, so a card here looked cheapest in reach terms. Corrected 2026-11-05: the builder ledger's MGC bank is 8 ([note §11](../../../notes/2026-11-01-generation-phase-strengthening-DRAFT.md#11-updates-2026-11-04)). But a cell that fails Req 1 is "not a seed" under harvest §1, so admitting it through the builder is Joshua's channel call.
 
 **6J: Tokyo fix, post-fix leg only.**
 - It is the only dossier with a named payer and a daily event whose cited cohort passes Req 4 after the haircut. That cohort is **spot USD/JPY**: KMW report futures only as a portfolio. It is admitted as a same-pair spot cohort under [harvest §4a](../../../methodology/strategy_harvest.md#4a-spot-cohorts-for-same-pair-cme-fx-futures-ruling-2026-11-04) (Joshua, 2026-11-04). The dossier shows the five §4a conditions; the M-16 slip read on the 6J future in the cell's hours is owed. Krohn–Mueller–Whelan Table I, JPY: post-Tokyo +7.94%/yr, t 8.22, over 5,264 days, gives δ/σ 0.113 before the haircut and 0.048 after it, so power is 0.63.

@@ -96,4 +96,4 @@ Engine check: the merged engine matches Part A's gates, split and book rules on 
 Binding: changing a criterion needs a new version, a new review and a new registration. A survivor goes to Joshua for the forward GO.
 ```
 
-Worked instance of Part B's table: [R1's registration](2026-11-01-builder-r1-mcl-orb-registration.md). Its re-registration is owed in this form as one MCL card (addendum 2026-11-04).
+Worked instance of Part B's table: [R1's registration](2026-11-01-builder-r1-mcl-orb-registration.md). Its one-card re-registration was withdrawn and MCL parked (addendum 2026-11-05).
