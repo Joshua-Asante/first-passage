@@ -560,7 +560,7 @@ A forward confirm buys nothing over the fixed holdout for the equity micros. It 
 - The seven 11-03 symbols sum to 2,016,728 bars, matching the operator's report.
 - **M6A landed from 2011 only, by operator ruling (2026-11-04).** The full 18-page set (377,701 bars, from 2009-03-23T19:00Z) failed first. The 2009 page (4,781 bars) and 2010 page (11,387 bars) are excluded and unregistered. Verbatim: `validate_bar_export_v2: page=1 row=4663 field=open: must be finite and positive`. 37 bars have O/H/L/C all `0.0000`, all in `…_2026-11-03 (1).csv`, from 2010-04-25 18:30 to 2010-04-26 15:15 New York. The 2009 page is clean but would sit alone before a year-long gap. The August pages start in 2022, so they cannot fill the window.
 - Mintick and pointvalue match CME for all nine symbols (read 2026-11-04). M6E, M6A, MES, MNQ, M2K and 6J are from CME pages. MYM, MGC and MCL are from search summaries of CME pages, because their spec tables did not render.
-- `SHA256SUMS`: +142 rows, −0. That is these 115 pages plus 27 pages exported 2026-11-01 (MZC, MZS, MZW, MHG, SIL, MNG), which were on disk and unregistered, and which this landing did not validate.
+- `SHA256SUMS`: +115 rows, −0: these validated pages only. The 27 unvalidated pages exported 2026-11-01 (MZC, MZS, MZW, MHG, SIL, MNG) are not registered (Joshua, 2026-11-05: "remove the 27 unvalidated rows"); their bytes stay outside the canonical tree until he approves them and their complete page sets pass validation.
 - The M15 panels were not refreshed. Closures and identity ledgers pin the current panel hashes, and the producer overwrites those bytes in place.
 
 **Calendar.**
