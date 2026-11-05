@@ -2,16 +2,20 @@
 """repo_hygiene.py — report-only git/worktree prune candidates (squash-aware).
 
 Surfaces what multi-hour hygiene sessions kept rediscovering:
-  - linked worktrees + orphan dirs under .claude/worktrees/
+  - linked worktrees, each clean / dirty / unknown, + orphan dirs under .claude/worktrees/
   - ignored, non-regenerable files inside each linked worktree (the ones
     `git worktree remove` deletes without asking — M-41)
-  - local branches whose PR already merged (incl. squash — git branch --merged misses these)
-  - local main lag vs origin/main
-  - optional remote topic-branch leftovers
+  - local branches already merged: ancestors of origin/main, or squash-merged
+    with the local tip equal to the merged PR's head
+  - local branches whose PR merged but whose tip differs (not candidates)
+  - primary checkout lag vs origin/main
 
 Never deletes. Print a machine-readable JSON report with --json, else a
 human table. Operator (or the repo-hygiene skill) confirms before any
 `git worktree remove` / `git branch -d` / `git push origin --delete`.
+
+Works from the primary checkout or any linked worktree. A worktree that cannot
+be scanned is `unknown`, never clean.
 
 Requires: git. Optional: gh (for squash-merge detection). Offline-safe:
 without gh, falls back to `git branch --merged origin/main` only and
@@ -28,7 +32,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-WORKTREE_PARENT = REPO_ROOT / ".claude" / "worktrees"
+GH_PR_LIMIT = 5000
 # Ignored entries a fresh setup regenerates; anything else ignored inside a linked
 # worktree may be the only copy of private evidence (M-41).
 REGENERABLE = {
@@ -44,6 +48,7 @@ class WorktreeRow:
     head: str
     is_primary: bool
     notes: str = ""
+    state: str = "not scanned"  # linked worktrees: clean, dirty or unknown
     private: list[str] = field(default_factory=list)
 
 
@@ -52,7 +57,7 @@ class BranchRow:
     name: str
     reason: str
     pr: str = ""
-    safe_delete_hint: str = "git branch -d <name>  # after operator confirm"
+    safe_delete_hint: str = ""
 
 
 @dataclass
@@ -65,6 +70,7 @@ class HygieneReport:
     worktrees: list[WorktreeRow] = field(default_factory=list)
     orphan_worktree_dirs: list[str] = field(default_factory=list)
     merged_local_branches: list[BranchRow] = field(default_factory=list)
+    diverged_merged_branches: list[BranchRow] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
     gh_available: bool = False
 
@@ -81,72 +87,72 @@ def _run(args: list[str], cwd: Path | None = None) -> subprocess.CompletedProces
     )
 
 
-def _git(*args: str) -> str:
-    proc = _run(["git", *args])
+def _git(*args: str, cwd: Path | None = None) -> str:
+    proc = _run(["git", *args], cwd=cwd)
     if proc.returncode != 0:
         return ""
     return (proc.stdout or "").strip()
 
 
 def _parse_worktrees() -> list[WorktreeRow]:
+    """`git worktree list` always names the primary checkout first."""
     raw = _git("worktree", "list", "--porcelain")
     rows: list[WorktreeRow] = []
-    path = branch = head = ""
     for line in (raw or "").splitlines():
         if line.startswith("worktree "):
-            if path:
-                rows.append(
-                    WorktreeRow(
-                        path=path,
-                        branch=branch or "(detached)",
-                        head=head,
-                        is_primary=os.path.normcase(path) == os.path.normcase(str(REPO_ROOT)),
-                    )
+            rows.append(
+                WorktreeRow(
+                    path=line[len("worktree ") :].strip(),
+                    branch="(detached)",
+                    head="",
+                    is_primary=not rows,
                 )
-            path = line[len("worktree ") :].strip()
-            branch = head = ""
-        elif line.startswith("HEAD "):
-            head = line[len("HEAD ") :].strip()[:12]
-        elif line.startswith("branch "):
-            ref = line[len("branch ") :].strip()
-            branch = ref.replace("refs/heads/", "")
-        elif line == "":
-            continue
-    if path:
-        rows.append(
-            WorktreeRow(
-                path=path,
-                branch=branch or "(detached)",
-                head=head,
-                is_primary=os.path.normcase(path) == os.path.normcase(str(REPO_ROOT)),
             )
-        )
+        elif line.startswith("HEAD ") and rows:
+            rows[-1].head = line[len("HEAD ") :].strip()[:12]
+        elif line.startswith("branch ") and rows:
+            rows[-1].branch = line[len("branch ") :].strip().replace("refs/heads/", "")
     return rows
 
 
-def _private_entries(path: str) -> list[str]:
-    """Ignored, non-regenerable entries in a worktree. `git worktree remove` refuses
-    untracked files but deletes ignored ones without asking."""
-    proc = _run(["git", "status", "--porcelain=v1", "--ignored", "-z"], cwd=Path(path))
+def _scan_worktree(path: str) -> tuple[str, list[str]]:
+    """Return (clean | dirty | unknown, ignored non-regenerable entries).
+
+    `git worktree remove` refuses untracked files but deletes ignored ones without
+    asking, so a failed scan is `unknown`, never an empty result."""
+    try:
+        proc = _run(["git", "status", "--porcelain=v1", "--ignored", "-z"], cwd=Path(path))
+    except OSError:
+        return "unknown", []
     if proc.returncode != 0:
-        return []
+        return "unknown", []
+    dirty = False
     entries = []
     for item in (proc.stdout or "").split("\0"):
+        if not item:
+            continue
         if not item.startswith("!! "):
+            dirty = True
             continue
         rel = item[3:]
         parts = [p for p in rel.rstrip("/").split("/") if p]
         if any(p in REGENERABLE or p.endswith((".egg-info", ".pyc")) for p in parts):
             continue
         entries.append(rel)
-    return sorted(entries)
+    return ("dirty" if dirty else "clean"), sorted(entries)
 
 
-def _private_warnings(worktrees: list[WorktreeRow]) -> list[str]:
-    """Fill each linked worktree's ignored entries; one warning per worktree holding any."""
+def _scan_warnings(worktrees: list[WorktreeRow]) -> list[str]:
+    """Scan each linked worktree; warn on any holding ignored entries or unscannable."""
     warnings = []
     for wt in worktrees:
-        wt.private = [] if wt.is_primary else _private_entries(wt.path)
+        if wt.is_primary:
+            continue
+        wt.state, wt.private = _scan_worktree(wt.path)
+        if wt.state == "unknown":
+            warnings.append(
+                f"Could not scan linked worktree {wt.path} — treat it as not removable."
+            )
         if wt.private:
             warnings.append(
                 f"Linked worktree {wt.path} holds {len(wt.private)} ignored "
@@ -157,23 +163,21 @@ def _private_warnings(worktrees: list[WorktreeRow]) -> list[str]:
     return warnings
 
 
+def _path_key(path: str | Path) -> str:
+    return os.path.normcase(str(Path(path).resolve()))
+
+
 def _orphan_dirs(registered: list[WorktreeRow]) -> list[str]:
-    if not WORKTREE_PARENT.is_dir():
+    if not registered:
         return []
-    registered_names = set()
-    for wt in registered:
-        p = Path(wt.path)
-        if p.parent == WORKTREE_PARENT or (
-            len(p.parts) >= 2 and p.parts[-2].lower() == "worktrees"
-        ):
-            registered_names.add(p.name.lower())
-    orphans: list[str] = []
-    for child in WORKTREE_PARENT.iterdir():
-        if not child.is_dir():
-            continue
-        if child.name.lower() not in registered_names:
-            orphans.append(str(child))
-    return orphans
+    parent = Path(registered[0].path) / ".claude" / "worktrees"
+    if not parent.is_dir():
+        return []
+    known = {_path_key(wt.path) for wt in registered}
+    return sorted(
+        str(child) for child in parent.iterdir()
+        if child.is_dir() and _path_key(child) not in known
+    )
 
 
 def _merged_via_git() -> list[BranchRow]:
@@ -192,52 +196,80 @@ def _merged_via_git() -> list[BranchRow]:
             BranchRow(
                 name=name,
                 reason="ancestor of origin/main (git branch --merged)",
+                safe_delete_hint=f"git branch -d {name}  # after operator confirm",
             )
         )
     return rows
 
 
-def _merged_via_gh() -> tuple[list[BranchRow], list[str]]:
-    """Return (rows, warnings). Uses gh to catch squash-merged topic branches."""
+def _merged_via_gh() -> tuple[list[BranchRow], list[BranchRow], list[str]]:
+    """Return (tip-matched rows, diverged rows, warnings) for squash-merged branches."""
     warnings: list[str] = []
-    proc = _run(["gh", "pr", "list", "--state", "merged", "--limit", "100",
-                 "--json", "number,headRefName,mergedAt,url"])
+    proc = _run(["gh", "pr", "list", "--state", "merged", "--limit", str(GH_PR_LIMIT),
+                 "--json", "number,headRefName,headRefOid,mergedAt,url"])
     if proc.returncode != 0:
         warnings.append(
             "gh pr list failed — squash-merge detection unavailable; "
             "relying on git branch --merged only."
         )
-        return [], warnings
+        return [], [], warnings
     try:
         prs = json.loads(proc.stdout or "[]")
     except json.JSONDecodeError:
         warnings.append("gh pr list returned non-JSON; squash detection skipped.")
-        return [], warnings
+        return [], [], warnings
+    if len(prs) >= GH_PR_LIMIT:
+        warnings.append(
+            f"gh pr list hit its {GH_PR_LIMIT} limit — older merged PRs were not checked."
+        )
 
-    local = _git("for-each-ref", "--format=%(refname:short)", "refs/heads/")
-    local_set = {b.strip() for b in (local or "").splitlines() if b.strip()}
-    rows: list[BranchRow] = []
+    local = _git("for-each-ref", "--format=%(refname:short) %(objectname)", "refs/heads/")
+    tips = dict(line.rsplit(" ", 1) for line in (local or "").splitlines() if " " in line)
+    by_branch: dict[str, list[dict]] = {}
     for pr in prs:
         name = (pr.get("headRefName") or "").strip()
-        if not name or name in ("main", "master") or name not in local_set:
-            continue
-        rows.append(
-            BranchRow(
+        if name in tips and name not in ("main", "master"):
+            by_branch.setdefault(name, []).append(pr)
+
+    rows: list[BranchRow] = []
+    diverged: list[BranchRow] = []
+    for name, branch_prs in by_branch.items():
+        match = next((p for p in branch_prs if p.get("headRefOid") == tips[name]), None)
+        pr = match or branch_prs[0]
+        label = f"#{pr.get('number')} {pr.get('url', '')}".strip()
+        if match:
+            rows.append(BranchRow(
                 name=name,
-                reason="PR merged (squash-aware via gh)",
-                pr=f"#{pr.get('number')} {pr.get('url', '')}".strip(),
-            )
-        )
-    return rows, warnings
+                reason="PR merged; local tip equals PR head (squash-aware via gh)",
+                pr=label,
+                safe_delete_hint=(
+                    f"git branch -D {name}  # only if the operator orders -D; "
+                    "`-d` refuses squash merges"
+                ),
+            ))
+        else:
+            diverged.append(BranchRow(
+                name=name,
+                reason="PR merged, but local tip differs from every merged PR head",
+                pr=label,
+            ))
+    return rows, diverged, warnings
 
 
 def build_report() -> HygieneReport:
     report = HygieneReport()
-    report.primary_branch = _git("rev-parse", "--abbrev-ref", "HEAD") or "(unknown)"
-    report.primary_head = (_git("rev-parse", "--short", "HEAD") or "")[:12]
+    report.worktrees = _parse_worktrees()
+    primary = report.worktrees[0] if report.worktrees else None
+    if primary is None:
+        report.warnings.append("`git worktree list` returned nothing — no worktree was checked.")
+    report.primary_branch = primary.branch if primary else "(unknown)"
+    report.primary_head = primary.head if primary else ""
     report.origin_main_head = (_git("rev-parse", "--short", "origin/main") or "")[:12]
 
-    behind_ahead = _git("rev-list", "--left-right", "--count", "HEAD...origin/main")
+    behind_ahead = _git(
+        "rev-list", "--left-right", "--count", "HEAD...origin/main",
+        cwd=Path(primary.path) if primary else None,
+    )
     if behind_ahead:
         parts = behind_ahead.split()
         if len(parts) == 2:
@@ -245,15 +277,13 @@ def build_report() -> HygieneReport:
             report.main_ahead = int(parts[0])
             report.main_behind = int(parts[1])
 
-    report.worktrees = _parse_worktrees()
-    for wt in report.worktrees:
-        if wt.is_primary and report.main_behind > 0 and wt.branch not in ("main", "master"):
-            wt.notes = (
-                f"primary not on main; HEAD behind origin/main by "
-                f"{report.main_behind} (check if topic already merged)"
-            )
+    if primary and report.main_behind > 0 and primary.branch not in ("main", "master"):
+        primary.notes = (
+            f"primary not on main; HEAD behind origin/main by "
+            f"{report.main_behind} (check if topic already merged)"
+        )
 
-    report.warnings.extend(_private_warnings(report.worktrees))
+    report.warnings.extend(_scan_warnings(report.worktrees))
     report.orphan_worktree_dirs = _orphan_dirs(report.worktrees)
 
     try:
@@ -262,14 +292,13 @@ def build_report() -> HygieneReport:
     except FileNotFoundError:
         report.gh_available = False
 
-    by_name: dict[str, BranchRow] = {}
-    for row in _merged_via_git():
-        by_name[row.name] = row
+    by_name = {row.name: row for row in _merged_via_git()}
+    diverged: list[BranchRow] = []
     if report.gh_available:
-        gh_rows, warns = _merged_via_gh()
+        gh_rows, diverged, warns = _merged_via_gh()
         report.warnings.extend(warns)
         for row in gh_rows:
-            by_name[row.name] = row  # gh reason wins (squash-aware)
+            by_name.setdefault(row.name, row)  # an ancestor proof beats a PR match
     else:
         report.warnings.append(
             "gh not on PATH — squash-merged branches may be invisible to "
@@ -280,6 +309,10 @@ def build_report() -> HygieneReport:
     checked_out = {wt.branch for wt in report.worktrees if wt.branch}
     report.merged_local_branches = sorted(
         (r for n, r in by_name.items() if n not in checked_out),
+        key=lambda r: r.name,
+    )
+    report.diverged_merged_branches = sorted(
+        (r for r in diverged if r.name not in checked_out and r.name not in by_name),
         key=lambda r: r.name,
     )
 
@@ -301,7 +334,7 @@ def _print_human(report: HygieneReport) -> None:
     for wt in report.worktrees:
         tag = "PRIMARY" if wt.is_primary else "linked"
         extra = f"  [{wt.notes}]" if wt.notes else ""
-        print(f"  [{tag}] {wt.branch} @ {wt.head}  ->  {wt.path}{extra}")
+        print(f"  [{tag}] {wt.branch} @ {wt.head} ({wt.state})  ->  {wt.path}{extra}")
         for entry in wt.private[:10]:
             print(f"      ignored: {entry}")
         if len(wt.private) > 10:
@@ -317,6 +350,12 @@ def _print_human(report: HygieneReport) -> None:
     for b in report.merged_local_branches:
         pr = f"  {b.pr}" if b.pr else ""
         print(f"  {b.name}  — {b.reason}{pr}")
+        print(f"      {b.safe_delete_hint}")
+    if report.diverged_merged_branches:
+        print()
+        print("PR merged but local tip differs (NOT candidates — review first):")
+        for b in report.diverged_merged_branches:
+            print(f"  {b.name}  — {b.pr}")
     if report.warnings:
         print()
         print("Warnings:")
@@ -324,7 +363,7 @@ def _print_human(report: HygieneReport) -> None:
             print(f"  - {w}")
     print()
     print("Next: confirm with operator, then delete one-by-one "
-          "(`git branch -d`, `git worktree remove`, never `git clean -fdX`).")
+          "(each row's hint, `git worktree remove`, never `git clean -fdX`).")
 
 
 def main() -> int:
