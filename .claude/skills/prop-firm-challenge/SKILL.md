@@ -1,6 +1,6 @@
 ---
 name: prop-firm-challenge
-description: Use this skill for firm/venue rules and portfolio Monte Carlo — the four-firm configs in core/firm_rules.py, the historical FXIFY fixture, trailing-DD/eval/consistency/inactivity rules, dd_protection mechanics, integer-contract sizing (MNQ/MYM/MGC), firm onboarding pre-flight, re-MC triggers, and portfolio_mc methodology. Triggers on firm-tier questions, drawdown/bust semantics, MC runs, or sizing math. Live execution, arming and order questions route to `c1-rail`; current eval and rail posture is owned by AGENTS.md §Live-execution posture; broker CSV parsing goes to `trade-csv-reconcile`; strategy code to `pinescript-v6`. Narrowed 2026-10-24 to firm rules and MC: legacy-book execution rules were retired.
+description: Use this skill for firm/venue rules and portfolio Monte Carlo — the four-firm configs in core/firm_rules.py, the historical FXIFY fixture, trailing-DD/eval/consistency/inactivity rules, dd_protection mechanics, integer-contract sizing (MNQ/MYM/MGC), firm onboarding pre-flight, re-MC triggers, and portfolio_mc methodology. Triggers on firm-tier questions, drawdown/bust semantics, MC runs, or sizing math. Live execution, arming and order questions follow the AGENTS.md money controls; broker CSV parsing goes to `trade-csv-reconcile`; strategy code to `pinescript-v6`. Narrowed 2026-10-24 to firm rules and MC: legacy-book execution rules were retired.
 ---
 
 # Prop Firm / Portfolio Operations
@@ -18,7 +18,7 @@ Rail and eval posture: [`AGENTS.md`](../../../AGENTS.md) money controls and [`ST
 - Cap allocation, flat deadline, hedging Product-Group, WATCH-1 / B7 inputs: [GO ADR](../../../docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) Addendum 2026-07-22; per-leg shares in `ops/c1_rail` constants; RESULTS under `lab/analysis/c1/`.
 - ⚠ Bust/DD figures are **EOD-clock lower bounds** pending the [W1 ADR](../../../docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md).
 - Self-funded lane [closed 2026-10-29](../../../docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md); manual CFD and FXIFY closed. FXIFY rules and the historical pin's `HISTORICAL_CHALLENGE_FIRM_KWARGS` live in [`core/historical_challenge.py`](../../../core/historical_challenge.py), not `FIRM_RULES` ([substrate ADR](../../../docs/adr/2026-07-22-challenge-era-substrate-retirement.md) §2-E).
-- Arming, fills, disarm: `c1-rail`, [`ARMING_PROCEDURE.md`](../../../docs/notes/rail_build/ARMING_PROCEDURE.md). Live sizing: `BASE_RISK × DD_SCALE × lifecycle`, integer-qty floored in `ops/c1_rail/c1_sizing_host_reference.py`.
+- Arming and live orders: AGENTS.md money controls (the c1 rail is retired). Live sizing: `BASE_RISK × DD_SCALE × lifecycle`, integer-qty floored in `ops/c1_rail/c1_sizing_host_reference.py`.
 - Broker CSV work: `trade-csv-reconcile`, kept separate from MC (live P&L looks back on broker exports; MC looks forward on TV backtest CSVs).
 
 ## Audit-first
@@ -113,9 +113,9 @@ The pin is FXIFY-shaped (static DD, one-shot eval): never apply it to trailing-D
 ## Core principles
 
 1. **Locked at the parameter axis.** Parameter/allocation changes require MC-validated re-locks. Capital authorization is a separate revocable axis: [`strategy_lifecycle.md`](../../../docs/methodology/strategy_lifecycle.md).
-2. **No overlays.** No regime or conflict overlays on physical facts; reintroducing one needs a fresh INQHIORI loop showing base logic is insufficient (record: tag `pre-prune-2026-06-05`).
+2. **No overlays.** No regime or conflict overlays on physical facts; reintroducing one needs fresh evidence that base logic is insufficient (record: tag `pre-prune-2026-06-05`).
 3. **Do not quote challenge-era pass/bust rates as live probabilities.** The pin is regression-only until a successor self-funded risk Pre-Q lands.
 
 ## Related skills
 
-`pinescript-v6` (strategy code); `trade-csv-reconcile` (CSV metrics feed the MC); `strategy-validation` (robustness gates); `handoff-verify` (handoffs touching ops posture).
+`pinescript-v6` (strategy code); `trade-csv-reconcile` (CSV metrics feed the MC); `strategy-validation` (robustness gates).
