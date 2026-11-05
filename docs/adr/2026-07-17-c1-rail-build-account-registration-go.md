@@ -497,7 +497,7 @@ Joshua accepted the recommendations put to him in the session owning the decommi
 **Stage 2, in order (all operator acts).**
 
 1. Run `fly volumes list` on both apps; check billing and any external monitor still pointing at them. *Volume list done 2026-11-05 (operator ran it, agent read the output): each app still holds one unattached 1 GB volume, `c1_rail_data` and `c1_signal_daemon_data`. Billing and monitors stay open.*
-2. Destroy no volume until the operator confirms the private session captures are complete ([ARMING_PROCEDURE](../notes/rail_build/ARMING_PROCEDURE.md) step 5.19), or names what may go unpreserved. The exporter's three files alone are not a complete record. Machines are gone, so a new export needs a temporary machine, and that needs its own ruling under Effect 1.
+2. Destroy no volume until the operator confirms the private session captures are complete ([ARMING_PROCEDURE](../notes/rail_build/ARMING_PROCEDURE.md) step 5.19), or names what may go unpreserved. The exporter's three files alone are not a complete record. Machines are gone, so a new export needs a temporary machine, and that needs its own ruling under Effect 1. *Ruled 2026-11-05 ("Export them first"): a file-name search found no copy of the raw volume files, so the operator exports both volumes once before destruction, on a plain temporary machine with no rail image and no secrets, removed afterwards. Effect 1 allows that machine, and nothing else.*
 3. Rollback closes at the review around November 17. Both apps are destroyed then, once items 1 and 2 clear.
 
 **Stage 3.**
