@@ -2,7 +2,7 @@
 
 **Symbol:** COMEX Micro Gold futures (MGC; Globex, Databento `GLBX.MDP3`) · **Parent family:** GC (un-ledgered as futures parent; CFD sibling [`XAUUSD.md`](XAUUSD.md) is a different venue) · **Asset class:** metals futures
 **Status:** **RE-ENTERED — K-void cleared; class-attested; not elected.** Research/discovery only. Third-leg `E-K` elimination voided by [K-bank ADR](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md); DISC-CAMP-0 family history is **disclosure / Req-3 bank fact**, not inherited elimination. No live leg, no allocation, no K spend. ⚠ **`Tradeify_Select_100K` CLOSED** (operator-ratified 2026-08-25 — granularity wall, see W5/G5); scoped to that firm-tier only, does not touch MGC's general research status.
-**Last updated:** 2026-08-25
+**Last updated:** 2026-11-05
 
 **Purpose:** single source of instrument-level truth (operational rule 10, [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](../../docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md)). Created **2026-08-09** as the live touching session for [`instrument-lane SPEC`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-09-instrument-lane-mcl-mes-mgc-spec.md) — ADR [`2026-07-25`](../../docs/adr/2026-07-25-instrument-profile-index.md) §5. Thin ledger.
 
@@ -104,6 +104,8 @@ structure:
 
 ## SESSION LOG
 
+- **2026-11-05** — **Builder bank correction.** The private ledger holds eight MGC cards (run `mgc-orb-w1`, 2026-11-02), so the public "four looks" is not available as stated ([note §11](../../docs/notes/2026-11-01-generation-phase-strengthening-DRAFT.md#11-updates-2026-11-04)). Not ruled. Results not read. No K added.
+- **2026-11-04** — **TV export landed.** `MGC1!` BAR EXPORT v0.2 at 15m: 17 pages, 358,488 unique bars, 2010-10-04T10:00Z → 2026-11-02T21:45Z, `validate_bar_export_v2.py` PASS ([PR #1077](https://github.com/Joshua-Asante/first-passage/pull/1077), [landing record](../../docs/notes/2026-11-01-generation-phase-strengthening-DRAFT.md#11-updates-2026-11-04)). Limitation: the M15 panels were not refreshed, so this coverage exists in the exports only. No K.
 - **2026-08-25** — **`Tradeify_Select_100K` CLOSED (operator-ratified) — granularity wall, not
   a mechanism kill.** Downloads-lane survey (6 families / ~46 disclosed cells, all NULL;
   least-bad construct — session-open-sign continuation, long arm — FALSIFIED out-of-sample, IS

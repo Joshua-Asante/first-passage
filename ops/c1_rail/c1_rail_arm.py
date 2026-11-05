@@ -47,8 +47,8 @@ DEFAULT_CONFIG_PATH = "/data/c1_rail_config.json"
 
 # The M1 acceptance artifact was baked into the historical Fly image, so
 # `_REPO_ROOT` resolved it both in the repo and in-container at /app.
-# The image build chain was retired on 2026-11-03. Keep this path for retained
-# tooling and historical images; it does not authorize a new deployment.
+# The image build chain is retired and no host remains. This path stays only
+# until the rail code leaves; it does not authorize a new deployment.
 # Baking the status tied the gate to the deployed acceptance record rather
 # than a mutable volume file that could satisfy its own gate by being edited.
 DEFAULT_ACCEPTANCE_PATH = _REPO_ROOT / "docs" / "notes" / "rail_build" / \

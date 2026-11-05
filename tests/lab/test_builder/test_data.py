@@ -239,15 +239,38 @@ def test_I_S1_pinned_split_refuses_non_session_ends_and_empty_sides(dev_end, hol
 CAL = Path(__file__).resolve().parents[3] / "ops" / "calendars" / "cme_holiday_calendar_2022_2026.json"
 
 
-def test_admitted_calendar_loads_every_entry_date_whatever_its_status():
+# The admitted file's 20 all-NORMAL (informational) rows; option B (Joshua 2026-11-03) trades them.
+ALL_NORMAL = ("2022-09-19", "2023-04-06", "2023-10-09", "2023-11-10", "2024-03-28", "2024-10-14", "2024-11-11",
+              "2024-11-27", "2024-12-26", "2024-12-31", "2025-01-10", "2025-04-17", "2025-06-20", "2025-10-13",
+              "2025-11-11", "2025-12-26", "2025-12-31", "2026-04-02", "2026-07-02", "2026-12-31")
+GROUPS = ("equity_index", "metals", "fx")
+
+
+def test_admitted_calendar_closes_only_non_normal_entry_dates():
     cal = data.load_calendar(CAL, data.file_sha256(CAL))
     raw = json.loads(CAL.read_text(encoding="utf-8"))
-    assert cal.closed == {e["date"] for e in raw["entries"]} and len(cal.closed) == len(raw["entries"])
+    normal = {e["date"] for e in raw["entries"] if all(e[f"{g}_status"] == "NORMAL" for g in GROUPS)}
+    assert normal == set(ALL_NORMAL)
+    assert cal.closed == {e["date"] for e in raw["entries"]} - normal and len(cal.closed) == len(raw["entries"]) - 20
     assert {"2023-01-02", "2023-01-16", "2023-11-24"} <= cal.closed  # FULL_CLOSURE and EARLY_CLOSE rows
+    assert {"2023-04-07", "2025-01-09"} <= cal.closed  # rows NORMAL in one group only stay closed
     assert (cal.start, cal.end) == ("2022-01-01", "2026-12-31")
     cal.check_covers(["2022-01-03", "2026-12-31"], "MCL")
     with pytest.raises(data.DataError, match="outside the calendar coverage"):
         cal.check_covers(["2021-12-31"], "MCL")
+
+
+def test_all_normal_dates_are_evaluated_sessions_and_non_normal_dates_are_skipped():
+    from builder import cards, compile as C
+    from tests.lab.test_builder.builder_inputs import CARD, panel
+    cal = data.load_calendar(CAL, data.file_sha256(CAL))
+    bars, dates = panel(1044)  # weekdays 2023-01-02..2026-12-31: 19 of the 20 all-NORMAL dates
+    skipped: dict = {}
+    traded = {d.date for d in C.days(cards.parse(CARD), bars, dates, skipped, cal.closed)}
+    inside = [d for d in ALL_NORMAL if d in dates]
+    assert len(inside) == 19 and set(inside) <= traded
+    assert skipped["calendar_exception"] == len(cal.closed & set(dates)) > 0
+    assert not (cal.closed & traded)
 
 
 @pytest.mark.parametrize("mutate,msg", [
@@ -257,6 +280,9 @@ def test_admitted_calendar_loads_every_entry_date_whatever_its_status():
     (lambda d: d["entries"][0].pop("date"), "entries"),
     (lambda d: d.update(entries=[]), "entries"),
     (lambda d: d["entries"][0].update(date="2030-01-01"), "outside the coverage"),
+    (lambda d: [d["entries"][0].pop(f"{g}_status") for g in GROUPS], "no \\*_status"),
+    (lambda d: d["entries"][0].update(fx_status="HALF_DAY"), "has status"),
+    (lambda d: d["entries"][0].update(metals_status=None), "has status"),
 ])
 def test_calendar_is_strict(tmp_path, mutate, msg):
     d = json.loads(CAL.read_text(encoding="utf-8"))

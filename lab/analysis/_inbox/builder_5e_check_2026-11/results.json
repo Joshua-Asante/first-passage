@@ -1,0 +1,193 @@
+{
+ "meta": {
+  "engine_sha256": "10f0eb19f302533ffc3ad56f8e06f76734d011ab4a851488e767b41bd4cfa363",
+  "seeds": {
+   "calibration": 20261108,
+   "verification": 20261109,
+   "paths": 20261110,
+   "aux": 20261111,
+   "placebo": 20261030
+  },
+  "placebo_runs": 1000,
+  "threshold": 0.95,
+  "n_dev": 1000,
+  "paths": 400,
+  "seconds": 334.6
+ },
+ "calibration": {
+  "grid": {
+   "0.0": {
+    "sessions": 100000,
+    "net_annual_sharpe": 0.3523445239504974,
+    "net_se": 0.05020578386319438,
+    "gross_annual_sharpe": 1.0010078378304101,
+    "gross_se": 0.050249478439651385
+   },
+   "0.25": {
+    "sessions": 100000,
+    "net_annual_sharpe": 1.570267395197606,
+    "net_se": 0.05032224854338391,
+    "gross_annual_sharpe": 2.178954861641896,
+    "gross_se": 0.05043549564984332
+   },
+   "0.5": {
+    "sessions": 100000,
+    "net_annual_sharpe": 2.7229397256796406,
+    "net_se": 0.05056749948087627,
+    "gross_annual_sharpe": 3.299220289006174,
+    "gross_se": 0.05073878469747723
+   },
+   "0.75": {
+    "sessions": 100000,
+    "net_annual_sharpe": 3.881711748865023,
+    "net_se": 0.050944464179205805,
+    "gross_annual_sharpe": 4.427459230757995,
+    "gross_se": 0.05116651225362269
+   },
+   "1.0": {
+    "sessions": 100000,
+    "net_annual_sharpe": 4.996559018337874,
+    "net_se": 0.0514278913637208,
+    "gross_annual_sharpe": 5.514985389496654,
+    "gross_se": 0.05169212047528915
+   },
+   "1.5": {
+    "sessions": 100000,
+    "net_annual_sharpe": 6.930156295630819,
+    "net_se": 0.05253699012514285,
+    "gross_annual_sharpe": 7.4070851063762255,
+    "gross_se": 0.052861371046024744
+   },
+   "2.0": {
+    "sessions": 100000,
+    "net_annual_sharpe": 8.848604479024473,
+    "net_se": 0.05395821537199928,
+    "gross_annual_sharpe": 9.29082136660797,
+    "gross_se": 0.054328600279512966
+   },
+   "3.0": {
+    "sessions": 100000,
+    "net_annual_sharpe": 12.332550228543449,
+    "net_se": 0.05727529114459162,
+    "gross_annual_sharpe": 12.72042566954055,
+    "gross_se": 0.057697886842340514
+   }
+  },
+  "chosen_drift": 0.2355763864739532,
+  "verification": {
+   "sessions": 100000,
+   "net_annual_sharpe": 1.4826710184970608,
+   "net_se": 0.05030896109785468,
+   "gross_annual_sharpe": 2.094403795405269,
+   "gross_se": 0.05041758261054412
+  },
+  "v2_zero_drift_gross_ok": false,
+  "v3_target_ok": true
+ },
+ "cells": [
+  {
+   "cell": 0,
+   "label": "zero_drift",
+   "drift": 0.0,
+   "paths": 400,
+   "unresolved": 0,
+   "v1_all_equal": true,
+   "mean_trades": 995.93,
+   "mean_net_annual_sharpe": 0.415984337606144,
+   "realised": {
+    "pass": 3,
+    "pass_rate": 0.0075,
+    "wilson95": [
+     0.00255388917540412,
+     0.021815720890284482
+    ],
+    "mean_share": 0.21066749999999998,
+    "quantiles_10_50_90": [
+     0.004,
+     0.1155,
+     0.5831
+    ]
+   },
+   "causal": {
+    "pass": 372,
+    "pass_rate": 0.93,
+    "wilson95": [
+     0.9006910533061235,
+     0.9511283734385546
+    ],
+    "mean_share": 0.984065,
+    "quantiles_10_50_90": [
+     0.96,
+     0.998,
+     1.0
+    ]
+   },
+   "coin": {
+    "pass": 289,
+    "pass_rate": 0.7225,
+    "wilson95": [
+     0.6766612649590905,
+     0.7641057639960046
+    ],
+    "mean_share": 0.9439974999999998,
+    "quantiles_10_50_90": [
+     0.8465,
+     0.986,
+     1.0
+    ]
+   }
+  },
+  {
+   "cell": 1,
+   "label": "S1.5",
+   "drift": 0.2355763864739532,
+   "paths": 400,
+   "unresolved": 0,
+   "v1_all_equal": true,
+   "mean_trades": 995.86,
+   "mean_net_annual_sharpe": 1.5323350160458427,
+   "realised": {
+    "pass": 3,
+    "pass_rate": 0.0075,
+    "wilson95": [
+     0.00255388917540412,
+     0.021815720890284482
+    ],
+    "mean_share": 0.2832325,
+    "quantiles_10_50_90": [
+     0.016900000000000005,
+     0.2095,
+     0.6982000000000003
+    ]
+   },
+   "causal": {
+    "pass": 396,
+    "pass_rate": 0.99,
+    "wilson95": [
+     0.9745734351746728,
+     0.9961045162320533
+    ],
+    "mean_share": 0.997035,
+    "quantiles_10_50_90": [
+     0.994,
+     1.0,
+     1.0
+    ]
+   },
+   "coin": {
+    "pass": 399,
+    "pass_rate": 0.9975,
+    "wilson95": [
+     0.9859767147714087,
+     0.9995585522180739
+    ],
+    "mean_share": 0.9992300000000001,
+    "quantiles_10_50_90": [
+     0.999,
+     1.0,
+     1.0
+    ]
+   }
+  }
+ ]
+}

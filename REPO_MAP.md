@@ -42,7 +42,7 @@ Heading kept for existing references; the table shows current ownership, not `gi
 | `lab/analysis/` | Campaign harnesses and evidence at `<theme>/<slug>/` | [lab catalog](lab/CATALOG.md), In flight first |
 | `lab/research_utils/` | Shared research primitives | [research utilities](lab/research_utils/README.md) |
 | `lab/discovery/` | Search contracts and scoring | [discovery](lab/discovery/README.md) |
-| `lab/builder/` | Strategy builder v1: card ledger, ORB blocks and compiler, gates 5a–5g | [builder](lab/builder/README.md) |
+| `lab/builder/` | Strategy builder v1: card ledger, ORB blocks and compiler, gates 5a–5f, 5g placement after a holdout pass | [builder](lab/builder/README.md) |
 | `ops/c1_rail/` | Listener, sizing, payload, telemetry, arm/disarm interfaces; Track B book owner/protection/halt/settlement (`book_*`, `account_close_*`); offline `qualification/` package with its separately installed `execution/` service | [rail README](ops/c1_rail/README.md), `qualification_cli.py` |
 | `ops/c1_signal_daemon/` | Python signal-host package | [daemon README](ops/c1_signal_daemon/README.md) |
 | `ops/instruments/`, `ops/venue_editions/`, `ops/calendars/` | Instrument evidence, venue binding, calendar records | [ops README](ops/README.md) |
@@ -84,7 +84,7 @@ reads this table. Regenerate with
 `python scripts/check_repo_map_scripts_table.py --write`; `--check` exits 1 on drift.
 
 <!-- BEGIN generated: scripts-table -->
-_91 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
+_90 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 
 † = layer fallback (not in `scripts_layer`); Gate — = no `gates.yml` command runs the file and no module-run gate triggers on it (it may still run inside another gate's script).
 
@@ -170,7 +170,6 @@ _91 tracked `scripts/*.py` files (`git ls-files 'scripts/*.py'`)._
 | `scripts/record_verification.py` | governance† | — | — |
 | `scripts/repo_hygiene.py` | governance† | — | — |
 | `scripts/repo_retrieve.py` | governance† | — | — |
-| `scripts/retire_adr.py` | governance† | — | — |
 | `scripts/roll_sessions.py` | governance† | `sessions-order` (path-conditional); `sessions-append-only` (path-conditional) | — |
 | `scripts/seal_account_snapshot.py` | governance† | — | — |
 | `scripts/session_divergence_hook.py` | governance† | — | — |

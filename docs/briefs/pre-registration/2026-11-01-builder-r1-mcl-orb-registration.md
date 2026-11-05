@@ -2,6 +2,12 @@
 
 **Status:** `REGISTERED 2026-11-01`. Rule 23 requires this before any R1 card produces a result.
 
+**Status note 2026-11-08.** Ruled by Joshua 2026-11-03 (pre-sitting); recorded effective 2026-11-08. R1 is **not run as pinned**; its re-registration on the current engine is owed, with K recorded in a `register_search` manifest in `discovery_manifests/`, the [candidate contract's](../../adr/2026-08-30-candidate-contract.md#contract-fields-and-freezes) sole machine K ledger. Reason: engine `a0d33b6` predates the current required run-schema keys (`lab/builder/run.py:41,93-95`) and the causal-exit fix (`dfe8900`).
+
+**Addendum 2026-11-04.** Joshua agreed that the owed re-registration is re-scoped to **one MCL card**. At K = 8 on MCL its 5f floor is not reachable under D7: floor 1.59 vs the 0.89 bar, with D9's fixed ~18-month holdout. At K = 1 it is reachable (0.84). The card is chosen from the registered eight by stated rationale before any result, never by outcome. Analysis: [generation note §9.2, §11](../../notes/2026-11-01-generation-phase-strengthening-DRAFT.md#11-updates-2026-11-04). The re-registration's draft is [2026-11-04-builder-r1-mcl-one-card-reregistration-DRAFT.md](2026-11-04-builder-r1-mcl-one-card-reregistration-DRAFT.md).
+
+**Addendum 2026-11-05: R1 ran; MCL parked.** Public text saying R1 never ran, or that MCL's builder bank is 0, was wrong. The private builder ledger holds all eight MCL cards (run `mcl-orb-r1`, 2026-11-01), reports exist, and an unseal report is dated 2026-11-02. Joshua states he had not read the results before the 2026-11-04 re-scope. MCL's bank is therefore 8, so a further card is K ≥ 8: floor about 1.59, not reachable under D7. Joshua, 2026-11-05, verbatim: "Park MCL". The one-card re-registration is withdrawn, and MCL waits for prospectively registered forward evidence. Whether the 11-01 run is valid evidence is not adjudicated here; an invalid run would still count toward K. Results stay unread by this correction.
+
 | Item | Value |
 |---|---|
 | Pre-registration | Builder R1 draft v3 (private): `local_artifacts/strategy-builder-2026-10/prereg-r1/PREREG-BUILDER-R1-DRAFT-v3.md`, sha256 `f82abc1c539a7321adf457098e7380c93a460df4ad2121245d8c14748cf56e8a` |

@@ -1,0 +1,91 @@
+{
+  "status": "completed",
+  "base_revision": "dba5b9424a74f77c9897192f5cd4ebc6280c8e4a",
+  "branch": "codex/m6e-fixed-exploration",
+  "python": "3.13.2",
+  "command": "fp.ps1 python lab/analysis/fx/m6e_european_breakout_2026_11/experiment.py --registration lab/analysis/fx/m6e_european_breakout_2026_11/registration.json --data-root <primary-checkout>/core/data/tv_exports/cme --output <primary-checkout>/tmp/m6e_fixed_20261104_run1",
+  "exit_code": 0,
+  "source_and_inputs_stable": true,
+  "all_18_registered_hashes_reverified": true,
+  "scored_years": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "fixed_expression_looks": 1,
+  "source_sha256": {
+    "lab/analysis/fx/m6e_european_breakout_2026_11/experiment.py": "a9074b2da968cff5b2abc78cefa14cf210794b1292c565a1b42fe7d00b7b897e",
+    "lab/analysis/fx/m6e_european_breakout_2026_11/test_experiment.py": "2849ac2da6a9afd8d1ac98e3bec4de5cdb2fd1c5960c44f9b4e22f8fea1bb028",
+    "docs/superpowers/plans/2026-11-04-m6e-fixed-exploration.md": "5d462903d6b1466d3fcd4bf535b2b8882f3e38a95fc7eeddeae3564279b15beb"
+  },
+  "decoder_sha256": "dc3189ac4b0e544f3326aa391f7fa077c4867eab3059ef7822d30eacc569069e",
+  "summary_sha256": "d16519bc7ead3155faadfc3fd8d186f3437b13d7f1cfd5e10b3fb0ca0222aac2",
+  "pytest_record": ".cache/fp-verification/20261105T025656Z-64b549016fc9/record.json",
+  "pytest_record_sha256": "9d9abe47f84ecd683c58dd979930b55b7264457ce21879c44837ca47ed4dce99",
+  "pytest_status": "completed",
+  "pytest_exit_code": 0,
+  "synthetic_tests_passed": 14,
+  "reconciliations": [
+    "per-trade arithmetic",
+    "direction sums",
+    "year sums",
+    "cost total",
+    "sample fence",
+    "source freeze",
+    "all data hashes"
+  ],
+  "private_outputs": "<primary-checkout>/tmp/m6e_fixed_20261104_run1/ (daily_private.json, run_record.json)",
+  "primary_manifest_baseline": "97 unrelated EXTRA CSVs remain; no M6E mismatch; no unrelated manifest repair",
+  "execution_input_registration_sha256": "558cf63b09577acef2fdffe0b388f954d23cca6376cd4debe09dcfee46029b46",
+  "execution_summary_sha256": "db0669ffca6eace3c2270fda00f266ff38b44574d90d9ab4aa0aacb541fabad7",
+  "published_input_registration_sha256": "fb8e1c7c035245c40cb98657783acf93c7acd37904f07ba974dc2fa8ffc9c7db",
+  "serialization": "Registration and full summary were LF-normalized after execution; parsed content matched original CRLF execution copies. Execution hashes and full-summary hash retained separately. Public summary is now a count-only extract and differs intentionally.",
+  "catalog_verification": {
+    "record": ".cache/fp-verification/20261105T032638Z-91d62b9dec9c/record.json",
+    "status": "completed",
+    "exit_code": 0,
+    "tests_passed": 100,
+    "source_stable": true
+  },
+  "full_summary_sha256": "d6867faf32dc7f8c78dc07b8c21bb6b6948e7f1dd1df7d9511cd6cec7125844b",
+  "private_full_report": "local_artifacts/m6e-fixed-20261104/RESULTS.md",
+  "private_full_report_sha256": "3fe0fc989633c86ce26f1445019c4b94edb0b1ae78d932a86e3d7516ec538525",
+  "private_full_summary": "local_artifacts/m6e-fixed-20261104/summary.json",
+  "publication": "Count-only public extract under current AGENTS.md derived-output rule; original full report and summary preserved privately. No rerun or change to outcomes.",
+  "independent_review": {
+    "reviewer": "Claude",
+    "date": "2026-11-05",
+    "reviewed_commit": "3b236bbbc34254cd0b7ebfcb91f39a7f6b30a91f",
+    "verdict": "clean; no blocking findings",
+    "scope": "code and supplied aggregate evidence only; no raw-data reproduction or reviewer test execution",
+    "private_summary": "local_artifacts/m6e-fixed-20261104/review/claude-review-R1-summary.txt",
+    "private_summary_sha256": "b8cb7e1a694f020b63344961a26b4cc39be35f791064c7d33b1903cd01e1bb53"
+  },
+  "followup_provenance": {
+    "path": "local_artifacts/m6e-fixed-20261104/review/provenance-check-20261105.json",
+    "sha256": "c5d7b974e8a924d061d830cd22c69d80d5dc1d6a799c118b9e52317e12c8e0dc",
+    "scored_hashes_match": true,
+    "reserved_files_reopened": false,
+    "parsed_registration_equal": true,
+    "parsed_full_summaries_equal": true,
+    "decoder_matches_base": true
+  },
+  "integration_verification": {
+    "record": ".cache/fp-verification/20261105T054532Z-8dcb1cfe6d58/record.json",
+    "record_sha256": "01c5423cc7456245182ca4d3624c1b3348172d29c9c06bb746c1f3dd2c4238fa",
+    "status": "completed",
+    "exit_code": 0,
+    "verification_exit_code": 0,
+    "tests_passed": 114,
+    "source_stable": true,
+    "failed_sandbox_attempt": ".cache/fp-verification/20261105T054349Z-4c303e0783f4/record.json",
+    "failure_reason": "Windows temporary-directory access denied before test execution; same launcher/check rerun outside sandbox succeeded",
+    "canonical_manifest": "Exact origin/main manifest retained; all 18 M6E input registrations present; duplicate merge additions removed"
+  }
+}

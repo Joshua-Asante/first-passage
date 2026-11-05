@@ -274,27 +274,6 @@ def score_book_from_paths(
     )
 
 
-def q_txg1_striker_mnq_inputs_present() -> tuple[bool, list[str]]:
-    """Return (ok, missing) for the committed Q-TXG-1 striker×MNQ scoring inputs."""
-    from research_utils.repo_root import repo_root
-
-    cell = (
-        repo_root()
-        / "lab"
-        / "analysis"
-        / "c1"
-        / "transfer_expression_grid_2026-08"
-        / "cells"
-        / "striker_mnq"
-    )
-    missing: list[str] = []
-    for name in ("daily_pnl_nsurv.csv", "PANEL_SCORE.json"):
-        path = cell / name
-        if not path.is_file():
-            missing.append(str(path))
-    return (len(missing) == 0, missing)
-
-
 def _parse_leg_args(raw: list[str]) -> dict[str, Path]:
     """Parse ``NAME=PATH`` leg specs."""
     out: dict[str, Path] = {}

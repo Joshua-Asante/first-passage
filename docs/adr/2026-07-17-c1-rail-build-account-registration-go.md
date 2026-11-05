@@ -479,3 +479,52 @@ Refundable deposits and minimum balances **stay under the cap**, as clarified ab
 - The [M1 acceptance](../notes/rail_build/M1_MONITORING_ACCEPTANCE.json) and its validator stay as evidence and gates until Stage 3 decides them. M1 acceptance never transfers to another instance.
 - The spend ceiling and its exemptions stay as recorded.
 - The lane closure is in the [self-funded lane ADR](2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed), and the single program is in the [four-firm program ADR](2026-07-12-prop-portfolio-four-friendly-firms.md#addendum-2026-10-29--one-program-the-multi-firm-operation-accepted).
+
+### Stage 1 record — 2026-11-03
+
+The operator ran the commands from their own Fly login. The agent supplied the commands and read the output, and held no Fly credential. This is the operator-session record; the later reconciliation did not independently query Fly. It supersedes the earlier local session's authentication blocker as the latest reported host status, while preserving that earlier failed attempt as history.
+
+- **Disarmed before stop.** `c1-signal-daemon` health (14:47Z): `emit_enabled:false`, `effective_emit:false`, `connected:false`, `ceremony_state:DISABLED`, `strategy:NullStrategy`. `c1-rail`: the volume config `/data/c1_rail_config.json` printed `dry_run=True`, `armed_until=None` (only those two keys were read). `fly logs --no-tail` returned nothing, so no boot line was available.
+- **Stopped.** `fly scale count 0` on both apps reported one machine **destroyed** for each, not stopped. `fly machine list` then printed "No machines are available" for both. At 14:55Z both `https://<app>.fly.dev/` probes timed out (HTTP 000).
+- **Kept for rollback.** Both apps still exist. Rollback now means a redeploy, not a machine start. Remaining resources and billing are unverified; `fly volumes list` on both apps is still owed, but a volume inventory alone cannot establish total charges because other resources and usage can incur charges. The approximately two-week rollback window starts with the reported November 3 shutdown (14:55 UTC endpoint probes), for review around November 17. Stage 2 (destroy apps, volumes included) is still a separate operator decision.
+
+### Stage 2 and Stage 3 rulings — 2026-11-05
+
+Joshua accepted the recommendations put to him in the session owning the decommission ("Accept revised"). A read-only Codex review shaped them; that review is not a ruling. Evidence base: `main` at `535494e`, static scans, no tests run.
+
+**Assessment.** The repository holds no consumer of either host: no `fly.dev` URL in code, no Fly secret in a workflow, no enabled scheduled task. External monitors, private inputs and the eval build were not visible to it, so the operator check below covers them.
+
+**Stage 2, in order (all operator acts).**
+
+1. Run `fly volumes list` on both apps; check billing and any external monitor still pointing at them. *Volume list done 2026-11-05 (operator ran it, agent read the output): each app still holds one unattached 1 GB volume, `c1_rail_data` and `c1_signal_daemon_data`. Billing and monitors stay open.*
+2. Destroy no volume until the operator confirms the private session captures are complete ([ARMING_PROCEDURE](../notes/rail_build/ARMING_PROCEDURE.md) step 5.19), or names what may go unpreserved. The exporter's three files alone are not a complete record. Machines are gone, so a new export needs a temporary machine, and that needs its own ruling under Effect 1. *Ruled 2026-11-05 ("Export them first"): a file-name search found no copy of the raw volume files, so the operator exports both volumes once before destruction, on a plain temporary machine with no rail image and no secrets, removed afterwards. Effect 1 allows that machine, and nothing else.* *Done 2026-11-05 (operator ran it, agent read the output): each volume's whole `/data` was archived and hash-matched on both ends, in the primary checkout's ignored `local_artifacts/c1-volume-export-2026-11/`: `c1-rail-data.tgz` (38 files, SHA-256 `85305b27f4ef82f4efa472ce779bc5b243ebb553ff0f307774148d6ce9c714cf`) and `c1-signal-daemon-data.tgz` (10 files, SHA-256 `ba8a64df4abff28ca72be45a5e557f700a690ff6a48f67c6d0691f4ed3866a13`). The rail volume's host was full, so that export read a temporary fork, destroyed afterwards with both temporary machines. This clears item 2. Those archives are the only copy found, on one machine.*
+3. Rollback closes at the review around November 17. Both apps are destroyed then, once items 1 and 2 clear. *Done early; see the [Stage 2 record](#stage-2-record--2026-11-05).*
+
+**Stage 3.**
+
+4. Stage 3 follows Stage 2. Order: S3-1 CI and S3-3a qualification (both landed), S3-2 rail, daemon and deployment files, then S3-4 `book_policy`.
+5. Effective once Stage 2 is done, `deploy/**`, `LIVE_FLY_APPS` and `rail.deploy` may be removed. The Dockerfiles leave through #1026; `fly.toml`, `LIVE_FLY_APPS` and `rail.deploy` leave together in the last S3-2 PR, with the surface-allocation ADR change under that ADR's own GO and quiet window.
+6. #1026 holds until Stage 2, because it deletes what a rollback redeploy builds from. It is then refreshed and reviewed at its new head.
+7. Provisional keep set, 19 modules plus package initializers:
+   - `ops/c1_rail`: `book_policy` (until S3-4), `book_session_calendar`, `book_sizing_context`, `c1_sizing_host_reference`, `contract_roll`, `ed25519_verify`, `m1_stage1_contract`, `policy_fingerprint`, `qualification/{contract,policy,policy_sources,trust_domain}`.
+   - `ops/c1_signal_daemon`: `book_adapters`, `book_parity`, `book_protocol`, `feed`, `fidelity_emulator`, `pine_ta`, `tv_broker_emulator`.
+
+   The other 78 Python files are removal candidates. Each PR's executed scan confirms this boundary and gives every outside consumer a disposition. `c1_sizing_host_reference` stays until the native reference is shown.
+8. M1: the acceptance JSON stays as frozen evidence. The validator and `c1_rail_arm` leave with the rail. This decides the M1 item left to Stage 3.
+9. The qualification tests that no CI job runs are accepted as dormant; S3-2 names the tests it runs explicitly.
+10. Before S3-4: `dd_geometry` stays until a destination for `book_policy` and `book_protocol.Mode` is ruled, from S3-2's consumer table. `BOOK_POLICY_SHA` is not re-pinned; replay needs commit-pinned bytes.
+
+### Stage 2 record — 2026-11-05
+
+The operator ran `fly apps destroy` on `c1-rail` and `c1-signal-daemon` from the operator's own Fly login, after the export in item 2; each printed "Destroyed app", and the agent read that output. The operator ruled the same day: "if we're not using them we can destroy the apps now". That closes rollback about 12 days ahead of item 3's review. Destruction cannot be undone, so a route now needs a fresh build decision (Effect 4).
+
+- **Billing.** Fly's monthly emails from August to November each show a bill under its minimum, discounted 100%: nothing paid. Any bill for November's final usage has not arrived. The [subscription ledger](../pursuits/SUBSCRIPTION_LEDGER.md) owns the figures.
+- **Monitors.** The operator reports having checked and named none. The agent could not see them.
+- **Arming rules.** With no host left, the "until Stage 2" hold on them has ended. Stage 3 removes their code.
+- **Stage 3.** Item 5's condition is met. Item 6's hold on #1026 is released.
+
+## Addendum 2026-11-08 — the $700 spend ceiling is re-homed to the retained account's owner record
+
+Ruled by Joshua 2026-11-03 (pre-sitting, in the Claude session preparing the 11-08 sitting); recorded effective 2026-11-08.
+
+The $700 spend ceiling (§2) survives c1's retirement. It is re-homed to the retained Tradeify account's owner record (private owner record; confirm locally).

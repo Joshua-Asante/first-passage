@@ -59,7 +59,7 @@ Before substantial work name the question and the decision it changes (pre-Q gat
 
 #### Rule 10 — Live-execution gates
 
-Confirm host state first; arming an instance needs its own M1 RESOLVED; live spend needs M1 plus a per-session operator GO inside the signed ceiling; disarm before `armed_until`; orders, exits and cancels require operator direction for the act, except the weekly account-preservation trade covered by the standing, revocable GO, whose supported-platform, authenticated-surface and disarmed-rail conditions remain binding; deploys and host access are operator acts; no discretionary manual strategy execution; venue compliance terms (Tradeify eval: native logic only) bind every deployment. *Owner:* [AGENTS.md §Live-execution posture](../AGENTS.md); `c1-rail` skill; rail-GO, M1 and deployment-checklist records.
+Confirm host state first; arming an instance needs its own M1 RESOLVED; live spend needs M1 plus a per-session operator GO inside the signed ceiling (Tradeify eval M1: checklist 2026-11-05); disarm before `armed_until`; orders, exits and cancels require operator direction for the act, except the weekly account-preservation trade covered by the standing, revocable GO, whose supported-platform, authenticated-surface and disarmed-rail conditions remain binding; deploys and host access are operator acts; no discretionary manual strategy execution; venue compliance terms (Tradeify eval: native logic only) bind every deployment. *Owner:* [AGENTS.md posture](../AGENTS.md); `c1-rail` skill; rail-GO, M1 and checklist records.
 
 #### Rule 11 — Rail operating invariants
 
@@ -907,11 +907,9 @@ second caveat: the max need not belong to the day being explained.
 
 ## 15. Always-on hosting is not the desktop (console-only desktops)
 
-**Always-on processes** (c1 listener, future signal daemon, any process that must
-survive a laptop lid-close) run on an **always-on host** (Fly.io today for the
-c1 rail — see `deploy/c1_rail/`). The operator desktop is **console-only** for
-those processes: SSH/`fly ssh`, status reads, attended arm/disarm commands —
-not the runtime host.
+**Always-on processes** (any that must survive a laptop lid-close) run on an
+**always-on host**; the operator desktop is **console-only** for them, not the
+runtime host. c1's Fly apps are [retired](adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-10-29--c1-retired-as-an-execution-route-staged-decommission).
 
 **Scope:** always-on / unattended-capable services. Does **not** ban
 route-LOCAL interactive agent work (parallel worker packets, one-shot analysis)
@@ -994,13 +992,13 @@ Edits to existing rules must be logged with a dated entry explaining what change
 
 ### Edit log
 
+- **2026-11-05** — Rule 10: Tradeify-eval M1 exception (checklist 2026-11-05).
 - **2026-10-28** — Rules 0, 2, 3 and 7 amended (operator rulings, [surface-allocation ADR Addendum 2026-10-28](adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-28--operator-rulings-executive-folded-into-the-coordinator-consistency-only-delegation)): Rule 0 holds review rounds until load-bearing external facts are observed or named; Rule 2 counts review rounds as iterations; Rule 3 adds scope cuts, new assumptions or weakened guarantees, evidence-claim changes and account permissions to the operator's decisions; Rule 7 counts one issue as one failure family, names the escalation lane as a fresh coordinator session and adds the review-stop decision. Evidence: M-50.
 - **2026-10-25** — §Core rules — full statements added (consolidation ruling D1; AGENTS.md §Core rules indexes it). Rules 6 and 7 carry the same-day clean-fourth-review amendment (surface-allocation ADR Addendum 2026-10-24b A) and Rule 13 names the VM policy as an owner; otherwise the statements are the [plan](superpowers/plans/2026-10-25-rule-consolidation-step-1.md) §3 wording.
 - **2026-10-25** — Living citations repointed from bare "Rule N" to `operational_rules §N`; legacy citation map added (consolidation ruling D2, [plan](superpowers/plans/2026-10-25-rule-consolidation-step-1.md) §4). No rule text changed.
 - **2026-10-24** — Rule 10 Phase-0 cost-geometry pre-gate made report-only (operator ruling, option (b)): the 0.05R PASS/FAIL ceiling and the blocking FAIL removed; `cost_R`, band and sub-ATR flag still recorded. Replaces the same-day pending-decision banner. [`ADR`](adr/2026-06-22-cost-geometry-pregate.md)
 - **2026-10-15** — Rule 9 rewritten from "sync Pine into the worktree" to "read Pine
-  in place by the primary checkout's absolute path"; the copy tool is retired because
-  its remedy copied the book's Pine, which campaign §60 rule 1 forbids.
+  in place by the primary checkout's absolute path"; copy tool retired.
 
 - **2026-09-08** — Clarified decision ownership: specifications, campaigns, plans
   and PRs can own decisions; a distinct ADR must meet the admission rule. Neither

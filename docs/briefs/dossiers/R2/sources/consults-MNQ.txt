@@ -1,0 +1,43 @@
+===== overnight-drift-inventory-reversal
+FATAL: unknown mechanism 'overnight-drift-inventory-reversal'. Declare it NEW in MECHANISMS.md.
+exit=2
+===== event-window-reversal
+=== MNQ x event-window-reversal ===
+ledger: ops/instruments/MNQ.md
+verdict: untested — no prior on this cell.
+class finding (mechanism-wide, not specific to MNQ): The settlement limb does not reproduce at useful magnitude — MYM's third-Friday derivative-settlement reversal cleared exact-coverage sourcing (84/87, 96.6% PASS) but both power legs sit below the 0.2139 floor and the tradable limb is negative in 2024–2026. [MYM.md M5](MYM.md)
+class finding (mechanism-wide, not specific to MNQ): *Auction limb (2026-07-27) — dies at the PROCUREMENT GATE, not on edge, on ANY instrument.* Closing-auction/MOC-imbalance is reject-at-bar for an instrument-independent reason, hence recorded as a class finding rather than a cell. It is **not** killed by the free-data classification (the signal is exchange-licensed, unlike LETF EOD rebalance whose signal is public-AUM-derivable) nor by the a4 category prior (a published **signed** imbalance is not participant-category splitting) — those non-kills are stated so a future session does not borrow the wrong one. What binds: free-data route 1 requires **demonstrating** a vol-orthogonal, within-era-robust edge (F1 had no δ at all — unclaimed, not cleared); the order-flow modality is parenthesised to the standing *"don't buy explanatory data before a survivor justifies it"* rule (Avenue-A qualifying triple unmet; *scoped-not-procured*); and harvest Req 2 independently renders it UNSCREENABLE with the δ-extraction probe route **circular** (it needs the gated data). Cheapest re-open is free: a published cohort δ for imbalance → index-futures response, citable without procurement. [F1 ruling](../../docs/briefs/programs/2026-07-27-f1-moc-imbalance-mym-ruling.md)
+BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
+cost hurdle: 3.01 bp/session (4x modern-era MNQ hurdle (D5-RECOST-1)) — VERIFY at #N6
+K bank: read ../../discovery_manifests/ — never trust a snapshot.
+prior: ORB-MNQ-1's fills are known-good - the cost fragility is a commission sensitivity, not a fill-mechanics defect (median intrabar penetration 81 ticks entries / 64 ticks stops, 0.7% shallow-touch, zero non-traded levels). [#N2]
+prior: Both exit-redesign directions are pre-killed by an order-free counterfactual: tighter stops lose 0.03-0.06R (winners need the full-range stop) and no fixed profit target beats baseline - the 0.50R median close give-back is real but unharvestable. [#N3]
+exit=1
+===== overnight-range-transmission
+=== MNQ x overnight-range-transmission ===
+ledger: ops/instruments/MNQ.md
+verdict: AMBIGUOUS-PARKED (2026-08-30)
+  source: ../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md
+  BLOCKING — a parked concept holds this cell and shares the instrument's anti-SNAG budget; address it (and any decision date) in the pre-registration.
+class finding (mechanism-wide, not specific to MNQ): (D5 stage-1 $0 cheap falsifier, MNQ, OFFICIAL): overnight range clears D5's un-pause condition (2) decisively — incremental lift over matched day-history conditioning +57.7pp / +38.7pp across both day-history strata (block-bootstrap p<0.00025, n=1487 scored days). Gap magnitude also clears it on its own (+17.0pp / +15.5pp vs day-history, p≈0.00225) but a same-session joint check (holding overnight-range state fixed) found gap's own increment is **conditional and sign-unstable**: +10.5pp when overnight range is itself NOT elevated (bootstrap p=0.0078 / null-calibrated p=0.00871) but −8.1pp (not significant, bootstrap p=0.998 / null-calibrated p=0.997 for the positive direction) when overnight range is already elevated — gap does not add information once overnight range is known to be hot. Recalibration does not overturn the nested-gap finding. Parent-Q convention: overnight range is the primary falsifiable claim; gap magnitude is a forked, nested sub-question scoped to the overnight-calm regime only, not a co-equal claim. Stage 2 (joint-surrogation null design solving D5's O1 item, adversarial review, operator GO) is **owed, not yet run, on either instrument** — this class finding is a stage-1 result only, not a certified verdict under the corrected battery. [MNQ.md](MNQ.md) · [`Q-RANGEXFER-1`](../../docs/briefs/Q-RANGEXFER-1-overnight-range-gap-magnitude-transfer.md) · [`joint gate script`](../../lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/candidate24_joint_gate.py)
+class finding (mechanism-wide, not specific to MNQ): (D5 stage-1 $0 cheap falsifier, MYM, amended in 2026-08-30 under this same Q-brief — see below): overnight range's own min-stratified lift +21.9pp (block-bootstrap p=0.00025, n=1,307 scored days across two day-history strata), gap magnitude's own +5.9pp pooled (AMBIGUOUS, p=0.1247) — same qualitative relationship to its own sibling as MNQ's pair. Joint gate (`c24_joint_gate.py`, direct port of MNQ's script) replicates the nested structure: gap lift +8.5pp (calm, null-calibrated p=0.020) / −7.2pp (hot, p=0.888) vs. this heading's own MNQ +10.5pp/−8.1pp — same sign, same relative ordering, 10.6%-44.8% smaller in magnitude (not a uniform ratio). Scored independently of MNQ's own verdict (Q-RANGEXFER-1 §6); stage 2 equally owed and not yet run. [MYM.md](MYM.md) · [`N-2026-08-29-mym-overnight-gap-joint-gate.md`](../../docs/notes/notice/N-2026-08-29-mym-overnight-gap-joint-gate.md)
+BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
+cost hurdle: 3.01 bp/session (4x modern-era MNQ hurdle (D5-RECOST-1)) — VERIFY at #N6
+K bank: read ../../discovery_manifests/ — never trust a snapshot.
+prior: ORB-MNQ-1's fills are known-good - the cost fragility is a commission sensitivity, not a fill-mechanics defect (median intrabar penetration 81 ticks entries / 64 ticks stops, 0.7% shallow-touch, zero non-traded levels). [#N2]
+prior: Both exit-redesign directions are pre-killed by an order-free counterfactual: tighter stops lose 0.03-0.06R (winners need the full-range stop) and no fixed profit target beats baseline - the 0.50R median close give-back is real but unharvestable. [#N3]
+exit=1
+===== expiry-atm-strike-pinning
+FATAL: unknown mechanism 'expiry-atm-strike-pinning'. Nearest: 'expiry-oi-strike-convergence'. Declare it NEW in MECHANISMS.md.
+exit=2
+===== expiry-oi-strike-convergence
+=== MNQ x expiry-oi-strike-convergence ===
+ledger: ops/instruments/MNQ.md
+verdict: untested — no prior on this cell.
+class finding (mechanism-wide, not specific to MNQ): G0 frozen on operator B4 GO 2026-08-21; Explore-confirm (charter step 5a) **deferred by explicit operator override** at freeze (no Databento/market-data access in the sourcing session's environment) rather than scored — Pine authored CC-solo directly off the frozen construct, with the operator's own TV backtest as the first empirical evidence instead of a pre-Pine Explore score. This is a disclosed deviation from the charter's default step ordering, not a silent skip. [`STAGE1`](../../lab/analysis/c1/msl_s4_mgc_2026-08/STAGE1.md) · [`PREREG_G0`](../../lab/analysis/c1/msl_s4_mgc_2026-08/PREREG_G0.md) · [`RUNBOOK`](../../lab/analysis/c1/msl_s4_mgc_2026-08/RUNBOOK.md).
+BINDING BAR: index-intraday-ohlcv-directional-timing-2026-07-21 -> ../../docs/rejected_candidates.md
+cost hurdle: 3.01 bp/session (4x modern-era MNQ hurdle (D5-RECOST-1)) — VERIFY at #N6
+K bank: read ../../discovery_manifests/ — never trust a snapshot.
+prior: ORB-MNQ-1's fills are known-good - the cost fragility is a commission sensitivity, not a fill-mechanics defect (median intrabar penetration 81 ticks entries / 64 ticks stops, 0.7% shallow-touch, zero non-traded levels). [#N2]
+prior: Both exit-redesign directions are pre-killed by an order-free counterfactual: tighter stops lose 0.03-0.06R (winners need the full-range stop) and no fixed profit target beats baseline - the 0.50R median close give-back is real but unharvestable. [#N3]
+exit=1

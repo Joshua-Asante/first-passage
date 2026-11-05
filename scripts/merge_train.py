@@ -33,6 +33,11 @@ every PR, and exits by itself after ``--max-seconds`` (default 1680, under a 30-
 Monitor limit). A GitHub review still "running" at the head after ``--stall-minutes``
 (default 30) is flagged STALLED, the cue for the Codex CLI fallback. Requires ``gh``.
 
+A description line that starts "Merge on or after <YYYY-MM-DD>" (or "Merge ... on <date>")
+is a date gate: the PR HOLDs until that date in ET. ET is UTC-4 or UTC-5, so the gate
+opens at 05:00 UTC on that date, never early. Joshua, 2026-11-03, after #1030, #1031
+and #1034 merged five days before their stated date.
+
 Where GitHub GraphQL is refused (Claude Code cloud sessions), the PR, its checks, the open
 PR list and review threads are read over REST instead. The card's edit history has no REST
 form, so there the reviews are listed from the connector's receipts and every PR HOLDs for a
@@ -61,6 +66,9 @@ _STATE_RE = re.compile(r"codex-review-state:v1 (\{.*?\}) -->")
 _RECEIPT_RE = re.compile(r"Reviewed commit:\*\*\s*`([0-9a-f]{7,40})`")
 _RUNNING_SINCE_RE = re.compile(r'Running\*\*\s+since\s+<relative-time datetime="([^"]+)"')
 _CLI_RE = re.compile(r"\A\s*codex-cli-review:v1 ([0-9a-f]{40}) (clean|findings)\b")
+_DATE_GATE_RE = re.compile(
+    r"^[\s>*_#-]*merge\b[^\n]*?\bon\s+(?:or\s+after\s+)?(\d{4}-\d{2}-\d{2})",
+    re.IGNORECASE | re.MULTILINE)
 _GRAPHQL_REFUSED = "GraphQL is not available"   # the cloud proxy's 403 text
 _THREADS_QUERY = (
     "query($o:String!,$n:String!,$p:Int!,$c:String){repository(owner:$o,name:$n)"
@@ -120,6 +128,7 @@ class PrGate:
     reviews: list[Review] = field(default_factory=list)   # every completed review, oldest first
     history_problems: list[str] = field(default_factory=list)   # why the count can't be trusted
     unresolved_threads: int = 0
+    not_before: str = ""   # YYYY-MM-DD (ET) from a "Merge on or after" line; "" for none
     verdict: str = ""      # READY | WAIT | HOLD | MERGED | CLOSED
     reasons: list[str] = field(default_factory=list)
     merge_command: str = ""
@@ -212,7 +221,21 @@ def is_stalled(state: CodexState, head: str, now: datetime, minutes: int) -> boo
     return (now - since).total_seconds() >= minutes * 60
 
 
-def decide(g: PrGate) -> PrGate:
+def date_gate(body: str) -> str:
+    """The latest "Merge on or after <date>" date in a PR description, or ""."""
+    return max(_DATE_GATE_RE.findall(body or ""), default="")
+
+
+def date_gate_open(not_before: str, now: datetime) -> bool:
+    """True once ``not_before`` has begun in ET, taken as 05:00 UTC so it never opens early."""
+    try:
+        opens = datetime.fromisoformat(not_before).replace(hour=5, tzinfo=timezone.utc)
+    except ValueError:      # an impossible date such as 2026-13-01 never opens: fail closed
+        return False
+    return now >= opens
+
+
+def decide(g: PrGate, now: datetime | None = None) -> PrGate:
     """Apply the merge rule; fill verdict, reasons and the literal merge command."""
     if g.state != "OPEN":
         g.verdict, g.reasons, g.merge_command = g.state, [], ""
@@ -220,6 +243,8 @@ def decide(g: PrGate) -> PrGate:
     hold, wait = [], []
     if g.draft:
         hold.append("draft")
+    if g.not_before and not date_gate_open(g.not_before, now or datetime.now(timezone.utc)):
+        hold.append(f"description says merge on or after {g.not_before} ET: hold until then")
     if g.base != "main":
         hold.append(f"base is {g.base}, not main: retarget it first")
     if g.failing_checks:
@@ -295,7 +320,7 @@ def _pr_view_rest(number: int, repo: str, run: Runner) -> dict:
     return {
         "number": pr["number"], "title": pr.get("title", ""),
         "state": "MERGED" if pr.get("merged") else (pr.get("state") or "open").upper(),
-        "isDraft": pr.get("draft"), "baseRefName": pr["base"]["ref"], "headRefOid": head,
+        "isDraft": pr.get("draft"), "body": pr.get("body") or "", "baseRefName": pr["base"]["ref"], "headRefOid": head,
         "mergeStateStatus": (pr.get("mergeable_state") or "").upper(), "statusCheckRollup": rollup,
     }
 
@@ -417,11 +442,12 @@ def codex_history(comments: list[dict], pr_reviews: list[dict], owner: str,
     return state, reviews, list(dict.fromkeys(problems))
 
 
-def fetch_gate(number: int, repo: str, run: Runner = gh_runner) -> PrGate:
+def fetch_gate(number: int, repo: str, run: Runner = gh_runner,
+               now: datetime | None = None) -> PrGate:
     try:
         pr = json.loads(run([
             "pr", "view", str(number), "--repo", repo, "--json",
-            "number,title,state,isDraft,baseRefName,headRefOid,mergeStateStatus,statusCheckRollup",
+            "number,title,state,isDraft,body,baseRefName,headRefOid,mergeStateStatus,statusCheckRollup",
         ]))
     except RuntimeError as exc:
         if not _graphql_refused(exc):
@@ -441,7 +467,8 @@ def fetch_gate(number: int, repo: str, run: Runner = gh_runner) -> PrGate:
         head=head, draft=bool(pr.get("isDraft")), merge_state=pr.get("mergeStateStatus") or "",
         pending_checks=pending, failing_checks=failing, codex=state, reviews=reviews,
         history_problems=problems, unresolved_threads=_unresolved_threads(number, repo, run),
-    ))
+        not_before=date_gate(pr.get("body") or ""),
+    ), now)
 
 
 def _codex_label(g: PrGate) -> str:

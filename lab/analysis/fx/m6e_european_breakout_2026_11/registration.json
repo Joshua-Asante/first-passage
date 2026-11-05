@@ -1,0 +1,258 @@
+{
+  "run_id": "m6e_european_breakout_fixed_20261104",
+  "instrument": "M6E",
+  "K": 1,
+  "created_at_utc": "2026-11-05T02:53:09.114472+00:00",
+  "operator_authorization_date": "2026-11-04",
+  "authority": "Direct operator instruction: fixed exploratory test, register data, preserve R2 sample, cost 6.60, no optimization.",
+  "sample_start": "2016-01-04",
+  "sample_end": "2024-12-31",
+  "round_trip_cost": 6.6,
+  "timezone": "Europe/London",
+  "bar_minutes": 15,
+  "reference": "07:00-08:00",
+  "signal_closes": [
+    "08:15",
+    "08:30",
+    "08:45",
+    "09:00"
+  ],
+  "exit": "10:00 open",
+  "r2_reservation_source_revision": "dba5b9424a74f77c9897192f5cd4ebc6280c8e4a",
+  "r2_reservation": "D9 final approximately 378 sessions; all 2025-2026 excluded from returns, a conservative buffer; no R2 date-pinned M6E card found.",
+  "uncertainty": {
+    "block_days": 20,
+    "replicates": 10000,
+    "seed": 20261104,
+    "interval": 0.95
+  },
+  "all_registered_files": [
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (1).csv",
+      "sha256": "9d40e7bf75eac12aa4a8a43b07192ea5421ac7ef80355fa646b8dd2eda1560d9",
+      "first_utc": "2009-03-23T19:00:00+00:00",
+      "last_utc": "2009-12-31T20:15:00+00:00",
+      "unique_timestamps": 13363,
+      "year": 2009
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (10).csv",
+      "sha256": "c6dda36eabe049a0a94c209a9c3a8367bbaf8056a22334f39baef009fb5bedf6",
+      "first_utc": "2018-01-01T23:00:00+00:00",
+      "last_utc": "2018-12-31T21:45:00+00:00",
+      "unique_timestamps": 23597,
+      "year": 2018
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (11).csv",
+      "sha256": "582f8876f898717ea42e321f22080f35b6e09553af58320b53078a7f9ea4541d",
+      "first_utc": "2019-01-01T23:00:00+00:00",
+      "last_utc": "2019-12-31T21:45:00+00:00",
+      "unique_timestamps": 23567,
+      "year": 2019
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (12).csv",
+      "sha256": "1cf44e8cf73da0f96b765267ec5a2334cbd27d5e91c4580dd0f1b8f221a45524",
+      "first_utc": "2020-01-01T23:00:00+00:00",
+      "last_utc": "2020-12-31T21:45:00+00:00",
+      "unique_timestamps": 23700,
+      "year": 2020
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (13).csv",
+      "sha256": "1993444d9f8bc5622f37585f34997f2554b97db02a0f5e8e73391bb58ef8fb24",
+      "first_utc": "2021-01-03T23:00:00+00:00",
+      "last_utc": "2021-12-31T21:45:00+00:00",
+      "unique_timestamps": 23689,
+      "year": 2021
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (14).csv",
+      "sha256": "0772d6177debaa1e7d3239f994ea4fc4b2401165ed4d37c1a5ede4286c7b5743",
+      "first_utc": "2022-01-02T23:00:00+00:00",
+      "last_utc": "2022-12-30T21:45:00+00:00",
+      "unique_timestamps": 23719,
+      "year": 2022
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (15).csv",
+      "sha256": "903a64bd867d26db6bf95e6ed155c50bfec757de1288f4be14c1281dd143a184",
+      "first_utc": "2023-01-02T23:00:00+00:00",
+      "last_utc": "2023-12-29T21:45:00+00:00",
+      "unique_timestamps": 23698,
+      "year": 2023
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (16).csv",
+      "sha256": "928ae63132badba00aaca26de2fd7633657575be8e53ece2d4b933c51616895b",
+      "first_utc": "2024-01-01T23:00:00+00:00",
+      "last_utc": "2024-12-31T21:45:00+00:00",
+      "unique_timestamps": 23688,
+      "year": 2024
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (17).csv",
+      "sha256": "9aa55dd7c22b34ffb679c58fc1034317a21262fbf1bc10abf77118d782687a5b",
+      "first_utc": "2026-01-01T23:00:00+00:00",
+      "last_utc": "2026-11-02T21:45:00+00:00",
+      "unique_timestamps": 19907,
+      "year": 2026
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (2).csv",
+      "sha256": "e72d8afe3ac70c28376dcf04631f4210a01257ed7624a1b11513497daac61ed6",
+      "first_utc": "2010-01-03T23:00:00+00:00",
+      "last_utc": "2010-12-31T18:00:00+00:00",
+      "unique_timestamps": 22591,
+      "year": 2010
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (3).csv",
+      "sha256": "07b0685650e17c7346ac41f4eb7c890c87ffb739dae8c332b47c722b92ea97e7",
+      "first_utc": "2011-01-02T23:00:00+00:00",
+      "last_utc": "2011-12-30T21:45:00+00:00",
+      "unique_timestamps": 23401,
+      "year": 2011
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (4).csv",
+      "sha256": "3add7848c235c96d29ed007a4096eed530f142b7b7a3ddff00d7d34dce84110e",
+      "first_utc": "2012-01-03T11:00:00+00:00",
+      "last_utc": "2012-12-31T21:45:00+00:00",
+      "unique_timestamps": 23426,
+      "year": 2012
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (5).csv",
+      "sha256": "3b24a5b3a14e4a5b3b38d4e03984adac3739e469fffdc236845308cfae7ef03a",
+      "first_utc": "2013-01-02T11:00:00+00:00",
+      "last_utc": "2013-12-31T21:45:00+00:00",
+      "unique_timestamps": 23413,
+      "year": 2013
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (6).csv",
+      "sha256": "fb4eadbff1668f8ee4d82bb58c349c4803c3513fb26a694cd74d2bad6b873bd6",
+      "first_utc": "2014-01-02T11:00:00+00:00",
+      "last_utc": "2014-12-31T21:45:00+00:00",
+      "unique_timestamps": 23344,
+      "year": 2014
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (7).csv",
+      "sha256": "6bf0a329a135ce5339642af08ddfec3fa04b59b9bc61f1ff754c3a2ce6e2378b",
+      "first_utc": "2015-01-01T23:00:00+00:00",
+      "last_utc": "2015-12-31T21:45:00+00:00",
+      "unique_timestamps": 23651,
+      "year": 2015
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (8).csv",
+      "sha256": "b05b4ba9bd7f27a48c4429e3641d9cee366c28bcea8469b32bee7f32ad5e817d",
+      "first_utc": "2016-01-03T23:00:00+00:00",
+      "last_utc": "2016-12-30T21:45:00+00:00",
+      "unique_timestamps": 23579,
+      "year": 2016
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (9).csv",
+      "sha256": "7caa16363ba81abe31e1a04b9f5e0220822c842c1b910c29dabccaff7fca1fc0",
+      "first_utc": "2017-01-02T23:00:00+00:00",
+      "last_utc": "2017-12-29T21:45:00+00:00",
+      "unique_timestamps": 23507,
+      "year": 2017
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03.csv",
+      "sha256": "a5a0499f16d1ef56889b96c4db99e349db1bb8ce95379c2633f05374a6eddf38",
+      "first_utc": "2025-01-01T23:00:00+00:00",
+      "last_utc": "2025-12-31T21:45:00+00:00",
+      "unique_timestamps": 23540,
+      "year": 2025
+    }
+  ],
+  "scored_files": [
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (8).csv",
+      "sha256": "b05b4ba9bd7f27a48c4429e3641d9cee366c28bcea8469b32bee7f32ad5e817d",
+      "first_utc": "2016-01-03T23:00:00+00:00",
+      "last_utc": "2016-12-30T21:45:00+00:00",
+      "unique_timestamps": 23579,
+      "year": 2016
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (9).csv",
+      "sha256": "7caa16363ba81abe31e1a04b9f5e0220822c842c1b910c29dabccaff7fca1fc0",
+      "first_utc": "2017-01-02T23:00:00+00:00",
+      "last_utc": "2017-12-29T21:45:00+00:00",
+      "unique_timestamps": 23507,
+      "year": 2017
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (10).csv",
+      "sha256": "c6dda36eabe049a0a94c209a9c3a8367bbaf8056a22334f39baef009fb5bedf6",
+      "first_utc": "2018-01-01T23:00:00+00:00",
+      "last_utc": "2018-12-31T21:45:00+00:00",
+      "unique_timestamps": 23597,
+      "year": 2018
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (11).csv",
+      "sha256": "582f8876f898717ea42e321f22080f35b6e09553af58320b53078a7f9ea4541d",
+      "first_utc": "2019-01-01T23:00:00+00:00",
+      "last_utc": "2019-12-31T21:45:00+00:00",
+      "unique_timestamps": 23567,
+      "year": 2019
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (12).csv",
+      "sha256": "1cf44e8cf73da0f96b765267ec5a2334cbd27d5e91c4580dd0f1b8f221a45524",
+      "first_utc": "2020-01-01T23:00:00+00:00",
+      "last_utc": "2020-12-31T21:45:00+00:00",
+      "unique_timestamps": 23700,
+      "year": 2020
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (13).csv",
+      "sha256": "1993444d9f8bc5622f37585f34997f2554b97db02a0f5e8e73391bb58ef8fb24",
+      "first_utc": "2021-01-03T23:00:00+00:00",
+      "last_utc": "2021-12-31T21:45:00+00:00",
+      "unique_timestamps": 23689,
+      "year": 2021
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (14).csv",
+      "sha256": "0772d6177debaa1e7d3239f994ea4fc4b2401165ed4d37c1a5ede4286c7b5743",
+      "first_utc": "2022-01-02T23:00:00+00:00",
+      "last_utc": "2022-12-30T21:45:00+00:00",
+      "unique_timestamps": 23719,
+      "year": 2022
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (15).csv",
+      "sha256": "903a64bd867d26db6bf95e6ed155c50bfec757de1288f4be14c1281dd143a184",
+      "first_utc": "2023-01-02T23:00:00+00:00",
+      "last_utc": "2023-12-29T21:45:00+00:00",
+      "unique_timestamps": 23698,
+      "year": 2023
+    },
+    {
+      "name": "BAR_EXPORT_v0.2_CME_MINI_M6E1!_2026-11-03 (16).csv",
+      "sha256": "928ae63132badba00aaca26de2fd7633657575be8e53ece2d4b933c51616895b",
+      "first_utc": "2024-01-01T23:00:00+00:00",
+      "last_utc": "2024-12-31T21:45:00+00:00",
+      "unique_timestamps": 23688,
+      "year": 2024
+    }
+  ],
+  "pre_outcome_sha256": {
+    "lab/analysis/fx/m6e_european_breakout_2026_11/experiment.py": "a9074b2da968cff5b2abc78cefa14cf210794b1292c565a1b42fe7d00b7b897e",
+    "lab/analysis/fx/m6e_european_breakout_2026_11/test_experiment.py": "2849ac2da6a9afd8d1ac98e3bec4de5cdb2fd1c5960c44f9b4e22f8fea1bb028",
+    "docs/superpowers/plans/2026-11-04-m6e-fixed-exploration.md": "5d462903d6b1466d3fcd4bf535b2b8882f3e38a95fc7eeddeae3564279b15beb"
+  },
+  "sources": [
+    "https://help.tradeify.co/en/articles/10468315-trading-commission-fees",
+    "https://www.cmegroup.com/markets/fx/fx-product-guide"
+  ]
+}

@@ -239,6 +239,8 @@ def test_holdout_looks_survivors_in_card_id_order_on_the_pinned_window(spec):
     h = report(path, "g-001", "holdout")
     assert h["holdout_sessions"] == [dates[300], dates[379], 80] and h["split"] == s["data"]["MCL"]["split"]
     assert h["verdict"] in {"pass", "fail"} and h["dev_binding_sha256"] == report(path)["dev_binding_sha256"]
+    assert h["placement"] == ("not_evaluated" if h["pass"] else None)  # book: null is never a clear
+    assert h["placement_gate"] is None and h["placement_book_sha256"] is None
 
 
 def _remark(path, rep: dict) -> None:
@@ -256,6 +258,27 @@ def test_holdout_skips_cards_that_did_not_survive(spec):
     go(path, s)
     _remark(path, {**report(path), "verdict": "killed"})
     assert go(path, s, holdout) == 0 and looks(s) == [] and not (path.parent / "out" / "g-001.holdout.json").exists()
+
+
+def test_a_book_the_card_does_not_fit_gives_a_look_and_placement_fail(spec, tmp_path):
+    path, s, dates = spec
+    s["book"] = {**book_file(tmp_path, {d: 100.0 for d in dates[:300]}), "min_overlap": 300}  # no losing day
+    go(path, s)
+    rep = report(path)
+    assert rep["verdict"] == "survivor" and all(g["gate"][:2] != "5g" for g in rep["gates"])
+    assert go(path, s, holdout) == 0 and len(looks(s)) == 1
+    h = report(path, "g-001", "holdout")
+    assert h["verdict"] == "pass" and h["pass"] and h["placement"] == "fail"  # CONFIRMED · placement-fail
+    assert h["placement_gate"]["threshold"]["shared_loss_share"] == gates.THRESHOLDS["5g_max_shared_loss_share"]
+    assert h["placement_book_sha256"] == s["book"]["sha256"] and h["dev_binding_sha256"] == rep["dev_binding_sha256"]
+
+
+def test_holdout_refuses_a_survivor_without_book_statistics_before_any_look(spec):
+    path, s, _ = spec
+    two_cards(path, s)
+    go(path, s)
+    _remark(path, {k: v for k, v in report(path).items() if k != "book"})  # g-001 sorts after a-002
+    refused(path, s, "g-001: development report book statistics are malformed")
 
 
 def _new_file(tmp_path, name, src: Path) -> dict:
@@ -359,3 +382,51 @@ def test_holdout_look_is_taken_once(spec):
     go(path, s, holdout)
     with pytest.raises(ledger.LedgerError, match="already"):
         go(path, s, holdout)
+
+
+@pytest.mark.parametrize("k_scope", ["instrument", "ledger"])
+def test_reports_carry_the_reachability_line_at_5fs_banked_k(spec, k_scope, capsys):
+    path, s, _ = spec
+    (path.parent / "b.yaml").write_text(CARD_B)
+    s["k_scope"], cards_ = k_scope, s["cards"]
+    go(path, {**s, "run_id": "r0", "cards": [str(path.parent / "b.yaml")]})  # a banked earlier card
+    capsys.readouterr()
+    go(path, {**s, "cards": cards_})
+    rep = report(path)
+    r = rep["reachability_5f"]
+    assert rep["k"] == r["k"] == 2 and r["k_scope"] == k_scope
+    assert r == {**gates.reachability(2, rep["dev_sessions"][2]), "k_scope": k_scope}
+    assert "reachability_5f" in capsys.readouterr().out
+
+
+def test_reachability_line_never_changes_a_verdict(spec, tmp_path_factory, monkeypatch):
+    path, s, _ = spec
+    two_cards(path, s)
+    go(path, s)
+    with_line = {i: report(path, i) for i in ("g-001", "a-002")}
+    assert [with_line[i]["verdict"] for i in ("g-001", "a-002")] == ["survivor", "survivor"]
+    other = tmp_path_factory.mktemp("noline")
+    monkeypatch.setattr(run, "reach_line", lambda *a: {})
+    s2 = {**s, "ledger": str(other / "l.jsonl"), "out": str(other / "out")}
+    go(other / "run.yaml", s2)
+    for i, rep in with_line.items():
+        bare = json.loads((other / "out" / f"{i}.report.json").read_text())
+        assert [bare[f] for f in ("verdict", "stopped_at", "gates", "k")] == \
+            [rep[f] for f in ("verdict", "stopped_at", "gates", "k")]
+
+
+def test_an_undefined_reachability_line_is_recorded_not_raised(tmp_path):
+    r = run.reach_line(tmp_path / "none.jsonl", "MCL", "instrument", 1)
+    assert r["k"] == 0 and r["dev_sessions"] == 1 and "at least 2" in r["undefined"]
+
+
+def test_reports_carry_the_5e_slide_line_printed_before_any_card_is_evaluated(spec, capsys, monkeypatch):
+    path, s, _ = spec
+    seen = []
+    real_eval = gates.evaluate
+    monkeypatch.setattr(gates, "evaluate", lambda *a, **k: (seen.append(capsys.readouterr().out), real_eval(*a, **k))[1])
+    go(path, s)
+    rep = report(path)
+    c = cards.parse(Path(s["cards"][0]).read_text(encoding="utf-8"))
+    assert rep["slides_5e"] == gates.slide_line(c) and rep["slides_5e"]["slides"] >= 1
+    assert "slides_5e" in seen[0] and "reachability_5f" in seen[0]

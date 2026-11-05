@@ -1,0 +1,160 @@
+{
+  "schema": "cme_calendar_source_captures/v1",
+  "note": "Hashes of the bytes read for the 2009-2015 rows of cme_holiday_calendar_2009_2026.json. Source documents are not stored in this repository.",
+  "captures": [
+    {
+      "url": "https://web.archive.org/web/20120105160459/http://www.cmegroup.com:80/tools-information/holiday-calendar/files/2012-martin-luther-king.pdf",
+      "original": "http://www.cmegroup.com:80/tools-information/holiday-calendar/files/2012-martin-luther-king.pdf",
+      "capture_timestamp": "20120105160459",
+      "sha256": "458c94af0fd7b7d8445c229de6bbe05648ea588c2fea88180eefe46486e4d265",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://web.archive.org/web/20120227053549/http://www.cmegroup.com:80/tools-information/holiday-calendar/files/2012-presidents-day.pdf",
+      "original": "http://www.cmegroup.com:80/tools-information/holiday-calendar/files/2012-presidents-day.pdf",
+      "capture_timestamp": "20120227053549",
+      "sha256": "4b5daad7813d41cdd9a104cca3a656bf303672f03c6c51ff5a13771d840ef131",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://web.archive.org/web/20120417004247/http://www.cmegroup.com:80/tools-information/holiday-calendar/files/2012-good-friday.pdf?",
+      "original": "http://www.cmegroup.com:80/tools-information/holiday-calendar/files/2012-good-friday.pdf?",
+      "capture_timestamp": "20120417004247",
+      "sha256": "81440c44afb97ea4b3a44b86aa4cf21e2e4cb7ba5839fabd95b29d0c928b2ea8",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://web.archive.org/web/20120913050955/http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-4th-of-july.pdf",
+      "original": "http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-4th-of-july.pdf",
+      "capture_timestamp": "20120913050955",
+      "sha256": "9b35b802ff0e399226ac0811761fc7e03487d8dec401c19a7e383750cbca5faf",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://web.archive.org/web/20120915001514/http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-columbus-day.pdf",
+      "original": "http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-columbus-day.pdf",
+      "capture_timestamp": "20120915001514",
+      "sha256": "aae7ddc8789c31fda8fbe6ccf09ffc5719cbfdf518750c2aa236e7519b11babf",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://web.archive.org/web/20120915003437/http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-labor-day.pdf",
+      "original": "http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-labor-day.pdf",
+      "capture_timestamp": "20120915003437",
+      "sha256": "2f951bede1d6084977c8bed2f1cc4c993ebedd904aa0d56027668d2cb808ee39",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://web.archive.org/web/20120915003714/http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-memorial-day.pdf",
+      "original": "http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-memorial-day.pdf",
+      "capture_timestamp": "20120915003714",
+      "sha256": "5dc5cf9883232978ec1e80bd5bd50a2043535e93d7e52acddf4fd7e68938e848",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://web.archive.org/web/20121119072531/http://www.cmegroup.com:80/tools-information/holiday-calendar/files/2012-thanksgiving.pdf?",
+      "original": "http://www.cmegroup.com:80/tools-information/holiday-calendar/files/2012-thanksgiving.pdf?",
+      "capture_timestamp": "20121119072531",
+      "sha256": "052e381bbd4eb0790c6d38e3866874738d6da081da62643e525c25674b2608e1",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://web.archive.org/web/20130309115305/http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-holiday-calendars.zip",
+      "original": "http://www.cmegroup.com/tools-information/holiday-calendar/files/2010-holiday-calendars.zip",
+      "capture_timestamp": "20130309115305",
+      "sha256": "2951c592b0bb86ee92979714fa368bb89b5e81791c3a4f81c5b7e5b488441650",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://web.archive.org/web/20130309115356/http://www.cmegroup.com/tools-information/holiday-calendar/files/2009-holiday-calendars.zip",
+      "original": "http://www.cmegroup.com/tools-information/holiday-calendar/files/2009-holiday-calendars.zip",
+      "capture_timestamp": "20130309115356",
+      "sha256": "5596f2026a83a0adb75c37d685e33059ef613abb188669dc26cb128f56d13230",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://web.archive.org/web/20130309115411/http://www.cmegroup.com/tools-information/holiday-calendar/files/2011-holiday-calendars.zip",
+      "original": "http://www.cmegroup.com/tools-information/holiday-calendar/files/2011-holiday-calendars.zip",
+      "capture_timestamp": "20130309115411",
+      "sha256": "63d5ed0c0961e8edc95f72fb6751b80e63f7bc1d9b60b55d619861658b54a696",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://web.archive.org/web/20130414194027/http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-christmas.pdf",
+      "original": "http://www.cmegroup.com/tools-information/holiday-calendar/files/2012-christmas.pdf",
+      "capture_timestamp": "20130414194027",
+      "sha256": "de3b16aaae2ef887e46c965f902d8d0e43afa6e18dc1f721baaa40ea6b18b5e9",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://web.archive.org/web/20130414194146/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-new-years.pdf",
+      "original": "http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-new-years.pdf",
+      "capture_timestamp": "20130414194146",
+      "sha256": "e29c2c968cdf20883d55acd13bab50e9df02c547826bca9d2867f5bf9b2df3f7",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://web.archive.org/web/20140214192332/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-presidents-day-holiday-schedule.pdf",
+      "original": "http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-presidents-day-holiday-schedule.pdf",
+      "capture_timestamp": "20140214192332",
+      "sha256": "b689b4f8e9f62ba6f8c32bba46d35923a4017d1edbc83cc9ffcc2a85baded4fb",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://web.archive.org/web/20140326152735/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-good-friday-holiday-schedule.pdf",
+      "original": "http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-good-friday-holiday-schedule.pdf",
+      "capture_timestamp": "20140326152735",
+      "sha256": "4e8593e96eb42af2cde99f6ed906d4fe4a2ea8f976fc9f8d8f561f3049cc7f0e",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://web.archive.org/web/20140326193052/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-holiday-calendars.zip",
+      "original": "http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-holiday-calendars.zip",
+      "capture_timestamp": "20140326193052",
+      "sha256": "4a568d6fb668fd54f9362554f62a4e101074698e6d7429c014fb2f6676724648",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://web.archive.org/web/20140412062428/http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-christmas.pdf",
+      "original": "http://www.cmegroup.com/tools-information/holiday-calendar/files/2013-christmas.pdf",
+      "capture_timestamp": "20140412062428",
+      "sha256": "1389ade6b120383d05e8d6e8ed9c38f1e2394dd250c86b19606548618285e848",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://web.archive.org/web/20150326121739/http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-holiday-calendars.zip",
+      "original": "http://www.cmegroup.com/tools-information/holiday-calendar/files/2014-holiday-calendars.zip",
+      "capture_timestamp": "20150326121739",
+      "sha256": "fdf7349901f9da3496477bc20e96534b694fcca1c9b110530a415c371f453317",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://web.archive.org/web/20160808150227/http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-holiday-calendars.zip",
+      "original": "http://www.cmegroup.com/tools-information/holiday-calendar/files/2015-holiday-calendars.zip",
+      "capture_timestamp": "20160808150227",
+      "sha256": "645d47a26dd76c3cc7bc65b3eecab3c3d14caf3684b92d7b4892d4261fa23905",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://www.cftc.gov/sites/default/files/stellent/groups/public/@rulesandproducts/documents/ifdocs/rul102912cmecbotnymexandcomex1.pdf",
+      "original": "https://www.cftc.gov/sites/default/files/stellent/groups/public/@rulesandproducts/documents/ifdocs/rul102912cmecbotnymexandcomex1.pdf",
+      "capture_timestamp": null,
+      "sha256": "f559a919f1f1aeb96e43316333bda01406f057a608465f145185a83126ee2fb7",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://web.archive.org/web/20250324230331/https://www.cmegroup.com/tools-information/lookups/advisories/clearing/Chadv12-464.html",
+      "original": "https://www.cmegroup.com/tools-information/lookups/advisories/clearing/Chadv12-464.html",
+      "capture_timestamp": "20250324230331",
+      "sha256": "41c77615825f93f0cc8bd3051db56f11e1158edd2d5dd35b4302be196e8a473f",
+      "accessed": "2026-11-04"
+    },
+    {
+      "url": "https://www.prnewswire.com/news-releases/cme-group-to-reopen-us-equity-index-and-interest-rate-complexes-tonight-176339591.html",
+      "original": "https://www.prnewswire.com/news-releases/cme-group-to-reopen-us-equity-index-and-interest-rate-complexes-tonight-176339591.html",
+      "capture_timestamp": null,
+      "sha256": "8f297bb3946640be2edafa873c940099ec853038160f04fac2e0685dda6f5351",
+      "accessed": "2026-11-04"
+    }
+  ]
+}

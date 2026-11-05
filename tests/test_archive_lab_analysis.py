@@ -1793,3 +1793,16 @@ def test_git_mv_falls_back_on_cross_device_link(tmp_path: Path, monkeypatch):
     ala._git_mv(tmp_path, src, dst)
     assert (dst / "card.md").read_text(encoding="utf-8") == "x\n"
     assert not src.exists()
+
+
+def test_scan_fx_theme_preserves_nested_study_identity(tmp_path: Path):
+    """An FX category must not collapse its study into a flat camp named fx."""
+    study = tmp_path / "lab/analysis/fx/m6e_fixed"
+    study.mkdir(parents=True)
+    (study / "RESULTS.md").write_text("**Status:** FALSIFIED — fixed expression rejected\n", encoding="utf-8")
+    tracked = {"m6e_fixed": frozenset({"lab/analysis/fx/m6e_fixed/RESULTS.md"})}
+    rows = {r.slug: r for r in ala.scan_lab(tmp_path, tracked_override=tracked)}
+    assert set(rows) == {"m6e_fixed"}
+    assert rows["m6e_fixed"].theme == "fx"
+    assert rows["m6e_fixed"].body == "lab/analysis/fx/m6e_fixed/"
+    assert rows["m6e_fixed"].status == "FALSIFIED"

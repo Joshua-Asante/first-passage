@@ -8,6 +8,8 @@ so that no future session has to re-derive them.
 | File | What it owns |
 |---|---|
 | [`cme_holiday_calendar_2022_2026.json`](cme_holiday_calendar_2022_2026.json) | 85 dated entries, per product group (equity index · metals · FX): status, close time in ET, confidence, and a per-entry note. Plus three derived lists and a 13-item `unresolved` register. |
+| [`cme_holiday_calendar_2016_2026.json`](cme_holiday_calendar_2016_2026.json) | **Accepted by the operator, 2026-11-04.** The same schema and key sets, coverage 2016-01-01..2026-12-31: the 85 entries above copied verbatim, plus 67 entries for 2016–2021 (152 in all), re-derived lists, and 9 new `unresolved` items. See [the 2016–2026 extension](#20162026-extension-accepted-2026-11-04). |
+| [`cme_holiday_calendar_2009_2026.json`](cme_holiday_calendar_2009_2026.json) | **Accepted by Joshua, 2026-11-04.** The same schema and key sets, coverage 2009-01-01..2026-12-31: the 152 entries above copied verbatim, plus 114 entries for 2009–2015 read from CME's own documents. See [the 2009–2026 extension](#20092026-extension-accepted-2026-11-04). |
 
 ## ⚠ Provenance is SECONDARY, not primary
 
@@ -132,6 +134,59 @@ There is no generator script — this was a research pass, not a pipeline. To ex
 resolve the primary source above, or re-derive from the same third-party encodings and record the
 new rows with their own `confidence` and `note`. Never widen `coverage_end` without adding entries.
 
+## 2016–2026 extension (accepted 2026-11-04)
+
+Added 2026-11-03 for the deeper TradingView re-exports (generation-phase note D8/D9, PR #1029). The builder refuses any session outside its pinned calendar's coverage (`lab/builder/data.py` `Calendar.check_covers`), so a pre-2022 window needs this file.
+
+> ✅ **Accepted by Joshua, 2026-11-04**, verbatim: "I accept the 2016–2026 calendar" (merged as PR #1045). The acceptance states no scope, so it is recorded as given. It does not say whether D19's date-membership limit applies. The file's own `provenance_note` still reads "pending operator acceptance": it predates the ruling and stays byte-identical, and this README is the owner of the acceptance status.
+
+The 2022–2026 file above stays byte-identical (sha256 `2698f268…a181e9`). R1, the builder README's admitted-calendar line and every existing run spec still name it. A run uses this file only by pinning it in its own `calendar: {path, sha256}`.
+
+- **2022–2026:** copied verbatim from the D19 file. A test asserts equal entries and equal date membership (`tests/lab/test_builder/test_calendar_extension.py`).
+- **2016–2021: SECONDARY**, the same as the rest of the file. `www.cmegroup.com` was re-tried on 2026-11-03 and did not answer, so no CME primary source was read. Each row comes from three encodings at the **same commits** the 2022–2026 pass pinned:
+  - `pandas_market_calendars` (`CME_Equity`, `CMEGlobex_Metals`, `CMEGlobex_FX`), installed by pip from git at its pin;
+  - `exchange_calendars` (`CMES`, equity only), installed the same way;
+  - QuantConnect Lean's market-hours database (`Future-cme-ES`, `Future-comex-MGC`, `Future-cme-6J`), fetched at its pin; the sha256 of the bytes read is in `unresolved[0]`.
+  - A weekday enters when any encoding shows a non-NORMAL equity, metals or FX session.
+  - **Method check:** the same rule run over 2022–2026 reproduces the D19 file's weekday non-NORMAL date set exactly.
+  - No in-repo bar-panel cross-check was run (no vendor bytes read).
+- **New `unresolved` items (9).**
+  - One is the provenance item, `unresolved[0]`.
+  - Three are close-time disputes (Christmas Eve 2018–2020, metals).
+  - One is a status dispute that moves no date: 2021-04-02, Good Friday on an NFP day. Equity is EARLY 09:15 ET in two encodings and FULL in `exchange_calendars`.
+  - One is a group-status dispute that moves no date: 2018-12-05, the Bush mourning day. All three encodings close equity; metals and FX are disputed and emitted NORMAL at LOW confidence.
+  - Three are **date-membership disputes:** 2017-, 2018- and 2019-07-03. `exchange_calendars` reads a normal equity session. The rows are kept at LOW confidence, matching the accepted 2023 and 2024 rows. Direction: the builder skips those sessions rather than trading a possibly short one.
+  - Ad hoc closures that no library models remain an open residual for the whole extension.
+- **Regime.** Before 2022 the US-holiday shape is 13:00 ET for equity, metals **and FX** alike: COMEX holiday sessions lengthened only from 2022, and CME FX still observed US-holiday early closes. Every encoding agrees on this.
+- **Energy (MCL) has no column.** `lab/research_utils/secondary_calendar_evidence.py` checks `cme_holiday_calendar/v1` with exact top-level and per-entry key sets, so an extra field would break a v1 consumer. The builder reads only `entries[].date`, so energy does not change what it skips. On 2016–2021 the energy encodings (`pmc` `CMEGlobex_Crude`, Lean `Future-nymex-MCL`) match the metals shape, except Christmas Eve, where `pmc` reads NORMAL. Adding energy columns needs a schema version, not a v1 edit.
+- **Informational rows.** The 2022–2026 part carries 20 all-NORMAL informational rows (for example Columbus Day and Veterans Day) and 4 weekend rows; the 2016–2021 part carries neither. Since PR #1048 (Joshua's option B, 2026-11-03), the builder closes an entry date only when at least one recorded status is not `NORMAL` (`lab/builder/data.py`). All-NORMAL rows therefore remove no session in either era, and the two eras are treated alike.
+
+## 2009–2026 extension (accepted 2026-11-04)
+
+> ✅ **Accepted by Joshua, 2026-11-04**, verbatim: "Accept the file" (sha256 `067a7a5b73b07c55de1102be39c90e11fc6479d66e013c59592aa3d4a86efadd`). The acceptance states no scope, so it is recorded as given; it does not rule on the builder effect below. The file's own `provenance_note` still reads "PENDING OPERATOR ACCEPTANCE": it predates the ruling and stays byte-identical, and this README is the owner of the acceptance status.
+
+Added 2026-11-04 for exports that reach further back (MGC 2010-10, M6E 2009-03). 6J's export reaches 2001-01; sessions before 2009 stay outside every calendar. The 2022–2026 and 2016–2026 files are unchanged, and runs still pin them by sha256.
+
+- **2016–2026:** copied verbatim from the accepted file. `tests/lab/test_builder/test_calendar_2009_extension.py` asserts equal entries and equal date membership.
+- **2009–2015: PRIMARY per entry.** Each row's `note` carries `provenance PRIMARY`, the URL and the access date. v1 allows no extra keys, and the strict adapter requires top-level `provenance: SECONDARY`, which is also accurate for the file as a whole. Joshua ruled on 2026-11-04 that the archived CME copies count as PRIMARY, verbatim: "Yes, count as PRIMARY".
+- **Route.** `www.cmegroup.com` answers this host with a 403 naming suspected scraping, so nothing was fetched from it. By Joshua's direction (2026-11-04), CME's documents were read as Internet Archive captures. Sandy also uses a CME filing at the CFTC and CME's press release. Hashes of the bytes read are in [`evidence/2026-11-04-cme-2009-2015-wayback-captures.json`](evidence/2026-11-04-cme-2009-2015-wayback-captures.json); the documents themselves are not stored here.
+- **Which revision.** CME revised these schedules, sometimes materially. The newest copy wins: CME's year-end archive zip where it holds a readable schedule, otherwise the latest capture. 2012's archive is Word files, so 2012 rests on the latest PDF. A row is MEDIUM when its newest schedule predates the session by more than 45 days, or for a named doubt (2009-11-27, 2012-10-05, 2012-10-30, 2013-01-01).
+- **Times.** Every close comes from a Globex schedule, never a settlement-time document. A holiday trading halt is recorded as that group's close, as in the later eras.
+
+**The disputes on PR #1045:**
+
+| Dispute | Resolution | Source |
+|---|---|---|
+| Lean's 11:30 vs 13:00 ET equity holiday close | **Lean was right until 2014.** CME's equity halt is 1030 CT = 11:30 ET through 2014-02-17, and 1200 CT = 13:00 ET from 2014-05-26. The libraries' 13:00 is wrong before that. | Each holiday's Globex schedule |
+| Lean-only Friday early closes | **Real.** FX closes at 1515 CT = 16:15 ET on the Friday before most Monday holidays, through 2015-05-22; CME's revised 2015-09-04 schedule is regular. Metals do the same from 2009-05-22 to 2011-01-14. Equity is regular. | Each holiday's Globex schedule |
+| Hurricane Sandy 2012-10-29/30 | **Neither encoding.** Equity closed at 0815 CT = 09:15 ET on both days, with a 1700 CT reopen on the 29th. Metals and FX stayed open on Globex; only the New York floor closed. | Submission No. 12-363, Clearing Advisory 12-464, CME press release |
+
+**Builder effect.** Under the status rule of PR #1048 any non-`NORMAL` group closes the date, so a 16:15 ET FX Friday removes that session for every product, including equity and metals strategies that traded a full day. 2009–2015 has more such dates than later years for that reason.
+
+**Energy (MCL) has no column**, as in the 2016–2026 file: `lab/research_utils/secondary_calendar_evidence.py` checks exact key sets, so adding one would break a v1 consumer.
+
+**Open residuals**, all in the file's `unresolved` array: the archive route itself; the 2012-10-30 close, known only from notices dated the day before; the Fridays before Columbus and Veterans Day in 2013–2015, which CME's schedules do not name; 2012's archive copies; and unscheduled closures, for which no sweep was run.
+
 ## Forward session file and typed overlay (TB-C1, first attended release)
 
 Landed 2026-09-15 under Packet 1 Step 4 of the
@@ -201,6 +256,8 @@ account days inside the named horizon and nothing else. Pin the new digest in th
 operator's ratification before activation. Never edit a ratified file in place.
 
 ### Personal instance registry (G0-a)
+
+Historical: the personal lane [closed 2026-10-29](../../docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed); this records the retired contract.
 
 The personal instance (`personal_tradovate`) consumes these `book_session_calendar/v1` files
 unchanged, through [`deploy/c1_rail_personal/calendar_binding.json`](https://github.com/Joshua-Asante/first-passage/blob/066d22b250cff97785b6cf142aacf84e2d7e1301/deploy/c1_rail_personal/calendar_binding.json)

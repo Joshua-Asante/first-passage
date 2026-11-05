@@ -1,4 +1,4 @@
-> **Historical runbook:** c1 is retired. The Dockerfiles and image CI were removed on 2026-11-03; see [retirement status](../README.md). The later operator-reported Stage 1 shutdown is recorded there; this session did not independently query Fly. Commands below describe the former build and do not authorize deployment.
+> **Historical runbook:** c1 is retired and both apps are destroyed; see [retirement status](../README.md). Commands below describe a host that no longer exists and authorize nothing.
 
 # c1 signal daemon (Fly app)
 
