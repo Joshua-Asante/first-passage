@@ -26,5 +26,5 @@
     "path": "lab/analysis/fx/m6e_european_breakout_2026_11/search_log.json",
     "entry_count": 1
   },
-  "verdict": "FIRST-PASS ONLY. Candidates clearing the crude multiplicity floor are listed above. This is NOT a promotion. Hand the full candidate set (all K returns) to strategy-validation for universe-level correction (White RC / Hansen SPA / Romano-Wolf) and the native-micro OOS gate before any candidate is trusted."
+  "verdict": "CLOSED: reject this fixed exploratory expression under its stated cost/fill model; K=1, no candidates submitted to validation. The alpha and multiplicity fields above are registry defaults, not tests applied to this experiment or evidence of acceptance. Corrected 2026-11-05 after independent review; registration, rules and outcomes unchanged."
 }
