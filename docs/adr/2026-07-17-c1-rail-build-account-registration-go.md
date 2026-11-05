@@ -498,7 +498,7 @@ Joshua accepted the recommendations put to him in the session owning the decommi
 
 1. Run `fly volumes list` on both apps; check billing and any external monitor still pointing at them. *Volume list done 2026-11-05 (operator ran it, agent read the output): each app still holds one unattached 1 GB volume, `c1_rail_data` and `c1_signal_daemon_data`. Billing and monitors stay open.*
 2. Destroy no volume until the operator confirms the private session captures are complete ([ARMING_PROCEDURE](../notes/rail_build/ARMING_PROCEDURE.md) step 5.19), or names what may go unpreserved. The exporter's three files alone are not a complete record. Machines are gone, so a new export needs a temporary machine, and that needs its own ruling under Effect 1. *Ruled 2026-11-05 ("Export them first"): a file-name search found no copy of the raw volume files, so the operator exports both volumes once before destruction, on a plain temporary machine with no rail image and no secrets, removed afterwards. Effect 1 allows that machine, and nothing else.* *Done 2026-11-05 (operator ran it, agent read the output): each volume's whole `/data` was archived and hash-matched on both ends, in the primary checkout's ignored `local_artifacts/c1-volume-export-2026-11/`: `c1-rail-data.tgz` (38 files, SHA-256 `85305b27f4ef82f4efa472ce779bc5b243ebb553ff0f307774148d6ce9c714cf`) and `c1-signal-daemon-data.tgz` (10 files, SHA-256 `ba8a64df4abff28ca72be45a5e557f700a690ff6a48f67c6d0691f4ed3866a13`). The rail volume's host was full, so that export read a temporary fork, destroyed afterwards with both temporary machines. This clears item 2. Those archives are the only copy found, on one machine.*
-3. Rollback closes at the review around November 17. Both apps are destroyed then, once items 1 and 2 clear.
+3. Rollback closes at the review around November 17. Both apps are destroyed then, once items 1 and 2 clear. *Done early; see the [Stage 2 record](#stage-2-record--2026-11-05).*
 
 **Stage 3.**
 
@@ -513,6 +513,15 @@ Joshua accepted the recommendations put to him in the session owning the decommi
 8. M1: the acceptance JSON stays as frozen evidence. The validator and `c1_rail_arm` leave with the rail. This decides the M1 item left to Stage 3.
 9. The qualification tests that no CI job runs are accepted as dormant; S3-2 names the tests it runs explicitly.
 10. Before S3-4: `dd_geometry` stays until a destination for `book_policy` and `book_protocol.Mode` is ruled, from S3-2's consumer table. `BOOK_POLICY_SHA` is not re-pinned; replay needs commit-pinned bytes.
+
+### Stage 2 record — 2026-11-05
+
+The operator ran `fly apps destroy` on `c1-rail` and `c1-signal-daemon` from the operator's own Fly login, after the export in item 2; each printed "Destroyed app", and the agent read that output. The operator ruled the same day: "if we're not using them we can destroy the apps now". That closes rollback about 12 days ahead of item 3's review. Destruction cannot be undone, so a route now needs a fresh build decision (Effect 4).
+
+- **Billing.** Fly's monthly emails from August to November each show a bill under its minimum, discounted 100%: nothing paid. Any bill for November's final usage has not arrived. The [subscription ledger](../pursuits/SUBSCRIPTION_LEDGER.md) owns the figures.
+- **Monitors.** The operator reports having checked and named none. The agent could not see them.
+- **Arming rules.** With no host left, the "until Stage 2" hold on them has ended. Stage 3 removes their code.
+- **Stage 3.** Item 5's condition is met. Item 6's hold on #1026 is released.
 
 ## Addendum 2026-11-08 — the $700 spend ceiling is re-homed to the retained account's owner record
 
