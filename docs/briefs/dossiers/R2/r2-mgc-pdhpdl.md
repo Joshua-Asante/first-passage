@@ -25,7 +25,7 @@ Status: R2 dossier (Part A §A2–§A3, tasks T2–T3) · 2026-11-04 · K = 0 (n
 | MNQ CON-4 (in-repo, `ops/instruments/MECHANISMS.md`) | MNQ dense-1m, explore IS | long −0.007R / short +0.005R, CIs straddle | Cross-instrument: inadmissible as δ (prior only) |
 | Search for gold-futures intraday PDH/PDL or ORB cohort (2026-11-04) | — | none found (vendor/blog only) | — |
 - Decay haircut: n/a (no admissible δ). Would apply McLean & Pontiff 2016 (*JF* 71(1)) 58% post-publication decline if a published δ appeared.
-- Screen figure: **UNSCREENABLE.** Supply route: an in-house δ-extraction on the MGC dev window (spends one of MGC's four builder looks, K ≥ 1) measuring post-break continuation as the card's discriminator; or a published COMEX gold intraday level-break cohort if one exists behind a paywall not reached here.
+- Screen figure: **UNSCREENABLE.** Supply route: an in-house δ-extraction on the MGC dev window (spends one of MGC's four builder looks, K ≥ 1; corrected 2026-11-05: the builder ledger's MGC bank is 8 ([note §11](../../../notes/2026-11-01-generation-phase-strengthening-DRAFT.md#11-updates-2026-11-04))) measuring post-break continuation as the card's discriminator; or a published COMEX gold intraday level-break cohort if one exists behind a paywall not reached here.
 
 ## Prior consult (advisory, Rule 26)
 ```text
