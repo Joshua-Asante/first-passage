@@ -2,7 +2,7 @@
 
 **Symbol:** CME Micro E-mini S&P 500 futures (MES; Globex, Databento `GLBX.MDP3`) · **Parent:** [`ES.md`](ES.md) ($50/pt) · **Asset class:** equity index futures
 **Status:** **RE-ENTERED — K-void cleared; class-attested; not elected.** Research/discovery only. Third-leg `E-KCAP` elimination voided by [K-bank ADR](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md); standing non-K grounds remain. No live leg, no allocation, no K spend.
-**Last updated:** 2026-09-01
+**Last updated:** 2026-11-04
 
 **Purpose:** single source of instrument-level truth (operational rule 10, [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](../../docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md)). Created **2026-08-09** as the live touching session for [`instrument-lane SPEC`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-09-instrument-lane-mcl-mes-mgc-spec.md) — ADR [`2026-07-25`](../../docs/adr/2026-07-25-instrument-profile-index.md) §5. Thin ledger; inherit index class bar from parent ES / sibling [`M2K.md`](M2K.md) M1.
 
@@ -77,6 +77,7 @@ structure:
 
 ## SESSION LOG
 
+- **2026-11-04** — **TV export landed.** `MES1!` BAR EXPORT v0.2 at 15m: 8 pages, 176,734 unique bars, 2019-05-05T22:00Z → 2026-11-03T21:45Z, `validate_bar_export_v2.py` PASS ([landing record](../../docs/notes/2026-11-01-generation-phase-strengthening-DRAFT.md#11-updates-2026-11-04)). `PRICE_COL_BY_INSTRUMENT` entry added. Spec row checked, unchanged; CME page, read 2026-11-04: "$5 x the S&P 500 Index and has a minimum tick of 0.25 index points". Not admitted to the builder. No K.
 - **2026-09-01** — Operator closed both B1 MOC-wake pursuits: strategy `DROP`, source-liveness
   `STOP` before any row. No card/contract/pull/K. Re-proposal bar: independently credible high
   positive net expectancy plus a complete expression; source availability alone does not qualify.

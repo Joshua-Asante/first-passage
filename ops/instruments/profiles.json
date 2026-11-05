@@ -67,6 +67,7 @@
       }
     },
     "M6B": {},
+    "M6E": {},
     "MCL": {
       "daily-range-state-persistence": {
         "date": "2026-08-18",
@@ -607,6 +608,23 @@
       ],
       "venue_note": "Live Tradeify Currencies micro set is M6A+M6E only (firm_rules Tradeify commission note: 'micro FX = M6A + M6E only'; product-group lists include 6B standard + M6A, not M6B). Bulenox Rates.pdf fee table does print M6B alongside M6A/M6E. Research/discovery until a live-firm product-group re-verify names M6B.",
       "venue_tradable": false
+    },
+    "M6E": {
+      "asset_class": "fx-futures",
+      "bars": [],
+      "cost_hurdle": null,
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/M6E.md",
+      "structure": [
+        {
+          "claim": "Third-leg Stage-1 outcome E-COST, cited from M6B.md W4; the record itself was not read at ledger creation.",
+          "source": "#E2"
+        }
+      ],
+      "venue_note": "Offered at Tradeify, Bulenox and MFFU; BluSky's markets page lists 6E but not M6E (generation note \u00a78.3, correction 2026-11-04). Commissions live in core/firm_rules.py comments; COMMISSION_BINDINGS classes M6E unavailable until a firm_symbol_row exists.",
+      "venue_tradable": true
     },
     "MCL": {
       "asset_class": "energy-futures",
