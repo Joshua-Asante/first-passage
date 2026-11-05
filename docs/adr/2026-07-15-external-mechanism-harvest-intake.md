@@ -412,3 +412,17 @@ funnel, new route when the primary route (S2) is empty.
 | 2026-08-16 | **Correction (no decision change).** PR #18 also edited the ratified `Decision (binding)` line in place — `**do** count` → `**do** count going forward` — undisclosed in its blast-radius table. Reverted: that line is again byte-identical to the operator-GO text at `ce91a995`. The timing rule the edit restated is already carried by the pin-mark paragraph, so nothing is lost. Count stays **0 / 2**; not fired. | Claude Code (adjudication) — operator-directed |
 | 2026-08-16 | **Compensating control named (no decision change, no count change).** Limb 2's post-mark reachability disclosed: intake is parked (Q-INVENTORY-1 `FALSIFIED` 2026-07-17, accept-idle recorded), so 0/2 is expected to stand at 11-08; the idle case is carried by limb 1's §4 idle guard, which ranges over the same §Scope population and stays byte-unedited. Sharpens the decorative-threshold finding to fire only if intake **resumes** and post-mark kills still go unrecorded. **Also edits the `Forbidden` line in place** — one clause appended ("read a standing 0/2 as a limb-2 defect while the idle guard is the operative limb") — disclosed here rather than left silent. Count stays **0 / 2**; not fired. | Joshua (direction) + Claude Code |
 | 2026-08-17 | Reader-intercept only (no decision change): §2 Requirement 3 still carries the pre-demotion "kills the seed" text; a one-line intercept now sits immediately above it pointing at [`2026-08-04-family-k-bank-disclosure-not-gate.md`](2026-08-04-family-k-bank-disclosure-not-gate.md) (`Accepted`). Frozen §2 body unedited. Companion living-doc fix: `strategy_harvest.md` relief-valve line no longer calls Req-3 "truly final". | Cursor (doc-skew) |
+
+## Addendum 2026-11-08 — §4 reading
+
+Ruled by Joshua 2026-11-03 (pre-sitting); recorded effective 2026-11-08. Frozen body and earlier addenda unedited.
+
+- **Idle guard: not triggered.** Admissions beyond D5 occurred (H-OD-1 and H-TSMOM-1), under the 2026-08-17 definition of "admitted" (manifest, `register_search open`, ratified inventory row; 2026-08-16 addendum's change table, 2026-08-17 row).
+- **Disposition:** the intake is retained as **dormant doctrine by explicit operator judgment**.
+- **Limb 1: AMBIGUOUS.** No decisive closure among the first two, via the fourth branch (Addendum 2026-08-16, §Ruling).
+- **Limb 2: 0/2, not fired.**
+
+**Corrections, where read:**
+
+- Addendum 2026-08-16, §The gap this closes: "D5 (RESOLVED) is the sole intake-class closure to date" is wrong. D5 closed as a Stage-2 cost-law KILL (2026-07-16), and H-OD-1 also closed.
+- Limb 2 addendum, paragraph "Reachability while intake is idle" (added 2026-08-16): its reading that the idle guard is the operative limb presumes zero admissions beyond D5. That premise does not hold; the guard was not triggered (above).

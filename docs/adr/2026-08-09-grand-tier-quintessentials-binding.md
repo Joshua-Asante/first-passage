@@ -333,3 +333,11 @@ grep -n "OODA" docs/adr/2026-06-12-three-loop-methodology-binding.md  # D1 table
 | 2026-08-09 | Initial authoring (advisor layer, repo-state-agnostic) | Joshua + claude.ai |
 | 2026-08-09 | Instantiated: §0 populated with anchors; deltas 1–8 in the provenance note (formatting + stale-surface corrections; no §2 substance change) | Claude Code |
 | 2026-08-09 | Ratified `Proposed` → `Accepted` (operator in-session instruction; Ratification note); §6 downstream updates landed same commit | Joshua + Claude Code |
+
+## Addendum 2026-11-08 — §4 reading
+
+Ruled by Joshua 2026-11-03 (pre-sitting); recorded effective 2026-11-08. Frozen body unedited.
+
+- The scheduled re-read is **complete**: 19 ratified decision differences against a threshold of one (Addendum 2026-08-09); the sunset review never armed.
+- This confirms the narrow hypothesis that GRAND changed decisions. It does not establish that every disposition was beneficial.
+- A fuller review needs a concrete new question.
