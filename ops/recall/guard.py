@@ -1,13 +1,12 @@
-"""operational_rules §7 reject-list for the recall sidecar's write path.
+"""Reject-list for the recall sidecar's write path.
 
 The Delete route for Q-XMEM-1 replaces an extraction LLM with deterministic
-retrieval, which lets the operational_rules §7 denylist degrade from a human review
-obligation into a mechanical reject-list (parent brief Phase A2). This module
-is that reject-list.
+retrieval, which lets the denylist degrade from a human review obligation into
+a mechanical reject-list. This module is that reject-list.
 
-Denylisted values are SOURCED AT RUNTIME from the canonical production files,
-never transcribed here — transcription is exactly how a mirror drifts from the
-thing it mirrors, and a stale denylist silently stops guarding.
+Denylisted values are SOURCED AT RUNTIME from the canonical production files
+where they live in code, so the denylist cannot drift from the thing it guards.
+The historical MC anchor triple has no code owner and is a constant here.
 
 Rejection rule, and why it is a conjunction:
 
@@ -15,7 +14,7 @@ Rejection rule, and why it is a conjunction:
   reject if  a 32+ hex run appears                     (LOCK hashes)
   reject if  a cold-store path appears                 (docs/ltm, lab/archive)
 
-The operational_rules §7 hazard is a locked constant asserted AS AUTHORITY, not the digits
+The hazard is a locked constant asserted AS AUTHORITY, not the digits
 themselves. An unconditional numeric denylist would reject "recall floor was
 0.70" — including this sidecar's own falsifier result — and a guard that cries
 wolf gets switched off. The conjunction keeps it precise.
@@ -40,6 +39,10 @@ _CONTEXT_TERMS = (
     "multiplier", "lifecycle", "active_firm", "firm", "contract_value",
     "sl", "tp", "atr", "session", "trail", "proximity", "drawdown",
 )
+
+# Historical CFD-era MC calibration (docs/mc_anchor_history.md): pass %, bust %,
+# p99 DD %. Denylisted so notes never quote it as a live pass-probability.
+HISTORICAL_MC_ANCHOR = ("99.83", "0.17", "4.37")
 
 
 @dataclass
@@ -115,15 +118,8 @@ def load_denylist(repo_root: Path) -> Denylist:
                         dl.values.add(v)
         dl.sources.append(str(hist.relative_to(repo_root)))
 
-    # MC anchor triple — the historical calibration, denylisted as authority.
-    agents_md = repo_root / "AGENTS.md"
-    if agents_md.exists():
-        text = agents_md.read_text(encoding="utf-8")
-        if m := re.search(r"(\d{2}\.\d{2})% pass / (\d\.\d{2})% bust", text):
-            dl.values.update(m.groups())
-        if m := re.search(r"p99 DD (\d\.\d{2})%", text):
-            dl.values.add(m.group(1))
-        dl.sources.append("AGENTS.md")
+    dl.values.update(HISTORICAL_MC_ANCHOR)
+    dl.sources.append("ops/recall/guard.py:HISTORICAL_MC_ANCHOR")
 
     return dl
 
@@ -149,6 +145,6 @@ def check(note: str, denylist: Denylist) -> Verdict:
         return Verdict(
             False,
             f"governed constant {sorted(hits)} asserted alongside "
-            f"context {sorted(context)[:3]} — operational_rules §7 owns these values",
+            f"context {sorted(context)[:3]} — it is a locked or historical value",
         )
     return Verdict(True)

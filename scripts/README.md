@@ -238,20 +238,7 @@ is insufficient. Before a path-conditional re-tier, add the relevant probes to
 `m1-artifact-structure` stays blocking (`always`): the
 [acceptance validator](validate_c1_monitoring_acceptance.py) rejects unreadable or
 invalid artifacts, missing required fields, invalid status and secret violations.
-
-`md-anchors` and `doc-budgets` are `always`: a link breaks when its target moves,
-and any edit can push a file over its cap. `md-anchors` fails only on broken-link
-identities new to, or more frequent than, `md_anchor_baseline.txt`; `doc-budgets`
-caps the files in `doc_budgets.yml` and the T0 set. The baseline and the caps only
-fall; content legs lower them.
-`m1-tree-skew` uses `--check-tree-skew` as a report-only audit; ordinary deployed
-versus main drift does not fail a commit. Neither check substitutes for arm-time
-validation or grants permission. The [M1 owner](../docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md)
-and [arm implementation](../ops/c1_rail/c1_rail_arm.py) govern the separate execution
-boundary, including the recorded attended-override path for a structurally valid
-unresolved artifact; invalid/forged artifacts cannot use that path. The
-[item-5 test-strategy license](../docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24)
-does not grant arm authority.
+It does not grant arm authority.
 
 ```text
 python scripts/gate_manifest.py --list
@@ -280,18 +267,7 @@ environment; older checkouts without it will fail explicitly. Installation
 tests use disposable repositories and do not change your shared installed hooks.
 
 Per-script layer classification is owned by `scripts_layer` in
-[`repo_map_layers.yml`](repo_map_layers.yml) (fallback **governance**), the
-single layer-map definition `check_boundaries.py` loads. The human-readable
-table in [`REPO_MAP.md`](../REPO_MAP.md) §2.1 is generated from that file +
-[`gates.yml`](gates.yml) + `git ls-files 'scripts/*.py'`:
-
-```text
-python scripts/check_repo_map_scripts_table.py --write
-python scripts/check_repo_map_scripts_table.py --check
-```
-
-Do not hand-edit the table. `--check` is wired into [`gates.yml`](gates.yml)
-as the path-conditional `repo-map-scripts-table` gate.
+[`repo_map_layers.yml`](repo_map_layers.yml), which `check_boundaries.py` loads.
 
 ### Installing the check dependencies
 
@@ -329,228 +305,6 @@ should be automatic on Claude Code on the web, it belongs in that environment's
 setup script, which runs once and is cached, not in a SessionStart hook in
 [`settings.json`](../.claude/settings.json).
 
-## Skill lifecycle
-
-Project-authored skills are canonical in [`.claude/skills/`](../.claude/skills/).
-Publication is an explicit release from a primary `main` checkout, with both a
-reviewed revision and a chosen destination. The operator approved this policy on
-2026-09-06 (recorded 2026-09-08); the [source record](../docs/adr/TOMBSTONES.md#2026-09-08-brief-and-skill-governance)
-preserves that approval. The policy and a successful check do not themselves
-authorize an actual release. Calling the publisher attests review; Git proves
-revision identity, not that review occurred. No home/AppData target is implicit.
-
-[`sync_skills.py`](sync_skills.py) requires `--revision <reviewed-sha> --target
-<explicit-destination>` for publication (`make sync-skills REVISION=... TARGET=...`).
-It refuses linked worktrees regardless of folder name, non-main/detached sources,
-submodules, separate Git directories and unknown source identity. HEAD must equal
-the named revision; releasable on-disk skill membership and content must match it,
-including ignored/untracked payload and index-hidden edits. Generated caches are
-excluded; unrelated dirty notes are permitted. `--force` bypasses none of these checks.
-
-Both reference and no-constants validators are loaded from the named revision,
-run against the source checkout, and run again after staging. Missing or failing
-validators refuse release. Publication stages exact revision bytes; it checks all
-staged files/directories against that inventory, derives installation names from
-the verified inventory, rechecks source identity/payload and the target snapshot,
-and refuses source/target overlap, Git metadata and symlinks/junctions/reparse paths.
-Successful installation requires a final byte/inventory check. It replaces only
-released skills, retaining predecessor backups and unrelated deployed skills,
-including separately owned `rule-0`. A revision containing a retired skill is refused.
-
-Install failure attempts rollback. Rollback must not overwrite concurrent target
-changes; failed recovery or installed-byte mismatch reports an incomplete release
-with the target/staging/backup locations for manual recovery. Preserve those
-materials. Success and clean rollback remove staging; backups remain available.
-An error is not a promise that the target is unchanged. External cloud sync can
-still rewrite bundles; local checks do not enforce external ownership.
-
-`--check` is read-only from any checkout and creates no destination or release
-artifacts. Only this diagnostic retains default target resolution: the primary
-bundle (environment override when set, else `DEFAULT_DEPLOY_TARGET`) plus
-`~/.claude/skills/`, whose harness-owned `synced/` and dot directories it ignores;
-explicit `--target` selects one. It reports missing/differing/extra content, ignoring generated caches
-and normalizing supported UTF-8 text newlines. Binary/invalid UTF-8 bytes compare
-exactly. A diagnostic result supplies no release permission. Exit codes: 0 success
-or no diagnostic drift; 1 drift/preparation/install/recovery error; 2 invalid source
-or CLI input; 3 source/target/release-policy refusal.
-
-[`gates.yml`](gates.yml) owns composition. `skill-refs` and `skills-no-constants`
-remain `always` gates. [`check_skill_refs.py`](check_skill_refs.py) checks eligible
-repository references with its documented exceptions.
-[`check_skills_no_constants.py`](check_skills_no_constants.py) scans only `SKILL.md`
-of `inqhiori`, `programme-audit` and `brief-authoring`;
-operational-reference skills and `pinescript-v6` remain exempt.
-
-The [PostToolUse skill hook](sync_skills_hook.py), registered in
-[settings](../.claude/settings.json), runs both validators on skill edits and
-reports their actual outcomes and a pending explicit release. It never publishes
-or creates backups, including from worktrees. Missing/failing validators exit 2,
-surfaced directly by that registration while remaining fail-open for the completed
-edit. Malformed/unrelated hook input is benign. (A Cursor `afterFileEdit` adapter
-previously forwarded this for that surface; it retired with the Cursor lane —
-[worker-surface allocation](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md),
-Revision 2026-09-15.)
-
-[`import_skill_from_cache.py`](import_skill_from_cache.py) remains a missing-source
-recovery exception: copy one named skill byte-for-byte only when its repository
-destination is absent and the source has `SKILL.md`. No overwrite option exists.
-After import, repository ownership and gates apply; it is not reverse sync or a
-release. It refuses retired skills. Other deployed-only extras need triage, not
-automatic deletion or import.
-
-**Retirement.** `RETIRED_SKILLS` in `sync_skills.py` maps each retired skill to its
-owner record. To retire a skill, delete its repo directory, add it there with its
-owner, and prune each deployed copy. `--check` labels a deployed retired skill.
-`--prune --target <dir>` reports the retired skills directly under that one directory
-and changes nothing (exit 1 when any exist); adding `--apply` moves them into a
-sibling `.skill-prune-backup-<token>` directory and touches nothing else. It refuses an
-account-bundle mirror (below).
-
-**Account bundle.** Skills uploaded to the claude.ai account appear in sessions as
-`anthropic-skills:<name>`. Claude Code [downloads them one-way](https://code.claude.com/docs/en/skills.md)
-into `~/.claude/skills/synced/<bundle>/` (with a `manifest.json`); a later sync can
-overwrite or remove local edits there. `DEFAULT_DEPLOY_TARGET` carries the same
-bundle identifiers and is taken to be the desktop app's copy (inferred from its path;
-undocumented). Neither a release nor a deletion in either copy reaches the account.
-Repo copies are canonical, so the account holds no repo-owned or retired skill;
-`--check-account` (read-only; default: the single synced bundle, else
-`DEFAULT_DEPLOY_TARGET`) lists account skills that break that rule and ignores
-Anthropic-provided ones (manifest `source`). Only the operator can delete an account
-skill: claude.ai → **Customize** → **Skills** → open the skill → switch its toggle off
-→ **⋯** → **Delete** → confirm. A new session's `--check-account` verifies the result.
-To use a repo skill outside this repository, upload a ZIP of a reviewed revision
-(`git archive --format=zip --prefix=<name>/ -o <name>.zip <sha>:.claude/skills/<name>`)
-and delete it again when it is superseded.
-
-[`check_skill_deploy_sync.py`](check_skill_deploy_sync.py) checks existence of
-literal ADR-cited deployed scripts, not equality. It is `SKIP` / `NOT CHECKED`
-when there is no deployment root, or when the root holds none of this repo's
-skill directories, cited or not, directly under it (a managed remote
-container's harness-owned `~/.claude/skills/`, for example); nested
-marketplace copies do not count as the bundle. A root that has any repo
-skill's directory but lacks a cited script fails, including a bundle that
-lost the cited skill itself, and a partial bundle is drift, not a skip. Re-running
-this check against an existing bundle requires no publication. Any repair
-release requires the explicit reviewed-revision/target procedure above.
-
-The June 4 quarterly expected-10-skills / old-name reread is retired, not passed
-([record](../docs/adr/TOMBSTONES.md#2026-09-08-brief-and-skill-governance)). Live
-reference/no-constants failure tests, release refusal/recovery tests and deployed
-script existence checks remain. This does not reopen retired skill migrations.
-
-## Validation maintenance
-
-### STATE currency
-
-[`state_roll.py`](state_roll.py) applies what [`check_state_currency.py`](check_state_currency.py)
-only reports: a past Weekly/Monthly recurring deadline advances (next Friday / same
-day-of-month) and decision-index rows past 15 move into the
-[archive](../docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md)
-under a date-keyed `**Roll YYYY-MM-DD**` header, with relative links rebased.
-Code spans, HTML code/pre regions and escaped link examples retain their literal
-bytes. Same-day backfills insert by descending row date, after existing rows
-with the same date; existing archive rows retain their bytes.
-It moves dates only: covered or missed weeks, reconfirm results and `Last curated`
-stay operator-recorded. Output depends only on the input bytes and the date, so
-concurrent sessions make identical edits that merge cleanly. Run it instead of
-hand-editing a stale deadline; `--check` reports without writing. A rerun after
-an interrupted write is safe: rows already in the archive are not added again.
-An exact archived representation from the old link rewriter is also recognized
-without rewriting that evidence. If both old and current representations exist,
-the roller refuses the ambiguous duplicate for manual reconciliation.
-
-It fails closed (exit 2, nothing written, `--check` included) on anything it
-cannot roll unambiguously, and that refusal withholds **every** change of the
-invocation, including a due Weekly roll or keep-15 archive:
-
-- a past Monthly deadline dated the 28th–31st whose heading has no
-  `cadence day NN` anchor. A month-end clamp (Jan 31 → Feb 28) leaves a date
-  that no longer records the intended day, so the roller will not guess it.
-  Month-end procedure: add the intended day once, e.g.
-  `### Monthly — recurring (rolling; next deadline **2027-01-31**, cadence day 31)`,
-  and rerun. The roller then clamps each short month (Feb 28, or Feb 29 in a
-  leap year; Apr 30) and returns to the anchored day (Mar 31). Do not hand-clamp
-  the date without the anchor;
-- a `cadence day` that is not exactly one lower-case `cadence day NN` with NN in
-  1–31, or that disagrees with the heading's deadline (checked on every run, due
-  or not);
-- a recurring heading without exactly one `next deadline **YYYY-MM-DD**` field
-  (a second deadline, bolded or not, would never be rolled), or a Weekly
-  `bucket` that is not exactly one lower-case `bucket MM-DD→MM-DD` naming real
-  month-days and exactly the Monday–Friday week of its deadline, or any Weekly
-  deadline that is not Friday (also checked when no bucket is present);
-- anything read as unique that is not exactly one: a Weekly/Monthly heading
-  (including a case, dash or Unicode-spacing variant — NBSP, zero-width,
-  fullwidth — or a copy outside the forward section), a
-  `Scheduled forward triggers` or `Executed operator decisions` section
-  (including look-alike headings at any level);
-- a decision index out of newest-first date order, a dated bullet not in
-  `- **YYYY-MM-DD** — ` form (`* **date**`, unbolded or indented included), two
-  rows fused on one line (including an en-dash separator), a row fused to a roll
-  header, a task-list or numbered decision row (also detected when fused), or an
-  overflow row followed (after any blank lines)
-  by anything other than another index row or the section end, such as an
-  indented continuation line. Inline code, HTML code/pre regions and escaped
-  examples and complete inline links (including their labels) do not count as
-  fused structure; standalone non-row lines remain invalid
-  below an archive header;
-- an archive that breaks its shape (checked on every run, rows due or not):
-  roll headers are read by date key (case, Unicode spacing and suffix aside) and
-  must be newest first with strictly decreasing dates (adjacent hand-written
-  ordinal headers may share a date); an automated `**Roll YYYY-MM-DD**` header
-  may share its date with no other header; below the first header every
-  non-blank line must be a header or one whole index row (a line holding two
-  headers or two rows is refused); rows within each block must be newest first;
-  no row may appear twice;
-- mixed line endings (CRLF with LF, or a lone CR) in STATE or the archive;
-- a row roll that cannot be placed: `--today` older than the archive's newest
-  header, or a hand-written header already dated today (archive those rows by
-  hand under it, or rerun on a later day);
-- a lock file `STATE.md.state_roll.lock` beside STATE. A writing run creates it
-  exclusively and removes it on exit; one that exists means another run is
-  writing or one died holding it. It is never taken over: once no run is
-  active, delete it by hand and rerun. `--check` takes no lock. Symlink inputs
-  resolve to their canonical target before locking; hard-linked STATE or archive
-  inputs are refused because alternate names would bypass the path-based lock.
-
-The module docstring of `state_roll.py` states the invariants (I1 row
-conservation, I2 archive shape, I3 line endings, I4 one writer, I5 exactly-one
-parsing, I6 Unicode-normalised look-alikes). One validator checks I1–I3 and I5
-on the pair before planning and on the composed result before writing; if the
-result fails, nothing is written. The archive is written before STATE, each
-through its own temp file, an atomic replace and an fsync of its directory
-(POSIX; skipped on Windows, which exposes no directory fsync, so durability
-there is best effort), so a crash between the two leaves the overflow rows in
-both files, a state the rerun accepts and resolves by dropping them from STATE
-only.
-
-`check_state_currency.py` reads the forward section, the recurring headings and
-the decision index through `state_roll.py`'s parser, so every heading, section
-and index defect above also fails the gate (exit 1) on every run; it also fails
-on a duplicate or look-alike `Last curated` or a dated subsection heading its
-strict `### YYYY-MM-DD` reader cannot see, and treats a dated subsection as
-discharged only when no `DISCHARGED` in its heading is negated. It names the
-roller only for past deadlines it can roll; a deadline beyond the horizon and
-the other failures are corrected by hand.
-
-### Brief checker ownership
-
-The [brief-authoring skill](../.claude/skills/brief-authoring/SKILL.md#checker-ownership)
-owns the canonical checker source, type contracts and repo-subset limits. Follow
-the artifact's verification contract; a `NOT CHECKED` or delegation notice is not
-a full validation pass. Checker/template unification remains unresolved and is
-not commissioned here. The skill-side checker is not in the gate manifest. The
-repo-side checker is run by one gate, `handoff-brief-form`
-([`check_handoff_brief_form.py`](check_handoff_brief_form.py)). That gate enforces
-handoff-contract item 1 of the
-[surface-allocation ADR](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-27)
-on the cards its docstring scopes. It runs `check_brief.py --type handoff`, because every
-card in scope is a handoff card, and accepts only its `RESULT: well-formed`. Other briefs
-are not gated.
-
-The separate unresolved 26-letter session-label ceiling remains with the
-[SESSIONS header](../docs/SESSIONS.md) and [`roll_sessions.py`](roll_sessions.py).
-
 ## Private evidence archive
 
 A public record may pin a private file's SHA-256 (vendor CSVs, Pine source,
@@ -563,8 +317,7 @@ private receipts); the pin proves which bytes were used but keeps no copy
   into a local clone of the archive, then prints the commit/push commands; the
   copy is safe only once pushed. `--pinned` archives every pinned file present in
   this checkout. It refuses a clone whose `origin` is not the archive.
-- `python scripts/evidence_archive.py audit` (the `evidence-archive` audit gate)
-  reports each pinned digest as ARCHIVED, UNPUSHED or MISSING; `--verify` re-hashes.
+- `python scripts/evidence_archive.py audit` reports each pinned digest as ARCHIVED, UNPUSHED or MISSING; `--verify` re-hashes.
   Without an archive clone it prints UNVERIFIED and exits 0.
 
 Pins are read from tracked `*SHA256SUMS` / `*MANIFEST.sha256` files and from
@@ -572,30 +325,6 @@ Pins are read from tracked `*SHA256SUMS` / `*MANIFEST.sha256` files and from
 where a record pinning any other private file registers it in the same commit.
 The archive clone is `--archive`, `$FP_EVIDENCE_ARCHIVE`, or a
 `first-passage-archive` directory beside this checkout.
-
-## Closure enforcement
-
-`check_closure_disposition.py` enforces the accepted closure standard as
-HARD in repository mode: missing Iterate heading/Next/Board-write tokens,
-missing required Registry token, or an applicable terminal campaign claim
-without a hot/LTM closure record returns 1. Each limb acts independently.
-Historical ADR Status tokens do not configure these checks.
-
-Revision 2026-09-08 — the approved ADR-pruning migration replaces the
-former M-22 downgrade on missing/unparseable Status owners with this
-fixed code contract. The prior accepted arrangement is preserved at
-`502a8fb4717e8caaa7d183a0a010998cfd7a30c2:scripts/check_closure_disposition.py`
-and the August 4 Iterate / August 12 coverage ADRs at that revision.
-Future severity changes require a reviewed code and operating-contract change.
-This document is not a machine-readable arming dependency.
-
-The checker retains the exact grandfather boundaries, Registry NA/debt
-partition, hot/LTM filename joins and no-joinable-LTM public-seed waiver.
-Explicit paths check Iterate and Registry tokens without running coverage;
-`--list-debt` remains report-only. Existing unreadable-content warnings
-remain warnings. The [closure template](../.claude/skills/brief-authoring/references/closure_record.md)
-owns authoring detail; this gate does not enforce Lane/Closed fields,
-semantic completeness, or successor authorization.
 
 ## Independent review
 

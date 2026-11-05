@@ -1,25 +1,19 @@
 # First Passage - convenience targets.
 # Wrappers around scripts that the pre-commit hook also calls.
 
-.PHONY: help check audit validate validate-data validate-pine skills-no-constants boundaries path-liveness root-doc-liveness md-relative-links lab-path-relocation sync-liveness find-owner status-consistency adr-graph adr-graph-index lab-catalog lab-catalog-check lab-archive-check test test-ops skills-check sync-skills sync-skills-check roll-sessions roll-sessions-dry instrument-profiles instrument-profiles-build gate-manifest gate-manifest-list
+.PHONY: help check audit validate validate-data validate-pine boundaries lab-catalog lab-catalog-check lab-archive-check test test-ops roll-sessions roll-sessions-dry instrument-profiles instrument-profiles-build gate-manifest gate-manifest-list
 
 help:
 	@echo "check                 run check-tier gates (scripts/gates.yml)"
-	@echo "audit                 run report-only governance diagnostics"
+	@echo "audit                 run report-only diagnostics"
 	@echo "validate              data manifests + pine"
 	@echo "lab-catalog           regenerate lab/CATALOG.md"
 	@echo "sentinel              INQHIORI sentinel scan (report-only)"
 	@echo "gate-manifest-list    print the hard-gate roster (blocking tiers)"
 	@echo "test / test-ops       pytest (all / ops/)"
-	@echo "root-doc-liveness     five-root-doc markdown link gate"
-	@echo "sync-liveness         INDEX/CATALOG liveness census (report-only)"
-	@echo "find-owner            operational_rules §7 owner lookup (path or token)"
-	@echo "sync-skills           publish skills; requires REVISION and TARGET (or CHECK=1)"
-	@echo "sync-skills-check     read-only skill deploy drift check"
 
-# W5: composition owned by scripts/gates.yml via gate_manifest.py
-# (scripts/README.md#gate-composition-and-admission). Individual targets below remain
-# as thin wrappers for one-off runs.
+# Composition is owned by scripts/gates.yml via gate_manifest.py. Individual
+# targets below are thin wrappers for one-off runs.
 
 check:
 	@python scripts/gate_manifest.py --tier check
@@ -42,49 +36,8 @@ validate-data:
 validate-pine:
 	@python scripts/check_pine_manifest.py
 
-skills-no-constants:
-	@python scripts/check_skills_no_constants.py
-
 boundaries:
 	@python scripts/check_boundaries.py
-
-path-liveness:
-	@python scripts/check_path_liveness.py
-
-# Root orientation-doc link gate (README/CLAUDE/PIPELINES/REPO_MAP/STATE).
-root-doc-liveness:
-	@python scripts/check_root_doc_liveness.py
-
-# Warn-only corpus scan (file-relative). NOT a `check` candidate and no longer
-# carries a promotion TODO (removed 2026-08-08): runtime disqualifies it from any
-# commit-time tier regardless of debt level, and the promotion clause had no owner,
-# no debt census and no trigger. It is a manual forensic tool — run it deliberately.
-# Scope caveat: it does not scan `.claude/`, so skill links are outside its reach.
-md-relative-links:
-	@python scripts/check_md_relative_links.py
-
-# Warn-only: docs cite a dead lab/ path whose tail still exists elsewhere under
-# lab/ (theme-nest / archive relocation rot). Pruned-by-design harnesses do not
-# flag. NOT in scripts/gates.yml — belt-churn YELLOW; wire at `tier: audit`
-# later if it earns a cadence (AGENTS.md §Gate composition authority).
-lab-path-relocation:
-	@python scripts/check_lab_path_relocation.py
-
-# Report-only INDEX/CATALOG liveness census (Open-row stale, Open+hot-closure,
-# CATALOG ACTIVE archive-owed). Wired gates.yml tier: audit (run via `make
-# audit`, not pre-commit/check); script still exits 0. `--apply-index` unused
-# on purpose.
-sync-liveness:
-	@python scripts/sync_liveness_indexes.py
-
-# operational_rules §7 lookup. Not a sixth index; prints the owner row + pointer.
-find-owner:
-	@python scripts/find_owner.py $(Q)
-
-# Cross-surface status-consistency gate (CATALOG <-> instrument-ledger DEAD-lists
-# <-> rejected_candidates.md; C2 CATALOG self-consistency + C3 stale analysis->archive tier).
-status-consistency:
-	@python scripts/check_status_consistency.py
 
 # Instrument-profile index (PROFILE blocks <-> MECHANISMS.md <-> generated view).
 instrument-profiles:
@@ -92,13 +45,6 @@ instrument-profiles:
 
 instrument-profiles-build:
 	@python scripts/instrument_profiles.py build
-
-# ADR lifecycle graph (headers, edges when enabled, derived INDEX).
-adr-graph:
-	@python scripts/check_adr_graph.py
-
-adr-graph-index:
-	@python scripts/check_adr_graph.py --regenerate-index
 
 # lab/CATALOG.md freshness (always-on). Stale → regenerate, then commit the delta.
 lab-catalog-check:
@@ -113,45 +59,11 @@ lab-catalog:
 lab-archive-check:
 	@python scripts/archive_lab_analysis.py --check
 
-# operational_rules §11 floor: do standing ADR falsifiers still name inputs that exist?
-# Manual `--stats` wrapper. Same census already runs at the explicit `make audit`
-# cadence as report-only `--stats` (never `--strict`; see the script docstring).
-# A hard / `--strict` gate would block commits on ADRs nobody is touching (M-22).
-falsifier-reachability:
-	@python scripts/check_falsifier_reachability.py --stats
-
 test:
 	@python -m pytest tests/ -x
 
 test-ops:
 	@python -m pytest tests/ops/ -x
-
-# Skill gate: path-reference linter (no-constants is skills-no-constants).
-skills-check:
-	@python scripts/check_skill_refs.py --all
-
-# Explicit skill release. Publication requires REVISION and TARGET.
-# `make sync-skills CHECK=1` and `make sync-skills-check` are read-only.
-ifneq ($(filter sync-skills,$(MAKECMDGOALS)),)
-ifeq ($(CHECK),)
-ifeq ($(REVISION),)
-$(error make sync-skills requires REVISION and TARGET, or CHECK=1)
-endif
-ifeq ($(TARGET),)
-$(error make sync-skills requires REVISION and TARGET, or CHECK=1)
-endif
-endif
-endif
-
-sync-skills:
-ifdef CHECK
-	@python scripts/sync_skills.py --check
-else
-	@python scripts/sync_skills.py --revision "$(REVISION)" --target "$(TARGET)"
-endif
-
-sync-skills-check:
-	@python scripts/sync_skills.py --check
 
 # Keep the newest 20 session entries live and preserve older entries verbatim
 # in quarterly archives. Preview is always available as a no-write target.

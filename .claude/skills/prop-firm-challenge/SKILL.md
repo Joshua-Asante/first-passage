@@ -5,13 +5,13 @@ description: Use this skill for firm/venue rules and portfolio Monte Carlo — t
 
 # Prop Firm / Portfolio Operations
 
-Durable mechanics (firm rules, sizing, protection, MC) for the LOCKED legacy book ([`AGENTS.md`](../../../AGENTS.md) §Strategy Reference) and any future firm re-open (R6 ADR §4); not a claim that a challenge is running. The Tradeify book's owners: [campaign record](../../../docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md), [venue edition](../../../ops/venue_editions/Tradeify_Select_100K.md).
+Durable mechanics (firm rules, sizing, protection, MC) for the LOCKED legacy book (`core/firm_rules.py`) and any future firm re-open (R6 ADR §4); not a claim that a challenge is running. The Tradeify book's owners: [campaign record](../../../docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md), [venue edition](../../../ops/venue_editions/Tradeify_Select_100K.md).
 
 **The repo is canonical; when this skill disagrees, trust the owner:** Pine for strategy code; `core/firm_rules.py`, `core/dd_protection.py`, `core/lifecycle.py` for sizing and risk constants; `core/strategies/CATALOG.md` → `core/strategies/_archive/<family>/LOCK.md` for locks; `docs/adr/` for decisions.
 
 ## Posture and routing
 
-Rail posture: [`AGENTS.md` §Live-execution posture](../../../AGENTS.md), [`c1-rail`](../c1-rail/SKILL.md).
+Rail and eval posture: [`AGENTS.md`](../../../AGENTS.md) money controls and [`STATE.md`](../../../STATE.md).
 
 - Live tier key: explicit `Tradeify_Select_100K`; no `ACTIVE_FIRM` switch.
 - Eval geometry (no drawdown lock in eval for Tradeify/MFFU): [§4 withdrawal ADR](../../../docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md).
@@ -21,9 +21,9 @@ Rail posture: [`AGENTS.md` §Live-execution posture](../../../AGENTS.md), [`c1-r
 - Arming, fills, disarm: `c1-rail`, [`ARMING_PROCEDURE.md`](../../../docs/notes/rail_build/ARMING_PROCEDURE.md). Live sizing: `BASE_RISK × DD_SCALE × lifecycle`, integer-qty floored in `ops/c1_rail/c1_sizing_host_reference.py`.
 - Broker CSV work: `trade-csv-reconcile`, kept separate from MC (live P&L looks back on broker exports; MC looks forward on TV backtest CSVs).
 
-## Rule 0 — audit-first
+## Audit-first
 
-Before any decision brief touching risk controls (dd_protection, lot sizing, account rules, protection tiers), read the production code, not memory, prior docs or reconstructed specs ([`docs/rule_0.md`](../../../docs/rule_0.md)).
+Before any decision brief touching risk controls (dd_protection, lot sizing, account rules, protection tiers), read the production code, not memory, prior docs or reconstructed specs.
 
 - **Suspect single-rule descriptions of multi-rule systems:** look for the second rule.
 - **Labels and paths are not data provenance.** Reconcile a CSV's trade count and headline metrics against the Pine-header backtest before accepting MC output, whatever its path says (2026-04-23 Aegis mislabel).
@@ -34,13 +34,13 @@ Before any decision brief touching risk controls (dd_protection, lot sizing, acc
 
 `AUTOMATION_FRIENDLY_PROP_FIRMS` lists target firms; status: [four-firm ADR](../../../docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md). The [R6 NO-GO](../../../docs/adr/2026-07-10-r6-nogo-futures-residual-disposition.md) bars only redeploying the locked legacy book.
 
-**Onboarding a firm:** add it to `FIRM_RULES`, run the engine-support pre-flight ([Rule 16](../../../docs/operational_rules.md); `daily_loss_pct: None` firms often need bespoke bust branches). If the execution feed differs from the MC's calibration feed, run `docs/spec/feed_equivalence_discovery_test_LOCKED.md` before re-MC against that tier key.
+**Onboarding a firm:** add it to `FIRM_RULES`, run an engine-support pre-flight (`daily_loss_pct: None` firms often need bespoke bust branches). If the execution feed differs from the MC's calibration feed, run `docs/spec/feed_equivalence_discovery_test_LOCKED.md` before re-MC against that tier key.
 
 ## Allocations and protection
 
-Lock table: [`AGENTS.md`](../../../AGENTS.md) §Strategy Reference. Sizing authority: `_BASE_RISK` (`core/firm_rules.py`), `BASE_RISK` (`core/dd_protection.py`). No re-sizing at pass. Per-strategy mechanics: [`references/strategy_reference.md`](references/strategy_reference.md).
+Locked allocations: `core/firm_rules.py`. Sizing authority: `_BASE_RISK` (`core/firm_rules.py`), `BASE_RISK` (`core/dd_protection.py`). No re-sizing at pass. Per-strategy mechanics: [`references/strategy_reference.md`](references/strategy_reference.md).
 
-Single-tier internal drawdown overlay: [`core/dd_protection.py`](../../../core/dd_protection.py), [`AGENTS.md`](../../../AGENTS.md) §Protection, [concept-not-constant](../../../docs/adr/2026-07-13-dd-protection-concept-not-constant.md).
+Single-tier internal drawdown overlay: [`core/dd_protection.py`](../../../core/dd_protection.py), [concept-not-constant](../../../docs/adr/2026-07-13-dd-protection-concept-not-constant.md).
 
 **It sits on top of, not instead of, the firm's own DD rule.** MC must thread the firm's `dd_type` through (`bust_trailing` vs `bust_static`/`bust_daily`).
 
@@ -48,17 +48,17 @@ Single-tier internal drawdown overlay: [`core/dd_protection.py`](../../../core/d
 
 - 6 months of live data accumulated
 - Any strategy version bump: re-MC before locking
-- Any allocation change beyond the documented Guardian safe band (AGENTS.md / owning lock ADRs)
+- Any allocation change beyond the documented Guardian safe band (needs Joshua's approval; AGENTS.md money control 4)
 - Any `dd_protection` constant change
 - Any firm/venue switch (new explicit tier key) or new firm onboarded
 
 ### A second protection tier
 
-⚠ The equity tier's revert triggers are **LOST** ([`AGENTS.md`](../../../AGENTS.md) §Protection): a new tier needs fresh pre-registration. Unratified prompts to *start* one: (1) bust above the live bar at a mix change; (2) a tail DD-protection cannot catch (slow bleed, peak tracking equity down); (3) a high-risk leg above its locked band, or a correlated fourth strategy. MC-validate any new tier against **live code semantics**.
+⚠ The equity tier's revert triggers are **LOST**: a new tier needs fresh pre-registration. Unratified prompts to *start* one: (1) bust above the live bar at a mix change; (2) a tail DD-protection cannot catch (slow bleed, peak tracking equity down); (3) a high-risk leg above its locked band, or a correlated fourth strategy. MC-validate any new tier against **live code semantics**.
 
 ## Futures sizing
 
-CFD lot sizing is retired; DXTrade `contractValue` safety fact: [`operational_rules.md` §3](../../../docs/operational_rules.md).
+CFD lot sizing is retired. DXTrade/TradingView `contractValue` defaults to 1 when unset; set it explicitly on CFD exports.
 
 - Size = `floor(target_risk_$ / (stop_distance × tick_value))`, capped by `micro_contract_cap`: an integer count.
 - **Granularity floor:** the balance below which intended risk rounds to 0 contracts. Guardian (single-position) tolerates it; in pyramided Striker DJ30/NAS100 a leg rounding to 0 breaks the edge. Derive floors first: `lab/analysis/legacy/futures_conversion_2026-07-01/derive_floors.py`.
@@ -99,7 +99,7 @@ Intraday-barrier runs (`simulate_path(intraday_low=...)`): take each day's excur
 
 ### Locked anchor (historical regression pin)
 
-Literals: [`docs/mc_anchor_history.md`](../../../docs/mc_anchor_history.md), [`AGENTS.md`](../../../AGENTS.md) §Strategy Reference (⚠ parsed by `ops/recall/guard.py`; do not "fix" in isolation). Regression: `tests/core/test_mc_synthetic_engine.py`. Scope: [rescope ADR](../../../docs/adr/2026-07-11-challenge-era-claims-rescope.md).
+Literals: [`docs/mc_anchor_history.md`](../../../docs/mc_anchor_history.md), `ops/recall/guard.py` (historical anchor constant). Regression: `tests/core/test_mc_synthetic_engine.py`. Scope: [rescope ADR](../../../docs/adr/2026-07-11-challenge-era-claims-rescope.md).
 
 The pin is FXIFY-shaped (static DD, one-shot eval): never apply it to trailing-DD tiers. Successor self-funded risk questions need a fresh Pre-Q (rescope ADR). Any new MC pin comes from a deterministic re-run of production code, never from a side script or eyeballed output ([forbidden moves](../../../docs/adr/2026-05-16-fxify-correct-timeout-semantic.md)).
 

@@ -46,7 +46,7 @@ TradingView's intra-trade (intrabar) max DD; do not cross-compare the two.
 
 ## Locked allocations / protection / MC pin (mirrors — not owned here)
 
-**operational_rules §7:** risk% / versions → [`AGENTS.md`](../../../../AGENTS.md) §Strategy Reference · `core/firm_rules.py` `_BASE_RISK`.
+Risk% / versions → `core/firm_rules.py` `_BASE_RISK`.
 `dd_protection` literals → `core/dd_protection.py` · CLAUDE §Protection.
 Portfolio MC pin → [`docs/mc_anchor_history.md`](../../../../docs/mc_anchor_history.md) · CLAUDE historical headline · engine `tests/core/test_mc_synthetic_engine.py`.
 Allocation-refresh ADR: [`2026-05-23`](../../../../docs/adr/2026-05-23-allocation-refresh-2.md).
@@ -62,7 +62,7 @@ This file's job below is **per-strategy Pine-header PF/WR/Net/DD/N** for `reconc
 **1R basis:** median loss (architecture: trend-rider, no BE).
 
 Baseline PF/WR/Net/DD/N table and archival vintages: redacted from the public tree — see the
-private operational archive. Reproduces the AGENTS.md baseline anchor (values not restated here).
+private operational archive. Reproduces the historical MC baseline anchor (values not restated here).
 
 **Notes:**
 - v5.5 delta from v5.4: two hour-block inputs flipped TRUE (all other logic unchanged) — see the
