@@ -619,6 +619,10 @@
       "ledger": "ops/instruments/M6E.md",
       "structure": [
         {
+          "claim": "One fixed European-morning expression closed negative under its fixed cost/fill model. Independent code/evidence review found no blocking defect; no raw-data reproduction or builder acceptance is claimed.",
+          "source": "#e3-fixed-european-morning-exploration"
+        },
+        {
           "claim": "Third-leg Stage-1 outcome E-COST, cited from M6B.md W4; the record itself was not read at ledger creation.",
           "source": "#E2"
         }

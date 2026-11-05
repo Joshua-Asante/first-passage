@@ -34,8 +34,8 @@ documents the camp boundary for humans/tools.
 
 | slug | theme | status | hot | one-liner | body | heavy |
 |---|---|---|---|---|---|---|
-| builder_power_2026-11 | _inbox | ACTIVE | yes | — | lab/analysis/_inbox/builder_power_2026-11/ | — |
 | builder_5e_check_2026-11 | _inbox | ACTIVE | yes | — | lab/analysis/_inbox/builder_5e_check_2026-11/ | — |
+| builder_power_2026-11 | _inbox | ACTIVE | yes | — | lab/analysis/_inbox/builder_power_2026-11/ | — |
 | mnq_dailygeom_notice_2026-08-29 | _inbox | ACTIVE | yes | — | lab/analysis/_inbox/mnq_dailygeom_notice_2026-08-29/ | — |
 | mym_mechanism_harvest_2026-08-29 | _inbox | ACTIVE | yes | — | lab/analysis/_inbox/mym_mechanism_harvest_2026-08-29/ | — |
 | prop_payout_geometry_2026-10 | _inbox | ACTIVE | yes | research input only. 50K tiers (target/drawdown 1.5) beat 100K (2.0) on fees per first payout at every Sharpe tested;... | lab/analysis/_inbox/prop_payout_geometry_2026-10/ | — |
@@ -73,6 +73,12 @@ documents the camp boundary for humans/tools.
 |---|---|---|---|---|---|---|
 | orb_mym_v04_riskbudget_2026-09-02 | orb | ACTIVE | yes | `EXPLORATORY — NO FILTER PROMOTED; ONE PINE INPUT ADDED, DEFAULT OFF`. Candidate | lab/analysis/orb/orb_mym_v04_riskbudget_2026-09-02/ | — |
 | orb_mym_volume_gate_2026-09-02 | orb | ACTIVE | yes | `SOURCE-STAGE EXPLORATORY — P50 SELECTED FOR FORWARD TEST, NOT CONFIRMED` | lab/analysis/orb/orb_mym_volume_gate_2026-09-02/ | — |
+
+### fx
+
+| slug | theme | status | hot | one-liner | body | heavy |
+|---|---|---|---|---|---|---|
+| m6e_european_breakout_2026_11 | fx | CLOSED | yes | negative fixed-expression result preserved; independent code/evidence review clean; reserved returns untouched. | lab/analysis/fx/m6e_european_breakout_2026_11/ | — |
 
 ### legacy
 

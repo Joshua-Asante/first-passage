@@ -175,6 +175,7 @@ THEME_ORDER: tuple[str, ...] = (
     "c1",
     "striker",
     "orb",
+    "fx",
     "aegis",
     "regime",
     "harvest",
