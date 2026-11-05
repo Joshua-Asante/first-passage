@@ -318,7 +318,8 @@ def test_instrument_geometry_has_one_core_owner():
                 ("ES", 50.0, .25, 12.50),
                 ("NQ", 20.0, .25, 5.0), ("YM", 5.0, 1.0, 5.0),
                 ("RTY", 50.0, .10, 5.0), ("GC", 100.0, .10, 10.0),
-                ("NG", 10000.0, .001, 10.0), ("MNG", 1000.0, .001, 1.0)]
+                ("NG", 10000.0, .001, 10.0), ("MNG", 1000.0, .001, 1.0),
+                ("M6E", 12500.0, .0001, 1.25), ("M6A", 10000.0, .0001, 1.0)]
     for owner in (module, cost_model):
         assert list(owner.INSTRUMENT_SPECS) == [row[0] for row in expected]
         for symbol, *values in expected:

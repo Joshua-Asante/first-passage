@@ -547,6 +547,26 @@ A forward confirm buys nothing over the fixed holdout for the equity micros. It 
 - The operator reports 2,016,728 bars validated with zero errors by a local script.
 - The repo validator run (§9.3 step 2), the `SHA256SUMS` delta and the M6E landing are owed to a local session. That run, not the local script, is the verification of record (Rule 21).
 
+**Landing record** (2026-11-04). Repo validator, one call per complete page set, 15m. This is the verification of record for §9.3 step 2. Bars were counted independently: raw CSV rows of type `Entry`, unique first `Signal` field across pages, importing no repo code. Receipts are local and gitignored, at `local_artifacts/bar-export-landing-2026-11-04/<SYM>.receipt.json`.
+
+| Symbol | Pages | Unique bars | First open (UTC) | Last open (UTC) | Validator | Receipt SHA-256 |
+|---|---|---|---|---|---|---|
+| MNQ | 8 | 176,622 | 2019-05-05T22:00Z | 2026-11-02T21:45Z | PASS | `2d2285ff9481c2bd3e67bba6fb1b8539e4be16711de7dc7ae752701be6bd4a7c` |
+| MYM | 8 | 176,473 | 2019-05-05T22:15Z | 2026-11-02T21:45Z | PASS | `f62c6c654a5a4a8627b55e6f5b7ca26fa5908c90c0e70b8830bbf3e16239a974` |
+| M2K | 8 | 176,400 | 2019-05-05T22:00Z | 2026-11-02T21:45Z | PASS | `893a1e9e6c029f0415d4933013f9536e02533b9a44b364e8f577e90b4790e202` |
+| MGC | 17 | 358,488 | 2010-10-04T10:00Z | 2026-11-02T21:45Z | PASS | `3cac6da8147ae11770979611e9f3781b3c0718380c2f9df89d8eab16fca8ebf8` |
+| MCL | 6 | 125,685 | 2021-07-11T22:00Z | 2026-11-02T21:45Z | PASS | `c627aa2f5d888d9ae680d3153fe292c6c108fc826b9bdd31964d759f373237d5` |
+| 6J | 26 | 593,680 | 2001-01-22T20:00Z | 2026-11-02T21:45Z | PASS | `c141d5d1dd4cbf438388bcf55134e803f04ddafe0de50c72b919022443e9cb6f` |
+| M6E | 18 | 409,380 | 2009-03-23T19:00Z | 2026-11-02T21:45Z | PASS | `d3c31df89b600a7fe468c1f9d453042184aafec670ca543a3ccf6e22ddbacbc0` |
+| MES | 8 | 176,734 | 2019-05-05T22:00Z | 2026-11-03T21:45Z | PASS | `e224eb8fe8b0cb7fa4760ecbcfb618a109c57f117ede41bbeb9ec758d65ccc4d` |
+| M6A (from 2011) | 16 | 361,533 | 2011-01-02T23:00Z | 2026-11-03T21:45Z | PASS | `cd5d016ff59ca5782d2811d1a6bb90b3ba3095bb93972c445e2df12eb84a2e3d` |
+
+- The seven 11-03 symbols sum to 2,016,728 bars, matching the operator's report.
+- **M6A landed from 2011 only, by operator ruling (2026-11-04).** The full 18-page set (377,701 bars, from 2009-03-23T19:00Z) failed first. The 2009 page (4,781 bars) and 2010 page (11,387 bars) are excluded and unregistered. Verbatim: `validate_bar_export_v2: page=1 row=4663 field=open: must be finite and positive`. 37 nonpositive-price bars, all in `…_2026-11-03 (1).csv`, from 2010-04-25 18:30 to 2010-04-26 15:15 New York. The 2009 page is clean but would sit alone before a year-long gap. The August pages start in 2022, so they cannot fill the window.
+- Mintick and pointvalue match CME for all nine symbols (read 2026-11-04). M6E, M6A, MES, MNQ, M2K and 6J are from CME pages. MYM, MGC and MCL are from search summaries of CME pages, because their spec tables did not render.
+- `SHA256SUMS`: +115 rows, −0: these validated pages only. The 27 unvalidated pages exported 2026-11-01 (MZC, MZS, MZW, MHG, SIL, MNG) are not registered (Joshua, 2026-11-05: "remove the 27 unvalidated rows"); their bytes stay outside the canonical tree until he approves them and their complete page sets pass validation.
+- The M15 panels were not refreshed. Closures and identity ledgers pin the current panel hashes, and the producer overwrites those bytes in place.
+
 **Calendar.**
 - Coverage stays **2016-01-01..2026-12-31** (Joshua, 2026-11-03: "Keep 2016, and go with option B"; PR #1045). For 2009–2015, the third-party encodings disagree on 3–8 dates a year, against 0–1 from 2016, so those years need CME's primary advisories, which the cloud cannot reach.
 - **Option B** (PR #1048): the builder closes a calendar date only when at least one recorded status is not `NORMAL`. It fails closed on a missing or unknown status, so the 20 informational 2022–2026 rows become traded sessions.

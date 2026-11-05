@@ -2,7 +2,7 @@
 
 **Symbol:** NYMEX Micro WTI Crude Oil futures (MCL; Globex, Databento `GLBX.MDP3`) · **Parent:** CL · **Asset class:** energy futures
 **Status:** **OPEN — geometry-cleared, mechanism-owed.** Research/discovery only. Frozen fade config `CONFIG-B-MCL-2026-07-31` scored this session under TNEC; **not a candidate; not elected.** No live leg, no allocation, no K spend.
-**Last updated:** 2026-08-18
+**Last updated:** 2026-11-04
 
 **Purpose:** single source of instrument-level truth (operational rule 10, [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](../../docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md)). Created **2026-08-09** as the live touching session for [`instrument-lane SPEC`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/spec/2026-08-09-instrument-lane-mcl-mes-mgc-spec.md) — ADR [`2026-07-25-instrument-profile-index.md`](../../docs/adr/2026-07-25-instrument-profile-index.md) §5 (creation-on-touch). Distinct from the CFD ledger [`USOIL.md`](USOIL.md); findings do not transfer automatically.
 
@@ -85,6 +85,7 @@ Limb reading (link out; do not restate σ/K as authority):
 
 ## SESSION LOG
 
+- **2026-11-04** — **TV export landed.** `MCL1!` BAR EXPORT v0.2 at 15m: 6 pages, 125,685 unique bars, 2021-07-11T22:00Z → 2026-11-02T21:45Z, `validate_bar_export_v2.py` PASS ([PR #1077](https://github.com/Joshua-Asante/first-passage/pull/1077), [landing record](../../docs/notes/2026-11-01-generation-phase-strengthening-DRAFT.md#11-updates-2026-11-04)). Limitation: the M15 panels were not refreshed, so this coverage exists in the exports only. No K.
 - **2026-08-18e** — **`Q-CONDVAL-1` `FALSIFIED` (C6).** Conditioner-engineering branch parked at
   $0/K=0. Cell yaml stays `AMBIGUOUS-PARKED` (profile-schema legal; finding is still
   SIGNAL-GENERIC on C5). Mechanism-owed UNCHANGED.

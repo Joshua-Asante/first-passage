@@ -2,9 +2,9 @@
 
 **Date:** 2026-11-04.
 **Theme:** fx
-**Status:** CLOSED — one fixed exploratory run recorded; independent review pending; reserved returns untouched.
+**Status:** CLOSED — negative fixed-expression result preserved; independent code/evidence review clean; reserved returns untouched.
 
-One operator-approved expression, K=1, was registered before outcomes. No candidate was submitted to validation. This local checkpoint is not independently reviewed acceptance, a builder-gate verdict, or evidence of Tradeify account success.
+One operator-approved expression, K=1, was registered before outcomes. Reject this fixed expression under the stated cost/fill model: overall, both directions and every tested year were net-negative. No candidate was submitted to validation. This is an exploratory rejection, not a builder-gate verdict or a conclusion about every FX breakout or Tradeify account success.
 
 ## Publication boundary
 
@@ -50,8 +50,23 @@ Continuous-series bars cannot establish executable fills, spread/depth, expiry-s
 - The single empirical command exited 0 with stable selected inputs and frozen sources. All 18 input hashes were rechecked. Arithmetic, costs, direction/year partitions and dates reconciled. The primary checkout's broad manifest check has 97 unrelated EXTRA files; targeted M6E hashes pass. Absent-tree skips here are not byte-integrity proof.
 - Original execution and LF-normalized full-summary hashes remain in execution evidence. The public summary is now a deliberate count-only extract; it is not content-identical to the execution summary.
 
-## Review and local checkpoint
+## Independent review — 2026-11-05
 
-Claude review did not complete: the CLI attempt failed authentication and no browser review was submitted. The operator then directed a local commit and notification to the Codex chat **Inspect market regime questions**. Independent review remains pending; this local checkpoint does not waive cross-agent review for subsequent acceptance or merge.
+Claude reviewed checkpoint `3b236bbbc34254cd0b7ebfcb91f39a7f6b30a91f` from a bounded packet of code, tests, registration, aggregate results and provenance. Verdict: **clean, no blocking findings; the negative conclusion holds for this exact expression under its stated model.** The review traced the fixed rule, cost units/deduction, selected files, pre-decode year fence and bootstrap pairing. It was an independent code/evidence review, not a raw-data reproduction; Claude did not run the cited tests. The subsequent integration delta reconciles main's independently landed M6E ledger and adds this review record; it changes no experiment code, parameters, scored inputs or outcomes.
 
-Commit-preparation budget: one publication correction, existing valid test evidence, normal local commit gates, zero new empirical looks or purchases.
+Non-blocking limits retained:
+
+- The decoder was not separately listed in the prospective source hash table. It is unchanged from the recorded base (`055048b0c922dda763ffdcf3fb9eeb9b777ab739`, Git blob); its execution SHA-256 was recorded. No retrospective freeze is represented as prospective.
+- Success flags in the execution record describe guards having passed, not independent operating-system file-access telemetry.
+- Incomplete mornings are excluded before bootstrapping, so blocks can bridge gaps; zero-trade resamples are omitted. Intervals remain descriptive. Zero-volume bars would be accepted; the run reported none in its required windows.
+- Continuous-series roll identity and executable spread/depth remain unresolved. The gross result provides no demonstrated cushion for costs; it is not proof of a statistically negative gross edge.
+
+The author rechecked nine scored-file hashes (all match) and parsed equality of original versus LF registration/full-summary copies. The public summary is deliberately count-only; it is not merely a line-ending conversion. The 2025–2026 files were not reopened in this follow-up. Their metadata/hashes were inspected in the original structural audit; the fixed experiment neither decoded their prices nor computed their signals or returns.
+
+Private review and verification records, indexed in `docs/evidence/PRIVATE_EVIDENCE.sha256`:
+- `local_artifacts/m6e-fixed-20261104/review/claude-review-R1-summary.txt`, SHA-256 `b8cb7e1a694f020b63344961a26b4cc39be35f791064c7d33b1903cd01e1bb53`.
+- `local_artifacts/m6e-fixed-20261104/review/provenance-check-20261105.json`, SHA-256 `c5d7b974e8a924d061d830cd22c69d80d5dc1d6a799c118b9e52317e12c8e0dc`.
+
+Registry: [m6e_european_breakout_fixed_20261104](../../../../discovery_manifests/m6e_european_breakout_fixed_20261104.json), closed K=1, no candidate submitted. No new empirical look, tuning, reserved-sample use, MCL ORB R1 change or EIA work.
+
+Integration verification: the same checkout launcher ran both affected test files together, with two workers: **114 passed**. Record `.cache/fp-verification/20261105T054532Z-8dcb1cfe6d58/record.json` is completed, exit 0, verification exit 0, source stable. The first attempt stopped before tests on Windows temporary-directory permissions (failed record in execution evidence); the identical check succeeded outside the sandbox. Main's canonical manifest is retained byte-for-byte, including all 18 registered M6E inputs.

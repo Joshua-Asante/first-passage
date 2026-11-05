@@ -78,7 +78,7 @@ documents the camp boundary for humans/tools.
 
 | slug | theme | status | hot | one-liner | body | heavy |
 |---|---|---|---|---|---|---|
-| m6e_european_breakout_2026_11 | fx | CLOSED | yes | one fixed exploratory run recorded; independent review pending; reserved returns untouched. | lab/analysis/fx/m6e_european_breakout_2026_11/ | — |
+| m6e_european_breakout_2026_11 | fx | CLOSED | yes | negative fixed-expression result preserved; independent code/evidence review clean; reserved returns untouched. | lab/analysis/fx/m6e_european_breakout_2026_11/ | — |
 
 ### legacy
 

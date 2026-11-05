@@ -2,7 +2,7 @@
 
 **Symbol:** CME Micro E-mini Russell 2000 ($5/index pt) futures (M2K; Globex, Databento dataset `GLBX.MDP3`) · **Parent:** RTY ($50/pt, tick $5.00 — **un-ledgered**, see §ACTIVE) · **Asset class:** equity index futures
 **Status:** **Research/discovery only. TV 15m panel landed 2026-08-13 (`M2K_M15.csv`); no candidate, no manifest, K bank 0.** Listed in Tradeify's Equity Index Product Group (cost basis useful) but **not a c1 leg** and not proposed as one — no live firm deployment to share a book with.
-**Last updated:** 2026-08-13
+**Last updated:** 2026-11-04
 
 **Purpose:** single source of instrument-level truth (operational rule 10, [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](../../docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md)). Any session deriving/testing/adjudicating on M2K MUST read this at session start and append a dated disposition. **Created 2026-07-27** as the live touching session for [`WSTRUCT-M2K-1`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/briefs/rnd-pipeline/WSTRUCT-M2K-1-weekly-structure-component-confirm-scoping.md) scoping — ADR [`2026-07-25-instrument-profile-index.md`](../../docs/adr/2026-07-25-instrument-profile-index.md) §5 permits ledger creation on a live touching session, and forbids it for a "complete the matrix" motive. **Created to record near-absence of prior work.** Later MSL-C3-K2 work landed a TV panel and PROFILE cells — see W4 and `## PROFILE`. Creating the ledger made the class-level bar M1 *binding and visible* on this instrument, which is the whole point of the index layer.
 
@@ -79,6 +79,7 @@ structure:
 
 ## SESSION LOG
 
+- **2026-11-04** — **TV export landed.** `M2K1!` BAR EXPORT v0.2 at 15m: 8 pages, 176,400 unique bars, 2019-05-05T22:00Z → 2026-11-02T21:45Z, `validate_bar_export_v2.py` PASS ([PR #1077](https://github.com/Joshua-Asante/first-passage/pull/1077), [landing record](../../docs/notes/2026-11-01-generation-phase-strengthening-DRAFT.md#11-updates-2026-11-04)). Limitation: the M15 panels were not refreshed, so this coverage exists in the exports only. No K.
 - **2026-08-13 (kill)** — **MSL-C3 OPERATOR-KILL** ([closure](../../docs/briefs/closures/MSL-C3-closure-operator-kill.md)). B4 declined after Stage-1 PASS; G0 never frozen; mechanism class not killed (C1 may use on MYM). $0 · K=0.
 - **2026-08-13 (Stage-1)** — **MSL-C3 Stage-1 PASS** ([`STAGE1.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/archive/msl_c3_m2k_2026-08/STAGE1.md)). Stories frozen (priority: PDH/PDL failed-break reclaim → overnight-range held); route ①; M1 RAISED BAR CLEAR via SLR precedent; three kill limbs PASS at RT $2.82 / stop 32 pts / 4 contracts. Mechanism `pdh-pdl-failed-break-reclaim` NEW in MECHANISMS.md. **B4 unpaid.** No G0, Pine, pull, $0 · K=0.
 - **2026-08-13** — **MSL-C3-K2 dual-axis explore FALSIFIED** ([closure](../../docs/briefs/closures/MSL-C3-K2-closure-falsified.md) · [`RESULTS_g2`](../../lab/archive/msl_c3_m2k_2026-08/RESULTS_g2.md)). Panel landed from TV BAR EXPORT `…_14faf` → `M2K_M15.csv` sha256 `81922570…`; both axes CI entirely &lt; 0 on IS; CONFIRM unread; $0 · K spent=0. S2B unblocked.

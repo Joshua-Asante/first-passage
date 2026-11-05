@@ -58,5 +58,34 @@
   "private_full_report_sha256": "3fe0fc989633c86ce26f1445019c4b94edb0b1ae78d932a86e3d7516ec538525",
   "private_full_summary": "local_artifacts/m6e-fixed-20261104/summary.json",
   "publication": "Count-only public extract under current AGENTS.md derived-output rule; original full report and summary preserved privately. No rerun or change to outcomes.",
-  "independent_review": "Pending. CLI authentication failed; no browser review submitted. Operator directed local checkpoint and Codex-chat notification."
+  "independent_review": {
+    "reviewer": "Claude",
+    "date": "2026-11-05",
+    "reviewed_commit": "3b236bbbc34254cd0b7ebfcb91f39a7f6b30a91f",
+    "verdict": "clean; no blocking findings",
+    "scope": "code and supplied aggregate evidence only; no raw-data reproduction or reviewer test execution",
+    "private_summary": "local_artifacts/m6e-fixed-20261104/review/claude-review-R1-summary.txt",
+    "private_summary_sha256": "b8cb7e1a694f020b63344961a26b4cc39be35f791064c7d33b1903cd01e1bb53"
+  },
+  "followup_provenance": {
+    "path": "local_artifacts/m6e-fixed-20261104/review/provenance-check-20261105.json",
+    "sha256": "c5d7b974e8a924d061d830cd22c69d80d5dc1d6a799c118b9e52317e12c8e0dc",
+    "scored_hashes_match": true,
+    "reserved_files_reopened": false,
+    "parsed_registration_equal": true,
+    "parsed_full_summaries_equal": true,
+    "decoder_matches_base": true
+  },
+  "integration_verification": {
+    "record": ".cache/fp-verification/20261105T054532Z-8dcb1cfe6d58/record.json",
+    "record_sha256": "01c5423cc7456245182ca4d3624c1b3348172d29c9c06bb746c1f3dd2c4238fa",
+    "status": "completed",
+    "exit_code": 0,
+    "verification_exit_code": 0,
+    "tests_passed": 114,
+    "source_stable": true,
+    "failed_sandbox_attempt": ".cache/fp-verification/20261105T054349Z-4c303e0783f4/record.json",
+    "failure_reason": "Windows temporary-directory access denied before test execution; same launcher/check rerun outside sandbox succeeded",
+    "canonical_manifest": "Exact origin/main manifest retained; all 18 M6E input registrations present; duplicate merge additions removed"
+  }
 }

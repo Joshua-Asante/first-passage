@@ -612,23 +612,22 @@
     "M6E": {
       "asset_class": "fx-futures",
       "bars": [],
-      "cost_hurdle": {
-        "basis": "Tradeify 1.60 fees plus two adverse ticks per side at 1.25 per tick; not an observed spread.",
-        "source": "#e1-fixed-european-morning-exploration",
-        "units": "USD/round-trip/contract (exploratory assumption)",
-        "value": 6.6
-      },
+      "cost_hurdle": null,
       "family": [],
       "inherited_bars": [],
       "k_bank_source": "../../discovery_manifests/",
       "ledger": "ops/instruments/M6E.md",
       "structure": [
         {
-          "claim": "One fixed European-morning breakout was evaluated without optimization or a holdout look. No candidate was submitted to validation. Restricted performance evidence stays private; independent review is pending.",
-          "source": "#e1-fixed-european-morning-exploration"
+          "claim": "One fixed European-morning expression closed negative under its fixed cost/fill model. Independent code/evidence review found no blocking defect; no raw-data reproduction or builder acceptance is claimed.",
+          "source": "#e3-fixed-european-morning-exploration"
+        },
+        {
+          "claim": "Third-leg Stage-1 outcome E-COST, cited from M6B.md W4; the record itself was not read at ledger creation.",
+          "source": "#E2"
         }
       ],
-      "venue_note": "M6E is listed in Tradeify's published fee schedule. This is product availability, not a strategy deployment or account authorization.",
+      "venue_note": "Offered at Tradeify, Bulenox and MFFU; BluSky's markets page lists 6E but not M6E (generation note \u00a78.3, correction 2026-11-04). Commissions live in core/firm_rules.py comments; COMMISSION_BINDINGS classes M6E unavailable until a firm_symbol_row exists.",
       "venue_tradable": true
     },
     "MCL": {
