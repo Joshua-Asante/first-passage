@@ -1,9 +1,9 @@
 """Private Pine is read in place, never copied into a worktree.
 
-docs/operational_rules.md §9 and campaign §60 rule 1: the accepted book's Pine
-and runtime ports are read by the primary checkout's absolute path. The retired
-worktree-copy tool copied every ``*.pine`` under the primary checkout, book files
-included; these tests keep it retired and keep operational_rules §9 on the in-place mechanism.
+AGENTS.md (Data and credentials): the accepted book's Pine and runtime ports are
+read only in place, in the primary checkout. The retired worktree-copy tool copied
+every ``*.pine`` under the primary checkout, book files included; these tests keep
+it retired and keep AGENTS.md on the in-place rule.
 """
 from __future__ import annotations
 
@@ -55,11 +55,10 @@ def test_no_tracked_file_cites_the_copy_tool_live():
     assert not live, f"retired Pine copy tool cited as live: {live}"
 
 
-def test_rule_9_reads_pine_in_place():
-    rules = (REPO / "docs/operational_rules.md").read_text(encoding="utf-8")
-    rule_9 = rules[rules.index("\n## 9. "):rules.index("\n## 10. ")]
-    assert "absolute path" in rule_9 and "Never copy" in rule_9
-    assert "core/strategies/book/" in rule_9
+def test_agents_md_reads_private_sources_in_place():
+    agents = " ".join((REPO / "AGENTS.md").read_text(encoding="utf-8").split())
+    assert "read only in place" in agents and "Never copy" in agents
+    assert "core/strategies/BOOK_SOURCES.sha256" in agents
 
 
 @needs_git

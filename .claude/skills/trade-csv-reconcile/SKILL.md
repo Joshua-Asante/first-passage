@@ -7,7 +7,7 @@ description: Use this skill whenever Joshua uploads or references a TradingView 
 
 Canonical pipeline for parsing TradingView (and related) trade CSVs, computing headline metrics, and — when a locked-book baseline applies — reconciling against Pine-header backtest anchors. Exists because re-derived pairing, R-pinning and metric math drifted (n=209 vs 201, Net P&L 2× from Entry+Exit double-count).
 
-**Mission framing:** live posture is owned by `AGENTS.md` §Purpose / §Live-execution posture. Pepperstone TV exports were the locked-book historical panel; the feed is retired (2026-08-02). Do **not** route CSV sessions through $200K challenge-era ceremony.
+**Mission framing:** live posture is owned by `AGENTS.md` and `STATE.md`. Pepperstone TV exports were the locked-book historical panel; the feed is retired (2026-08-02). Do **not** route CSV sessions through $200K challenge-era ceremony.
 
 **Source-of-truth hierarchy:** Pine source on disk (authoritative for locked strategies) → Pine-header backtest panel (lock-of-record) → `references/baselines.md` (cached anchors) → memory (lossy). If baselines disagree with a fresh Pine read, the Pine read wins; update `references/baselines.md`.
 
@@ -117,7 +117,7 @@ implied_risk_pct = (1R_dollars / 200_000) × 100
 scaled_pnl_per_trade = raw_pnl × scale_factor
 ```
 
-Use locked allocations from [`AGENTS.md`](../../../AGENTS.md) §Strategy Reference / `core/firm_rules.py` `_BASE_RISK` (not restated here; `references/baselines.md` is PF/WR/Net/DD cache only). **Skip this step** for ORB-MNQ / venue-native research CSVs and for c1 fill dumps — those are not the locked four-strategy challenge book.
+Use locked allocations from `core/firm_rules.py` `_BASE_RISK` (not restated here; `references/baselines.md` is PF/WR/Net/DD cache only). **Skip this step** for ORB-MNQ / venue-native research CSVs and for c1 fill dumps — those are not the locked four-strategy challenge book.
 
 Historical static-equity challenge sizing was against initial $200K, NOT compounded equity. Live c1 sizing is the rail (`BASE_RISK × DD_SCALE × lifecycle` + integer qty): never re-derive challenge `$200K` multipliers for Tradovate fills.
 
@@ -158,7 +158,7 @@ Failure modes that have actually happened, ranked by frequency:
 
 **5. <30-day TV JPY exports.** See Reconcile check 0.
 
-**6. contractValue on old CFD CSVs (HISTORICAL).** TradingView without explicit `contractValue` defaults to 1; see [operational_rules §3](../../../docs/operational_rules.md). Irrelevant to MYM/MNQ micros.
+**6. contractValue on old CFD CSVs (HISTORICAL).** TradingView without explicit `contractValue` defaults to 1. Irrelevant to MYM/MNQ micros.
 
 **7. Encoding/BOM on first column.** TradingView exports have a BOM (`\ufeff`) on the first header. Use `encoding='utf-8-sig'` and strip column whitespace, or `df['Trade #']` lookups silently fail.
 

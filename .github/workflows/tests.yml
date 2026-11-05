@@ -120,34 +120,17 @@ jobs:
         # Canonical list: tests that consume tracked markdown or .claude files.
         run: >-
           pytest
-          tests/test_state_roll.py
-          tests/test_state_currency.py
-          tests/test_sessions_queue_bind.py
-          tests/test_find_owner.py
           tests/governance/test_private_pine_read_in_place.py
-          tests/test_check_skill_refs.py
-          tests/test_check_skill_refs_navdirs.py
-          tests/scripts/test_check_handoff_brief_form.py
           tests/test_claude_review_workflows.py
           tests/test_validate_c1_monitoring_acceptance.py
           tests/ops/test_c1_rail_arm.py
-          tests/test_check_adr_graph.py
-          tests/test_lessons_index.py
           tests/governance/test_sentinel_cli.py
-          tests/test_check_skills_no_constants.py
           tests/core/test_mc_mode_switching.py
-          tests/governance/test_supersession_placement.py
           tests/ops/test_recall_guard.py
           tests/ops/test_recall_index.py
-          tests/scripts/test_check_pursuit_records.py
-          tests/scripts/test_check_skill_deploy_sync.py
           tests/scripts/test_guard_operator_acts.py
           tests/scripts/test_guard_shell_command.py
-          tests/scripts/test_guard_worktree_evidence.py
           tests/test_book_score.py
-          tests/test_check_brief.py
-          tests/test_check_brief_skill.py
-          tests/test_check_lifecycle_consistency.py
           tests/test_coldstore_phase_b.py
           tests/test_four_firm_remc_runner.py
           tests/test_harness_guards_acceptance.py
@@ -160,10 +143,8 @@ jobs:
           tests/test_prop_survivor_scoring.py
           tests/test_reconcile_skill_schema.py
           tests/test_register_search_prereg.py
-          tests/test_repo_map_scripts_table.py
           tests/test_score_candidate_per_tier.py
           tests/test_size_feasibility.py
-          tests/test_sync_skills.py
           tests/test_tradeify_phase1_runner.py
           tests/test_check_boundaries.py
           tests/test_discovery_register_search.py

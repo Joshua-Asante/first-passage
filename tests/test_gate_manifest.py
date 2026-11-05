@@ -1,4 +1,4 @@
-"""W5 gate-manifest runner — composition loads and selects without dropping gates."""
+"""Gate-manifest runner: composition loads and selects without dropping gates."""
 from __future__ import annotations
 
 import importlib.util
@@ -17,82 +17,27 @@ gm = importlib.util.module_from_spec(_SPEC)
 sys.modules[_SPEC.name] = gm
 _SPEC.loader.exec_module(gm)
 
+# 2026-11 governance cut: gates.yml keeps only gates that protect code, data
+# integrity or the money controls. Set-equality below catches any drift.
 EXPECTED_ALWAYS = {
-    "skills-no-constants",
-    "skill-refs",
     "pine-manifest",
     "pine-pin-provenance",
     "card-pins",
     "boundaries",
-    # 2026-08-15 (governance-belt audit action 3): reverted from
-    # path-conditional -- both gates detect dead links, and a link target
-    # can be moved/deleted without touching the file that points at it, so
-    # no staged_regex correctly scopes "when this violation can occur".
-    "path-liveness",
-    "root-doc-liveness",
-    # Task 1 (same ADR) — ADR-cited skill-script deploy-drift check; cheap
-    # (grep + existence check), so `always` rather than path-conditional.
-    # 2026-08-28 review fix: this entry was missing here even though the
-    # gate had already landed in gates.yml (commit ef7df14 added
-    # m1-tree-skew to this set but not this one, landed the same window) —
-    # a membership-only test let the drift go unnoticed; see the
-    # set-equality assertion added to test_manifest_lists_all_always_gates
-    # below to guard against a repeat.
-    "skill-deploy-sync",
-    # STATE currency (Last curated + rolling next-deadline + past dated
-    # subsections). always, not path-conditional on STATE.md: a stale date
-    # must fail the next unrelated commit when the daily digest is skipped.
-    "state-currency",
-    # 2026-09-24: blanket-add rejection for local-only roots (recovery/, tmp/,
-    # root tmp-*) and oversize blobs. always for the same reason as
-    # state-currency: the violating change is by construction an "unrelated"
-    # blanket add that no staged_regex selects.
+    # Blanket-add rejection for local-only roots and oversize blobs; always,
+    # because the violating change is an unrelated add no staged_regex selects.
     "staged-debris",
-    # Structural half of M1 artifact validation (unreadable JSON, missing/
-    # invalid fields, bad status, secrets_present != false, secret-shaped
-    # content) — split from m1-tree-skew (audit-tier) so a corrupted or
-    # secret-shaped artifact still fails a commit even though normal
-    # deployed-vs-main drift does not.
+    # Structural M1 artifact validation (corrupt JSON, bad fields, secrets).
     "m1-artifact-structure",
-    # Org cleanup P1.1: a link breaks when its target moves, and a cap can be
-    # exceeded by any edit, so neither has a staged_regex that scopes it.
-    "md-anchors",
-    "doc-budgets",
 }
 
 EXPECTED_PATH_CONDITIONAL = {
     "evidence-store",
-    "status-consistency",
-    "adr-graph",
-    "lab-catalog",
-    "instrument-profiles",
-    "sessions-order",
-    "sessions-append-only",
-    "sessions-queue-bind",
-    "supersession-placement",
-    "closure-disposition",
-    "handoff-authority",
-    "handoff-brief-form",
-    "governance-prose-control-chars",
-    "repo-map-layers",
-    "lifecycle-consistency",
-    # SSOT Phase 3 — cost-model closed-world partition
     "cost-model-closed-world",
     "durable-store-pragmas",
-    "repo-map-scripts-table",
 }
 
-EXPECTED_AUDIT = {
-    "instrument-rejection-coverage",
-    "sync-liveness",
-    "docs-runtime-inventory",
-    "m1-tree-skew",
-    "falsifier-reachability-census",
-    "notice-grade-k-correction",
-    "spec-provenance",
-    "rule2-trip-log-liveness",
-    "evidence-archive",
-}
+EXPECTED_AUDIT: set[str] = set()
 
 
 def test_manifest_lists_all_always_gates():
@@ -142,12 +87,10 @@ def test_pre_commit_dry_run_includes_always_gates():
         text=True,
     )
     for gid_cmd_fragment in (
-        "check_skills_no_constants.py",
-        "check_skill_refs.py",
         "check_pine_manifest.py",
         "check_boundaries.py",
-        "check_path_liveness.py",
-        "check_root_doc_liveness.py",
+        "validate_c1_monitoring_acceptance.py",
+        "check_staged_debris.py",
     ):
         assert gid_cmd_fragment in out
 
@@ -161,12 +104,12 @@ def test_pre_commit_skips_path_conditional_when_index_empty(monkeypatch):
 
 
 def test_pre_commit_includes_path_conditional_on_matching_paths(monkeypatch):
-    monkeypatch.setattr(gm, "staged_names", lambda: ["docs/briefs/INDEX.md"])
+    monkeypatch.setattr(gm, "staged_names", lambda: ["ops/recall/index.py"])
     data = gm.load_manifest(MANIFEST)
     selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
-    assert "closure-disposition" in selected
-    assert "sync-liveness" not in selected
-    assert "sessions-order" not in selected
+    assert "durable-store-pragmas" in selected
+    assert "evidence-store" not in selected
+    assert "cost-model-closed-world" not in selected
 
 
 def test_check_tier_dry_run_includes_path_conditional():
@@ -177,9 +120,9 @@ def test_check_tier_dry_run_includes_path_conditional():
         text=True,
     )
     for gid_cmd_fragment in (
-        "check_skills_no_constants.py",
-        "check_closure_disposition.py",
-        "check_adr_graph.py",
+        "check_boundaries.py",
+        "check_durable_store_pragmas.py",
+        "check_cost_model_closed_world.py",
         "check_data_manifests.py",
     ):
         assert gid_cmd_fragment in out
@@ -199,19 +142,13 @@ def test_instrument_owners_trigger_partition_gate(monkeypatch, path):
 
 
 def test_check_tier_selects_ci_composition_ids():
-    """CI gate-manifest.yml calls --tier check; every always/path-conditional
-    id plus forced data-manifests must be selected. pursuit-records was
-    retired from gates.yml entirely 2026-08-24 (operational_rules §16 R5 — the underlying
-    check always exits 0 as invoked, so it could never fail regardless of
-    tier); this assertion now holds vacuously and is kept as a regression
-    guard against re-adding it as a --tier check member.
-    """
+    """CI calls --tier check; every always/path-conditional id plus forced
+    data-manifests must be selected."""
     data = gm.load_manifest(MANIFEST)
     selected = {g["id"] for g in gm.select_gates(data["gates"], "check")}
     assert EXPECTED_ALWAYS <= selected
     assert EXPECTED_PATH_CONDITIONAL <= selected
     assert "data-manifests" in selected
-    assert "pursuit-records" not in selected
     assert selected.isdisjoint(EXPECTED_AUDIT)
 
 
@@ -236,31 +173,12 @@ def test_manifest_file_present():
     assert MANIFEST.is_file()
 
 
-# 2026-08-15 (governance-belt audit action 3): reachability, not just
-# selector shape. path-liveness/root-doc-liveness were path-conditional with
-# regexes that never matched lab/|core/|ops/ -- the LINK could be edited
-# without tripping the gate, but the link TARGET could be moved or deleted
-# out from under it and the gate never ran. For each gate still
-# path-conditional, assert that staging a path whose edit can actually cause
-# the violation the gate detects is enough to select it -- not merely that
-# the selector runs without crashing.
+# Reachability, not just selector shape: for each path-conditional gate, staging a
+# path whose edit can cause the violation it detects must select it.
 REACHABILITY_PROBES = {
     "evidence-store": "scripts/evidence_store/store.py",
-    "status-consistency": "lab/CATALOG.md",
-    "adr-graph": "docs/adr/2026-01-01-example.md",
-    "lab-catalog": "lab/analysis/harvest/new_slug_2026-08/RESULTS.md",
-    "instrument-profiles": "ops/instruments/MNQ.md",
-    "sessions-order": "docs/SESSIONS.md",
-    "sessions-append-only": "docs/SESSIONS.md",
-    "sessions-queue-bind": "docs/SESSIONS.md",
-    "supersession-placement": "lab/analysis/harvest/new_slug_2026-08/RESULTS.md",
-    "closure-disposition": "docs/briefs/closures/Q-EXAMPLE-closure-falsified.md",
-    "handoff-authority": "docs/briefs/handoffs/2026-09-25-example-card.md",
-    "handoff-brief-form": "docs/briefs/handoffs/2026-09-28-example-card.md",
-    "governance-prose-control-chars": "docs/rejected_candidates.md",
-    "repo-map-layers": "scripts/check_boundaries.py",
-    "lifecycle-consistency": "core/lifecycle.py",
     "cost-model-closed-world": "lab/discovery/cost_model.py",
+    "durable-store-pragmas": "ops/recall/index.py",
 }
 
 
@@ -273,6 +191,7 @@ def test_path_conditional_gates_are_reachable(monkeypatch):
         "a path-conditional gate was added/removed without updating this "
         "test's reachability probe table"
     )
+    assert set(REACHABILITY_PROBES) == EXPECTED_PATH_CONDITIONAL
     for gate_id, probe_path in REACHABILITY_PROBES.items():
         monkeypatch.setattr(gm, "staged_names", lambda p=probe_path: [p])
         selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
@@ -280,46 +199,6 @@ def test_path_conditional_gates_are_reachable(monkeypatch):
             f"{gate_id}'s staged_regex does not match {probe_path!r} -- a "
             "change there cannot trigger this gate at pre-commit"
         )
-
-
-@pytest.mark.parametrize(
-    "staged_path",
-    ["STATE.md", "scripts/check_sessions_queue_bind.py"],
-)
-def test_sessions_queue_bind_reaches_each_additional_consumed_file(
-    monkeypatch, staged_path
-):
-    data = gm.load_manifest(MANIFEST)
-    monkeypatch.setattr(gm, "staged_names", lambda: [staged_path])
-
-    selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
-
-    assert "sessions-queue-bind" in selected
-
-
-@pytest.mark.parametrize(
-    "staged_path",
-    ["STATE.md", "docs/adr/2026-01-01-example.md", "docs/briefs/x/y.md", "docs/notes/z.md"],
-)
-def test_governance_prose_control_chars_reaches_its_scan_scope(monkeypatch, staged_path):
-    """The script scans STATE, ADRs, briefs and notes; edits there must select it."""
-    data = gm.load_manifest(MANIFEST)
-    monkeypatch.setattr(gm, "staged_names", lambda: [staged_path])
-
-    selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
-
-    assert "governance-prose-control-chars" in selected
-
-
-def test_lifecycle_consistency_reaches_agents_md(monkeypatch):
-    """AGENTS.md succeeded the retired CLAUDE.md (2026-09-20); a tier restated
-    there must select the gate at pre-commit."""
-    data = gm.load_manifest(MANIFEST)
-    monkeypatch.setattr(gm, "staged_names", lambda: ["AGENTS.md"])
-
-    selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
-
-    assert "lifecycle-consistency" in selected
 
 
 def _top_level_alternatives(pattern: str) -> list[str]:
@@ -381,41 +260,6 @@ def test_every_staged_regex_alternative_selects_a_tracked_file():
         "staged_regex alternatives that match no tracked file (retarget them at "
         "the live successor or drop them):\n" + "\n".join(dead)
     )
-
-
-@pytest.mark.parametrize(
-    "staged_path",
-    [
-        "docs/briefs/programs/2026-10-01-card-with-authority-block.md",
-        "scripts/check_brief.py",
-        "scripts/check_handoff_brief_form.py",
-        "scripts/handoff_brief_form_grandfathered.txt",
-        "docs/adr/2026-07-14-cc-cursor-surface-allocation.md",
-        "scripts/check_handoff_authority.py",
-        ".claude/skills/brief-authoring/scripts/brief_checks.py",
-    ],
-)
-def test_handoff_brief_form_reaches_each_path_that_can_fail_a_card(
-    monkeypatch, staged_path
-):
-    """A card anywhere under docs/briefs/ (an authority block puts it in scope), the
-    checker, its engine, the gate's scope script and the block reader it reuses can
-    each turn a card from passing to failing, so each must select the gate."""
-    data = gm.load_manifest(MANIFEST)
-    monkeypatch.setattr(gm, "staged_names", lambda: [staged_path])
-
-    selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
-
-    assert "handoff-brief-form" in selected
-
-
-def test_sessions_queue_bind_does_not_run_for_unrelated_path(monkeypatch):
-    data = gm.load_manifest(MANIFEST)
-    monkeypatch.setattr(gm, "staged_names", lambda: ["docs/README.md"])
-
-    selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
-
-    assert "sessions-queue-bind" not in selected
 
 
 def test_reindented_gate_fails_closed(tmp_path):
@@ -506,15 +350,6 @@ def test_unknown_tier_fails_closed(tmp_path):
     assert bad.returncode != 0, "gate with an unselectable tier loaded (fail-open)"
     combined = (bad.stdout + bad.stderr).lower()
     assert "unknown gate tier" in combined, combined
-
-
-def test_m1_tree_skew_stays_report_only():
-    """Normal deployed-vs-main drift stays diagnostic, never a merge gate."""
-    data = gm.load_manifest(MANIFEST)
-    gate = next(g for g in data["gates"] if g["id"] == "m1-tree-skew")
-    assert gate["tier"] == "audit"
-    assert "--check-tree-skew" in gate["cmd"]
-    assert "--require-tree-current" not in gate["cmd"]
 
 
 def test_m1_artifact_structure_stays_blocking():

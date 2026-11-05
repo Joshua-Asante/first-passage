@@ -21,7 +21,7 @@ Decide first. INQHIORI on a code bug burns hours; this skill on a methodology an
 | Cross-platform output differs (TV vs Python) for same logical input | **this skill** |
 | Strategy WR / PF deviates from baseline despite no parameter change | **inqhiori** |
 | Regime sensitivity unexpected (anchor trades, tail behavior) | **inqhiori** |
-| Live trade or rail decision under time pressure | **c1-rail** (AGENTS.md §Live-execution posture) |
+| Live trade or rail decision under time pressure | Stop; AGENTS.md money controls apply, ask Joshua |
 | Pine source returns wrong value | **pinescript-v6** |
 | dd_protection live calibration vs theoretical | **prop-firm-challenge** |
 
@@ -33,7 +33,7 @@ Decide first. INQHIORI on a code bug burns hours; this skill on a methodology an
 
 ## 1. Phase 1 — Evidence before fixes
 
-**Blocking rule: no fix proposed before Phase 1 completes** (Rule 0 transposed to debugging).
+**Blocking rule: no fix proposed before Phase 1 completes**.
 
 **1.1 Reproduction.** A minimal command that triggers the bug deterministically. If intermittent, the intermittence is the question: log every variable input (data file timestamp, Python version, env vars, working directory) until reproduction is deterministic. An intermittent claim without reproduction is a Phase 1 failure.
 
@@ -111,7 +111,7 @@ The fix passes through the §11 band-aid gate: a guard, default, retry, broad `e
 
 ## 5. Phase 4.5 — Architecture questioning (mandatory after 2 failed fixes)
 
-If two fix attempts have failed (hypothesis confirmed, fix applied, reproduction still fails or a different test breaks), STOP (Rule 7). Do not author Hypothesis 3, and do not try a third fix: the fix is at a different level than the bug. Sibling of `inqhiori` §6 (when serious attempts at one level keep failing, the level is wrong).
+If two fix attempts have failed (hypothesis confirmed, fix applied, reproduction still fails or a different test breaks), STOP. Do not author Hypothesis 3, and do not try a third fix: the fix is at a different level than the bug. Sibling of `inqhiori` §6 (when serious attempts at one level keep failing, the level is wrong).
 
 - Read the broader region: parent module, calling code, the data consumed.
 - Ask: is the function being asked to do something it cannot do given its shape? (It may correctly implement a wrong specification.)

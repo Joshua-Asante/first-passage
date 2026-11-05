@@ -1,24 +1,12 @@
-"""Acceptance suite for the harness-guard hardening card (F29, A1-A7, B1-B3).
+"""Acceptance suite for the shell-command guard (F29, A1-A7).
 
-Card: docs/briefs/handoffs/2026-09-23-harness-guards-hardening.md. Coordinator-authored
-and frozen by SHA-256 in that card: the worker makes these pass without editing this
-file. `classify()` and `decide()` are the pure functions the guards already expose;
-the tests call them directly, so they hold whatever the hooks' `main()` emits for an
-allow (card 1's D15 makes that silent).
+`classify()` is the pure function the guard exposes; the tests call it directly.
+The B1-B3 open-record write-guard cases went with that guard in the 2026-11
+governance cut.
 """
-import json
-import re
-import subprocess
-from datetime import datetime, timedelta, timezone
-from pathlib import Path
-
 import pytest
 
-from scripts import guard_open_verification_record as write_guard
 from scripts import guard_shell_command as shell_guard
-from scripts.record_verification import RunRecord
-
-ROOT = Path(__file__).resolve().parents[1]
 
 
 def permission(cmd):
@@ -127,92 +115,3 @@ def test_f29_destructive_text_that_is_only_data_is_allowed(cmd):
 def test_f29_unparsable_commands_fall_back_to_asking():
     assert permission(f'echo "unterminated; {RMRF} d') == "ask"
     assert permission("echo 'unterminated") == "allow"
-
-
-# --- B1-B3: the open-record write guard --------------------------------------------
-
-def _checkout(tmp_path):
-    root = tmp_path / "repo"
-    (root / ".git").mkdir(parents=True)
-    (root / "docs").mkdir()
-    return root
-
-
-def _record(root, folder, **fields):
-    path = root / folder
-    path.mkdir(parents=True)
-    data = {"status": "running", "started_at": datetime.now(timezone.utc).isoformat(),
-            "finished_at": None, "before": None}
-    data.update(fields)
-    (path / "record.json").write_text(json.dumps(data), encoding="utf-8")
-
-
-def test_b1_docker_verification_records_lock_the_tree(tmp_path):
-    root = _checkout(tmp_path)
-    _record(root, ".cache/fp-docker-verification/d1")
-    assert write_guard.decide(str(root / "docs" / "x.md"))[0] == "deny"
-
-
-def test_b1_records_under_cache_are_still_exempt_targets(tmp_path):
-    root = _checkout(tmp_path)
-    _record(root, ".cache/fp-docker-verification/d1")
-    assert write_guard.decide(str(root / ".cache" / "notes.md"))[0] == "allow"
-
-
-@pytest.mark.parametrize("folder", [".cache/fp-verification/r1", ".cache/fp-docker-verification/d1"])
-def test_b2_a_measured_record_that_has_not_started_its_command_locks_the_tree(tmp_path, folder):
-    root = _checkout(tmp_path)
-    _record(root, folder, status="not_started", before={"fingerprint": "abc"})
-    assert write_guard.decide(str(root / "docs" / "x.md"))[0] == "deny"
-
-
-def test_b2_a_record_that_never_measured_or_has_finished_does_not_lock(tmp_path):
-    root = _checkout(tmp_path)
-    _record(root, ".cache/fp-verification/r1", status="not_started", before=None)
-    _record(root, ".cache/fp-verification/r2", status="not_started", before={"fingerprint": "abc"},
-            finished_at=datetime.now(timezone.utc).isoformat())
-    _record(root, ".cache/fp-verification/r3", status="completed", before={"fingerprint": "abc"},
-            finished_at=datetime.now(timezone.utc).isoformat())
-    assert write_guard.decide(str(root / "docs" / "x.md"))[0] == "allow"
-
-
-def test_b2_stale_measured_records_do_not_lock_forever(tmp_path):
-    root = _checkout(tmp_path)
-    old = datetime.now(timezone.utc) - timedelta(seconds=write_guard.STALE_AFTER_SECONDS + 60)
-    _record(root, ".cache/fp-verification/r1", status="not_started", before={"fingerprint": "abc"},
-            started_at=old.isoformat())
-    assert write_guard.decide(str(root / "docs" / "x.md"))[0] == "allow"
-
-
-def test_b2_the_real_recorder_locks_the_tree_from_begin(tmp_path):
-    root = tmp_path / "repo"
-    root.mkdir()
-    git = ["git", "-C", str(root), "-c", "user.name=t", "-c", "user.email=t@t"]
-    subprocess.run(["git", "init", "-q", str(root)], check=True)
-    (root / ".gitignore").write_text(".cache/\n", encoding="utf-8")
-    (root / "a.txt").write_text("a\n", encoding="utf-8")
-    subprocess.run([*git, "add", "-A"], check=True)
-    subprocess.run([*git, "commit", "-q", "-m", "init"], check=True)
-    record = RunRecord(root, root / ".cache" / "fp-verification" / "r1", ["probe"], allow_ignored=True)
-    assert write_guard.decide(str(root / "a.txt"))[0] == "allow"      # nothing measured yet
-    record.begin()
-    assert write_guard.decide(str(root / "a.txt"))[0] == "deny"       # the before snapshot is taken
-
-
-def test_b3_notebook_edits_are_guarded(tmp_path, monkeypatch, capsys):
-    root = _checkout(tmp_path)
-    _record(root, ".cache/fp-verification/r1")
-    payload = {"tool_name": "NotebookEdit", "tool_input": {"notebook_path": str(root / "docs" / "n.ipynb")}}
-    monkeypatch.setattr("sys.stdin", __import__("io").StringIO(json.dumps(payload)))
-    assert write_guard.main() == 0
-    assert json.loads(capsys.readouterr().out)["hookSpecificOutput"]["permissionDecision"] == "deny"
-
-
-def test_b3_settings_route_notebook_edits_to_the_write_guard():
-    settings = json.loads((ROOT / ".claude/settings.json").read_text(encoding="utf-8"))
-    matchers = [entry.get("matcher", "") for entry in settings["hooks"]["PreToolUse"]
-                if any("guard_open_verification_record.py" in h.get("command", "")
-                       for h in entry.get("hooks", []))]
-    for name in ("Edit", "Write", "MultiEdit", "NotebookEdit"):
-        assert any(re.fullmatch(m, name) for m in matchers), name
-    assert not any(re.fullmatch(m, "Bash") for m in matchers)
