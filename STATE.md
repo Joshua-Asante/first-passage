@@ -1,187 +1,34 @@
 # STATE — First Passage
 
-**Last curated:** 2026-11-03
+**Updated:** 2026-11-05. Keep this to one page: the goal, live obligations, open
+decisions. Replace stale lines instead of appending history.
 
-Read the queue, then its linked plan.
-[SESSIONS](docs/SESSIONS.md) is history, `git status` owns uncommitted work, [operational_rules §7](docs/operational_rules.md)
-assigns fact ownership, and routine updates need no ADR ([policy](docs/adr/2026-08-08-adr-ceremony-tiering.md)).
+## Goal
 
-**Anti-accretion** ([charter](docs/adr/2026-07-16-root-doc-charter-dedup.md)): index row =
-consequence + owner link; forward row = action + date/wake condition + owner. Delete a
-closed row once its owner holds the record; results, account figures, parameters and
-narrative stay with owners. Missing evidence is not completion: never roll an obligation
-away without its record.
+Get a native NinjaScript strategy trading the **Tradeify Select 100K evaluation**,
+then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
 
-## OPERATOR QUEUE — strictly ordered, ≤5 live items
+- **Status:** a read-only native toolchain assessment is authorized. The
+  [native plan](docs/superpowers/plans/2026-10-21-tradeify-native-ninjascript-strategy-plan-DRAFT.md)
+  and the [qualification framework](docs/briefs/pre-registration/2026-10-26-tradeify-native-lane-prereg-DRAFT.md)
+  are drafts. No candidate, sizing or deployment is approved.
+- **Known risk:** no configuration has an evidence case for this evaluation yet, and
+  no strategy-signal fill has ever occurred on the account.
+- **Ruled out:** the multi-firm program is research-only (its falsifier fired). The
+  external Python rail and the personal account lane are closed.
 
-Operator-hours bind; agent-hours are budgeted (K-ledger, cost dry-runs, $700 spend
-ceiling). The ≤5 cap is the concurrency [Survive bound](docs/adr/2026-07-16-root-doc-charter-dedup.md#queue-attention-review),
-not an hours budget. Serve items in dependency order; independent work need not
-wait for a lower number. New decision packets, advisor triage and sizing questions
-queue behind these unless the operator directs otherwise. Completed items leave
-without automatic replacement; off-queue work stays with its owner until promoted or
-directed.
+## Live obligations
 
-**Source disposition:** Databento remains [retired](docs/adr/2026-07-10-databento-research-stack.md#addendum-2026-09-10---operator-retirement-of-databento). The [c1 stack retired](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-10-29--c1-retired-as-an-execution-route-staged-decommission) and the [personal lane closed](docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed) on 2026-10-29; their former feed-activation work is not a live task. Historical A7/A8 acceptance stays with the [rail record](docs/notes/rail_build/M1_STAGE1_DEPLOYMENT_READINESS.md#a8--signed-acceptance-deployed-re-bake-verified-2026-09-14), not native-route readiness.
+| Obligation | Next due | Notes |
+|---|---|---|
+| Weekly account-preservation trade | Week of 11-09 → 11-13 | One round trip per Mon–Fri week, placed natively. A missed week risks account deletion. Agents may place it under the standing GO. Done for 11-02 → 11-06 (11-04). |
+| Subscription reconfirm | 11-21 | Joshua reconfirms the [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md) rows. |
+| c1 rail decommission | Open | Stages 1–2 done (hosts disarmed 11-03, both Fly apps destroyed 11-05). Agents remove the rail code by PR. |
 
-| # | Item | Owner artifact | Blocks |
-|---|---|---|---|
-| 1 | **Tradeify native planning — authority and qualification remain bounded.** Read the checklist's current routing note before the historical Track B packets. The ORB/Aegis workshop owns a research workflow, not deployment qualification. **Next:** resolve the assessment-scope and qualification decisions at their owners; draft 11-08 branches remain subject to their recorded rulings. | [Deployment checklist](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-routing--2026-10-29-derived-mirror) · [native plan (DRAFT)](docs/superpowers/plans/2026-10-21-tradeify-native-ninjascript-strategy-plan-DRAFT.md) · [workshop identity boundary](docs/superpowers/specs/2026-10-28-orb-aegis-workshop-design.md#evidence-and-ownership-boundary) · [branch (b) rulings](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-28--branch-b-ruled-ahead-of-the-11-08-sitting) · [qualification framework (DRAFT)](docs/briefs/pre-registration/2026-10-26-tradeify-native-lane-prereg-DRAFT.md) | Exact candidate/account binding, qualification and deployment GO / arm |
+## Open decisions (Joshua)
 
-**Track B history:** superseded for Tradeify on 2026-10-16; its former queue narrative is retained in git history and its [checklist](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify) and [execution-slices ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#progress-ledger-and-present-disposition). Shared obligations retain their [recorded owners](docs/adr/2026-09-12-tradeify-book-protection-instance-admission.md#addendum-2026-10-25--d4-tradeify-scoped-supersession-and-where-preserved-items-live); this index neither reopens the old campaign nor closes its evidence debts.
-
-## Executed operator decisions — decision index
-
-Newest 15 consequences; rationale stays with owners; older rows are in the
-[archive](docs/ltm/notes/archive/state/STATE-decision-index-pre-2026-08-23.md).
-Retracted verdicts leave; their correction stays with the owner.
-
-- **2026-10-29** — c1 execution stack retired with staged decommission; personal objective and lane closed, owed items 1–8 withdrawn, Q-SFCLEAR-3 not run; incumbent eval and native weekly preservation trade continue ([rail retirement](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-10-29--c1-retired-as-an-execution-route-staged-decommission), [lane closure](docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed)).
-- **2026-10-29** — Reference-model correction round authorized: one round bringing the account-risk candidate to runbook §6/§7 on `main` (A1, A2, SM-1 to SM-3), within the frozen card's footprint; no merge, platform work or limit binding ([card §11](docs/briefs/handoffs/2026-10-18-account-risk-reference-model-card-DRAFT.md#11-admission-record)).
-- **2026-10-29** — Native runbook order state model ruled: SM-1 (one model, §6.10), SM-2 option A (a trim is confirmed by the broker's order quantity or an accepted pair) and SM-3 (downward protection resizes confirmed the same way); U-18 must prove the native callbacks ([runbook §5](docs/notes/2026-10-18-native-protection-recovery-pilot-runbook.md#5-decisions)).
-- **2026-10-28** — Branch (b) ruled ahead of the 11-08 sitting: #807 stage 1 (read-only native toolchain assessment) only; the native runbook's order rules to be rewritten as one state model; #882 superseded. ORB and Aegis are expected to share one native Tradeify account; that needs its own evidence case under the 10-19 ruling ([addendum](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-28--branch-b-ruled-ahead-of-the-11-08-sitting)).
-- **2026-10-19** — No book-lineage configuration has an evidence case for the Tradeify evaluation (operator ruling; R1 not nominated; no run, no trial added; ORB v7 solo, which is paused, not covered; not four-firm §4 evidence; 11-08 branch (d) left to the sitting; Q-SFCLEAR-3 dispatch preparation paused) ([addendum](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-19--no-book-lineage-configuration-has-an-evidence-case-for-the-tradeify-evaluation)).
-- **2026-10-16** — Track B superseded for Tradeify (operator ruling: Tradeify permits native NinjaScript automation, prohibits external Python signals, bridges and same-bot cross-firm use; branch (a) withdrawn; D5 closed as a gate, draft preserved; eval, weekly trade and personal lane continue) ([addendum](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-16--track-b-superseded-for-tradeify)). Four-firm §4: 5.0% ceiling, ORB MNQ v7 fresh candidate, FXIFY Futures Flex registration directed ([#864](https://github.com/Joshua-Asante/first-passage/pull/864)).
-- **2026-10-15** — Public-exposure removal (operator direction: delete, rely on git history; no history rewrite): the Striker day soft-stop is Pine-only; cleanup-packet decision 3 applied, decision 4 (bot-comment deletion) is the operator's UI action, decision 6's duplicates go to a follow-up ([packet §5–§6](docs/notes/2026-10-09-public-exposure-cleanup-packet.md#6--2026-10-15-follow-up)).
-- **2026-10-14** — Q-SFCLEAR-3 ratified and frozen (F₃ `15bea25`; option B chosen 2026-10-13: same R1 tuple, 15:55 flatten at the R1 placement); Q-SFCLEAR-2 superseded before any run ([pre-registration](docs/briefs/pre-registration/Q-SFCLEAR-3-verdict-preregistration.md)); §60 VM exception re-scoped to Q-SFCLEAR-3's FG and clearance runs ([§60](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25)).
-- **2026-10-13** — Track B suspended (Tradeify-specific build and spend frozen; weekly trade and personal lane continue); 11-08 decision rules drafted, ratification owed ([addendum](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-13--track-b-suspended-11-08-decision-rules-draft)).
-- **2026-10-12** — Personal clearance and live wiring: Q-SFCLEAR-2 ratified and frozen (F `83867f0`, [#752](https://github.com/Joshua-Asante/first-passage/pull/752)); run-path cards A–E frozen after rulings on items 1–7 ([packet](docs/notes/2026-10-12-q-sfclear-2-run-path-decision-packet.md)); §60 VM exception extended to the FG run ([§60](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25)); P-L2 ordered ahead of GC-5/S2 and its legacy reading extended ([§6b/§6c](docs/notes/2026-10-11-live-wiring-decision-packet.md#6b-owner-file-order-amendment-2026-10-12)); Tradeify support rejected bridge routes for evaluation accounts, so new Tradeify-route and activation work is deferred while the personal lane proceeds under §6.6 ([route record](docs/briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md#addendum-2026-10-12--tradeify-support-rejects-bridge-routes-for-evaluation-accounts), [ADR item 5](docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-12--tradeify-support-replies-on-execution-routes-and-personal-accounts-item-5-record)).
-- **2026-10-12** — Route plan rulings: #805 P-L2 merged; P4 and P-SW take `book_account_owner.py` ahead of GC-5 and TB-I3 S2 ([§6d](docs/notes/2026-10-11-live-wiring-decision-packet.md#6d-owner-file-order-amendment-p4-and-p-sw-ahead-of-gc-5-and-tb-i3-s2-2026-10-12)); Grafana downgraded to Free, paging re-proved before arming ([G10](docs/notes/2026-10-02-t13-a12-f3-held-request-watch-draft.md)); CrossTrade kept ([ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md)); narrowed CME follow-up sent ([feed note](docs/notes/2026-10-01-feed-provider-questions-DRAFT.md)).
-- **2026-10-12** — Operator-attention O1 approved: prepare R1's local settlement import workflow and R2's read-only readiness view first, with baseline measurement; O2–O4 keep defaults ([proposal §6](docs/notes/2026-10-11-tradeify-operator-attention-proposal.md#6-decisions-for-joshua)).
-- **2026-10-11** — T00 successor screen (FLOOR-HALF, #733): NO-GO-evidence, `UNDETERMINED`-dependent, VERIFIED; successor stopping rule not triggered. Joshua accepted its risk into T15's F1 (option 1), which meets D-feed (a) for FLOOR-HALF under OD-1 (c); the other gates stand ([T00 card §8](docs/briefs/handoffs/2026-10-03-t00-screen-authority-build-card-DRAFT.md#8--approval-prerequisites-and-h-record)/[D-feed row](docs/superpowers/plans/2026-09-21-tradeify-deployment-checklist-amendment-PROPOSAL.md#d-feed--tick-as-a-gate-not-a-provider)/[T15](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#t15--freeze-production-e1-and-admission-500k750k-envelope-likely-less-agent-work)).
-- **2026-10-02** — Sitting-1 rulings ("all recommended"): T00 order, ~~step 3 before `r3c-a2` expires, then the qualification-path fixes, then a P7 re-run under a fresh signed approval~~ (superseded the same day by sheet A1, below) ([checklist](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger)); D-feed (b) re-ruled, CP-7 after T00 GO-evidence, a bound equivalence spec and A9-PREP, provider-neutral preparation authorized ([CP-7](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#4-operator-checkpoints--where-approval-is-taken)); B4 before T06 dispatch, not blocking R1 ([ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-acceptance--s5-c3-step-1-accepted-c3-linux-grant-2026-09-29)); first release without the Aegis takeover, and F-5 discharges C-a row S-X2 ([B–D packet](docs/notes/2026-09-26-tradeify-bd-decision-packet.md#12-other-decisive-capabilities)); X-3/X-4 fills count for weekly preservation, X-3 symbol B is MNQ ([drill plan](docs/notes/2026-09-26-tradeify-route-drill-plan-draft.md#20-rules-common-to-x-1--x-5)); effective-input file readable in place ([§60](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#60--agent-read-access-to-the-accepted-books-pine-and-runtime-ports-2026-09-25)); term 8, joint-batch validators ([S6 amendment](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-checkpoint-c-r--t05s6-result-commit-accepted-as-an-interface-s7-go-2026-09-21)). T05 C′ environment sealing, base-image pin, broadened R1 and the accepted host-drift residual ([ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-rulings--t05-environment-sealing-c-and-the-first-release-host-environment-drift-residual-2026-10-02)); S6 freeze amendment, seven terms ([ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#coordinator-checkpoint-c-r--t05s6-result-commit-accepted-as-an-interface-s7-go-2026-09-21)). Equivalence spec frozen on #585's merge ([spec](docs/spec/2026-09-27-cme-execution-feed-equivalence-test-DRAFT.md)). Pre-registration exposure: both edition pre-registrations CLOSED and replaced by successors; standing rule, no agent runs a candidate-configurable replay against a pre-registered edition before its pre-registration is frozen ([checklist item 7.6.1](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts)). Vendor answers are not a C-a selection gate; residual risk accepted with guards; the Q6 scope check folded into X-3 ([item 7.3](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-10-01--first-session-simplification-rulings-six-cuts)); X-3 two-symbol amendment ([drill plan §2.0](docs/notes/2026-09-26-tradeify-route-drill-plan-draft.md#20-rules-common-to-x-1--x-5)). Decision sheet ("all recommended", coordinator (3)): T00 step-3 re-order through a signed T00 screen authority, `r3c-a2` lapses unused; source-only spec `:124`/`:358` amendment approved in principle; ORB-3/VAN-3 answered before any step-3 output; one timing-only real-source probe before #581 ([checklist](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#current-state--september-26-2026-refreshed-from-the-acceptance-ledger)). Four-firm §4: the 09-03 EOD-clock discharge is withdrawn and a clear must hold on the intraday-honest clock ([withdrawal ADR](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-10-02--the-2026-09-03-discharge-withdrawn-an-intraday-honest-clear-is-required-accepted)). CP-7's grant scope supersedes the S2b provider-specific wait; trading use keeps its gates ([S2b ADR](docs/adr/2026-08-08-s2b-signal-daemon-build.md#addendum-2026-10-02--cp-7-grant-scope-and-the-live-cme-bar-source-row)). Lane D step 3 may edit the measured closure for `result_g5`/qseal, covered by the one fresh Part A measurement ([ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--lane-d-step-3-may-edit-the-measured-closure-result_g5-and-qseal-provisioning-2026-10-02)). The venue-facts re-verification by about 10-11 covers the four friendly firms; the other four rows stay stale and unused. Incident notifier defaults: correctly handled refusals don't notify, all channels lost while armed is an operator stop, retries continue until delivered. Sheet 2: second timing probe done ([#629](https://github.com/Joshua-Asante/first-passage/pull/629) timing basis); November calendar acceptances recorded at ratification ([#622](https://github.com/Joshua-Asante/first-passage/pull/622)); Q1, a revision of a forwarded bar latches the feed source unhealthy ([#619](https://github.com/Joshua-Asante/first-passage/pull/619)). Sheet 4: screen-authority design approved ([#629](https://github.com/Joshua-Asante/first-passage/pull/629#issuecomment-5965049542)). *2026-10-03:* sheet 5: build card approved ([#634](https://github.com/Joshua-Asante/first-passage/pull/634#issuecomment-5965354454)); N = 1,000 recorded, under precision review in sheet 6; TB-I3 D-3 = U ([#633](https://github.com/Joshua-Asante/first-passage/pull/633#issuecomment-5965354590)); #630 merged ([FEED-16 note](docs/notes/2026-10-03-feed16-warmup-design.md)); ORB-3/VAN-3 answered, exposure "seen" ([#634](https://github.com/Joshua-Asante/first-passage/pull/634#issuecomment-5965354454)). D-MON channel: Grafana Cloud IRM ([#635](https://github.com/Joshua-Asante/first-passage/pull/635)). Hyper: dot card 01 released ([#622 release](https://github.com/Joshua-Asante/first-passage/pull/622#issuecomment-5965599860)).
-
-- **2026-09-27** — Staged acceptance: evidence proportional to the next step; unknowns block only what they affect ([addendum](docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-09-27--staged-acceptance-evidence-proportional-to-the-next-step)/[handoffs](docs/briefs/handoffs/2026-09-27-staged-acceptance-handoffs.md)). Rulings: ORB L1 and fence classification ([§59 R7](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#ruling-7--orb-lifecycle-l1-reaffirmed-and-the-account-fence-classification-contract-2026-09-27)); no same-session restart of automation after an incident during commissioning and the first attended release; review before another session ([§A11.2](docs/adr/2026-09-17-bounded-platform-protection-incident-contract.md#a112--operator-ruling-no-same-session-restart-of-automation-after-an-incident-2026-09-27)/[§4.1](docs/spec/2026-09-14-tb-s3-halt-resume-contract.md#41-amendment-2026-09-27-incident-versus-correctly-handled-refusal)); preservation-trade read target ([§A11.3](docs/adr/2026-09-17-bounded-platform-protection-incident-contract.md#a113--operator-ruling-preservation-trade-evidence-as-the-target-of-authorized-reads-2026-09-27)); S5 staged gates, CP-1a, CP-1b ([ledger](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--s5-staged-gates-approved-part-a-only-rule-scope-hold-kept-2026-09-27)/[CP-1a](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1a-decisions-16-adopted-as-recommended-hold-kept-2026-09-27)/[CP-1b](docs/superpowers/plans/2026-09-18-full-e1-execution-slices.md#operator-ruling--cp-1b-s5-hold-released-for-the-test_only-build-2026-09-28)).
-
-## Dormant cross-session threads
-
-PARK threads b1, b3 and b6 stay with [their pursuit records](docs/pursuits/) (expiry
-below). Registry backfill debt: `python scripts/check_closure_disposition.py --list-debt`.
-
-## Scheduled forward triggers
-
-Owners hold canonical criteria; rows are pointers.
-
-### Weekly — recurring (rolling; next deadline **2026-11-06**, bucket 11-02→11-06)
-
-- **Account-preservation trade:** at least one per Mon–Fri week, by the operator, or by an
-  agent under the operator's **standing GO** (Joshua, 2026-10-25, revocable: "I approve a Standing GO, GO on the 10-26 trade"; [Addendum 2026-09-30b](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b));
-  no per-trade GO is needed for this trade. Any other order still needs his direction for that order;
-  the rail stays disarmed. A missed venue week risks account deletion; venue-session
-  boundaries apply. [S1](docs/adr/2026-08-07-loop-s1-environment-ratification.md)/[idle-clock audit](docs/notes/audits/programme-audit/2026-08-05-post-descope-claim-alignment-audit.md).
-- **Coverage** (operator-attested unless browser verification is stated; earlier private compliance rows are not independently verified):
-  - 08-31→09-04: attested 09-04 and 09-05; day unresolved (09-02 or 09-03); private ledger
-    row unverified; **record still owed** ([§15](docs/briefs/programs/2026-09-03-seven-strategy-select-campaign-state.md#15-d20--the-acceleration-ruling-2026-09-04-deploy-at-the-phase-3-commit)).
-  - 09-07→09-11: attested 09-12 (placed Thursday 09-10; reported recorded with Claude).
-  - 09-14→09-18: **missed** (operator, 09-19); account reported active, unverified.
-  - 09-21→09-25: attested 09-23 (filled market round trip; undated session capture, uncommitted).
-  - 09-28→10-02: covered by the Monday 09-28 trade, attested 09-29. It is T7 in the private
-    A-8 reconciliation (fills in the native export, operator, 2026-09-30; per-trade detail stays
-    in that record). Platform order-lifecycle captures and same-day fills and
-    position-history captures are in the primary checkout's `local_artifacts/route-drills-2026-09/`
-    (`platform-2026-09-28/`, `account-binding-2026-09-28/`), hashed in `MANIFEST.tsv`. X-1's
-    trade also counts ([ruling 2026-09-30](docs/notes/2026-09-29-x1-decision-packet.md#8-post-execution-record-and-corrections--2026-09-30)).
-    This trade was R-2's target ([R-2 closure](docs/notes/2026-09-26-tradeify-route-drill-plan-draft.md#r-2-closure-with-limits--operator-decision-2026-09-29));
-    R-1 ran on X-1's order instead ([discharged](docs/notes/2026-09-26-tradeify-route-drill-plan-draft.md#r-1-result-on-x-1s-order--2026-10-01)
-    2026-10-01, `LOCATED_WITH_CLORDID`, this order at this time only).
-  - 10-05→10-09: placed Monday 10-05; the operator attests (10-08, to the Deployment Coordinator) it was verified and reported at the time. The capture's location is not recalled, so this record is not independently checked.
-  - 10-12→10-16: placed Monday 10-12 by the operator: a market round trip, both legs filled (per-trade detail is in the private capture; operator-attested 10-12 to the Deployment Coordinator with an orders-tab capture, kept privately in the primary checkout's `local_artifacts/preservation-2026-10/` with `SHA256SUMS`). Placed directly on the trading platform, not via CrossTrade (Joshua, 10-12: "placed directly").
-  - 10-19→10-23: **COMPLETE** — native Tradovate round trip on 10-21; both fills, position zero, open P&L zero and working orders zero verified through the browser in the operator's session. Private transcription: `local_artifacts/preservation-2026-10/2026-10-21-trade.private.json` (hashed in `SHA256SUMS`); final account snapshot: `local_artifacts/tradeify-pilot-2026-10/account-state.private.json`.
-  - 10-26→10-30: placed Thursday 10-29 by the operator directly in Tradovate, opened and closed (operator-attested 2026-10-29 in an agent session). No capture was taken, so this record is not independently checked.
-  - 11-02→11-06: **COMPLETE** — operator-placed Tradovate round trip on 11-04; both fills, position zero, open P&L zero and working orders zero verified through the in-app browser in the operator's session. Private transcription in the primary checkout: `local_artifacts/preservation-2026-11/2026-11-04-trade.private.json` (SHA-256 `909ae01a5bbb9cfbf2c1a0551cca981df1a595896dff3ce3e975cb6379a7c2a4`).
-- Preserve missed-week records when advancing; record coverage only when attested;
-  `daily-repo-truth-sync` reads this board's dated obligations.
-
-### Monthly — recurring (rolling; next deadline **2026-11-21**)
-
-- **Subscription reconfirm:** on the 21st, recheck [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md)
-  rows d11–d18 and record the operator's confirmation, even if unchanged; resolve
-  Tradeify unknowns when evidence appears. [Owner ADR](docs/adr/2026-08-21-cfo-subscription-ledger-consolidation.md).
-- **Coverage:** 2026-09-21 missed; 2026-10-21 discharged late on 2026-10-23 (operator reconfirmed
-  d11–d18; Claude Max revised to $200/month; [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md) change log).
-
-### No fixed date / gated
-
-- **c1 staged decommission:** [rail retirement](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-10-29--c1-retired-as-an-execution-route-staged-decommission) owns operator confirmation of disarm and scale-to-zero, Stage 2 destruction and CrossTrade cancellation once no consumer remains, and agent cleanup by PR with consumer evidence and retrieval rows. The [M1 acceptance](docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json) and its validator, under the [M1 ADR](docs/adr/2026-07-22-c1-venue-native-monitoring-maturity.md) and its historical [S2 signal-origin amendment](docs/adr/2026-08-07-loop-s2-signal-host-fork.md), stay evidence and gates pending Stage 3. [Stage 1](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#stage-1-record--2026-11-03) is operator-reported 2026-11-03; [Stage 2](docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#stage-2-record--2026-11-05) is done (both apps destroyed 2026-11-05). Stage 3 PRs remain. The [personal lane is closed](docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md#addendum-2026-10-29--personal-account-objective-removed-lane-closed); Q-SFCLEAR-3 is not run and its frozen pre-registration remains evidence. The Q-SFCLEAR-1 F6 evidence is preserved (first-passage-archive `67679dd`, archive PR #857); the fact-finding folder's F6 upload still awaits Joshua's scoped authorization.
-- **Held-request watch (T13):** while any request is held, a check is due at each account-session open (18:00 ET Sun–Thu), paged at due + 60 min by the G1 dead-man once built; before the first armed session, the G1 build (Healthchecks.io), G10, Q7 (PASS) and HB-L1/L2 are arming preconditions. [Watch](docs/notes/2026-10-02-t13-a12-f3-held-request-watch-draft.md).
-- **M-B idle-clock monitor:** built, registration-ready; wire only on F3 successor
-  registration (S1 elects no migration), after re-freezing venue semantics.
-  [Q-MONSURF-1](docs/briefs/closures/Q-MONSURF-1-closure-resolved.md).
-- **M-C per-fill add-slippage capture:** waits for the first strategy-signal add fill;
-  prerequisite ledger capture landed. [Q-COSTGEO-3](docs/briefs/closures/Q-COSTGEO-3-closure-ambiguous-needs-depth.md)/[triage](docs/briefs/closures/Q-MONSURF-1-closure-resolved.md).
-- **M-C ECR live-edge capture / b6:** PARK until a NAS100/MNQ-shaped leg's first live fill
-  on the incumbent eval or an F3 successor. [Pursuit](docs/pursuits/b6-q-nas-ecr-1.md); expiry below.
-- **M-A regime observer / decompound limb-2 successor:** elective; operator ruling owed on
-  whether its build gate needs a live fill. [Triage](docs/briefs/closures/Q-MONSURF-1-closure-resolved.md)/[risk-framework obligation](docs/adr/2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md).
-- **Lifecycle Call-1 / T4 Task 3:** rolling-PF sigma source and state writer stay
-  fill/data-gated; synthetic tooling is not live evidence.
-  [ADR §7](docs/adr/2026-07-11-tradable-anomalies-statistics-adoption.md)/[T4 record](docs/notes/research/2026-08-23-call1-oc-synthetic.md).
-- **ORB decay re-scope:** open without deployed-book data.
-  [Obligation](docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md#6--consequences)/[current incumbent environment](docs/adr/2026-08-07-loop-s1-environment-ratification.md)/[pursuit](docs/pursuits/b3-orb-mnq-payability-line.md).
-- **Sentinel Tier-2/3 promotion, limb B1:** before the next quarterly slate; promotion,
-  not a new build. [Design](docs/spec/2026-06-23-inqhiori-sentinel-design.md)/[Hermes closure](docs/briefs/closures/2026-07-27-hermes-agent-adoption-closure-resolved.md).
-- **PREREG-C1-DEDUPE-1:** M1 prerequisite met 2026-09-14; GO granted ([D-B13](docs/briefs/handoffs/2026-09-10-track-b-qualify-accepted-book-umbrella.md), 2026-09-11). It does not apply to the REST book route as written (operator ruling 2026-10-02 (sitting 2)).
-  [Pre-registration](docs/spec/PREREG-C1-DEDUPE-1-intent-key-functional-property.md)/[plan](docs/spec/PREREG-C1-DEDUPE-1-implementation-plan.md).
-- **CFD data-estate class-wide deletion:** awaits T1 / F3 FUTURES_LOCK and substrate
-  Phase-6 confirmation. [Estate ADR](docs/adr/2026-07-11-ops-cfd-estate-retirement.md)/[substrate successor](docs/adr/2026-07-22-challenge-era-substrate-retirement.md)/[gate audit](docs/notes/audits/2026-07-17_gate_cfd-estate-classwide-delete.md).
-- **Mechanism-sourcing radar:** on demand; progress/idle checkpoint 2026-11-08.
-  [Harvest method](docs/methodology/strategy_harvest.md).
-- **Reversed-evidence propagation sweep:** pursuit fixes from the closed, unmerged pass are
-  owed; most skills and strategy-card mirrors are unswept.
-  [Findings](docs/notes/audits/2026-08-31-pursuits-personas-reversed-evidence-audit.md)/[first audit](docs/notes/audits/2026-08-31-reversed-evidence-docs-audit.md)/[instrument audit](docs/notes/audits/2026-08-31-ops-instruments-reversed-evidence-audit.md).
-- **MNQFLOW-1-DEPTH:** operator HOLD on value of spend (not a cost-only block or a decline). Since the
-  2026-09-10 Databento retirement it is also data-blocked: MBP-10 depth has no approved source and TV exports
-  carry none (wake: data source approved). Revisit at operator initiative or 2026-11-08; alternate supply
-  routes do not depend on it.
-  [S2B status](lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PREREG_S2B.md)/[charter](docs/adr/2026-08-16-deep-iteration-lane-charter.md)/[superseding K](docs/adr/2026-08-22-grow0-two-ledger-k-question.md).
-
-### 2026-11-08
-
-- **Queue attention/order review:** first check of the ≤5 cap (two-consecutive-quarter
-  condition) and repeated out-of-order serving.
-  [Charter](docs/adr/2026-07-16-root-doc-charter-dedup.md#queue-attention-review).
-- **GRAND-tier ADR §4:** scheduled re-read; initial binding satisfied, not sunset.
-  [Owner](docs/adr/2026-08-09-grand-tier-quintessentials-binding.md).
-- **GSUB-1 PARK expiries:** b1 Aegis→6J, b3 ORB-MNQ, b6 Q-NAS-ECR convert to SUBTRACT
-  absent explicit renewal ([records](docs/pursuits/)); b5 is below.
-- **Prop-portfolio §4 primary falsifier:** undischarged; absent the required qualifying
-  clearance, demote to research-only. Discharge needs its own dated re-MC, not a T00 screen
-  ([condition 4](docs/briefs/handoffs/2026-09-22-tradeify-t00-step1-producer-inventory.md#78-operator-rulings-on-the-return-2026-09-23)). [four-firm owner](docs/adr/2026-07-12-prop-portfolio-four-friendly-firms.md)/[withdrawal](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md).
-  *2026-10-02:* the 2026-09-03 EOD-clock discharge is withdrawn; a clear must hold on the intraday-honest clock ([ruling](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-10-02--the-2026-09-03-discharge-withdrawn-an-intraday-honest-clear-is-required-accepted)).
-  *2026-10-06:* the dated re-MC returned FALSIFIED — early-fail; §4 stays undischarged, candidate (A) closes, and any next candidate needs fresh operator authorization. The program check above still runs on 11-08 ([record](docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md#addendum-2026-10-06--dated-re-mc-verdict-falsified--early-fail-recorded)).
-- **Mechanism boundaries:** check clauses 2-A/2-C; 2-B discharged under
-  [channel retirement](docs/adr/2026-08-24-sourcing-phase-channel-retirement.md).
-  [Owner](docs/adr/2026-07-26-mechanism-counterparty-constraint-boundaries.md).
-- **Sourcing-channel retirement §4 limb 2:** first starvation check (second 2027-02-08).
-  [Owner](docs/adr/2026-08-24-sourcing-phase-channel-retirement.md).
-- **Harvest intake §4:** doctrine falsifier and idle guard; read owner counts and evidence,
-  not a root summary. [Owner](docs/adr/2026-07-15-external-mechanism-harvest-intake.md)/[partial supersession](docs/adr/2026-08-07-loop-s5-bounded-promotion-lane.md).
-- **Regime-monitor successor:** if no live fill, re-raise the standing-unfalsifiable gap at
-  the audit. [owner](docs/adr/2026-06-07-decompound-remc-hold.md).
-- **Blind channel:** check sourced-vs-empty status, pre-G0 count, N firing and any
-  analogue-manifest re-test. [Channel](docs/adr/2026-08-15-no-counterparty-statistical-sourcing-channel.md)/[analogue ruling](docs/adr/2026-08-15-analogue-modality-route-ruling.md).
-- **Regime-candidate flag lane:** two-strikes check against new confirm closures.
-  [Owner](docs/adr/2026-07-26-regime-candidate-flag-lane.md).
-- **Candidate contract and channel review:** initial consolidated review, including fired-ceiling
-  checks ([review](docs/adr/2026-08-30-candidate-contract.md#first-review-and-unresolved-obligations)).
-  Five artifact adoptions and five liveness reconciliations are owed at channel owners
-  ([owner](docs/adr/2026-08-30-candidate-contract.md#current-owner)/[liveness](docs/methodology/strategy_harvest.md#channel-liveness-contract)).
-- **Evaluation and rejection review:** initial consolidated review, and immediately on a
-  cost-authority/scope change ([review](docs/adr/2026-08-30-evaluation-order.md#first-review-and-unresolved-obligations)).
-  Full enforcement and the rejection parser/ladder stay incomplete;
-  [owner](docs/adr/2026-08-30-evaluation-order.md#current-owner)/[rejection patterns](docs/adr/2026-06-14-rejected-candidate-patterns.md#expression-ladder-and-register-routing)
-  hold the limits under [D3 routing](docs/adr/2026-08-09-rejection-register-topology-and-bar-wiring.md#2--decision).
-
-### 2026-12-31 (approx.)
-
-- **Prop-envelope overlay:** reverify the 90-day venue facts for the four friendly firms only (operator default 2026-10-02, sheet E). The other four rows stay stale and unused.
-  Last done 2026-10-02/03 by [#621](https://github.com/Joshua-Asante/first-passage/pull/621). [Envelope §4](ops/prop_envelope_default.md)/[ratification](docs/adr/2026-07-13-prop-envelope-v1-ratification.md).
-
-### 2027-02-08
-
-- **b5 Q-FUNDPOL-1 PARK expiry:** renewed once; converts to SUBTRACT absent renewal. Wake
-  when a candidate reaches funded-phase modeling (the Q-POLFRONT-1 alternative has no
-  referent). [Pursuit](docs/pursuits/b5-q-fundpol-1.md).
-- **Sourcing-channel retirement §4:** limb 2, second starvation check; limb 3, independently
-  re-examine whether the evidence for early closure was complete at authoring.
-  [Owner](docs/adr/2026-08-24-sourcing-phase-channel-retirement.md).
+1. **11-08 sitting:** the next step for the native ORB + Aegis lane, including
+   whether to fund the expanded assessment and what evidence counts as enough to
+   run it on the evaluation.
+2. **Data source:** Databento is retired and has no replacement. Research uses
+   TradingView CME exports only.
