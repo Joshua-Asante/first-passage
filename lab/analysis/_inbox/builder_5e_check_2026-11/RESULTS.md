@@ -20,6 +20,9 @@ it favours the card, so it cannot explain production's failures.
 - **Design:** [DESIGN.md](DESIGN.md), frozen at `c0314c1` (sha256 `7b805c02…`) before any run.
 - **Engine:** `main` `dfcfcb1`, engine sha256 `10f0eb19…` (in `results.json` `meta`). Production code
   is unchanged.
+- **2026-11-04 (Rule 30):** "production" 5e in this file means the engine at `10f0eb19…`. #1074
+  replaced production 5e with the same-day window slide; V1 now runs against a frozen copy of
+  that placebo (`frozen_placebo.py`). The results below are unchanged.
 - **Run:** cloud container, `python -I scripts/fp.py python …/run.py`, Python 3.13.18, 4 processes,
   335 s. The first attempt raised at its final JSON write (a numpy bool) before any output was
   saved or read. The fix (`bool()` casts only, commit after `c0314c1`) re-ran the same frozen

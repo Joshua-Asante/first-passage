@@ -505,12 +505,16 @@ A forward confirm buys nothing over the fixed holdout for the equity micros. It 
   - a book has passed its holdout.
 
   The upside is slots: one book gets 5 at Tradeify (8 with V2 Select 300K), against 16–18 across the other four (note §3).
-- **Owed by Joshua** (agents never contact firms): send the support questions in note §4, plus one for Tradeify: does the same logic on a different instrument count as a distinct strategy?
+- **Owed by Joshua** (agents never contact firms): send the support questions in note §4, plus one for Tradeify: does the same logic on a different instrument count as a distinct strategy? Joshua has ruled on that question ahead of the answer (below); it is still worth sending, and a contrary written answer reopens the ruling.
 
 **Distinct books** (same ruling):
-- A book is distinct from one running at Tradeify only if its trading logic differs. Different sizing, risk limits or weights do not make it distinct (Tradeify, 2026-10-08 and 2026-10-12, quoted in note §1.5).
+- A book is distinct from one running at Tradeify if its trading logic differs, or if it trades a different instrument (next bullet). Different sizing, risk limits or weights alone do not make it distinct (Tradeify, 2026-10-08: "Using the same bot across multiple firms is against policy, even if risk limits, sizing, or weights differ"; quoted in note §1.5).
 - D4b's reading, "Portfolios adapted to each firm's rules are treated as distinct strategies" (2026-09-28, relayed; [origin log](2026-10-15-deployment-decision-origin-log.md)), is retired where "adapted" means sizing or weights only.
-- Until Tradeify answers the instrument question, the same logic on a different instrument counts as the same strategy. R1's MCL ORB shares ORB logic with the index ORB, so it cannot seed another firm while the index ORB runs at Tradeify.
+- **Different instrument** (Joshua, 2026-11-04, verbatim, relayed by the merge-train conductor: "A different instrument counts as distinct, we can safely infer"; asked whether to wait for Tradeify's written answer, he chose "Rule it now"). The same logic on a different instrument counts as a distinct strategy for Tradeify's exclusivity rule. The same logic on the same instrument at another firm stays prohibited.
+  - This supersedes the interim reading recorded earlier on 2026-11-04 (#1076), under which the same logic on a different instrument counted as the same strategy.
+  - It is an explicit exception to Rule 17's broad reading of venue silence. It rests on Tradeify support's 2026-10-12 reply (note §1.5): "If you write distinct strategies (different logic) running on one privately owned engine, you may use some exclusively on Tradeify and others elsewhere, as long as the strategies used on Tradeify are not used at other firms". Tradeify has not confirmed the instrument case in writing.
+  - Consequence: R1's MCL ORB is no longer barred from seeding another firm on distinctness grounds. The reopen trigger above still applies: written confirmations from two of the other four firms, and a passed holdout.
+  - The cross-firm hedging control still binds distinct books (above), including correlated products at BluSky.
 
 **Family-to-firm mapping.** The FX rows were decided by Joshua on 2026-11-04 ("go with your recommendations on both"); the rest stays proposed. The deployment order is set above (Tradeify first, with a reopen trigger).
 
@@ -523,8 +527,8 @@ A forward confirm buys nothing over the fixed holdout for the equity micros. It 
 | FXIFY | later | rules provisional | — |
 
 **Open questions:**
-1. Energy: MCL's one look goes to R1's re-registration, which is ORB. Answered by the distinct-books ruling above: while the index ORB runs at Tradeify, an MCL ORB cannot seed another firm.
-2. Is a different instrument enough distinctness under Tradeify's rule? Logic is the test (above). Whether the same logic on a different instrument counts is the Tradeify support question owed above.
+1. Energy: MCL's one look goes to R1's re-registration, which is ORB. Answered by the different-instrument ruling above: an MCL ORB is distinct from the index ORB, so distinctness no longer bars it from another firm.
+2. Is a different instrument enough distinctness under Tradeify's rule? Ruled yes by Joshua (above), ahead of Tradeify's written answer, which is still owed.
 
 ---
 
