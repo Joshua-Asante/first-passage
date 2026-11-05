@@ -122,3 +122,7 @@ The local-only complete ledger has 100,848 rows and SHA-256
 `f881a9c60da0e40f206f2048764f777c66a296cae31deab8b06337ddda2ae4f7`. It is not committed
 because it contains vendor-derived timestamps and prices; the hash and row count are also stored in
 `results.json`.
+
+## Addendum 2026-11-04: body archived
+
+The verdict above stands. `run_research.py`, `config.json`, `data_audit.json`, `results.json` and the study test left the tree. Retrieve them with `git show 51ae8c09a083bb55db8a8684299c7c459d259ba3:<path>`.
