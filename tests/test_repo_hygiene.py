@@ -145,6 +145,8 @@ def test_scan_states_clean_dirty_and_ignored_only(tmp_path):
     assert rh._scan_worktree(str(tmp_path)) == ("clean", ["evidence.csv"])
     (tmp_path / "new.txt").write_text("x\n", encoding="utf-8")
     assert rh._scan_worktree(str(tmp_path)) == ("dirty", ["evidence.csv"])
+    _git(tmp_path, "config", "status.showUntrackedFiles", "no")
+    assert rh._scan_worktree(str(tmp_path)) == ("dirty", ["evidence.csv"])
 
 
 def test_scan_failure_is_unknown_not_empty(tmp_path, monkeypatch):

@@ -121,7 +121,10 @@ def _scan_worktree(path: str) -> tuple[str, list[str]]:
     `git worktree remove` refuses untracked files but deletes ignored ones without
     asking, so a failed scan is `unknown`, never an empty result."""
     try:
-        proc = _run(["git", "status", "--porcelain=v1", "--ignored", "-z"], cwd=Path(path))
+        proc = _run(
+            ["git", "status", "--porcelain=v1", "--ignored", "--untracked-files=normal", "-z"],
+            cwd=Path(path),
+        )
     except OSError:
         return "unknown", []
     if proc.returncode != 0:
