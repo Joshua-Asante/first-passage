@@ -208,6 +208,8 @@ State-model rulings (2026-10-29, Joshua, in session: "I rule SM-1, SM-2 A and SM
 
 ### 6.1 Roles
 
+*2026-11-05: for the Aegis + ORB pair, each instance owns only its own instrument ([checklist addendum](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-11-05--bare-bones-eval-path)).*
+
 | Role | May | May not |
 |---|---|---|
 | Strategy leg | Emit intents (§6.3) for its own leg, including a request to cancel its own resting entry or add (D-N7) | Send, modify or cancel any order itself; read another leg's state |
@@ -327,6 +329,8 @@ An `OperatorStart` is `ADMITTED` only with a clean epoch, no latch, the connecti
 5. Disconnect, strategy disable and owner restart never cancel protection (§2.3 item 5).
 
 ### 6.8 Blocks
+
+*2026-11-05: for the Aegis + ORB pair, the companion's orders and fills on its own instrument are not an incident ([checklist addendum](../superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-11-05--bare-bones-eval-path)).*
 
 Each condition latches as shown. No later fact lifts a latch within the session; the session ends through §2.7.
 

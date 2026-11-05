@@ -1082,13 +1082,18 @@ Ruled by Joshua 2026-11-03 (pre-sitting, in the Claude session preparing the 11-
 
 Ruled by Joshua 2026-11-05, typed to the deployment coordinator, verbatim: "we can cut steps to the bare bones" and "Yes, adopt it". This is an operator exception for the first Tradeify eval sessions on the owned Select 100K. It changes frozen Rule 10 only as stated here, and no other rule.
 
-**Path:** (1) S-PAIR as frozen, with acceptance after the run; (2) Joshua sends the Tradeify source email; (3) his name readback, then the eval build under one GO; (4) one signed page plus a short pre-session check; (5) his session GO and an attended session that he enables himself.
+**Path:** (1) S-PAIR bare rerun on Sim101, with acceptance after the run; (2) Joshua sends the Tradeify source email; (3) his name readback, then the eval build under one GO; (4) one signed page plus a short pre-session check; (5) his session GO and an attended session that he enables himself.
 
 **Exceptions:**
 
 - **Instance M1** is replaced by an attended check: platform alert audible, connection-loss alert on, operator present, Tradovate web view open, flatten path confirmed.
 - **Runbook P2 entry gate** is replaced by the signed page and pre-session check. The runbook's U tests stop being gates, because Sim cannot prove them. The signed page states what S-PAIR showed and names the rest as risk for Joshua's acceptance, including protection across a disconnect on the firm connection. The automatic incident close is not relied on.
 - **Second instance:** the bar in runbook §1 and §2.1 applies only to instances on one instrument. For the Aegis + ORB pair, a static per-leg split of caps replaces §2.1–§2.2. Values stay private.
+- **Runbook §6 for the Aegis + ORB pair:**
+  - Each instance owns only its own instrument, MNQ or 6J, and recognises only its own orders and fills. What it cannot correlate on its own instrument stays a §6.8 incident.
+  - Orders or fills on the other leg's instrument are the companion's, not an incident. Anything on neither instrument, or on another account, is unexplained and a stop.
+  - Account-wide incidents, stopping new risk across both legs and the account loss stop are the attending operator's, under the signed page and the registered stop rule. No cross-instance automation handles them.
+  - §6's single-owner, shared-reservation and single-journal requirements are superseded for this pair; each instance keeps its own journal. §6's incident stop for unexplained activity stays, read that way.
 - **Source timing:** Joshua's 2026-11-01 ruling "Send now, disclose" supersedes the 10-30 timing. The email was sent 2026-11-05.
 
 **T2 stands:** no agent or Codex acts on the eval until [T2](../../notes/2026-11-01-prop-firm-venue-fact-register-DRAFT.md#i6-tradeify-conflicts-and-gaps-t1t10) is settled.
