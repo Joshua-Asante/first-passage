@@ -104,7 +104,7 @@ def test_pre_commit_skips_path_conditional_when_index_empty(monkeypatch):
 
 
 def test_pre_commit_includes_path_conditional_on_matching_paths(monkeypatch):
-    monkeypatch.setattr(gm, "staged_names", lambda: ["ops/recall/index.py"])
+    monkeypatch.setattr(gm, "staged_names", lambda: ["ops/cli.py"])
     data = gm.load_manifest(MANIFEST)
     selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
     assert "durable-store-pragmas" in selected
@@ -178,7 +178,7 @@ def test_manifest_file_present():
 REACHABILITY_PROBES = {
     "evidence-store": "scripts/evidence_store/store.py",
     "cost-model-closed-world": "lab/discovery/cost_model.py",
-    "durable-store-pragmas": "ops/recall/index.py",
+    "durable-store-pragmas": "ops/cli.py",
 }
 
 
