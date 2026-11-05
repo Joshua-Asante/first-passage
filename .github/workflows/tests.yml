@@ -124,7 +124,6 @@ jobs:
           tests/test_claude_review_workflows.py
           tests/test_validate_c1_monitoring_acceptance.py
           tests/ops/test_c1_rail_arm.py
-          tests/governance/test_sentinel_cli.py
           tests/core/test_mc_mode_switching.py
           tests/ops/test_recall_guard.py
           tests/ops/test_recall_index.py

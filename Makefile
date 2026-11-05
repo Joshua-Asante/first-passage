@@ -1,14 +1,13 @@
 # First Passage - convenience targets.
 # Wrappers around scripts that the pre-commit hook also calls.
 
-.PHONY: help check audit validate validate-data validate-pine boundaries lab-catalog lab-catalog-check lab-archive-check test test-ops roll-sessions roll-sessions-dry instrument-profiles instrument-profiles-build gate-manifest gate-manifest-list
+.PHONY: help check audit validate validate-data validate-pine boundaries lab-catalog lab-catalog-check lab-archive-check test test-ops instrument-profiles instrument-profiles-build gate-manifest gate-manifest-list
 
 help:
 	@echo "check                 run check-tier gates (scripts/gates.yml)"
 	@echo "audit                 run report-only diagnostics"
 	@echo "validate              data manifests + pine"
 	@echo "lab-catalog           regenerate lab/CATALOG.md"
-	@echo "sentinel              INQHIORI sentinel scan (report-only)"
 	@echo "gate-manifest-list    print the hard-gate roster (blocking tiers)"
 	@echo "test / test-ops       pytest (all / ops/)"
 
@@ -64,17 +63,3 @@ test:
 
 test-ops:
 	@python -m pytest tests/ops/ -x
-
-# Keep the newest 20 session entries live and preserve older entries verbatim
-# in quarterly archives. Preview is always available as a no-write target.
-roll-sessions-dry:
-	@python scripts/roll_sessions.py --dry-run
-
-roll-sessions:
-	@python scripts/roll_sessions.py
-
-# INQHIORI Sentinel — Tier-1 deterministic hygiene scan (report-only, zero-token).
-# Prepends a run block to docs/notes/sentinel/queue.md. Override date: make sentinel ASOF=2026-06-23.
-.PHONY: sentinel
-sentinel:
-	@PYTHONPATH=ops python -m sentinel --asof $(or $(ASOF),$(shell python -c "import datetime;print(datetime.date.today())"))

@@ -252,7 +252,7 @@ Install or refresh hooks using `bash scripts/install_hooks.sh` (Git Bash on
 Windows), or `scripts/install_hooks.bat` on Windows. Shell hook templates and
 the shell installer are LF-pinned for fresh Windows checkouts.
 
-All four hooks bootstrap through `python -I scripts/fp.py` from the checkout
+All three hooks bootstrap through `python -I scripts/fp.py` from the checkout
 where Git invoked them. Bootstrap Python needs only stdlib; check consumers use
 that checkout's validated operations environment. Run `fp.ps1 doctor` first and
 see [Local operations launcher](#local-operations-launcher) for environment
