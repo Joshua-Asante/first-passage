@@ -11,7 +11,7 @@ import pytest
 from test_fp_launcher import checkout, ops_env  # Reuse offline launcher fixtures.
 
 ROOT = Path(__file__).resolve().parents[1]
-HOOKS = ('pre-commit', 'pre-push', 'post-merge')
+HOOKS = ('pre-commit', 'post-merge')
 PROBE = '''import json, os, sys
 from pathlib import Path
 with Path(os.environ['HOOK_TRACE']).open('a') as output:
@@ -40,7 +40,7 @@ def hook_checkout(checkout):
     for name in ('install_hooks.sh', 'install_hooks.bat'):
         shutil.copy2(ROOT / 'scripts' / name, checkout / 'scripts' / name)
     shutil.copy2(ROOT / '.gitattributes', checkout / '.gitattributes')
-    for name in ('probe.py', 'check_push_collision.py', 'check_pine_manifest.py'):
+    for name in ('probe.py', 'check_pine_manifest.py'):
         (checkout / 'scripts' / name).write_text(PROBE, encoding='utf-8')
     (checkout / 'scripts/gates.yml').write_text(
         'version: 1\ngates:\n  - id: probe\n    tier: always\n'
@@ -73,11 +73,9 @@ def test_hooks_select_validated_interpreter_and_checkout(hook_checkout, ops_env,
     result = run_hook(root, shell, hook, environment(root, ops_env))
     assert result.returncode == 0, result.stdout + result.stderr
     events = [json.loads(line) for line in (root / '.cache/hook-trace.jsonl').read_text().splitlines()]
-    assert len(events) == {'pre-commit': 1, 'pre-push': 1, 'post-merge': 1}[hook]
+    assert len(events) == 1
     assert all(Path(event['prefix']).samefile(ops_env) for event in events)
     assert all(Path(event['cwd']).samefile(root) for event in events)
-    if hook == 'pre-push':
-        assert [event['script'] for event in events] == ['check_push_collision.py']
     if hook == 'post-merge':
         assert events[0]['args'] == ['--check-pin-provenance', '--base', 'ORIG_HEAD']
 
@@ -100,7 +98,7 @@ def test_invalid_environment_never_runs_hook_consumer(hook_checkout, ops_env, sh
         assert 'WARNING' in result.stdout + result.stderr
 
 
-@pytest.mark.parametrize('hook', HOOKS[:2])
+@pytest.mark.parametrize('hook', ['pre-commit'])
 def test_blocking_hooks_preserve_consumer_failure(hook_checkout, ops_env, shell, hook):
     root = hook_checkout
     (root / '.cache').mkdir(exist_ok=True)
@@ -139,10 +137,12 @@ def test_fresh_autocrlf_worktree_installs_runnable_common_hooks(hook_checkout, o
     assert Path(event['cwd']).samefile(linked)
 
 
-def test_installer_removes_retired_pre_merge_commit_hook(hook_checkout, shell):
-    """Hooks installed before the 2026-11 cut include pre-merge-commit; reinstalling drops it."""
+@pytest.mark.parametrize('retired', ['pre-merge-commit', 'pre-push'])
+def test_installer_removes_retired_hooks(hook_checkout, shell, retired):
+    """Hooks installed before the 2026-11 cuts include pre-merge-commit and pre-push;
+    reinstalling drops them and installs only the live hooks."""
     root = hook_checkout
-    stale = Path(git(root, 'rev-parse', '--git-path', 'hooks/pre-merge-commit'))
+    stale = Path(git(root, 'rev-parse', '--git-path', f'hooks/{retired}'))
     if not stale.is_absolute():
         stale = root / stale
     stale.parent.mkdir(parents=True, exist_ok=True)
@@ -152,3 +152,4 @@ def test_installer_removes_retired_pre_merge_commit_hook(hook_checkout, shell):
                                errors='replace', check=False)
     assert installed.returncode == 0, installed.stdout + installed.stderr
     assert not stale.exists()
+    assert all((stale.parent / name).is_file() for name in HOOKS)
