@@ -69,7 +69,6 @@ docs/adr/2026-05-23-allocation-refresh-2.md -> CLAUDE.md [missing-file]	1
 docs/adr/2026-05-23-allocation-refresh-2.md -> docs/adr/2026-05-14-allocation-refresh.md [missing-file]	2
 docs/adr/2026-05-23-allocation-refresh-2.md -> ops/live_journal/scripts/journal_review.py [missing-file]	1
 docs/adr/2026-05-23-allocation-refresh-2.md -> tests/test_mc_anchors.py [missing-file]	2
-docs/adr/2026-06-07-decompound-remc-hold.md -> docs/superpowers/specs/2026-08-02-venue-native-regime-monitor-design.md [missing-file]	1
 docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md -> docs/ltm/briefs/pre-registration/FWD-PREREG-BPC-USDCAD-TUE-2026-06-11.md [missing-file]	2
 docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md -> docs/notes/2026-07-16-instrument-ledger-coverage-inventory.md [missing-file]	1
 docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md -> docs/superpowers/plans/2026-07-16-instrument-ledger-coverage-ab.md [missing-file]	1
