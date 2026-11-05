@@ -1,0 +1,14 @@
+[
+  {
+    "run_id": "m6e_european_breakout_fixed_20261104",
+    "instrument": "M6E",
+    "look": 1,
+    "parameters_changed": false,
+    "sample": "2016-01-04:2024-12-31",
+    "summary_sha256": "db0669ffca6eace3c2270fda00f266ff38b44574d90d9ab4aa0aacb541fabad7",
+    "outcome": "No candidates submitted to validation; complete outcome remains in hash-pinned private evidence.",
+    "reserved_returns_examined": false,
+    "published_summary_sha256": "d16519bc7ead3155faadfc3fd8d186f3437b13d7f1cfd5e10b3fb0ca0222aac2",
+    "full_summary_sha256": "d6867faf32dc7f8c78dc07b8c21bb6b6948e7f1dd1df7d9511cd6cec7125844b"
+  }
+]

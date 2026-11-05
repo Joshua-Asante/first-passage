@@ -1,0 +1,123 @@
+{
+  "scope": "Publication extract: trade counts only; full performance evidence remains private",
+  "sample_start": "2016-01-04",
+  "sample_end": "2024-12-31",
+  "registration": "registration.json",
+  "registration_sha256": "fb8e1c7c035245c40cb98657783acf93c7acd37904f07ba974dc2fa8ffc9c7db",
+  "private_summary": "local_artifacts/m6e-fixed-20261104/summary.json",
+  "private_summary_sha256": "d6867faf32dc7f8c78dc07b8c21bb6b6948e7f1dd1df7d9511cd6cec7125844b",
+  "all": {
+    "trades": 1742
+  },
+  "direction": {
+    "long": {
+      "trades": 910
+    },
+    "short": {
+      "trades": 832
+    }
+  },
+  "year_direction": {
+    "2016": {
+      "long": {
+        "trades": 95
+      },
+      "short": {
+        "trades": 98
+      }
+    },
+    "2017": {
+      "long": {
+        "trades": 100
+      },
+      "short": {
+        "trades": 95
+      }
+    },
+    "2018": {
+      "long": {
+        "trades": 103
+      },
+      "short": {
+        "trades": 83
+      }
+    },
+    "2019": {
+      "long": {
+        "trades": 105
+      },
+      "short": {
+        "trades": 91
+      }
+    },
+    "2020": {
+      "long": {
+        "trades": 98
+      },
+      "short": {
+        "trades": 95
+      }
+    },
+    "2021": {
+      "long": {
+        "trades": 109
+      },
+      "short": {
+        "trades": 97
+      }
+    },
+    "2022": {
+      "long": {
+        "trades": 110
+      },
+      "short": {
+        "trades": 89
+      }
+    },
+    "2023": {
+      "long": {
+        "trades": 103
+      },
+      "short": {
+        "trades": 89
+      }
+    },
+    "2024": {
+      "long": {
+        "trades": 87
+      },
+      "short": {
+        "trades": 95
+      }
+    }
+  },
+  "year": {
+    "2016": {
+      "trades": 193
+    },
+    "2017": {
+      "trades": 195
+    },
+    "2018": {
+      "trades": 186
+    },
+    "2019": {
+      "trades": 196
+    },
+    "2020": {
+      "trades": 193
+    },
+    "2021": {
+      "trades": 206
+    },
+    "2022": {
+      "trades": 199
+    },
+    "2023": {
+      "trades": 192
+    },
+    "2024": {
+      "trades": 182
+    }
+  }
+}

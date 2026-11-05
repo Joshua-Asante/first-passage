@@ -67,6 +67,7 @@
       }
     },
     "M6B": {},
+    "M6E": {},
     "MCL": {
       "daily-range-state-persistence": {
         "date": "2026-08-18",
@@ -607,6 +608,28 @@
       ],
       "venue_note": "Live Tradeify Currencies micro set is M6A+M6E only (firm_rules Tradeify commission note: 'micro FX = M6A + M6E only'; product-group lists include 6B standard + M6A, not M6B). Bulenox Rates.pdf fee table does print M6B alongside M6A/M6E. Research/discovery until a live-firm product-group re-verify names M6B.",
       "venue_tradable": false
+    },
+    "M6E": {
+      "asset_class": "fx-futures",
+      "bars": [],
+      "cost_hurdle": {
+        "basis": "Tradeify 1.60 fees plus two adverse ticks per side at 1.25 per tick; not an observed spread.",
+        "source": "#e1-fixed-european-morning-exploration",
+        "units": "USD/round-trip/contract (exploratory assumption)",
+        "value": 6.6
+      },
+      "family": [],
+      "inherited_bars": [],
+      "k_bank_source": "../../discovery_manifests/",
+      "ledger": "ops/instruments/M6E.md",
+      "structure": [
+        {
+          "claim": "One fixed European-morning breakout was evaluated without optimization or a holdout look. No candidate was submitted to validation. Restricted performance evidence stays private; independent review is pending.",
+          "source": "#e1-fixed-european-morning-exploration"
+        }
+      ],
+      "venue_note": "M6E is listed in Tradeify's published fee schedule. This is product availability, not a strategy deployment or account authorization.",
+      "venue_tradable": true
     },
     "MCL": {
       "asset_class": "energy-futures",
