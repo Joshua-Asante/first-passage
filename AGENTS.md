@@ -16,11 +16,13 @@ Docs removed in the 2026-11 governance cut are in git history at main commit
 
 1. **No live orders without Joshua's direction.** Agents, Codex included, may act
    on the Tradeify eval (place, exit or cancel orders, including through computer
-   use) only when he directs, and every eval session needs its own GO.
+   use) only when he directs, under a GO that covers the 7 days after he gives it.
+   He can revoke a GO at any time.
    **Exception:** the weekly account-preservation round trip runs under his
    standing, revocable GO (2026-10-25). An agent may place it with no per-trade
    direction.
-2. **No arming, live spend or deployment without his explicit GO for that session.**
+2. **No arming, live spend or deployment without his explicit GO** covering that
+   time (a weekly GO, as in rule 1).
    The c1 Python rail is retired (2026-10-29). Its Fly apps were destroyed
    2026-11-05. Nothing is rebuilt, redeployed, armed or bound to an account under it.
 3. **Tradeify evaluation accounts allow native strategy logic only.** That means
