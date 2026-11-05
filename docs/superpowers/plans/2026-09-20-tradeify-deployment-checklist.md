@@ -1096,7 +1096,7 @@ Ruled by Joshua 2026-11-05, typed to the deployment coordinator, verbatim: "we c
   - §6's single-owner, shared-reservation and single-journal requirements are superseded for this pair; each instance keeps its own journal. §6's incident stop for unexplained activity stays, read that way.
 - **Source timing:** Joshua's 2026-11-01 ruling "Send now, disclose" supersedes the 10-30 timing. The email was sent 2026-11-05.
 
-**T2 stands:** no agent or Codex acts on the eval until [T2](../../notes/2026-11-01-prop-firm-venue-fact-register-DRAFT.md#i6-tradeify-conflicts-and-gaps-t1t10) is settled.
+**Agent operation (reversed 2026-11-05).** Joshua, verbatim: "i want to reverse the "no agent or Codex on the eval" ruling" and "Yes, include Codex". Agents may act on the eval on his direction, and under the standing GO for the weekly trade. Codex may see account data on screen while it acts there; it writes none to logs or files, and still receives no Pine, ports, effective inputs or parameters. [T2](../../notes/2026-11-01-prop-firm-venue-fact-register-DRAFT.md#i6-tradeify-conflicts-and-gaps-t1t10) stays open: Joshua accepts that venue risk.
 
 **Unchanged:** every session needs its own GO; a real trade each week; the eval build uses S-PAIR's source set; the [stop rule](../../briefs/pre-registration/2026-10-31-tradeify-forward-stop-rule-registration.md) is kept, or changed by a new registration before session 1.
 

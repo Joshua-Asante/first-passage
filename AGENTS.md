@@ -108,7 +108,7 @@ M1 `RESOLVED` ([acceptance](docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json)
 
 - `dry_run=false` requires M1 `RESOLVED`: the gate's object is the **arm**, not the send.
 - Disarm **before** absolute `armed_until` expiry; lapse-while-armed previously caused a host crash-loop.
-- Live spend requires M1 `RESOLVED` **and** separate operator GO; every armed session needs its own GO. First Tradeify eval sessions: attended check replaces M1; no agent or Codex acts on the eval until T2 settles (checklist Addendum 2026-11-05).
+- Live spend requires M1 `RESOLVED` **and** separate operator GO; every armed session needs its own GO. First Tradeify eval sessions: attended check replaces M1 (checklist Addendum 2026-11-05).
 - **Agents may place orders, exit positions and cancel orders when directed by the operator**, including through computer use ([operator amendment 2026-09-30](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-30b)); arming, live-spend and per-session operator GO requirements still apply. Weekly account-preservation trades may be operator- or agent-placed; under the operator's standing, revocable GO (2026-10-25, same addendum) an agent needs no per-trade direction for them; deadline in [STATE](STATE.md#scheduled-forward-triggers).
 - `c1_rail_arm.py` checks M1 structure, `RESOLVED` and signoff presence, not a signature: a complete forged acceptance passes. `c1_rail_http_server.load_config` does not check M1; `/data` edits bypass it. The host-side gate obligation was withdrawn with the lane; the gap remains, so hosts stay disarmed. `--acknowledge-m1-unresolved` overrides a structurally valid unresolved artifact and records `arming_deviation`; agent use requires the [operator-act prompt](docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-09-26).
 
@@ -227,7 +227,7 @@ source: a private local area, the archive, the VM or this repository.
   for Claude, OpenAI for Codex). Handing data to another agent or service follows that
   recipient's permissions.
 - *Codex.* Codex never receives Pine, runtime ports, `effective_inputs.json` or account
-  data, and does not read them in place. Public research figures in PRs it reviews are exempt.
+  data, and does not read them in place. Public research figures in PRs it reviews are exempt. Exception: eval screens (checklist 11-05).
 - *Archive.* Claude may read `first-passage-archive`. Anything extracted from it follows
   these class rules, and a Codex ticket carries only identities, hashes, windows and counts.
 - *Research backtest dollars.* Allowed in lab `RESULTS` files only, never in PR text, cards,
