@@ -45,16 +45,12 @@ from validate_c1_monitoring_acceptance import validate as validate_m1_acceptance
 
 DEFAULT_CONFIG_PATH = "/data/c1_rail_config.json"
 
-# The M1 acceptance artifact. Ships in the Fly image (deploy/c1_rail/Dockerfile
-# COPYs it, .dockerignore re-includes it), so `_REPO_ROOT` resolves it both in
-# the repo and in-container at /app.
-#
-# Baking a STATUS into the image is deliberate, not an oversight: the deployed
-# host should gate on the acceptance record that was deployed WITH it. If M1
-# flips to RESOLVED in the repo, arming requires a redeploy — which is already
-# required to refresh `fixture_hashes` anyway, so it is the same motion, not an
-# extra one. The alternative (reading a mutable file on the volume) would let
-# the gate be satisfied by editing the thing being gated on.
+# The M1 acceptance artifact was baked into the historical Fly image, so
+# `_REPO_ROOT` resolved it both in the repo and in-container at /app.
+# The image build chain is retired and no host remains. This path stays only
+# until the rail code leaves; it does not authorize a new deployment.
+# Baking the status tied the gate to the deployed acceptance record rather
+# than a mutable volume file that could satisfy its own gate by being edited.
 DEFAULT_ACCEPTANCE_PATH = _REPO_ROOT / "docs" / "notes" / "rail_build" / \
     "M1_MONITORING_ACCEPTANCE.json"
 

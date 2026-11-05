@@ -205,3 +205,15 @@ need its own dated supersession — this addendum records the gap, it does not c
 `STATE.md`:194 is updated in the same commit as this addendum to name this ADR as an affected
 dependent of the orphaned machinery (living document, corrected in place per Rule 14 — not
 addendum-gated there).
+
+## Addendum 2026-11-08 — limb 2 dependency reconciled with the decompound HOLD retirement
+
+Ruled by Joshua 2026-11-03 (pre-sitting); recorded effective 2026-11-08.
+
+The decompound-HOLD ADR's prospective monitoring, its quarterly schedule and its regime-monitor
+successor gate are retired with the legacy book
+([Addendum 2026-11-08](2026-06-07-decompound-remc-hold.md#addendum-2026-11-08--prospective-monitoring-retired-with-the-legacy-book)).
+§4 limb 2 therefore stays struck, and the Addendum 2026-08-29 re-arm route through that successor
+is closed; the §4 schedule that rode that cadence carries no duty. This reconciles that dependency
+only: T1, limbs 1 and 3 stand as recorded, and the regime risk limb 2 watched is not resolved.
+

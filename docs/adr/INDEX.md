@@ -21,7 +21,6 @@
 | 2026-05-23-allocation-refresh-2.md | Accepted | 2026-05-23 | `2026-05-14-allocation-refresh.md` full | (with documented regime-robustness-gate override) |
 | 2026-06-04-lean-portfolio-meta-layer.md | Accepted | 2026-06-04 | none | ratified 2026-06-04 by PO (Joshua); Rule-0 anchors confirmed on-disk (see blockquote header below for the full ratification note). |
 | 2026-06-05-monorepo-layer-boundaries.md | Accepted | 2026-06-05 | none | ratified 2026-06-05 by PO (Joshua); execution-time amendment 2026-06-06 (see blockquote header below for the full ratification note). |
-| 2026-06-07-decompound-remc-hold.md | Accepted | 2026-06-07 | none | Accepted |
 | 2026-06-11-instrument-ledger-and-cfg-fingerprint.md | Accepted | 2026-06-11 | none | (P1 + P3) · P2 recorded as **not ratified** (§2c) |
 | 2026-06-12-notion-surface-retirement.md | Accepted | 2026-06-12 | none | decision made 2026-06-12 by owner adjudication; execution phased (see §2). Phase 1 (FREEZE) 2026-06-12 · Phase 2 (MIGRATE) DONE 2026-06-13 · **Phase 3 (COLD ARCHIVE) executed 2026-08-10** — workspace **not** deleted (see Addendum 2026-08-10). |
 | 2026-06-12-three-loop-methodology-binding.md | Accepted | 2026-06-12 | none | ratified 2026-07-06 by PO (Joshua); D1/D2/D3 graduated Proposed to Accepted per the Section 4 hook (see blockquote header above for the full ratification note). |
@@ -113,6 +112,7 @@
 | 2026-06-05-concept-admissibility.md | Accepted | 2026-06-05 | none | Accepted |
 | 2026-06-05-sweep-engine.md | Accepted | 2026-06-05 | none | Accepted |
 | 2026-06-06-firm-constants-single-source.md | Accepted | 2026-06-06 | none | Accepted |
+| 2026-06-07-decompound-remc-hold.md | Accepted | 2026-06-07 | none | Accepted |
 | 2026-06-12-tv-csv-canonical-feed-policy.md | Accepted | 2026-06-12 | none | (operator executive decision, recorded) — **§2.3 + §4 Forbidden-move #3 (tooling retained / don't-delete) SUPERSEDED 2026-06-17 by `docs/adr/2026-06-17-dukascopy-retirement.md`** (Dukascopy retired entirely; the rest of this ADR — TV exports canonical — stands) |
 | 2026-06-14-rejected-candidate-patterns.md | Accepted | 2026-06-14 | none | (2026-06-14) — taxonomy, dedup-axis separation, add-back gate, and the additive schema extension are all adopted; the §7 downstream sweep landed (SCHEMA.md note + registry pointer + `feedback.py` field extension with a round-trip test, 19/19 intake tests green). |
 | 2026-06-17-dukascopy-retirement.md | Accepted | 2026-06-17 | `2026-06-12-tv-csv-canonical-feed-policy.md` in part — Section 2.3 + Section 4 Forbidden-move #3 (the "tooling retained, not deleted" clause) reversed by operator decision.; `2026-06-12-rnd-feed-instrument-class-split.md` full | (operator executive decision, recorded) |

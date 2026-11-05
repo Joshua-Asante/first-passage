@@ -2,7 +2,7 @@
 
 **Status:** `Accepted`
 **Superseded-by:** none
-**Superseded-in-part-by:** none
+**Superseded-in-part-by:** `event:legacy-book-monitoring-retirement-2026-11-08` — §4 revert trigger, its schedule and the Addendum 2026-08-03 §6 successor gate retired; see §Addendum 2026-11-08
 **Retain-until:** none
 **Revision:** 2026-10-25 — rule consolidation D9 removed directives no longer needed (ADR02-39); prior decision at `03a1a0360010baed687a89b6e151e8249d813fba`.
 **Decision date:** 2026-06-07
@@ -65,6 +65,8 @@ Re-MC on that corrected basis (decompounding round-trips losslessly; harness rep
 
 ## §4 — Falsifier (revert trigger)
 
+> ⛔ **RETIRED 2026-11-08 — §4 is no longer a standing trigger.** See §Addendum 2026-11-08.
+>
 > ⚠ **READ FIRST — NEITHER LIMB CAN FIRE TODAY (status as of 2026-08-03).** Thresholds below are
 > **unchanged and not re-decided**; what changed is whether they are reachable.
 > **Limb 1 — DORMANT** since 2026-07-01 (no live challenge in flight); re-arms automatically when
@@ -286,7 +288,7 @@ that was wrong *and* is now unreachable is worse than one that is merely unreach
 - **Discharge = the venue-native regime monitor** (§2-D: the two holes are one hole). It discharges
   limb 2 and the owed forward monitor together; its standing constraints carry unchanged (**not**
   pass-rate-shaped; the both-halves gate is **not** re-run as if the answer were unknown). Design:
-  [`docs/superpowers/specs/2026-08-02-venue-native-regime-monitor-design.md`](../superpowers/specs/2026-08-02-venue-native-regime-monitor-design.md).
+  [`docs/superpowers/specs/2026-08-02-venue-native-regime-monitor-design.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/superpowers/specs/2026-08-02-venue-native-regime-monitor-design.md) (archived).
   It is gated on the **first live fill**, not a date — so this gap does not close on a calendar.
 - **Limb 1 is unaffected** by this addendum — dormant since 2026-07-01, feed-independent, re-arms on
   live execution. It is a *corroborating* catch-path; it does not substitute for limb 2.
@@ -307,6 +309,8 @@ that was wrong *and* is now unreachable is worse than one that is merely unreach
 5. **Do not let the successor's scope quietly grow** past discharging these two obligations.
 
 ### §6 — Gate (binary, for the successor)
+
+> ⛔ **RETIRED 2026-11-08** with its AMBIGUOUS re-raise — see §Addendum 2026-11-08.
 
 **RESOLVED** — the venue-native regime monitor is built, pre-registered, and has produced one
 verdict on live-fill-era data; §4 is amended to name it as limb 2's replacement, and this suspension
@@ -331,6 +335,7 @@ grep -c "no live falsifier" docs/adr/2026-06-07-decompound-remc-hold.md
 # Rule-12 lift artifact is produced and named in Change history.
 
 # 3. Limb 2 is genuinely unreachable, not merely unrun (re-verify, do not assume)
+# Harness not on this tree (2026-11-08): archive tag pre-prune-2026-08-08 (71b516cd61eabac02c37db882a2048ec80bc10af), same path.
 cd lab/analysis/regime/decompound_remc_2026-06-07 && python regime_gate.py --regime-check --asof 2026-11-08
 # Expected: NOT_EXECUTABLE, uncovered-bday count LARGER than 08-08's 49/126 (the gap grows daily).
 # If this ever returns a verdict, the panel was extended — investigate the source before trusting it.
@@ -342,6 +347,35 @@ git diff --stat origin/main -- core/dd_protection.py core/firm_rules.py
 
 ---
 
+## Addendum 2026-11-08 — prospective monitoring retired with the legacy book
+
+Ruled by Joshua 2026-11-03 (pre-sitting); recorded effective 2026-11-08.
+
+**Ruling:** "Retire with legacy book." Repeatedly carrying an impossible future check adds no
+evidence when its subject has no live venue. Addendum 2026-08-03 §5 item 1 already holds that
+replacing this HOLD's CFD data with CME data creates a new falsifier needing its own authority, so
+a fill in the current ORB+Aegis pair cannot quietly revive this legacy check.
+
+**Preserved:** the HOLD as a historical record, its §1–§3 evidence and adverse findings (both lock
+gates breach; corrected 98.53 / 1.47 / 5.32; locked-config H1 bust 13.84%; no static de-risk
+regime-robust), and the 2026-06-25, 2026-07-01 and 2026-08-03 addenda as dated records.
+Thresholds are unedited, not passed and not resolved; this retires unreachable checks (Rule 28).
+
+**Retired (superseded):**
+- §4 revert trigger, its quarterly schedule and its revert action, including limb 1's re-arm on
+  live execution.
+- Addendum 2026-08-03 §6 successor gate (RESOLVED / FALSIFIED / AMBIGUOUS), including the
+  AMBIGUOUS re-raise at the 2026-11-08 programme audit. No regime-monitor successor is owed under
+  this ADR.
+
+**Dependent:** SFRISK-1 §4 limb 2 stays struck; reconciled in
+[its Addendum 2026-11-08](2026-07-15-sfrisk-1-t1-admitting-successor-risk-framework.md#addendum-2026-11-08--limb-2-dependency-reconciled-with-the-decompound-hold-retirement).
+
+**Repaired:** the dead successor-design link (Addendum 2026-08-03) now points to the archive; the
+§10 hook 3 harness is noted at archive tag `pre-prune-2026-08-08`.
+
+---
+
 ## Change history
 
 | Date | Change | By |
@@ -350,3 +384,4 @@ git diff --stat origin/main -- core/dd_protection.py core/firm_rules.py
 | 2026-06-25 | Addendum: clean single-file re-MC re-validation. HOLD-ROBUST (both gates still breach); breach severity corrected 2.92/5.93 → 1.47/5.32 (stitch-seam artifact). De-risk candidates still fail H1. | Joshua + Claude Code |
 | 2026-07-01 | Addendum: §4 limb 1 (live challenge-failure catch-path) flagged DORMANT under go-dark (CFD retired, no live challenge); re-arms when live execution resumes. Limb 2 (quarterly MC) intact. No config/threshold change. | Joshua + Claude Code (programme audit) |
 | 2026-08-03 | Addendum: §4 limb 2 **SUSPENDED-ORPHANED** — panel unextendable after the Pepperstone feed retirement (venue closed), so the trailing-window call is permanently `NOT_EXECUTABLE`; quarterly schedule struck (not deferred). HOLD stands but is now **unfalsifiable** until the venue-native regime monitor discharges it (ADR 2026-08-02 §2-D — "the two holes are one hole"). §4 reader-intercept added; the 07-01 "limb 2 intact" claim corrected in place. No config/threshold/allocation change. | Joshua + Claude Code |
+| 2026-11-08 | Addendum: §4 trigger, schedule and revert action, and the Addendum 2026-08-03 §6 successor gate with its AMBIGUOUS re-raise, retired with the legacy book (ruled 2026-11-03). HOLD and adverse findings preserved; dead links repaired. | Joshua + Claude Code |

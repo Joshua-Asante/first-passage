@@ -1,3 +1,5 @@
+> **Historical runbook:** c1 is retired and both apps are destroyed; see [retirement status](../README.md). Commands below describe a host that no longer exists and authorize nothing.
+
 # c1 signal daemon (Fly app)
 
 Second Fly app for the Python-native signal host ([SPEC S2b](../../docs/spec/2026-08-07-loop-s2b-python-signal-daemon-spec.md) ·

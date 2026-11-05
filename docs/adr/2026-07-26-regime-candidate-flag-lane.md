@@ -328,3 +328,11 @@ direction (§4's two-strikes trigger has not fired; no flag-lane follow-up has c
 correctable-in-place living document (unlike this frozen ADR) — the actually-missing forward-board
 line named in Claim 1 above is added to `STATE.md`'s `### 2026-11-08` section in the same commit as
 this addendum, discharging what the 2026-08-21 addendum had only claimed to do.
+
+## Addendum 2026-11-08 — §4 reading
+
+Ruled by Joshua 2026-11-03 (pre-sitting); recorded effective 2026-11-08. Frozen body unedited.
+
+- **Not fired; carried.** Zero qualifying follow-up closures; the revert trigger requires two reserved-holdout confirm failures. Effectiveness is untested. Re-check 2027-02-08.
+- Tested infrastructure supplies no evidence that the lane produces useful edges.
+- Retirement would be a separate judgment about usefulness, not this falsifier's result.

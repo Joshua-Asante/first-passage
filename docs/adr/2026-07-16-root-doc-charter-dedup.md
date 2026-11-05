@@ -57,7 +57,7 @@ record the finding and any needed correction with the owner. Queue placement,
 completion or a failed review does not grant phase GO, open a replacement/channel,
 or change the [M1 license and arming boundaries](2026-07-22-c1-venue-native-monitoring-maturity.md#addendum-2026-08-24--test-strategy-licensed-for-item-5-dated-08-24).
 
-**Trigger check schedule:** 2026-11-08 — first queue-cap/attention and out-of-order review; retain the quarterly attention check, with the next dated check recorded here and in STATE when rolled.
+**Trigger check schedule:** 2027-02-08 — next quarterly queue-cap/attention and out-of-order check (first review passed 2026-11-08; [addendum](#addendum-2026-11-08--queue-attention-review-reading)); the next dated check is recorded here and in STATE when rolled.
 
 ## Current owner
 
@@ -111,3 +111,14 @@ two files each harness saw half the instructions (no content was duplicated betw
 Verification: the gates listed under Current owner plus `python scripts/check_skill_refs.py --all`
 and the governance/script test modules named in the PR. Changes no risk, strategy, Pine or
 live execution authority.
+
+## Addendum 2026-11-08 — queue-attention review reading
+
+Ruled by Joshua 2026-11-03 (pre-sitting); recorded effective 2026-11-08.
+
+**Passed.** Evidence window: first-parent `STATE.md` snapshots from 2026-08-14.
+
+- **Cap:** the queue peaked at 4 items (2026-08-20, `added4f9`) and has held 1 since 2026-09-14 (`089f0a07`), so the cap (above 5 at two consecutive reviews) cannot fire.
+- **Order:** two out-of-order serves were found, neither undirected: an explicit operator override (F1, 2026-08-23) and independent work (rows 3–4 on 2026-08-20, under wording clarified 2026-10-02, `302c1099`).
+
+Next dated check: 2027-02-08 (§Queue-attention review schedule line).

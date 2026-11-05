@@ -604,10 +604,19 @@ the 08-23 ruling's own row-1 closure already stood).
 precedent (F1/F2/F3 are ruled by dated addenda, not by editing the table); a reader reaching the
 fork table should follow the Status-line gloss to the latest ruling.
 
+## Addendum 2026-11-08 — ORB decay re-scope obligation owned here
+
+Ruled by Joshua 2026-11-03 (pre-sitting); recorded effective 2026-11-08.
+
+The **ORB decay re-scope** obligation named in §6 (Negative, first bullet) is owned by this ADR.
+Pursuit [b3](../pursuits/b3-orb-mnq-payability-line.md) lapsed to SUBTRACT on 2026-11-08 and
+transfers this residual here (GRAND ADR §2.3). Nothing else in this ADR changes.
+
 ## Change history
 
 | Date | Change | By |
 |---|---|---|
+| 2026-11-08 | **Addendum 2026-11-08.** ORB decay re-scope obligation (§6) owned here, transferred from lapsed pursuit b3. | Joshua (ruling 2026-11-03); Claude Code (recorder) |
 | 2026-09-01 | **Addendum 2026-09-01 — `Accepted`.** Fork F1's 08-23 ruling reversed: a Tradeify-resting discharge now counts toward §4's "≥2 of four" requirement (four-firm set restored — Bulenox/Tradeify/MFFU/BluSky). Direct operator election, not a venue-fact finding; does not itself discharge or admit any candidate. Discloses the closest exploratory (non-pre-registered) Tradeify-tier attempt (Aegis-6J1×ORB-MNQ-1, 2026-08-26) — its initial headline was itself superseded within the same campaign; fully tested (both-halves regime-robustness + tail-sizing + intraday-honesty), no combined-book configuration on either window survives. Named for transparency, confirming no live clearance exists. Does not ratify either pending `Proposed` addendum. 08-23 text left as-filed with a correction pointer (Known Trap #12). | Joshua (ruling) + Claude Code (Sonnet 5, recorder) |
 | 2026-08-23 | **Addendum 2026-08-23 — `Accepted`.** Fork F1 ruled: a discharge resting on a Tradeify clearance does not satisfy §4's "≥2 of four" requirement (functionally a three-firm set — Bulenox/MFFU/BluSky — for §4 purposes). Made against a zero-clearer scoreboard, ahead of the designed trigger-time reservation, by explicit operator election. Does not ratify either pending `Proposed` addendum (this ADR's evidence canon; the four-firms ADR's `PARTIAL`-disposition rule) and does not proceed through the canon's point-2 data-validity bar — a direct, freestanding ruling instead. STATE.md queue row 1 closed. | Joshua (ruling) + Claude Code (Sonnet 5, recorder) |
 | 2026-08-22 | **Addendum 2026-08-22 authored — `Proposed`, pending operator ratification.** Pre-commits an F1 evidence canon (frozen-set arithmetic unamended by the de-scope; exclusion only via a dated data-validity finding, never by the de-scope alone; mandatory disclosure on any §4 success claim resting on Tradeify while F1 is open) and closes a gap left by this ADR: nothing previously specified what happens *at* F1's trigger moment. Does not rule F1, does not touch §2/§4, does not move F1's decision timing. Motivated by an external, sanitized, zero-authority second-opinion lens's independent convergence on the same procedural-not-substantive shape; reconciled against this ADR's own real text before being logged as candidate input, per [`2026-08-22-ox-alpha-adversarial-lens-scope.md`](https://github.com/Joshua-Asante/first-passage/blob/07fecc6cceb8609fdd5feae78ae67779727ed5c6/docs/adr/2026-08-22-ox-alpha-adversarial-lens-scope.md) §2/§5. | Claude Code (draft, informed by external second-opinion lens) — pending Joshua (ratify) |

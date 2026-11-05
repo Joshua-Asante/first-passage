@@ -1,17 +1,14 @@
-# `deploy/` — Fly.io packaging
+# `deploy/` - retired c1 packaging
 
-Build context is the **repo root**. Do not collapse the two apps.
+The [c1 retirement ruling](../docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#addendum-2026-10-29--c1-retired-as-an-execution-route-staged-decommission)
+retires the Python listener, signal daemon and CrossTrade route.
 
-| App | Config | Code |
-|---|---|---|
-| Listener | [`c1_rail/`](c1_rail/) | [`ops/c1_rail/`](../ops/c1_rail/) |
-| S2b daemon | [`c1_signal_daemon/`](c1_signal_daemon/) | [`ops/c1_signal_daemon/`](../ops/c1_signal_daemon/) |
+The apps and volumes were [destroyed on 2026-11-05](../docs/adr/2026-07-17-c1-rail-build-account-registration-go.md#stage-2-record--2026-11-05). No host remains.
 
-Posture (disarmed / no book) is owned by
-[`AGENTS.md`](../AGENTS.md) §Live-execution posture.
-Runbooks in the per-app READMEs are standup only — they do not authorize arming.
+The two Dockerfiles and their dedicated image-validation workflow, shell runner
+and packaging tests are removed. Retrieve them through the
+[removal ledger](../docs/ltm/README.md#removal-batches).
 
-Linux image validation (build, inert/disarmed boot, POSIX fsync/flock, arming
-interlock) lives in [`.github/workflows/c1-image-validation.yml`](../.github/workflows/c1-image-validation.yml)
-and [`scripts/c1_image_validation.sh`](../scripts/c1_image_validation.sh); procedure
-ownership stays in the per-app READMEs.
+The per-app [listener](c1_rail/README.md) and [daemon](c1_signal_daemon/README.md)
+runbooks are historical. The `fly.toml` files stay only for the deploy guard's
+tests and leave with it in the last S3-2 PR.
