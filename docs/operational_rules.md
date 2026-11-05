@@ -992,7 +992,7 @@ Edits to existing rules must be logged with a dated entry explaining what change
 
 ### Edit log
 
-- **2026-11-05** — Rule 10: Tradeify-eval M1 exception (checklist 2026-11-05).
+- **2026-11-05** — Rules 10, 13: Tradeify exceptions (checklist 2026-11-05).
 - **2026-10-28** — Rules 0, 2, 3 and 7 amended (operator rulings, [surface-allocation ADR Addendum 2026-10-28](adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-28--operator-rulings-executive-folded-into-the-coordinator-consistency-only-delegation)): Rule 0 holds review rounds until load-bearing external facts are observed or named; Rule 2 counts review rounds as iterations; Rule 3 adds scope cuts, new assumptions or weakened guarantees, evidence-claim changes and account permissions to the operator's decisions; Rule 7 counts one issue as one failure family, names the escalation lane as a fresh coordinator session and adds the review-stop decision. Evidence: M-50.
 - **2026-10-25** — §Core rules — full statements added (consolidation ruling D1; AGENTS.md §Core rules indexes it). Rules 6 and 7 carry the same-day clean-fourth-review amendment (surface-allocation ADR Addendum 2026-10-24b A) and Rule 13 names the VM policy as an owner; otherwise the statements are the [plan](superpowers/plans/2026-10-25-rule-consolidation-step-1.md) §3 wording.
 - **2026-10-25** — Living citations repointed from bare "Rule N" to `operational_rules §N`; legacy citation map added (consolidation ruling D2, [plan](superpowers/plans/2026-10-25-rule-consolidation-step-1.md) §4). No rule text changed.
