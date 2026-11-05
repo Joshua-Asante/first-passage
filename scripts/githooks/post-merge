@@ -1,28 +1,7 @@
 #!/bin/sh
-# Post-merge notice: docs/SESSIONS.md carries `merge=union` (.gitattributes)
-# so parallel branches never conflict on it, but union keeps both sides'
-# separators without ordering or de-duplicating them — the doubled `---` /
-# stray-blank-line debris that has cost several hand-authored "restore
-# separator after main merge" commits (see docs/SESSIONS.md history).
-#
-# This hook cannot block a merge that already happened, so it does not gate
-# like pre-commit does. It normalizes the working tree (via
-# scripts/roll_sessions.py --normalize --reorder) if debris or misordering is
-# present, and NEVER commits — the fix is left as an unstaged diff for explicit
-# review, same as a linter --fix would leave it.
-#
-# This is the limb that actually SEES the failure. The union merge that scrambles
-# entry order happens server-side when GitHub merges the PR, so no local hook runs
-# for it; arrival on a durable machine is the first moment anything can notice
-# (cf. the pin-provenance guard above, same shape). The pre-commit limb catches
-# only the leftover: a scrambled order that is still unrepaired at the next commit,
-# which is the rebase-flow case this hook misses.
-#
-# It now DOES reorder, which it previously declined to do because same-date
-# chronology was a judgment call. It is no longer a judgment: order comes from the
-# author time of the commit that first added each heading. Scope is the top
-# ORDER_WINDOW entries, the only region a union merge can disturb — deliberately
-# not the whole file, since a full sort moves entries that were placed by hand.
+# Post-merge notice. It cannot undo a merge, so it only warns. Its one check is
+# incoming Pine-pin provenance (below). The SESSIONS.md debris repair went with
+# SESSIONS.md in the 2026-11 governance cut.
 ROOT="$(git rev-parse --show-toplevel)" || exit 0
 cd "$ROOT" || exit 0
 
@@ -33,7 +12,7 @@ if ! python -I scripts/fp.py doctor >/dev/null; then
   exit 0
 fi
 
-# (1) Incoming Pine-pin provenance (2026-07-31). `.pine` is gitignored, so a pin
+# Incoming Pine-pin provenance (2026-07-31). `.pine` is gitignored, so a pin
 # authored on a disposable checkout (cloud agent / runner) is unverifiable the
 # moment that machine is torn down — the bad8068d... case, where the "active
 # working edition" had to be reconstructed from its predecessor.
@@ -65,44 +44,4 @@ if git rev-parse --verify -q ORIG_HEAD >/dev/null; then
   fi
 fi
 
-# (2) Only act if the merge actually touched SESSIONS.md.
-if ! git diff --name-only ORIG_HEAD HEAD 2>/dev/null | grep -qx 'docs/SESSIONS.md'; then
-  exit 0
-fi
-
-# (2a) Duplicate session label. Distinct from debris: --normalize --reorder is a
-# pure move and CANNOT renumber a label, so the block below would report "no
-# change" and say nothing while a collision sits in the file. This is the only
-# local limb that sees a GitHub-side PR merge, and it cannot block — by the time
-# it runs the duplicate is already on main, so the warning has to be loud and
-# name the manual fix.
-if ! python -I scripts/fp.py python scripts/roll_sessions.py --check-order --root "$ROOT" 2>/dev/null | grep -q "duplicate session label"; then
-  :
-else
-  echo ""
-  echo "WARNING: docs/SESSIONS.md now carries two entries claiming the SAME session"
-  echo "         label. Session letters are allocated at write time with no"
-  echo "         reservation, so two concurrent sessions can pick the same one"
-  echo "         (2026-08-08f, 2026-08-09g). merge=union keeps both sides."
-  python -I scripts/fp.py python scripts/roll_sessions.py --check-order --root "$ROOT" 2>/dev/null \
-    | grep "duplicate session label" | sed 's/^/         /'
-  echo "         Renumber the later entry by hand — --reorder cannot fix this."
-  echo ""
-fi
-
-CHECK="$(python -I scripts/fp.py python scripts/roll_sessions.py --normalize --reorder --dry-run --root "$ROOT" 2>/dev/null)"
-case "$CHECK" in
-  *"changed"*)
-    python -I scripts/fp.py python scripts/roll_sessions.py --normalize --reorder --root "$ROOT" >/dev/null
-    echo ""
-    echo "NOTE: docs/SESSIONS.md had union-merge debris (separators and/or entry"
-    echo "      order) — repaired in the working tree, NOT committed. Review with:"
-    echo "        git diff docs/SESSIONS.md"
-    echo "      then commit if it looks right. Reordering is a pure move of whole"
-    echo "      entries within the top window; no entry body is edited. If a"
-    echo "      same-day entry still needs floating by hand, say so in its heading"
-    echo "      (the '2026-07-29 (later)' convention) rather than re-sorting."
-    echo ""
-    ;;
-esac
 exit 0

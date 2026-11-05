@@ -24,7 +24,7 @@ It is the precise collision condition:
 
 Governance class = the surfaces that carry decision status and are restated in
 several places, so a stale edit reads as authoritative:
-    AGENTS.md, STATE.md, docs/SESSIONS.md, docs/adr/**,
+    AGENTS.md, STATE.md, docs/adr/**,
     docs/briefs/pre-registration/**,
     docs/ltm/briefs/pre-registration/**,   (widened 2026-08-08)
     docs/spec/PREREG-*,                    (widened 2026-08-08)
@@ -39,12 +39,6 @@ these bodies. Measured before widening: 5 of 18 campaign bodies carry more than
 one commit (they are amended through their own append-only logs), so this is
 low-traffic — and a *concurrent* amendment to a frozen decision record from two
 branches is the case worth blocking, not a false positive.
-
-``docs/SESSIONS.md`` is in the class because a stale *rewrite* of an existing
-entry is the 07-24 shape. Two branches each *adding* a new top heading is the
-designed ``merge=union`` merge, not a contradiction — that delta is exempted
-when ours is append-only vs the merge-base (see ``roll_sessions.append_only_problems``).
-Mutating a heading that already existed on the merge-base still collides.
 
 Fail-open on network: if `git fetch` cannot reach the remote, this reports and
 exits 0. You cannot gate on data you cannot fetch, and blocking pushes offline is
@@ -87,20 +81,8 @@ _PREREG_STEM = "PREREG"
 GOVERNANCE_FILES = (
     "AGENTS.md",
     "STATE.md",
-    "docs/SESSIONS.md",
 )
 ESCAPE_ENV = "FIRST_PASSAGE_ALLOW_PUSH_COLLISION"
-_SESSIONS = "docs/SESSIONS.md"
-
-
-def _load_roll_sessions():
-    """Load roll_sessions by path — scripts/ is not a package."""
-    path = Path(__file__).resolve().parent / "roll_sessions.py"
-    spec = importlib.util.spec_from_file_location("_roll_sessions_for_collision", path)
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = mod
-    spec.loader.exec_module(mod)
-    return mod
 
 
 def _git(*args: str) -> tuple[int, str]:
@@ -119,22 +101,6 @@ def _is_governance(path: str) -> bool:
         and path.endswith(".md")
         and path.rsplit("/", 1)[-1].startswith(_PREREG_STEM)
     )
-
-
-def _drop_append_only_sessions(collision: list[str], merge_base: str) -> list[str]:
-    """SESSIONS is not a 07-24 contradiction when ours only added headings."""
-    if _SESSIONS not in collision:
-        return collision
-    code_b, base_doc = _git("show", f"{merge_base}:{_SESSIONS}")
-    if code_b != 0:
-        base_doc = ""
-    code_o, ours_doc = _git("show", f"HEAD:{_SESSIONS}")
-    if code_o != 0:
-        return collision
-    rs = _load_roll_sessions()
-    if rs.append_only_problems(base_doc or "", ours_doc or ""):
-        return collision
-    return [p for p in collision if p != _SESSIONS]
 
 
 def _changed(rev_range: str) -> set[str]:
@@ -186,7 +152,7 @@ def main() -> int:
 
     theirs = {p for p in _changed(f"{base}..{args.base}") if _is_governance(p)}
     ours = {p for p in _changed(f"{base}..HEAD") if _is_governance(p)}
-    collision = _drop_append_only_sessions(sorted(theirs & ours), base)
+    collision = sorted(theirs & ours)
 
     if not collision:
         if theirs:

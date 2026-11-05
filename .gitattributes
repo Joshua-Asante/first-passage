@@ -47,31 +47,6 @@ discovery_manifests/grow0_grammar.json text eol=lf
 # recorded digest cannot be verified (Codex review on #585).
 docs/spec/2026-09-27-cme-execution-feed-equivalence-test-DRAFT.md text eol=lf
 
-# Append-only logs (reverse-chron / additions-only). Every branch inserts a new
-# entry at the SAME top anchor, so the default merge conflicts on parallel
-# worktrees (e.g. the 2026-06-07 3-way SESSIONS.md collision across PRs
-# #153/#154/#155 + #156). The built-in `union` driver keeps BOTH sides' added
-# lines (no conflict markers) on merge AND rebase. Caveats: union does not ORDER
-# the merged entries (an occasional manual reorder / doubled `---` tidy), and it
-# won't flag two edits to the SAME existing line — acceptable for add-at-top logs.
-#
-# The ordering caveat is no longer carried by hand for docs/SESSIONS.md (it still
-# is for the other two). `roll_sessions.py --check-order` gates it at pre-commit
-# and the post-merge hook repairs it, ordering same-date entries by the author
-# time of the commit that first added each heading. Repair is scoped to the top
-# window — the only region union can disturb — so hand-placed historical entries
-# are never re-sorted; mark a deliberate same-day order in the heading itself
-# (the `2026-07-29 (later)` convention).
-docs/SESSIONS.md merge=union
-docs/rejected_candidates.md merge=union
-# RETAINED 2026-08-08 (reviewed, not inherited): 6 lifetime commits, never rolled, no recorded
-# union-merge incident. The resurrection hazard needs a roll to fire, so this stays as-is rather
-# than being removed. Note the asymmetry: only docs/SESSIONS.md has an ordering gate
-# (gates.yml `sessions-order`); rejected_candidates.md and this file have none, so contradictory
-# entries can merge cleanly and silently. Same retain-as-inert precedent as the tests/fixtures/*.jsonl pin
-# removed 2026-10-15: https://github.com/Joshua-Asante/first-passage/blob/4121e84c95f4990b71962e3b9570c4c3fad88426/.gitattributes#L5-L15
-docs/mc_anchor_history.md merge=union
-
 # Container-build files whose line endings are load-bearing. A Windows clone with
 # core.autocrlf=true would check these out as CRLF: the .dockerignore's patterns
 # would carry a trailing \r and silently fail to match (breaking the default-exclude
