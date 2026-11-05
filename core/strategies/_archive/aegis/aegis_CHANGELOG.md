@@ -4,7 +4,7 @@ Mean-reversion strategy on USDJPY 15min. Pine Script v6.
 
 **Source of truth:** `aegis_usdjpy_v4.3.pine` holds the authoritative parameter values. This CHANGELOG records decisions, rationale, and portfolio role. If the two ever disagree, the Pine file wins — fix the CHANGELOG.
 
-**Public summary (2026-10-09).** Parameter values and backtest figures were removed from this public copy; the original text is preserved in the private archive (`first-passage-archive`, branch `archive/preserve-exposure-2026-10-09`). Portfolio MC anchors are owned by [`docs/mc_anchor_history.md`](../../../../docs/mc_anchor_history.md); risk% is owned by `core/historical_challenge.py`.
+**Public summary (2026-10-09).** Parameter values and backtest figures were removed from this public copy; the original text is preserved in the private archive (`first-passage-archive`, branch `archive/preserve-exposure-2026-10-09`). Portfolio MC anchors are owned by `docs/mc_anchor_history.md` (removed; in git history at `b7eaff7`); risk% is owned by `core/historical_challenge.py`.
 
 Versioning begins at v4.1 (2026-04-17). Prior development (v4 → v4.1, which raised net P&L and shifted the drawdown shape) is archived in Notion.
 
@@ -47,7 +47,7 @@ Removing the month-end trades improved net, profit factor, win rate, maximum dra
 - **Wednesday time-block blanket block** — redundant after EOM; residual is noise on top of EOM/FOMC correlation.
 
 ### Post-v4.3 portfolio Monte Carlo (completed 2026-04-23)
-The previously-queued post-v4.3 portfolio MC re-run executed at the joint 2026-04-23 lock and the same-day Guardian risk re-lock (0.30% → 0.34%). Aegis's share of bust probability fell sharply from the 2026-04-17 MC to roughly the original expectation at the post-relock canonical config (G 0.34% / S 1.00% / A 1.50%). See `docs/adr/2026-04-23-guardian-risk-relock-0.34.md` and [`docs/mc_anchor_history.md`](../../../../docs/mc_anchor_history.md) for the locked MC anchors.
+The previously-queued post-v4.3 portfolio MC re-run executed at the joint 2026-04-23 lock and the same-day Guardian risk re-lock (0.30% → 0.34%). Aegis's share of bust probability fell sharply from the 2026-04-17 MC to roughly the original expectation at the post-relock canonical config (G 0.34% / S 1.00% / A 1.50%). See `docs/adr/2026-04-23-guardian-risk-relock-0.34.md` and `docs/mc_anchor_history.md` (removed; in git history at `b7eaff7`) for the locked MC anchors.
 
 ### Cross-reference
 - 2026-04-22 INQHIORI loop (candidate)
@@ -80,7 +80,7 @@ Authoritative parameter values (as of the v4.1 lock) lived in the then-current `
 3. Bust attribution at correct sizing is an artifact of having a strongest edge, not a miscalibration
 
 ### MC context (final, 2026-04-17)
-Run at G 0.30% / S 1.00% / A 1.50% with single-tier DD protection; Aegis was the largest bust contributor, then Striker, then Guardian. Anchors: [`docs/mc_anchor_history.md`](../../../../docs/mc_anchor_history.md).
+Run at G 0.30% / S 1.00% / A 1.50% with single-tier DD protection; Aegis was the largest bust contributor, then Striker, then Guardian. Anchors: `docs/mc_anchor_history.md` (removed; in git history at `b7eaff7`).
 
 ### Strategy role in portfolio
 Yen safe-haven bid capture and BOJ/Fed divergence expression. Structurally countercyclical to Guardian and Striker:

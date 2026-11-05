@@ -99,7 +99,7 @@ Intraday-barrier runs (`simulate_path(intraday_low=...)`): take each day's excur
 
 ### Locked anchor (historical regression pin)
 
-Literals: [`docs/mc_anchor_history.md`](../../../docs/mc_anchor_history.md). Regression: `tests/core/test_mc_synthetic_engine.py`. Scope: [rescope ADR](../../../docs/adr/2026-07-11-challenge-era-claims-rescope.md).
+Literals: `docs/mc_anchor_history.md` (removed; in git history at `b7eaff7`). Regression: `tests/core/test_mc_synthetic_engine.py`. Scope: [rescope ADR](../../../docs/adr/2026-07-11-challenge-era-claims-rescope.md).
 
 The pin is FXIFY-shaped (static DD, one-shot eval): never apply it to trailing-DD tiers. Successor self-funded risk questions need a fresh Pre-Q (rescope ADR). Any new MC pin comes from a deterministic re-run of production code, never from a side script or eyeballed output ([forbidden moves](../../../docs/adr/2026-05-16-fxify-correct-timeout-semantic.md)).
 

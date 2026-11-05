@@ -4,7 +4,7 @@ Long breakout strategy on NAS100 (NASDAQ 100) 15min. Pine Script v6. Architectur
 
 **Source of truth:** `striker_nas100_v1.pine` holds the authoritative parameter values. This CHANGELOG records decisions, rationale, and known concerns. If the two ever disagree, the Pine file wins — fix the CHANGELOG.
 
-**Public summary (2026-10-09).** Parameter values and backtest figures were removed from this public copy; the original text is preserved in the private archive (`first-passage-archive`, branch `archive/preserve-exposure-2026-10-09`). Portfolio MC anchors are owned by [`docs/mc_anchor_history.md`](../../../../docs/mc_anchor_history.md); risk%, pyramid and `contractValue` are owned by [`core/strategies/CATALOG.md`](../../CATALOG.md) §Locked parameter record.
+**Public summary (2026-10-09).** Parameter values and backtest figures were removed from this public copy; the original text is preserved in the private archive (`first-passage-archive`, branch `archive/preserve-exposure-2026-10-09`). Portfolio MC anchors are owned by `docs/mc_anchor_history.md` (removed; in git history at `b7eaff7`); risk%, pyramid and `contractValue` are owned by [`core/strategies/CATALOG.md`](../../CATALOG.md) §Locked parameter record.
 
 Versioning begins at v1.0 (released 2026-05-04, locked 2026-05-05). Pre-release lineage (v0.1 dev / B_15 label / v4.5-test branch) is archived under `archive/strategies/striker/striker_nas100_v1_research.pine` and Notion.
 
@@ -22,7 +22,7 @@ _(none)_
 
 - **Strategy file moved `strategies/striker/` → `strategies/nas/`.** No parameter change. Codifies the architecture-family-but-instrument-tuned distinction from DJ30 (separate risk %, separate DOW set, separate pyramid size). DJ30 family stays in `strategies/striker/`. Cross-references in `REPO_MAP.md`, `archive/docs/briefs/striker_nas100_q_nas_1_results.md`, and `archive/docs/briefs/striker_nas100_q_nas_3_mc_addition.md` repaired in the same commit.
 - **OANDA NAS100 panel landed.** An OANDA NAS100 TV export was added as a secondary feed (Pepperstone remains canonical), and `data/bar_data/NAS100USD.csv` was fetched from OANDA M15 over the same window as the other three instruments. `scripts/fetch_oanda_bars.py` now includes NAS100USD permanently.
-- **dd_protection C2 relock (cross-ref).** Same-day relock from C0 (1.0%/0.40×) → C2 (1.5%/0.40×) re-anchored the 4-strategy Pepperstone MC. NAS100 had the **lowest bust attribution** of the four strategies, consistent with the diversification thesis at lock. See `docs/adr/2026-05-08-dd-trigger-c2-relock.md`, [`docs/mc_anchor_history.md`](../../../../docs/mc_anchor_history.md) and `strategies/striker/striker_CHANGELOG.md` for the full ADR + DJ30 anchor record.
+- **dd_protection C2 relock (cross-ref).** Same-day relock from C0 (1.0%/0.40×) → C2 (1.5%/0.40×) re-anchored the 4-strategy Pepperstone MC. NAS100 had the **lowest bust attribution** of the four strategies, consistent with the diversification thesis at lock. See `docs/adr/2026-05-08-dd-trigger-c2-relock.md`, `docs/mc_anchor_history.md` (removed; in git history at `b7eaff7`) and `strategies/striker/striker_CHANGELOG.md` for the full ADR + DJ30 anchor record.
 
 ---
 
@@ -63,7 +63,7 @@ The internal total-DD cap sat ahead of FXIFY's 5% static rule, leaving a buffer 
 ### Portfolio MC anchors
 
 **2026-05-08 (C2 relock, current canonical):**
-4-strategy Pepperstone (G 0.34% / DJ30 v4.5 1.00% / A 1.50% / NAS v1 0.40%, dd_protection C2 1.5%/0.40×). **NAS100 had the lowest bust attribution of the four**, consistent with the diversification thesis at addition. An OANDA pattern-spotting run (3-strategy still v4.4) was also recorded. Reproducible under `python portfolio_mc.py --panel pepperstone`. Figures: [`docs/mc_anchor_history.md`](../../../../docs/mc_anchor_history.md).
+4-strategy Pepperstone (G 0.34% / DJ30 v4.5 1.00% / A 1.50% / NAS v1 0.40%, dd_protection C2 1.5%/0.40×). **NAS100 had the lowest bust attribution of the four**, consistent with the diversification thesis at addition. An OANDA pattern-spotting run (3-strategy still v4.4) was also recorded. Reproducible under `python portfolio_mc.py --panel pepperstone`. Figures: `docs/mc_anchor_history.md` (removed; in git history at `b7eaff7`).
 
 **2026-05-05 (C0 baseline at addition, historical):**
 Same 4-strategy stack at C0 (1.0%/0.40×). Bust attribution order: DJ30, Guardian, Aegis, NAS100. See `archive/docs/briefs/striker_nas100_q_nas_3_mc_addition.md` for the addition decision audit.
