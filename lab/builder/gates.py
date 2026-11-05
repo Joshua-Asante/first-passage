@@ -1,10 +1,17 @@
-"""Gate engine 5a-5g and the stage 8 holdout look (spec: Gate engine).
+"""Gate engine 5a-5f, the stage 8 holdout look and the 5g placement check (spec: Gate engine).
 
-Gates run in order on the development sessions and a card stops at its first fail. Each gate
+Gates 5a-5f run in order on the development sessions and a card stops at its first fail. Each gate
 records its value, threshold and pass/fail in the report, so a verdict traces to a number.
 THRESHOLDS are the spec's proposed defaults; they change only by PR with Joshua's approval, and
-the pre-registration freezes them before any card runs. The book's per-session Sharpe with the
-candidate added is reported for every card, as a description, not a gate.
+the pre-registration freezes them before any card runs. The card's development-window book
+statistics (``_book``) are reported for every card, as a description, not a gate.
+
+5g is portfolio fit (ten-step order, step 10; branch B, Joshua 2026-11-04). It is not a
+development gate: ``holdout_look`` runs it only after a holdout pass, on the book statistics
+already in the development report, and records ``placement: clear | fail`` beside the look's
+verdict, with the pinned book's sha256. A placement fail rejects the placement, never the
+candidate. A run that declares no book (``book: null``) gets ``placement: not_evaluated``, never
+a clear (follow-up to the same ruling: no silent passes).
 
 A card with an unresolved trade (an open position on a day with no bar at or after flat_at) in
 its evaluated sessions, or a 5d neighbour with one, gets verdict ``unresolved``: never a
@@ -14,17 +21,19 @@ from __future__ import annotations
 
 import hashlib
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 import numpy as np
 
 from builder import compile as C, data, ledger
-from builder.cards import Card
-from builder.instruments import INSTRUMENTS
+from builder.cards import Card, _timing_error
+from builder.instruments import DAY_END, INSTRUMENTS, minutes
 
 K_SCOPES = ("instrument", "ledger")
-PLACEBO_LABEL = "5e placebo_rank (descriptive; timing shuffle with realised side and hold)"
+PLACEBO_LABEL = "5e placebo_rank (timing-only, not the mechanism discriminator; same-day window slide of the clock frame)"
+COSTS_LABEL = "5b costs applied (not a gate)"
+PLACEMENT_LABEL = "5g placement (step 10; after a holdout pass, never a kill)"
 
 THRESHOLDS = {
     "5a_min_trades": 200,
@@ -35,7 +44,7 @@ THRESHOLDS = {
     "5e_placebo_runs": 1000,
     "5e_seed": 20261030,
     "5f_min_dsr": 0.95,
-    "5g_max_shared_loss_share": 0.50,  # backstop: share of the card's losing days that are also book losing days
+    "5g_max_shared_loss_share": 0.50,  # placement backstop: share of the card's losing days that are also book losing days
     "8_min_pf": 1.0,
 }
 
@@ -128,33 +137,133 @@ def dsr(x: np.ndarray, k: int) -> tuple[float, float]:
     return deflated_sharpe(sr, n, skew, kurt, sr0), sr0
 
 
-def placebo_beaten_share(card: Card, days: list[C.Day], trades: list[C.Trade], costs: Costs,
-                         runs: int, seed: int) -> float:
-    """Share of timing-shuffled runs whose net profit is below the card's. Each run keeps every
-    trade's day, side and holding length in bars, and redraws its entry bar uniformly from that
-    day's live entry bars; entry at that bar's open, exit at the open `hold` bars later (capped
-    at the flat bar), or the last close when the day has no flat bar."""
+# D7 (generation-phase note §9.2): the benchmarks of the report-only reachability line; not gates
+REACH = {"sessions_per_year": 252, "true_sharpe": (0.85, 0.89), "reachable_at": 0.89}
+
+
+def reachability(k: int, n: int) -> dict:
+    """D7's report-only reach of gate 5f at K trials over n development sessions (ADR 2026-07-12
+    §2.4 power disclosure). Under near-normal moments 5f passes when the per-session Sharpe is at
+    least SR0 + z/sqrt(n-1), with SR0 the same ``expected_max_sharpe(k, 1/(n-1))`` that ``dsr``
+    uses and z the normal quantile of the 5f threshold. P(pass) at a true annual Sharpe S is the
+    normal approximation Phi((S - floor_annual) * sqrt((n-1)/252)). Both drop the PSR
+    denominator's (1 + SR^2/2) term, so at the floor the exact DSR sits a few 1e-4 below the
+    threshold. ``reachable`` means floor_annual <= 0.89 (the futures-native best). It never
+    changes a gate, a threshold or a verdict."""
+    from statistics import NormalDist
+    from research_utils.deflated_sharpe import expected_max_sharpe
+    if n < 2:
+        raise ValueError(f"reachability needs at least 2 development sessions, got {n}")
+    nd, py = NormalDist(), REACH["sessions_per_year"]
+    sr0 = float(expected_max_sharpe(k, 1.0 / (n - 1)))
+    floor = sr0 + nd.inv_cdf(THRESHOLDS["5f_min_dsr"]) / math.sqrt(n - 1)
+    ann = floor * math.sqrt(py)
+    p_pass = {f"{s:.2f}": nd.cdf((s - ann) * math.sqrt((n - 1) / py)) for s in REACH["true_sharpe"]}
+    return {"k": k, "dev_sessions": n, "floor_per_session": floor, "floor_annual": ann, "p_pass": p_pass,
+            "reachable": bool(ann <= REACH["reachable_at"]), "reachable_at": REACH["reachable_at"],
+            "basis": "5f only, normal approximation; a description, not a gate"}
+
+
+# 5e null size (lesson M-17): the fewest valid slides (delta != 0) 5e accepts. Each run draws the
+# real window (delta 0) as well as the slides, so under per-session exchangeability of the window
+# nets the card's total and a run's total are identically distributed, and the zero-edge false
+# pass is the nominal 1 - 5e_min_beaten_share for any |S| >= 1. Two slides is the floor so that
+# the null rests on more than one alternative anchor.
+SLIDE_MIN = 2
+
+
+def slid(card: Card, delta: int) -> Card | None:
+    """The card with its whole clock frame moved ``delta`` 15m bars on the same day: the range's
+    offset (a first_n_bars range becomes the equivalent time_window), entry_cutoff and flat_at.
+    Every other rule is the card's. None for delta 0, a negative offset, an invalid timing, or a
+    flat_at whose next 15m bar open is at or after DAY_END: the trading day has no bar there, so
+    every slid trade a stop does not end is unresolved, and scoring those 0 would keep only the
+    stopped losers."""
+    off = int(card.p("offset_bars", 0)) + delta
+    cut, flat = minutes(card.entry_cutoff) + C.BAR_MIN * delta, minutes(card.flat_at) + C.BAR_MIN * delta
+    if delta == 0 or off < 0 or cut < 0 or -(-flat // C.BAR_MIN) * C.BAR_MIN >= minutes(DAY_END):
+        return None
+    step = next((s for n, _, s in card.params if n == "offset_bars"), 1)
+    ps = tuple(sorted([q for q in card.params if q[0] != "offset_bars"] + [("offset_bars", off, step)]))
+    c = replace(card, range="time_window", params=ps, entry_cutoff=f"{cut // 60:02d}:{cut % 60:02d}",
+                flat_at=f"{flat // 60:02d}:{flat % 60:02d}", sha256="", source="")
+    return None if _timing_error(c) else c
+
+
+def slides(card: Card) -> list[tuple[int, Card]]:
+    """5e's slide set S: every valid same-day shift of the card's clock frame, by delta."""
+    span = 24 * 60 // C.BAR_MIN
+    return [(d, c) for d in range(-span, span + 1) if (c := slid(card, d)) is not None]
+
+
+def slide_line(card: Card) -> dict:
+    """5e's null size, printed at registration beside D7's line: |S| (slides other than delta 0)
+    and the slid span. A description; 5e fails closed below SLIDE_MIN."""
+    s = slides(card)
+    return {"slides": len(s), "min_slides": SLIDE_MIN, "meets_min": len(s) >= SLIDE_MIN,
+            "windows_drawn": len(s) + 1,
+            "delta_bars": [s[0][0], s[-1][0]] if s else None,
+            "range_start": [s[0][1].range_start(), s[-1][1].range_start()] if s else None,
+            "flat_at": [s[0][1].flat_at, s[-1][1].flat_at] if s else None}
+
+
+def slide_matrix(S: list[tuple[int, Card]], bars, dev: list[str], costs: Costs,
+                 closed: frozenset[str] = frozenset()) -> tuple[np.ndarray, int, int]:
+    """net[session][slide] over the development sessions, with the counts of slid sessions that
+    were unresolved and skipped. Both contribute 0; neither raises."""
+    pos = {d: i for i, d in enumerate(dev)}
+    m = np.zeros((len(dev), len(S)))
+    unresolved = skipped = 0
+    for j, (_, c) in enumerate(S):
+        sk: dict[str, int] = {}
+        for day in C.days(c, bars, dev, sk, closed):
+            tr = C.simulate_day(c, day)
+            if any(t.unresolved for t in tr):
+                unresolved += 1
+            elif tr:
+                m[pos[day.date], j] = net(c, tr, costs).sum()
+        skipped += sum(sk.values())
+    return m, unresolved, skipped
+
+
+def placebo_beaten_share(card: Card, bars, dev: list[str], trades: list[C.Trade], costs: Costs,
+                         runs: int, seed: int, closed: frozenset[str] = frozenset()) -> dict:
+    """5e, the same-day window-slide placebo (lesson M-17). For each slide in S the shifted card
+    runs through compile.py on the development sessions, so each slid trade's side and entry use
+    only that day's bars up to its entry bar. Each run draws one window per session from S and the
+    card's own (delta 0), uniformly and independently, and sums the sessions' net; ``beaten_share`` is the share of runs below the
+    card's net. A session the slide skips, or whose slid trade is unresolved, contributes 0 (the
+    unresolved ones are counted). Fails closed (``beaten_share`` None, with ``reason``) below
+    SLIDE_MIN slides or on a zero-variance null."""
+    line = slide_line(card)
+    real = float(net(card, trades, costs).sum())
+    out = {**line, "real_net": real}
     if not trades:
-        return 0.0
-    by = {d.date: d for d in days}
-    pv, c = INSTRUMENTS[card.instrument].point_value, costs.per_trade(card.instrument)
-    rng = np.random.default_rng(seed)
-    tot = np.zeros(runs)
-    for t in trades:
-        d = by[t.date]
-        e = rng.integers(d.first, d.cutoff, size=runs)
-        x = np.minimum(e + (t.exit_i - t.entry_i), d.flat)
-        n = len(d.times)
-        exit_px = np.where(x < n, d.o[np.minimum(x, n - 1)], d.c[n - 1])
-        exit_px = np.where(x == e, d.c[e], exit_px)
-        tot += t.side * (exit_px - d.o[e]) * pv - c
-    real = net(card, trades, costs).sum()
-    return float((tot < real).mean())
+        return {**out, "beaten_share": 0.0, "reason": "no trades"}
+    S = slides(card)
+    if len(S) < SLIDE_MIN:
+        return {**out, "beaten_share": None,
+                "reason": f"{len(S)} valid slide(s), fewer than {SLIDE_MIN}: the 5e null is too small"}
+    m, unresolved, skipped = slide_matrix(S, bars, dev, costs, closed)
+    m = np.column_stack([daily(card, trades, dev, costs), m])  # delta 0, the card itself, is drawn too
+    pick = np.random.default_rng(seed).integers(0, len(S) + 1, size=(runs, len(dev)))
+    # USD at 1e-6: summation order must not split ties with the card or give a degenerate null variance
+    tot, real = np.round(m[np.arange(len(dev)), pick].sum(axis=1), 6), round(real, 6)
+    out.update(slid_unresolved_sessions=unresolved, slid_skipped_sessions=skipped,
+               null_mean=float(tot.mean()), null_sd=float(tot.std()))
+    if np.ptp(tot) == 0:
+        return {**out, "beaten_share": None, "reason": "the slide null has zero variance"}
+    return {**out, "beaten_share": float((tot < real).mean())}
 
 
 def _gate(gates: list, name: str, value, threshold, ok: bool) -> bool:
     gates.append({"gate": name, "value": value, "threshold": threshold, "pass": bool(ok)})
     return ok
+
+
+def k_for(ledger_path: Path, instrument: str, k_scope: str) -> int:
+    """The K gate 5f deflates against: the instrument's distinct ledgered cards, or the ledger's."""
+    return ledger.k(ledger_path, instrument if k_scope == "instrument" else None)
 
 
 def evaluate(card: Card, bars, dev: list[str], ledger_path: Path, costs: Costs, data_sha256: str,
@@ -167,7 +276,7 @@ def evaluate(card: Card, bars, dev: list[str], ledger_path: Path, costs: Costs, 
     check_dates(card, bars, dev)
     if len(dev) < 2:
         raise GateError(f"{card.id}: 5c needs two development halves; got {len(dev)} session(s)")
-    T, k = THRESHOLDS, ledger.k(ledger_path, card.instrument if k_scope == "instrument" else None)
+    T, k = THRESHOLDS, k_for(ledger_path, card.instrument, k_scope)
     skipped: dict[str, int] = {}
     days = C.days(card, bars, dev, skipped, closed)
     trades = [t for d in days for t in C.simulate_day(card, d)]
@@ -187,15 +296,14 @@ def evaluate(card: Card, bars, dev: list[str], ledger_path: Path, costs: Costs, 
     h1, h2 = set(dev[:half]), set(dev[half:])
     checks = [
         lambda: _gate(g, "5a sample", len(trades), T["5a_min_trades"], len(trades) >= T["5a_min_trades"]),
-        lambda: _gate(g, "5b costs", rep["cost_per_trade_usd"], "firm commission + 1 tick/side, applied", True),
+        lambda: _gate(g, COSTS_LABEL, rep["cost_per_trade_usd"], "firm commission + 1 tick/side, applied", True),
         lambda: _halves(g, card, trades, costs, h1, h2),
         lambda: _plateau(g, card, bars, dev, costs, float(v.sum()), closed),
-        lambda: _gate(g, PLACEBO_LABEL, (s := placebo_beaten_share(card, days, trades, costs, T["5e_placebo_runs"],
-                                                                    T["5e_seed"])), T["5e_min_beaten_share"],
-                      s >= T["5e_min_beaten_share"]),
+        lambda: _gate(g, PLACEBO_LABEL, (s := placebo_beaten_share(card, bars, dev, trades, costs, T["5e_placebo_runs"],
+                                                                    T["5e_seed"], closed)), T["5e_min_beaten_share"],
+                      s["beaten_share"] is not None and s["beaten_share"] >= T["5e_min_beaten_share"]),
         lambda: _dsr_gate(g, x, k),
-        lambda: _book_gate(g, rep["book"]),
-    ]
+    ]  # 5g is not here: it is placement, run after a holdout pass (holdout_look)
     try:
         rep["stopped_at"] = next((g[-1]["gate"] for ch in checks if not ch()), None)
     except Unresolved as u:  # a 5d neighbour has no causal exit on some day
@@ -250,29 +358,72 @@ def _book(dev: list[str], x: np.ndarray, book: dict[str, float] | None) -> dict:
             "book_losing_share_on_active_days": float(lose[c != 0].mean()) if (c != 0).any() else 0.0}
 
 
+BOOK_KEYS = ("mean_on_book_losing_days", "shared_loss_share", "book_losing_share_on_active_days")
+
+
+def check_book_stats(b) -> None:
+    """The development report's ``book`` block has the shape ``_book`` writes, or GateError."""
+    ok = isinstance(b, dict) and type(b.get("sessions")) is int and b["sessions"] >= 0 \
+        and type(b.get("supplied")) is bool and (b["supplied"] or not b["sessions"])
+    if ok and b["sessions"]:  # only the mean is undefined (None) when the book has no losing day
+        ok = all(k in b for k in BOOK_KEYS) and all(
+            (k == "mean_on_book_losing_days" and b[k] is None)
+            or (not isinstance(b[k], bool) and isinstance(b[k], (int, float)) and math.isfinite(b[k]))
+            for k in BOOK_KEYS) and all(0 <= b[k] <= 1 for k in BOOK_KEYS[1:])  # the two shares
+    if not ok:
+        raise GateError(f"development report book statistics are malformed: {b!r}"[:300])
+
+
+def check_book_identity(b: dict, book_sha256: str | None) -> None:
+    """A supplied book comes with its pinned sha256 and a declared-empty one with None, or GateError."""
+    if b["supplied"] != (book_sha256 is not None):
+        raise GateError(f"book statistics (supplied={b['supplied']}) do not match the pinned book sha256 {book_sha256!r}")
+
+
 def _book_gate(g, b: dict) -> bool:
-    if not b["sessions"]:
-        if b["supplied"]:  # fail closed: a book was given but covers no development session
-            return _gate(g, "5g book", "book supplied, no overlapping development sessions", "overlap required", False)
-        return _gate(g, "5g book", "book empty", "passes while the book is empty", True)
+    """5g on a supplied book's statistics. There is no rule for no book: that is not evaluated."""
+    if not b["supplied"]:
+        raise GateError("5g needs a supplied book; without one placement is not evaluated")
+    if not b["sessions"]:  # fail closed: a book was given but covers no development session
+        return _gate(g, PLACEMENT_LABEL, "book supplied, no overlapping development sessions", "overlap required",
+                     False)
     m = b["mean_on_book_losing_days"]
     ok = m is not None and m > 0 and b["shared_loss_share"] <= THRESHOLDS["5g_max_shared_loss_share"]
-    keys = ("mean_on_book_losing_days", "shared_loss_share", "book_losing_share_on_active_days")
-    return _gate(g, "5g book", {k: b[k] for k in keys},
+    return _gate(g, PLACEMENT_LABEL, {k: b[k] for k in BOOK_KEYS},
                  {"mean_on_book_losing_days": "> 0", "shared_loss_share": THRESHOLDS["5g_max_shared_loss_share"]}, ok)
 
 
+def placement(b: dict) -> dict:
+    """Step 10 portfolio fit on the development-window book statistics: ``placement`` is
+    ``clear`` or ``fail``, with the 5g record, or ``not_evaluated`` (no gate record) when the run
+    declares no book. It reads no data and never changes a verdict."""
+    check_book_stats(b)
+    if not b["supplied"]:
+        return {"placement": "not_evaluated", "placement_gate": None}
+    g: list = []
+    return {"placement": "clear" if _book_gate(g, b) else "fail", "placement_gate": g[0]}
+
+
 def holdout_look(card: Card, bars, holdout: list[str], ledger_path: Path, run_id: str, costs: Costs,
-                 *, closed: frozenset[str]) -> dict:
+                 *, closed: frozenset[str], book: dict, book_sha256: str | None) -> dict:
     """Stage 8: one logged look per survivor. The look is ledgered before any holdout bar is read.
-    An unresolved holdout trade spends the look and fails it, reported with its count and dates."""
+    An unresolved holdout trade spends the look and fails it, reported with its count and dates.
+    ``book`` is the development report's book statistics; after a pass, 5g runs on them and sets
+    ``placement`` (``clear`` | ``fail``, or ``not_evaluated`` without a book) beside the verdict.
+    Without a pass ``placement`` is None. ``book_sha256`` is the run's pinned book (None for
+    ``book: null``) and is recorded as ``placement_book_sha256``."""
     check_dates(card, bars, holdout)
+    check_book_stats(book)  # before the look is spent
+    check_book_identity(book, book_sha256)
     ledger.append_holdout_look(ledger_path, run_id, card)
-    rep = {"card_sha256": card.sha256, "holdout_sessions": [holdout[0], holdout[-1], len(holdout)]}
+    rep = {"card_sha256": card.sha256, "holdout_sessions": [holdout[0], holdout[-1], len(holdout)],
+           "placement": None, "placement_gate": None, "placement_book_sha256": book_sha256}
     try:
         v = net(card, resolved(C.simulate(card, bars, holdout, closed), "holdout"), costs)
     except Unresolved as u:
         return {**rep, "verdict": "unresolved", "unresolved": u.report(), "pass": False}
     ok = v.sum() > 0 and pf(v) >= THRESHOLDS["8_min_pf"]
+    if ok:
+        rep.update(placement(book))
     return {**rep, "verdict": "pass" if ok else "fail", "trades": len(v), "net_usd_per_contract": float(v.sum()),
             "pf": pf(v), "pass": bool(ok)}

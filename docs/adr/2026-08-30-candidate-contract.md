@@ -130,6 +130,7 @@ their definition from the contract that owns them.
 ## First review and unresolved obligations
 
 **Trigger check schedule:** initial consolidated review 2026-11-08.
+Outcome: [Addendum 2026-11-08 — first review](#addendum-2026-11-08--first-review).
 
 Inspect actual freeze chains for founding/Confirm leakage; whether two or more channels
 need duplicate side-records because these fields cannot express real candidates; inclusive
@@ -186,3 +187,24 @@ Verification uses the canonical `.claude/skills/brief-authoring/scripts/check_br
 with `--type adr`, `scripts/check_adr_graph.py` and `scripts/check_state_currency.py`.
 Those checks do not establish adoption or evidence integrity: inspect each dated channel
 amendment, pinned freeze chain and manifest agreement. A citation alone proves no adoption.
+
+## Addendum 2026-11-08 — the builder is a sourcing channel
+
+Ruled by Joshua 2026-11-03 (pre-sitting); recorded effective 2026-11-08.
+
+The strategy builder ([`lab/builder/`](../../lab/builder/README.md)) **is a sourcing channel**
+under this contract. It owes a [liveness ceiling](../methodology/strategy_harvest.md#channel-liveness-contract)
+and this contract's fields, including the mechanism discriminator and alpha/M/confirm
+procedure. Its gates' relation to the ten steps is recorded at the
+[evaluation owner](2026-08-30-evaluation-order.md#addendum-2026-11-08--builder-gates-express-the-ten-step-order).
+
+## Addendum 2026-11-08 — first review
+
+Ruled by Joshua 2026-11-03 (pre-sitting); recorded effective 2026-11-08.
+
+- The MSL yield-conversion ceiling (fired 2026-10-07; closed by ruling D7 on 2026-10-25)
+  was **reachable, with bindingness inconclusive**: no campaign tried to open in that
+  window. Its consequence was enacted without an override.
+- The owed artifact adoptions and liveness reconciliations carry to **2027-02-08** at
+  their owners, with MSL dropped.
+- The freeze-chain inspection items have no examples in the window: inconclusive, not PASS.

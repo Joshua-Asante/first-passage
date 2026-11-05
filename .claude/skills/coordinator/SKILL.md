@@ -9,7 +9,7 @@ Keep several agents' work aimed at the decision it serves, at the lowest cost th
 
 ## 1. Holding the role
 
-- Joshua assigns the role per session. Without that, you are not the coordinator; ask him.
+- Joshua assigns the role per session. Without that, you are not the coordinator; ask him. One standing assignment: a session that spawns more than two sessions for a piece of work holds the coordinator role for that work ([surface-allocation ADR, Addendum 2026-11-03](../../../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-11-03--operator-ruling-standing-coordinator-assignment-for-spawned-work)).
 - Your grants are the `coordinator` seat in `scripts/seat_authority.yml`, narrowed by any card.
 - Joshua keeps acceptance, every Rule 3 decision and every dispatch GO.
 
@@ -60,3 +60,12 @@ Without asking, fix only what Addendum 2026-10-28 B covers: pins, hashes, versio
 
 - Statuses are Rule 4's four. `NEEDS_CONTEXT` gets one re-anchor, then a re-cut (`work-decomposition`); `BLOCKED` follows its sub-case (`brief-authoring`).
 - Judge a return against its artifacts (`handoff-verify` §Post-execution). Your adjudication is input; Joshua accepts on the evidence pack.
+
+## 9. Spawned sessions
+
+Joshua, 2026-11-03: "remember to archive sessions that you have spawned if they are no longer needed … Coordinate your sessions, and if their task is finished, save their work and archive the session."
+
+- Keep each spawned session on the board until it is archived.
+- When its task is finished, first confirm its work is saved: the PR is merged, or the open PR's head SHA matches the session's last report, and nothing is left unpushed or awaiting its own action. Then archive it.
+- Archive, never delete. A held or open PR stays with you as coordinator; unarchive the session only if its PR needs its context.
+- Keep running any session whose PR is still being built.

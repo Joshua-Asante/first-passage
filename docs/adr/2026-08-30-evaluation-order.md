@@ -164,6 +164,7 @@ boundaries explicit costs a current owner-hop for each delegated gate.
 ## First review and unresolved obligations
 
 **Trigger check schedule:** initial consolidated review 2026-11-08; immediately on a change to either cost authority or its scope.
+The review owed since the 2026-10-24 cost-authority change is discharged: [Addendum 2026-11-08](#addendum-2026-11-08--builder-gates-express-the-ten-step-order).
 
 Inspect actual campaign commits, manifests and holdout access for out-of-order runs without
 a documented prospective exception, invalid integrity/succession or lifecycle rejection
@@ -203,3 +204,18 @@ The four removed carriers' exact bodies and identities are in [TOMBSTONES](TOMBS
 Verification uses the canonical `.claude/skills/brief-authoring/scripts/check_brief.py`
 with `--type adr`, `scripts/check_adr_graph.py` and `scripts/check_state_currency.py`.
 These check document shape/routing, not enforcement of the ten steps or verdict map.
+
+## Addendum 2026-11-08 — builder gates express the ten-step order
+
+Ruled by Joshua 2026-11-03 (pre-sitting); recorded effective 2026-11-08.
+
+- Builder gates 5a–5h ([`lab/builder/`](../../lab/builder/README.md)) are an **expression
+  of the ten-step order**, not a separately owned order.
+- Owed before the builder's next registration: a mapping of 5a–5h to the ten steps,
+  **with listed exceptions, or gate 5g moved after the holdout**. Known gaps: 5g
+  (book fit) kills before the holdout, whereas step 10 runs fit only on CONFIRMED
+  candidates and rejects the placement; 5b always passes (`lab/builder/gates.py:190`);
+  5e gates despite its "descriptive" label (`gates.py:193-195`); 5h is unwired.
+- The review owed immediately since the 2026-10-24 cost-authority change
+  (Requirement 5 deleted) is **discharged by this ruling**; the mapping is its open follow-up.
+- *Pointer, 2026-11-04:* the mapping's owner is [`lab/builder/README.md` §Ten-step mapping](../../lab/builder/README.md#ten-step-mapping). Joshua ruled branch B for 5g (2026-11-04); the engine change landed in its own PR (`lab/builder/README.md` rule *5g is placement, not a kill*).

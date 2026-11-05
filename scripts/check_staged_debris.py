@@ -43,9 +43,9 @@ Same rules in every mode:
 * oversize staged blobs -- a single file over MAX_STAGED_FILE_BYTES outside
   the allowlisted roots, or over ALLOWLISTED_MAX_STAGED_FILE_BYTES (2 MB)
   inside them. The allowlist is data-derived, not aspirational:
-  the largest tracked file is lab/analysis/mym_breakout_entry_2026_09/
-  results.json (988,529 B), so the research-results corpus plus its archived
-  form is the one legitimate ~>1 MB shape in this repo today. Files over the
+  the caps were sized from a 988,529 B research results.json (since removed),
+  so the research-results corpus plus its archived form is the one legitimate
+  ~>1 MB shape in this repo. Files over the
   2 MB ceiling (~2x that blob) are rejected, which blocks multi-year vendor
   bar panels (6.4-11.6 MB) and the larger one-year slices (~1.4-2.7 MB);
   smaller one-year slices and files split into parts under the ceiling pass.
@@ -89,11 +89,11 @@ MAX_STAGED_FILE_BYTES = 1_000_000  # "~1 MB"; largest tracked file today: 988,52
 # Prefix match is case-SENSITIVE on purpose: a case variant ("Lab/Analysis/...") is
 # not an allowlisted root and falls to the tighter MAX_STAGED_FILE_BYTES cap.
 LARGE_FILE_ALLOWLIST_PREFIXES = (
-    "lab/analysis/",  # research-results corpus (988 KB results.json precedent)
+    "lab/analysis/",  # research-results corpus (988 KB results.json sized this)
     "lab/archive/",   # archived form of the same corpus (archive_lab_analysis.py moves)
 )
 # Ceiling for the allowlisted roots (operator ruling 2026-09-26). ~2x the largest
-# legitimate blob (lab/analysis/mym_breakout_entry_2026_09/results.json, 988,529 B).
+# legitimate blob at the time of the ruling (a 988,529 B results.json, since removed).
 # Files over it are rejected: that blocks multi-year vendor bar panels (6.4-11.6 MB)
 # and the larger one-year slices (~1.4-2.7 MB). Smaller one-year slices and files
 # split into parts under the ceiling pass -- the force-added-ignored-file check below

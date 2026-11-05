@@ -4,7 +4,7 @@
 **Status (2026-08-04):** ⚠ **NO LONGER A LIVE c1 LEG — withdrawn from deployment.** The Tradeify venue is de-scoped as a deployment target for the locked Striker book, evaluation included ([`ADR 2026-08-04`](../../docs/adr/2026-08-04-tradeify-venue-descope-eval-included.md); ⚠ **narrowed same day, Addendum 2026-08-04** — the bar is on redeploying this leg, not on Tradeify-shaped base-construct research); this leg never took a strategy-signal-originated fill and now has no venue. **Lifecycle unchanged: `Striker` stays `AUTHORIZED · MECHANISM @ 1.00×`** (canonical: [`strategy_lifecycle.md`](../../docs/methodology/strategy_lifecycle.md)) — no `core/lifecycle.py` write, no demotion; venue-fit is not decay. Pine, parameters and `LEG_MAP` untouched. Prior status line preserved below as record.
 
 **Status (prior, through 2026-08-03):** **LIVE c1 leg (disarmed).** Hosts the Striker DJ30 v4.5 **venue edition** (`striker_dj30_v4.5_mym.pine`) as one of the two c1 legs on the Tradeify Select 100K eval — `dry_run=true`, WATCH-1 0.50×, **no strategy-signal-originated fill yet** (rail has canned B4 fills: B6 dry-fire 2026-07-20 + 2026-07-27 SIM; account not pristine — see [`AGENTS.md`](../../AGENTS.md) live-execution posture). The **reconstruction** track on this instrument (opening-range *continuation*) is **TERMINAL**.
-**Last updated:** 2026-09-02
+**Last updated:** 2026-11-04
 
 **Purpose:** single source of instrument-level truth (operational rule 10, [`docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md`](../../docs/adr/2026-06-11-instrument-ledger-and-cfg-fingerprint.md)). Any session deriving/testing/adjudicating on MYM MUST read this at session start and append a dated disposition. **Created 2026-07-25.** Sibling parent ledger: [`YM.md`](YM.md) (W1/W2 + the DJ30→MYM transfer falsification Y3). **The DEAD list is the point** — this instrument's highest-value content is what has been ruled out on it.
 
@@ -158,6 +158,7 @@ structure:
 
 ## SESSION LOG
 
+- **2026-11-04** — **TV export landed.** `MYM1!` BAR EXPORT v0.2 at 15m: 8 pages, 176,473 unique bars, 2019-05-05T22:15Z → 2026-11-02T21:45Z, `validate_bar_export_v2.py` PASS ([PR #1077](https://github.com/Joshua-Asante/first-passage/pull/1077), [landing record](../../docs/notes/2026-11-01-generation-phase-strengthening-DRAFT.md#11-updates-2026-11-04)). Limitation: the M15 panels were not refreshed, so this coverage exists in the exports only. No K.
 - **2026-09-02 (later, corrected same day after PR #265 Codex review)** — **Filter screen (3
   FAIL) + independent verification of this ledger's own P50 entry (below) + new `riskBudgetUsd`
   Pine input, engine-tested**

@@ -17,7 +17,8 @@ Fill model, conservative where 15m bars hide the order of events:
   ``unresolved``: it has no exit price, because any price after the last bar is unknown and the
   last bar's close would be chosen with hindsight. No further entry is taken that day.
 - Entries depend only on bars up to the entry bar: the range, the ATR window and the levels.
-- A date in the frozen calendar (``data.Calendar``) is not traded (skip reason
+- A closed date of the frozen calendar (``data.Calendar.closed``: an entry with a non-NORMAL
+  status) is not traded (skip reason
   ``calendar_exception``); it stays an evaluated session with zero P&L.
 Costs are applied by the gate engine, not here. ATR is the 14-bar mean true range of the 15m
 series through the last range bar, defined only when those bars and the close before them are
@@ -79,9 +80,9 @@ def days(card: Card, bars: pd.DataFrame, dates: list[str], skipped: dict | None 
     """The card's tradable days among ``dates`` (sessions of ``bars``). A day's bars run from the
     session open to the last bar before DAY_END and may have gaps. Days left out are counted in
     ``skipped`` by reason: calendar_exception (the date is in ``closed``, the frozen calendar's
-    dates), day_of_week (card filter), short_session (the day ends before entries go live),
-    range_gap (a range slot has no bar) and atr_window_gap (the card uses ATR and there are no
-    15 contiguous bars for it)."""
+    non-NORMAL entry dates), day_of_week (card filter), short_session (the day ends before
+    entries go live), range_gap (a range slot has no bar) and atr_window_gap (the card uses ATR
+    and there are no 15 contiguous bars for it)."""
     inst = INSTRUMENTS[card.instrument]
     tr = np.maximum(bars["high"], bars["close"].shift()) - np.minimum(bars["low"], bars["close"].shift())
     step_ok = pd.Series((pd.Series(bars.index).diff() == pd.Timedelta(minutes=BAR_MIN)).to_numpy(), index=bars.index)

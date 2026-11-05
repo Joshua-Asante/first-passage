@@ -987,6 +987,14 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 - Review limit (Joshua, 2026-10-29, in session): "each gets its own count". On a mixed-author PR the Codex reviews and the Claude reviews each run their own three-review limit.
 - First case: [#867](https://github.com/Joshua-Asante/first-passage/pull/867), whose `fc68c1e` and `a82792f` carry neither attribution.
 
+## Addendum 2026-11-03 — operator ruling: standing coordinator assignment for spawned work
+
+**Ruling (Joshua, 2026-11-03, in session):** "I want us to remember to archive sessions that you have spawned if they are no longer needed. also if you spawn more than two sessions, you take over the coordinator role of that work. Coordinate your sessions, and if their task is finished, save their work and archive the session."
+
+- **Seat (amends [Addendum 2026-10-28](#addendum-2026-10-28--operator-rulings-executive-folded-into-the-coordinator-consistency-only-delegation) item A):** the operator still assigns the coordinator role per session. One standing assignment is added: a session that spawns more than two sessions for a piece of work holds the coordinator role for that work, with the `coordinator` seat's grants. It needs no further ask.
+- **Procedure:** archiving a spawned session after its work is saved is coordinator procedure, held in the `coordinator` repo skill §9 (Addendum 2026-10-28 item D).
+- Nothing else changes: acceptance, every Rule 3 decision and every dispatch GO stay with the operator.
+
 ## Change history
 
 | Date | Change | By |
@@ -1017,3 +1025,4 @@ git diff --stat ed3e476 <commit-carrying-this-addendum> -- docs/briefs/handoffs/
 | 2026-10-29 | Addendum 2026-10-26 extended — operator rulings: Codex reviews ports of Claude-written code; a post-merge Claude review counts for #951 only | Joshua (rulings) + Claude Code |
 | 2026-10-29 | Addendum 2026-10-29 extended — operator ruling: the untrailered-commit rule covers single-author PRs too | Joshua (ruling) + Claude Code |
 | 2026-10-29 | Addenda 2026-10-26 and 2026-10-29 extended — operator rulings: Claude reviews count toward the three-review limit like Codex reviews; on a mixed-author PR each agent's reviews have their own count | Joshua (rulings) + Claude Code |
+| 2026-11-03 | Addendum 2026-11-03 — operator ruling: a session spawning more than two sessions holds the coordinator role for that work; spawned-session archiving is skill procedure | Joshua |

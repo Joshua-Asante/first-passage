@@ -44,6 +44,10 @@ import hashlib, json, os, re, sys, time
 from pathlib import Path
 case = sys.argv[1]
 args = sys.argv[2:]
+if '--help' in args:
+    Path(__file__).with_suffix('.probe-cwd').write_text(str(Path.cwd()))
+    print('  --setting-sources <sources>  Setting sources to load (user, project, local)')
+    sys.exit(0)
 Path('argv.json').write_text(json.dumps(args))
 prompt = args[-1]
 rid = re.search(r'Request ID: ([\w-]+)', prompt).group(1)
@@ -1284,3 +1288,101 @@ def test_main_preserves_workspace_arg_before_resolve(tmp_path, monkeypatch):
     assert rc == 0
     assert captured['workspace_arg'] == str(alias)
     assert Path(captured['workspace']) == real.resolve()
+
+
+@pytest.mark.parametrize('mode', ['ask', 'plan', 'execute'])
+@pytest.mark.parametrize('session', [None, 'saved-session'])
+def test_cli_args_project_hook_isolation(mode, session):
+    from types import SimpleNamespace
+    args = SimpleNamespace(mode=mode, allowed_tools=None, add_dir=[], model=None)
+    command = AH.cli_args(args, 'task', session, None if session else 'new-session')
+    if mode in ('ask', 'plan'):
+        assert command[command.index('--setting-sources') + 1] == 'user'
+    else:
+        assert '--setting-sources' not in command
+        assert '--settings' not in command
+    if mode == 'ask':
+        assert command[command.index('--tools') + 1] == 'Read,Glob,Grep'
+        assert command[command.index('--allowedTools') + 1] == 'Read,Glob,Grep'
+    if mode == 'plan':
+        assert command[command.index('--permission-mode') + 1] == 'plan'
+    assert command[-1] == 'task'
+
+
+@pytest.mark.parametrize('mode', ['ask', 'plan'])
+def test_hook_isolation_on_resumed_launch(harness, mode):
+    assert harness.run().returncode == 0
+    record, = harness.records()
+    result = harness.run('ok', '--mode', mode, '--resume-request', record['request_id'])
+    assert result.returncode == 0, result.stdout + result.stderr
+    command = json.loads((harness.workspace / 'argv.json').read_text())
+    assert command[command.index('--setting-sources') + 1] == 'user'
+    assert command[command.index('--resume') + 1] == record['session_id']
+    probe_cwd = Path(harness.worker.with_suffix('.probe-cwd').read_text())
+    assert probe_cwd != harness.workspace
+    assert harness.workspace not in probe_cwd.parents
+
+
+@pytest.mark.parametrize('mode', ['ask', 'plan'])
+@pytest.mark.parametrize('help_result', ['unsupported', 'rejected'])
+def test_hook_isolation_refuses_unsupported_cli(harness, mode, help_result):
+    preamble = (
+        'import sys\n'
+        "if '--help' in sys.argv:\n"
+        "    print('Usage: claude [options]')\n"
+        f"    sys.exit({2 if help_result == 'rejected' else 0})\n"
+    )
+    harness.worker.write_text(preamble + WORKER, encoding='utf-8')
+    result = harness.run('ok', '--mode', mode)
+    assert result.returncode == 1, result.stdout + result.stderr
+    record, = harness.records()
+    assert record['state'] == 'FAILED'
+    assert record['child_pid'] is None
+    assert 'hook isolation' in record['error'].lower()
+    assert not (harness.workspace / 'argv.json').exists()
+
+
+@pytest.mark.parametrize('mode', ['ask', 'plan'])
+def test_rejected_hook_isolation_flag_never_retries_without_it(harness, mode):
+    preamble = (
+        'import sys\nfrom pathlib import Path\n'
+        "if '--help' not in sys.argv:\n"
+        "    with Path('launches.txt').open('a') as log:\n"
+        "        log.write('launch\\n')\n"
+        "    if '--setting-sources' in sys.argv:\n"
+        "        print('unknown option --setting-sources', file=sys.stderr)\n"
+        "        sys.exit(2)\n"
+    )
+    harness.worker.write_text(preamble + WORKER, encoding='utf-8')
+    result = harness.run('ok', '--mode', mode)
+    assert result.returncode == 1, result.stdout + result.stderr
+    record, = harness.records()
+    assert record['state'] == 'FAILED'
+    assert record['exit_code'] == 2
+    assert (harness.workspace / 'launches.txt').read_text().splitlines() == ['launch']
+    assert not (harness.workspace / 'argv.json').exists()
+
+
+@pytest.mark.parametrize('error', [OSError('fixture unavailable'), subprocess.TimeoutExpired('probe', 10)])
+def test_hook_isolation_probe_error_prevents_session(harness, monkeypatch, error):
+    real_run = AH.subprocess.run
+    def failed_probe(command, **kwargs):
+        if '--help' in command:
+            raise error
+        return real_run(command, **kwargs)
+    monkeypatch.setattr(AH.subprocess, 'run', failed_probe)
+    assert AH.main(harness.command('ok', '--mode', 'ask')[2:]) == 1
+    record, = harness.records()
+    assert record['state'] == 'FAILED'
+    assert record['child_pid'] is None
+    assert 'hook isolation' in record['error'].lower()
+    assert not (harness.workspace / 'argv.json').exists()
+
+
+def test_execute_does_not_probe_or_override_settings(harness):
+    result = harness.run()
+    assert result.returncode == 0, result.stdout + result.stderr
+    command = json.loads((harness.workspace / 'argv.json').read_text())
+    assert '--setting-sources' not in command
+    assert '--settings' not in command
+    assert not harness.worker.with_suffix('.probe-cwd').exists()

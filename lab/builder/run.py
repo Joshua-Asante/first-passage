@@ -19,10 +19,15 @@ run.yaml (exactly these keys; commission_per_side is the only optional one):
 Order: the spec, cards, costs, book and calendar are validated, then every card is appended to
 the ledger before any bar is read, then the data is loaded and checked, the split resolved on
 its session dates, and the book must cover ``min_overlap`` development sessions of every
-instrument before any card is evaluated. Reports land in ``out/<card id>.report.json`` with a
-one-line verdict each, and each report's sha256, in ``out/verdict.json`` with the development
-binding (``binding``) and its sha256. The marker is deleted before the cards are ledgered and
-written last by an atomic rename, so it exists only for a finished attempt (builder.holdout).
+instrument before any card is evaluated. Each instrument's D7 reachability line (gate 5f's
+floor at the K 5f will use and the development-session count; ``gates.reachability``) is then
+printed and carried in every report as ``reachability_5f``, a description only; beside it, each
+card's 5e null size (``gates.slide_line``: the valid same-day slides and their span) is printed and carried as ``slides_5e``, so a card whose clock frame
+admits fewer than ``gates.SLIDE_MIN`` slides is seen to fail 5e before a look. Reports land in
+``out/<card id>.report.json`` with a one-line verdict each, and each report's sha256, in
+``out/verdict.json`` with the development binding (``binding``) and its sha256. The marker is
+deleted before the cards are ledgered and written last by an atomic rename, so it exists only
+for a finished attempt (builder.holdout).
 """
 from __future__ import annotations
 
@@ -153,6 +158,17 @@ def binding_sha256(b: dict) -> str:
     return hashlib.sha256(json.dumps(b, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
+def reach_line(ledger_path: Path, instrument: str, k_scope: str, n_dev: int) -> dict:
+    """D7's reachability line for one instrument, at the K gate 5f will use (the cards are already
+    ledgered). Report-only: an undefined line is recorded, never raised."""
+    k = gates.k_for(ledger_path, instrument, k_scope)
+    try:
+        r = gates.reachability(k, n_dev)
+    except ValueError as e:
+        r = {"k": k, "dev_sessions": n_dev, "undefined": str(e)}
+    return {**r, "k_scope": k_scope}
+
+
 def main(argv: list[str]) -> int:
     s = spec(Path(argv[0]))
     cs = load_cards(s)
@@ -172,6 +188,13 @@ def main(argv: list[str]) -> int:
             raise data.BookError(f"book covers {len(set(dev) & set(book))} {i} development sessions; "
                                  f"min_overlap is {s['book']['min_overlap']}")
         loaded[i] = (bars, dev, summary)
+    reach = {}
+    for i in instruments:  # before any card is evaluated; a description, never a gate
+        reach[i] = reach_line(Path(s["ledger"]), i, s["k_scope"], len(loaded[i][1]))
+        print({"instrument": i, "reachability_5f": reach[i]})
+    slides = {c.id: gates.slide_line(c) for c in cs}
+    for c in cs:
+        print({"card": c.id, "slides_5e": slides[c.id]})
     out.mkdir(parents=True, exist_ok=True)
     verdicts = []
     for c in cs:
@@ -179,7 +202,8 @@ def main(argv: list[str]) -> int:
         rep = gates.evaluate(c, bars, dev, Path(s["ledger"]), cost[c.instrument], summary["sha256"], book,
                              closed=cal.closed, k_scope=s["k_scope"])
         rep.update(run_id=s["run_id"], roll=s["roll"], firm=s["firm"], data=summary,
-                   split=s["data"][c.instrument]["split"], calendar_sha256=cal.sha256, dev_binding_sha256=bind_sha)
+                   split=s["data"][c.instrument]["split"], calendar_sha256=cal.sha256, dev_binding_sha256=bind_sha,
+                   reachability_5f=reach[c.instrument], slides_5e=slides[c.id])
         body = json.dumps(rep, indent=1).encode("utf-8")
         (out / f"{c.id}.report.json").write_bytes(body)
         verdicts.append({"card": c.id, "card_sha256": c.sha256, "report_sha256": hashlib.sha256(body).hexdigest(),

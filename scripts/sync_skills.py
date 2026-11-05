@@ -76,6 +76,7 @@ RETIRED_SKILLS: dict[str, str] = {
     "notion-mcp-api-patterns": "docs/pursuits/d6-notion-mcp-api-patterns-user-skill.md",
     "ooda-loop": "docs/adr/TOMBSTONES.md",
     "question-decomposition": "docs/adr/TOMBSTONES.md",
+    "refine-question": "docs/adr/TOMBSTONES.md",
     "root-cause-first": "docs/adr/TOMBSTONES.md",
 }
 

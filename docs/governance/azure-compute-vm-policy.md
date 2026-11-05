@@ -51,9 +51,23 @@ backstop` role, and the VM's own identity's `Offline compute self-deallocate` ro
   and deleted, the **storage account deleted** (2026-10-25), then the VM verified
   deallocated.
 
+## Public-only runs
+
+Standing admission rule (Joshua, 2026-11-04: "I approve the VM public-only rule").
+A run that meets every line below needs no per-run admission; any other run goes
+through §60 or a ruling.
+
+- **Inputs:** public repository content and synthetic data only. Never Pine,
+  runtime ports, `effective_inputs.json`, account data, vendor CSVs or anything
+  in `local_artifacts/`.
+- **Budget:** the run states its expected hours and cost before it starts, inside
+  the weekly ceiling and the 12-hour run limit above.
+- **Credentials:** the run goes only through Run Command under the `az login`
+  Joshua opens ([Rule 12](../operational_rules.md#rule-12--credentials)).
+- **Outputs:** follow [AGENTS.md §Data movement](../../AGENTS.md#public-clone-posture).
+
 ## Open
 
-Where Docker/Linux runs go; a standing admission rule for public-only runs;
-removal of the existing smoke-test debris (retained Run Command, storage account);
+Where Docker/Linux runs go; removal of the existing smoke-test debris (retained Run Command, storage account);
 whether the VM identity's `Offline compute self-deallocate` role, left from the
 closed PR #746 runner (closed 2026-10-28), is revoked.
