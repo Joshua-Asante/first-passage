@@ -17,7 +17,7 @@ un-reconfirmed for >60 days should be treated as stale, not silently trusted.
 |---|---|---|---|---|---|
 | TradingView | [d11](d11-tradingview-subscription.md) | $70 | flat; research use (exports, Pine backtests) | 2026-10-31 | confirmed |
 | Databento | [d12](d12-databento-subscription.md) | $0 recurring after retirement | unsubscribed; final invoice/usage charges unverified | 2026-09-10 (operator report) | retired; excluded from active recurring total |
-| Fly.io | [d13](d13-flyio-subscription.md) | — | usage-billed; both c1 apps reported scaled to zero 2026-11-03 (machines destroyed); remaining resources and the amount billed to date unverified | asked 2026-08-21, not supplied | **still open**; winding down (c1 Stage 2 will destroy the apps) |
+| Fly.io | [d13](d13-flyio-subscription.md) | excluded | was usage-billed; each monthly bill August to November fell under Fly's minimum and was discounted 100% (nothing paid); both c1 apps **destroyed** 2026-11-05 ([record](../adr/2026-07-17-c1-rail-build-account-registration-go.md#stage-2-record--2026-11-05)); any bill for final November usage not yet seen | 2026-11-05 (billing emails) | retired; excluded from active recurring total |
 | CrossTrade | [d14](d14-crosstrade-subscription.md) | excluded | was $50 flat; **cancelled** (operator report 2026-10-31); end date and any final charge not reported | 2026-10-31 (operator report) | retired; excluded from active recurring total |
 | Tradeify | [d15](d15-tradeify-account.md) | — | account-carrying cost, not a subscription fee | asked 2026-08-21, not supplied | **still open** |
 | Cursor Ultra | [d16](d16-cursor-subscription.md) | excluded | removed from recurring spend by operator; **surface retired outright 2026-09-15** ([worker-surface allocation](../adr/2026-07-14-cc-cursor-surface-allocation.md), Revision 2026-09-15); **fully terminated, no final or prorated charge** (operator, 2026-09-15); cancellation date **still not supplied** | 2026-09-10 (spend), 2026-09-15 (surface; terminated / no final charge) | removed from active recurring total; terminated |
@@ -31,14 +31,15 @@ Databento is retired and excluded; its effective cancellation date and final inv
 were not supplied. Cursor is removed from recurring spend by operator instruction and the surface
 itself was retired on 2026-09-15; the operator confirmed on 2026-09-15 that the subscription
 is fully terminated and that no final or prorated charge landed, but the cancellation date
-itself was not to hand and remains open. Fly.io and Tradeify remain
-unverified, not zero. GLM Max 5x and CrossTrade are cancelled; their final charges are
+itself was not to hand and remains open. Tradeify remains
+unverified, not zero. Fly.io is retired; nothing was paid to date. GLM Max 5x and CrossTrade are cancelled; their final charges are
 unreported. Do not read $370 as total spend or as settlement of outstanding charges.
 
 **Change log**
 
 | Date | Change |
 |---|---|
+| 2026-11-05 | c1 decommission Stage 2: both Fly apps destroyed by the operator. Fly's billing emails show bills of $0.91, $3.82, $4.19 and $4.84 (August to November), each under its minimum and discounted 100%. d13 retired and excluded. No change to the $370 total. |
 | 2026-11-03 | c1 decommission Stage 1 ([record](../adr/2026-07-17-c1-rail-build-account-registration-go.md#stage-1-record--2026-11-03)): `c1-rail` and `c1-signal-daemon` were reported disarmed and scaled to zero in the operator-run session, with empty machine lists and endpoint timeouts at 14:55 UTC. The Fly.io amount is still not supplied, and the agent cannot read Fly billing. Remaining Fly charges are unverified and cannot be assumed to come only from volumes; other retained resources and usage can incur charges. No change to the $370 total. |
 | 2026-10-31 | Operator update, in session: GLM Max 5x (d19, cancelled 2026-10-24, "i have cancelled the glm max plan") and CrossTrade (d14, cancelled 2026-10-31 after the c1 rail retirement) recorded as retired; TradingView (d11) "still at 70 for research"; Codex (d18) revised **$200 → $100/month**; Claude Max (d17) $200 unchanged. Active recurring total: $600 − $80 − $50 − $100 = $370. Final charges for d14 and d19 not reported. |
 | 2026-10-23 | Monthly d11–d18 reconfirm (operator, asked directly with every row listed): Claude Max (d17) revised **$100 → $200/month**; the operator named no other change, read as rows d11, d12, d14, d16 and d18 unchanged. Fly.io (d13) and Tradeify (d15) amounts still not supplied and remain open. Active recurring total: $500 − $100 + $200 = $600. Discharges the STATE Monthly reconfirm owed since 2026-09-21. |

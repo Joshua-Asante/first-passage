@@ -1,6 +1,10 @@
-# Fly.io — WINDING DOWN
+# Fly.io — SUBTRACT (apps destroyed)
 
-> **2026-11-03:** both c1 apps are reported scaled to zero in the operator-run session (endpoint probes at 14:55 UTC) ([Stage 1 record](../adr/2026-07-17-c1-rail-build-account-registration-go.md#stage-1-record--2026-11-03)). The reported rollback window starts November 3 (review around November 17); Stage 2 remains a separate operator decision. Billing and remaining resources are unverified, and potential charges are not limited to volumes. The KEEP standing below is historical.
+**Class:** (d) meta-belt (subscription) · **Standing:** SUBTRACT — both c1 apps destroyed by the operator 2026-11-05
+([Stage 2 record](../adr/2026-07-17-c1-rail-build-account-registration-go.md#stage-2-record--2026-11-05)).
+Current status belongs to the [subscription ledger](SUBSCRIPTION_LEDGER.md).
+
+## Historical disposition — superseded 2026-11-05
 
 **Class:** (d) meta-belt (subscription) · **Standing:** KEEP
 **Aim served:** A1/A3 — hosts the rail listener + `c1-signal-daemon`
