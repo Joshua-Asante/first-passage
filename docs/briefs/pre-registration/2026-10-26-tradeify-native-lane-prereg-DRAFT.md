@@ -71,7 +71,7 @@ A candidate is eligible only if all of the following hold:
 | **G3** Incumbent state | Applies only when §11 item 2 selects the incumbent evaluation; otherwise not applicable. G2 re-run from the incumbent evaluation's real state through `EvaluationState`, privately on the operator's machine. Only the verdict leaves the machine | Same as G2 |
 | **G4** Native parity | Over a frozen window, the NinjaScript port on NinjaTrader playback matches the research reference on the risk path G2 used: (a) every trade has the same quantity, and ≥ 95% of trades have the same entry and exit bar; (b) on ≥ 95% of days, net P&L and the intraday low each differ by ≤ max($25, 5%); (c) replaying both day series through the evaluation rules gives the same breach days; (d) G2 re-run on the port's own day series still passes. For a pair (Joshua, 2026-10-29): (b)–(d) use the combined per-day net P&L and intraday lows, and (a) is one pooled test over both ports' trades; no per-port pass is required | Port commit; window; tolerances (a)–(c) |
 
-G5 is not part of this verdict. Deployment still needs the NinjaTrader instance's own monitoring acceptance, a separate operator GO to arm, and a GO for each session ([Rule 10](../../operational_rules.md#rule-10--live-execution-gates), [Rule 11](../../operational_rules.md#rule-11--rail-operating-invariants)).
+G5 is not part of this verdict. Deployment still needs the NinjaTrader instance's own monitoring acceptance, and an operator GO covering the 7 days of sessions it is given for ([AGENTS.md](../../../AGENTS.md) money controls 1–2).
 
 ## §5 — Forbidden moves
 
