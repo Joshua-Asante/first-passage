@@ -1,3 +1,5 @@
+> **Historical runbook:** c1 is retired and both apps are destroyed; see [retirement status](../README.md). Commands below describe a host that no longer exists and authorize nothing.
+
 # c1 rail sizing host — Fly.io deploy runbook
 
 **Status 2026-08-05 — nothing in this file may be used to arm.** Two bars are currently binding and neither is described below: (a) `dry_run=false` may not be **set** while M1 monitoring is not `RESOLVED` — it reads `CODE_LANDED` (ADR `2026-07-22-c1-venue-native-monitoring-maturity.md` Addendum 2026-07-31b; enforced **only** in `ops/c1_rail/c1_rail_arm.py::m1_acceptance_reason`, so a hand-edit of `/data/c1_rail_config.json` bypasses it and is barred); (b) both Striker legs were **withdrawn from the c1 eval deployment 2026-08-04** and redeploying them is barred (ADR `2026-08-04-tradeify-venue-descope-eval-included.md`). No strategy is deployed. Rail disposition is **F2 ruled** ([S1](../../docs/adr/2026-08-07-loop-s1-environment-ratification.md) — warm/disarmed at the incumbent eval). This file covers host standup only, and its Status banner covers the state seeds at L46-48 and the arming section at L76-82.
