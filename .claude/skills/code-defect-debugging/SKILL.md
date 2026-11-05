@@ -180,7 +180,7 @@ Fix the mechanism, not the symptom. A guard, default, retry, broader `except` or
 |---|---|
 | "Fix", "make it pass", "green the CI", a red required check on a PR you own | Gate before the first edit. |
 | The first error is `TypeError` / `None` / `KeyError` / `JSONDecodeError` / schema or parse failure | Treat it as a symptom; trace up to who produced the value. |
-| "Flaky", "intermittent", "passes on re-run" | A race, ordering dependence or environment difference; a retry hides it (§1.1). Not this row: an *evidence-backed* infrastructure failure (runner, service or network outage read from the job log), which `babysit` step 4 reruns with the reason recorded and no code change. "It passed the second time" is not that evidence. |
+| "Flaky", "intermittent", "passes on re-run" | A race, ordering dependence or environment difference; a retry hides it (§1.1). Not this row: an *evidence-backed* infrastructure failure (runner, service or network outage read from the job log), which is rerun with the reason recorded and no code change. "It passed the second time" is not that evidence. |
 | Reviewing a diff (Codex round, `handoff-verify` post-execution judging, a fleet return) that adds a guard, default, retry, broad `except`, `check=False`, `errors="ignore"` or a looser schema | Ask for the named mechanism; without one the change is REFUTED on that ground. |
 | A hook, startup path, boot-time cache, restore/migration, worker pool, background refresher or rewriter is in the suspect path | Run the first-unintended-write hunt below. |
 
@@ -250,7 +250,7 @@ A report without the first line is a symptom fix by definition. A `VERIFICATION:
 | "Exit 0 on a missing dependency is friendlier." | It reports an empty result as success. |
 | "Hooks fail open, so mine can." | Hooks are documented and emit a finding. Yours does neither. |
 | "Root-causing is overkill for a one-liner." | The one-liner is where M-23 hid for four days. |
-| "The test is flaky, mark it." | fable-method 4.6: a deterministic failure is never labelled flaky without investigation. `babysit` step 4 reruns only an infrastructure-only failure with outage evidence recorded. |
+| "The test is flaky, mark it." | fable-method 4.6: a deterministic failure is never labelled flaky without investigation. Only an infrastructure-only failure is rerun, with outage evidence recorded. |
 
 ### Red flags
 

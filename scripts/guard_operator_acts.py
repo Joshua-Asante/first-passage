@@ -118,8 +118,8 @@ call, because one answer approves all of them.
   * ``pr.merge_admin`` — ask: a pinned ``gh pr merge --admin`` (unless its last value is
                        one of pflag's false spellings). ``--admin`` asks GitHub to merge
                        past unmet requirements, which the standing GO does not cover
-                       (operator ruling 2026-09-26: "askable admin merges"; the merge-train
-                       skill forbids it to agents). Unpinned, it is ``pr.merge_unpinned``.
+                       (operator ruling 2026-09-26: "askable admin merges"; agents may not
+                       use it). Unpinned, it is ``pr.merge_unpinned``.
 
 **Scope — what this hook is not.** It covers the Claude Code harness only (Codex sessions
 are not hooked). It adds a prompt where an agent session holds a
@@ -229,16 +229,15 @@ MESSAGES = {
                  "2026-10-25): merge only if an independent review has passed and every CI "
                  "check is COMPLETED and green at the pinned head. For a Claude-authored PR "
                  "that is a Codex review clean at this head, within three reviews or on a "
-                 "clean fourth (`scripts/merge_train.py gate` applies the count); if none is "
-                 "clean by the fourth, return the PR to its owner for a rewrite. For a "
-                 "Codex-authored PR it is a Claude review clean at this head, checked by hand "
-                 "(the gate counts Codex reviews only), within three reviews or on a clean "
-                 "fourth, counted by hand. Otherwise report the PR as ready and stop."),
+                 "clean fourth; if none is clean by the fourth, return the PR to its owner "
+                 "for a rewrite. For a Codex-authored PR it is a Claude review clean at this "
+                 "head, within three reviews or on a clean fourth. Count reviews by hand. "
+                 "Otherwise report the PR as ready and stop."),
     "pr.merge_admin": ("Admin merge (pr.merge_admin): --admin asks GitHub to merge past "
                        "unmet requirements, outside the agents' standing GO. Confirm only if "
                        "you, the operator, are making this merge.",
-                       "`--admin` is outside the standing GO (Addendum 2026-10-24b A; the "
-                       "merge-train skill forbids it). Drop `--admin` and merge only when the "
+                       "`--admin` is outside the standing GO (Addendum 2026-10-24b A; agents "
+                       "may not use it). Drop `--admin` and merge only when the "
                        "GO's conditions hold; otherwise report the PR as ready and stop."),
     "pr.auto_merge": ("Auto-merge is forbidden to agents (pr.auto_merge).",
                       "Auto-merge is retired: an agent merges only by a pinned merge under "
