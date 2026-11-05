@@ -163,29 +163,6 @@ runs, exits 0 once the VM is verified deallocated or has not started within the
 grace period, and exits 2 with `.cache/azure-vm-watch/ALARM.txt` if deallocation
 cannot be verified. Run one watcher per VM; it never prints the subscription ID.
 
-## Agent CLI dispatch
-
-`dispatch_codex.ps1` (thin Codex wrapper):
-
-```powershell
-.\scripts\dispatch_codex.ps1 -Worktree <worktree> -Prompt 'Read TICKET.md and execute it.' -OutputFile <scratch>\last.txt [-Sandbox read-only] [-Model gpt-6.1-sol] [-DryRun]
-```
-
-It runs the Codex app's bundled `app\resources\codex.exe` (the `.sandbox-bin` copy cannot run tools),
-passes `FP_AGENT_GH_TOKEN` as `GH_TOKEN` to the child only, and refuses a directory containing `.env`.
-Tests: `tests/scripts/test_dispatch_codex.py` (dry-run).
-
-### Merge train
-
-`merge_train.py` is the read-only gate and watcher used by the [merge-train skill](../.claude/skills/merge-train/SKILL.md), which owns how to use it:
-
-```powershell
-.\fp.ps1 python scripts/merge_train.py gate 912 913      # READY / WAIT / HOLD; exit 0 only if all READY
-.\fp.ps1 python scripts/merge_train.py watch --min 911   # NEW / CHANGED / CLOSED / STALLED lines
-```
-
-`dispatch_codex.ps1 -ReviewBase origin/main` runs the read-only Codex CLI review fallback. Tests: `tests/scripts/test_merge_train.py` (a fake `gh`; no network) and `tests/scripts/test_dispatch_codex.py`.
-
 ## Gate composition and admission
 
 Composition authority is [`gates.yml`](gates.yml) via
@@ -324,8 +301,7 @@ The archive clone is `--archive`, `$FP_EVIDENCE_ARCHIVE`, or a
 Review is cross-agent: Codex reviews Claude's work and Claude reviews Codex's (Rule 5;
 [surface-allocation ADR Addendum 2026-10-26](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-26--operator-ruling-cross-agent-review)).
 The merge rule and review limit are
-[Addendum 2026-10-24b A](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody),
-applied by `merge_train.py gate`; requesting reviews is [merge-train](../.claude/skills/merge-train/SKILL.md) step 3.
+[Addendum 2026-10-24b A](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody).
 
 [The pre-ratification workflow](../.claude/workflows/pre-ratification-adversarial-panel.js)
 owns its review mechanics. Reviewers assess the source independently of the proposer's

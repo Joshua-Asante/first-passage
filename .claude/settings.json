@@ -67,16 +67,6 @@
           }
         ]
       }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python \"$CLAUDE_PROJECT_DIR/scripts/session_divergence_hook.py\""
-          }
-        ]
-      }
     ]
   }
 }

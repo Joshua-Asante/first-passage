@@ -125,8 +125,6 @@ jobs:
           tests/test_validate_c1_monitoring_acceptance.py
           tests/ops/test_c1_rail_arm.py
           tests/core/test_mc_mode_switching.py
-          tests/ops/test_recall_guard.py
-          tests/ops/test_recall_index.py
           tests/scripts/test_guard_operator_acts.py
           tests/scripts/test_guard_shell_command.py
           tests/test_book_score.py

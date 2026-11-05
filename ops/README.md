@@ -10,7 +10,6 @@ restated here.
 | [`c1_signal_daemon/`](c1_signal_daemon/) | S2b signal daemon (`emit_enabled=false`) |
 | [`instruments/`](instruments/) | Per-symbol ledgers + mechanism index |
 | [`sentinel/`](sentinel/) | Hygiene / preregistration scans |
-| [`recall/`](recall/) | Recall-sidecar guard |
 | [`cli.py`](cli.py) | Tearsheet-only historical CLI |
 | [`prop_envelope_default.md`](prop_envelope_default.md) | Prop-envelope v1 pointer |
 
