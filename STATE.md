@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Updated:** 2026-11-05. Keep this to one page: the goal, live obligations, open
+**Updated:** 2026-11-06. Keep this to one page: the goal, live obligations, open
 decisions. Replace stale lines instead of appending history.
 
 ## Goal
@@ -8,10 +8,14 @@ decisions. Replace stale lines instead of appending history.
 Get a native NinjaScript strategy trading the **Tradeify Select 100K evaluation**,
 then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
 
-- **Status:** a read-only native toolchain assessment is authorized. The
+- **Status:** on the
+  [11-05 bare-bones eval path](https://github.com/Joshua-Asante/first-passage/blob/a31aabc/docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-11-05--bare-bones-eval-path).
+  Joshua accepted S-PAIR on 11-06; it is not a pass as frozen. His 11-06 GO covers
+  the eval build only: no order, session or spend. No sizing or deployment is
+  approved, and every session needs its own GO. The
   [native plan](docs/superpowers/plans/2026-10-21-tradeify-native-ninjascript-strategy-plan-DRAFT.md)
   and the [qualification framework](docs/briefs/pre-registration/2026-10-26-tradeify-native-lane-prereg-DRAFT.md)
-  are drafts. No candidate, sizing or deployment is approved.
+  are drafts the path does not wait on.
 - **Known risk:** no configuration has an evidence case for this evaluation yet, and
   no strategy-signal fill has ever occurred on the account.
 - **Ruled out:** the multi-firm program is research-only (its falsifier fired). The
@@ -27,8 +31,6 @@ then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
 
 ## Open decisions (Joshua)
 
-1. **11-08 sitting:** the next step for the native ORB + Aegis lane, including
-   whether to fund the expanded assessment and what evidence counts as enough to
-   run it on the evaluation.
+1. **11-08 sitting:** the remaining decisions before the first eval session.
 2. **Data source:** Databento is retired and has no replacement. Research uses
    TradingView CME exports only.
