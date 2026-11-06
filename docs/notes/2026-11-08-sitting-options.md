@@ -92,7 +92,7 @@
 - an edition-swap clause tied to Addendum 1;
 - that "only Aegis and ORB" means R1 MCL and any third leg need a new binding and registration;
 - the preservation-trade placement rule (see D9);
-- DD-tier values that either equal the frozen 1.5% / 0.40× or carry explicit rule-4 approval. The 07-13 ADR treats these as per-instance variables with their own admission chain (`b7eaff7:docs/adr/2026-07-13-dd-protection-concept-not-constant.md:27-31`).
+- the native DD policy for this instance, confirmed by Joshua with its own admission or an explicit exception. Matching the frozen 1.5% / 0.40× literals does not make it an approved Tradeify policy. Money control 4 freezes the constants in `core/dd_protection.py`; it does not approve them for a new firm-tier instance. The 07-13 ADR rejects transplanting FXIFY's pair (`b7eaff7:docs/adr/2026-07-13-dd-protection-concept-not-constant.md:27-31`). `core/dd_geometry.py:25-39, 87-101` requires each instance's own admission and has no default. The Python constants stay untouched (Codex review).
 
 Do not include a "sole operator" attestation until D8 is ruled.
 
@@ -145,12 +145,12 @@ Do not include a "sole operator" attestation until D8 is ruled.
 - Row 11 is at CK:1050. "Starting without Tradeify's reply" is still Joshua's (CK:1103).
 - The request came on the CME ticket thread with CME Data Sales copied, and asked about "optional export functionality" (route :402). Joshua's 10-26 data-terms question is unanswered (:403). Verification timing is open (:408).
 - Tradeify's support is fast: an answer within 2 minutes on 10-12 (route :376), within 2 days on 10-22/24, and within about a minute on 11-05. The analysis's "slow and lapsing" claim was wrong. Only the compliance manager's follow-up is unanswered.
-- Native plan :57 (written answer on ownership for the candidate) is a separate obligation from source review.
+- Native plan :57 (written answer on ownership for the candidate) is a separate obligation from source review. Tradeify's existing answer is general guidance only. Eligibility of the exact candidate stays open (`b7eaff7:docs/briefs/handoffs/2026-09-25-crosstrade-rest-route-assessment.md:401-407`). Neither a source-review deadline nor Joshua's exclusivity signature supplies it.
 
 | Option | Unblocks | Risks | Reversibility |
 |---|---|---|---|
 | A. Wait indefinitely | Strongest posture | No end date | Fully |
-| **B'. Wait until a calendar date (for example 11-19 or the first session GO, whichever is later), with Joshua sending a notice of intent rather than asking permission: "Unless you object by <date>, I will enable the strategy whose source I sent on 11-05; I will record the enable on video and keep logs."** | A dated path that puts the burden on Tradeify. No pre-approval gate gets created | If Tradeify requests a code change after session 1, the build is no longer S-PAIR's source set and the stop rule's record ends (registration :17) | Until session 1 |
+| **B'. Wait until a calendar date (for example 11-19 or the first session GO, whichever is later), with Joshua sending a notice of intent rather than asking permission: "Unless you object by <date>, I will enable the strategy whose source I sent on 11-05; I will record the enable on video and keep logs."** | A dated path that puts the burden on Tradeify. No pre-approval gate gets created | If Tradeify requests a code change after session 1, the build is no longer S-PAIR's source set: S-PAIR must be rerun and the source re-sent. That alone does not end the stop rule's record. Registration :17 covers changes to the rule, and Addendum 1 admits the horizon successor without a rule change. Which other build changes need a fresh forward record is Joshua's question (Codex review) | Until session 1 |
 | C. Proceed now | Fastest | Little time gained, since other rows are open | Until session 1 |
 | D. Defer | — | Could become a last-minute blocker | Fully |
 
@@ -161,6 +161,8 @@ Do not include a "sole operator" attestation until D8 is ruled.
 - Joshua prepares a plain-language description of the strategy he can give without help, in case of a KYT interview (deep-dive :18).
 
 **Questions.**
+- Wait for a candidate-specific ownership answer, or supersede that prerequisite explicitly and name the unresolved eligibility risk on the signed page? (Separate from the source-review wait; Codex review.)
+- Which build changes after session 1 need a fresh forward record, as opposed to an S-PAIR rerun and a re-send?
 - Has a reply arrived? (Mailbox, confirm locally.)
 - Did the 11-05 email go on the CME-copied thread?
 - Do the sent source or the build write market data out of NinjaTrader?
@@ -420,6 +422,7 @@ Keep the monthly cadence. If time allows, close the stale rows: the Tradeify car
 - [ ] Step 3: name readback, eval build under its GO, installed disabled. The build matches the source sent to Tradeify, or is re-sent.
 - [ ] Row 5 (D3): binding with build hashes, the per-leg split, every load-required config field, and DD values (frozen, or approved under rule 4).
 - [ ] Row 11 (D6): notice sent and deadline passed, or a reply received.
+- [ ] Candidate-specific ownership/eligibility (native plan :57): answer received, or the prerequisite explicitly superseded with the risk named on the signed page.
 - [ ] Row 11a (D7): CME follow-up sent, entitlement confirmed, export behaviour known, CME category accepted as risk with a pay-or-stop trigger.
 - [ ] T1 (D9): placement rule on the signed page (never with an instance enabled).
 - [ ] Step 4: signed page (contents per D12) hash-registered, and the attended pre-session check done (M1 replacement, CK:1089).
