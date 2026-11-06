@@ -17,8 +17,8 @@ cross-campaign historical corpus of return series anywhere in this repo today,
 and building one is a separate, larger, deliberately deferred decision, not
 attempted here.
 
-Advisory only, same posture as check_advisor_dedup.py and the 2026-08-13
-ADR's own forbidden-move #1 ("stay advisory, always exit 0"): this reports
+Advisory only, same posture as the retired advisor-dedup checker and the
+2026-08-13 ADR's own forbidden-move #1 ("stay advisory, always exit 0"): this reports
 near-duplicate pairs. It never refuses, blocks, or drops a candidate --
 callers decide what (if anything) to do with the report.
 """

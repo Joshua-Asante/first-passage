@@ -81,12 +81,6 @@ parent tests and subtests separately. Custom JUnit destinations remain supported
 The adapter uses the pinned pytest producer API; run its process regressions when
 updating pytest. Reports are retained as produced, not repaired after validation.
 
-Agent-handoff and image fault-injection process tests opt into `isolated_home`.
-Their Python and shell children share temporary home/cache storage outside the
-worker workspace. This changes test environments only; production receipts and
-locks still use the real home directory. Fixture environment overrides are
-restored afterward, and the launcher owns temporary-tree cleanup.
-
 Schema version 2 reserves `record.json` before environment checks, then atomically
 replaces it as the run advances through `not_started`, `running`, and a final
 `completed`, `failed`, or `interrupted` state. A setup failure stays `not_started`
