@@ -256,7 +256,7 @@ Do not include a "sole operator" attestation until D8 is ruled.
 
 **State.**
 - 11-05 path: step 2 is done (CK:1097). Step 1's status is private. Steps 3-5 are open (CK:1085).
-- "Every session needs its own GO" (CK:1101) conflicts with AGENTS.md's 7-day GO (:17-25). AGENTS.md is the current hard rule.
+- "Every session needs its own GO" (CK:1101) and AGENTS.md's 7-day GO (:17-25) are compatible. AGENTS.md limits how long a GO is valid. It does not say one GO covers several sessions. So whether one weekly GO may authorize more than one session is an open question for Joshua, separate from D15. Ask it explicitly; D15 must not settle it by implication (Codex review).
 - The runbook's "One session, then a recorded review before another" (runbook :127) was not superseded by 11-05.
 - "Kept" is not a lock event for the stop rule. It already binds under AGENTS rule 5, and the lock comes at session 1 (registration :17).
 
@@ -308,6 +308,7 @@ Do not include a "sole operator" attestation until D8 is ruled.
   - Family banks are disclosure-only.
   - The builder and T00 ledgers are unaffected.
   - At K=1 the ORB manifest would become valid promotion backing (`lab/discovery/k_ledger_check.py:56-60`).
+  - **ST-EH promotion requirements change.** `lab/discovery/promotion_packet.py:205-225` reads the backing manifest's K and requires an extra DSR-floor attestation when `floor_at_k(K)` exceeds CAP. CAP is 1.0. At K=2 the floor is 0.85; at K=84 it is 1.615. So re-banking ST-EH adds that attestation to any promotion packet it backs. Ask whether the ruling should change ST-EH's promotion requirements or keep an explicit historical exception (Codex review).
   - The native-lane K disclosure counts the July look regardless (v7 S4 draft :64).
 
 | Option | Unblocks | Risks | Reversibility |
@@ -327,7 +328,7 @@ Do not include a "sole operator" attestation until D8 is ruled.
 
 | Option | Unblocks | Risks | Reversibility |
 |---|---|---|---|
-| **A'. Retire obligations that exist only in deleted docs, except named survivors: the 11-05 eval path, the runbook sections it amends, the T1/T2 and CME reservations, the 11-03 rulings, the c1 Stage 2/3 rulings, and what kept files and code carry (frozen pre-registrations, the stop rule, lab/builder/README obligations, dated HOLDs in ops/instruments). Where deleted text conflicts with AGENTS.md or STATE, those govern. Preferably move the eval path's operative text into a kept file** | One answer for every later agent. Resolves the per-session GO vs weekly GO conflict | Retires unfired research falsifiers | High (git) |
+| **A'. Retire obligations that exist only in deleted docs, except named survivors: the 11-05 eval path, the runbook sections it amends, the T1/T2 and CME reservations, the 11-03 rulings, the c1 Stage 2/3 rulings, and what kept files and code carry (frozen pre-registrations, the stop rule, lab/builder/README obligations, dated HOLDs in ops/instruments). Where deleted text conflicts with AGENTS.md or STATE, those govern. Preferably move the eval path's operative text into a kept file** | One answer for every later agent. Does not decide whether one GO covers several sessions (that is D12) | Retires unfired research falsifiers | High (git) |
 | A as drafted (no precedence clause, eval path not named) | — | Could be read as retiring the eval path's safety conditions | High |
 | B. Everything binds through git | Full discipline | No in-tree index, so silent misses | High |
 | C. Item-by-item triage | Precise | Around 30 mostly moot items | High |
@@ -356,7 +357,7 @@ The frozen card (`b7eaff7:docs/briefs/handoffs/2026-10-29-orb-aegis-third-leg-ex
 **State.**
 - The 11-03 ruling says the builder owes a ceiling plus the contract fields (`b7eaff7:docs/adr/2026-08-30-candidate-contract.md:191-199`).
 - The proposed per-instrument look budget fails the contract's "binding" and "not Confirm-only" tests (`b7eaff7:docs/methodology/strategy_harvest.md:83-87`). It resets with new instruments and can be enlarged by the 2009 calendar ruling (`ops/calendars/README.md:166`).
-- The claim that "MCL hit it" is unverified, because R1 results are unread and not adjudicated (R1 registration :9).
+- MCL has already exhausted its instrument look budget. This does not depend on reading R1's results. The 11-05 addendum records eight banked cards, a D7 floor that cannot be reached, Joshua's "Park MCL", and that an invalid run would still count toward K (`b7eaff7:docs/briefs/pre-registration/2026-11-01-builder-r1-mcl-orb-registration.md:9`). `lab/builder/ledger.py:101-104` counts distinct ledgered cards without consulting results. Whether R1 is valid evidence is a separate, open question, and so is a channel-level ceiling that meets the contract (Codex review).
 - MGC has eight ledgered cards and is "Not ruled" (`ops/instruments/MGC.md:107`).
 
 **Recommendation: changed by the critique from "use the look budget".** Record in lab/builder/README.md that the channel is dormant. The next round's registration must declare a channel-level, audited ceiling and the owed contract fields before it freezes. Rule on these first:
@@ -368,7 +369,7 @@ The frozen card (`b7eaff7:docs/briefs/handoffs/2026-10-29-orb-aegis-third-leg-ex
 
 **Recommendation:** the surface-ADR "own GO and quiet window" (`b7eaff7:docs/adr/2026-07-17-c1-rail-build-account-registration-go.md:506`) lapses. Removing LIVE_FLY_APPS and rail.deploy (`scripts/guard_operator_acts.py:74-76, :290`) needs only normal Codex review and green CI. S3-4's destination comes back with the consumer table.
 
-The volume archives (ADR :500) may hold runtime ports, `effective_inputs.json` or account identifiers. AGENTS.md forbids copying those anywhere. Joshua confirms the contents locally first, and agents do not copy them. If the archives contain such files, either he accepts the single copy, or he grants an explicit exception.
+The volume archives (ADR :500) may hold runtime ports, `effective_inputs.json` or account identifiers. AGENTS.md forbids copying those anywhere. Joshua confirms the contents locally first, and agents do not copy them. If they contain Pine, runtime ports or `effective_inputs.json`, either he accepts the single copy, or he grants an explicit exception. If they hold account data only, the copy ban does not apply: AGENTS.md bars committing account identifiers and giving account data to Codex, not a private backup Joshua makes himself. Since these archives are the only copies found, on one machine, offer him a private backup for that case (Codex review).
 
 ### D20. Subscription reconfirm (11-21)
 
@@ -379,7 +380,7 @@ Keep the monthly cadence. If time allows, close the stale rows: the Tradeify car
 ## Cross-decision interactions
 
 **Constraints and conflicts.**
-- **D15 comes before D14 and most cleanup.** The 2-C choice between A and H depends on it. It also decides whether the 11-05 path, itself a deleted text, governs the eval, and settles the per-session GO vs weekly GO conflict (CK:1101 vs AGENTS.md:17-25).
+- **D15 comes before D14 and most cleanup.** The 2-C choice between A and H depends on it. It also decides whether the 11-05 path, itself a deleted text, governs the eval. It does not decide whether one weekly GO may cover several sessions: CK:1101 and AGENTS.md:17-25 are compatible, and that question is asked separately in D12.
 - **D8 comes before D3 and D4.** A "sole owner and operator" attestation (route :398) is inconsistent with standing agent placement unless Joshua rules on it. Either a directed agent order counts as his act (surface ADR 09-30b, `b7eaff7:docs/adr/2026-07-14-cc-cursor-surface-allocation.md:896-900`), or placement narrows to the hybrid or B.
 - **T2 vs the standing preservation GO.** There is no live conflict: the 11-05 reversal is in force. The conflict is between agent placement and the venue attestation.
 - **D9 vs D3/D12.** Never place the preservation trade while an instance is enabled (CK:1094; runbook U-12). Choose its instrument so it cannot form an opposing Equity Index position. A genuine held trade placed by an agent needs the standing GO restated (AGENTS.md:21-23 covers only "the round trip").
