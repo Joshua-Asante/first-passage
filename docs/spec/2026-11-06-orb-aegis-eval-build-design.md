@@ -90,8 +90,7 @@ From the 11-05 exception, plus the build-specific items from §3:
 3. The account is flat with no working orders, in both views (B2, B11).
 4. Both instances are on the eval account, not Sim101 or another account (U-16),
    and the loaded build matches the S-PAIR source set.
-5. Today's cutoff and flatten times come from the calendar, including any early
-   close (B5).
+5. Today's calendar row is `PERMITTED` and is not a shortened day (B5).
 6. The operator has the account loss threshold and the flatten path for both legs
    at hand (B6).
 7. The per-leg caps match the private card (B3).
@@ -117,7 +116,6 @@ Decided by Joshua, 2026-11-06:
   consistency limit ($2,400).
 - **D4 (B5, B14).** Withdrawn 11-06: S-PAIR's exits stay as tested and there is no Sim101 rerun.
 - **D5 (B5).** Withdrawn 11-06 with D4.
-
 - **D6 (Tradeify source review).** Tradeify received S-PAIR's source on 11-05. Joshua sends
   them the eval files, checksums and a change list before any enable; agents never send
   private source. The first session does **not** wait for Tradeify's source-review reply.
