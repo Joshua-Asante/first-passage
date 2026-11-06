@@ -37,7 +37,7 @@ Source: `core/firm_rules.py` (`_TRADEIFY_EVAL`, `_TRADEIFY_SELECT_EVAL`,
 |---|---|---|
 | Max drawdown | $3,000 trailing, ratcheting on end-of-day balance, no lock in eval, **breached intraday** | Each loss guard sits inside the floor with a margin (B6) |
 | Profit target | $6,000; at least 3 trading days | Nothing. Passing is not a strategy input |
-| Consistency | Best day at most 40% of total profit at pass (so at most $2,400 when the target is reached) | Joshua decides whether a daily profit cap exists (Q3) |
+| Consistency | Best day at most 40% of total profit at pass (so at most $2,400 when the target is reached) | No daily profit cap for now (D3) |
 | Size cap | 80 micro-equivalents; one 6J counts as 10 micros | The static per-leg caps sum to at most 80 (B3) |
 | Session | Force-flat 16:45 ET; no weekend holds | Flat before the venue acts (B5) |
 | Activity | At least one trade per Mon–Fri week | The weekly preservation trade covers this (B13) |
@@ -61,11 +61,11 @@ Joshua accepts.
 | B7 | Disconnect halts new risk at once; reconnecting never resumes trading. The connection-loss setting must not replay or recalculate into new orders | Runbook §2.5; U-4 | Accepted risk | ☐ |
 | B8 | Disabling an instance leaves working protection in place. Re-enabling is never a recovery step (the 10-17 canary showed `WaitUntilFlat` cancelling protection) | Runbook §2.3 item 5 | Sim101 canary 10-17 | ☐ |
 | B9 | A rejected or unknown order is never resent; the instance halts for review | Runbook §2.6; D-N6 | Sim101 | ☐ |
-| B10 | The strategy's own incident close (D-N1) is not relied on (11-05). On an incident the operator flattens in Tradovate. Whether S-PAIR still contains the close is Q1 | Runbook §2.8; 11-05 | U-3, U-5, U-9, U-17 unproven on the firm connection | ☐ |
+| B10 | The strategy's own incident close (D-N1) is **switched off** in the eval build (Joshua, 2026-11-06) and not relied on (11-05). On an incident the operator flattens in Tradovate | Runbook §2.8; 11-05; D1 | U-3, U-5, U-9, U-17 unproven on the firm connection | ☐ |
 | B11 | Verified-flat shutdown. Flat counts only when all of these hold: both views (NinjaTrader and Tradovate web) were read after the last request; both show zero gross positions and no working orders; no request is unresolved; every journal request has a terminal outcome; every execution is correlated. Empty grids, net zero, elapsed time or an acknowledgment do not count. Then disable, disconnect, and export the journal to private custody. If flat cannot be verified, the account stays under attended recovery | Runbook §2.7 items 3–7 | Attended | ☐ |
 | B12 | Forward stop rule: after each session, each strategy's forward trades are scored offline (keep, drop or halt). A drop or halt disables that instance before the next session | [Stop rule registration](../briefs/pre-registration/2026-10-31-tradeify-forward-stop-rule-registration.md) | Offline, private | n/a |
 | B13 | The weekly preservation trade is placed only while both instances are disabled and the account is flat. While either instance is armed, a manual trade on its instrument is an uncorrelated fill, and a trade on any other instrument is unexplained activity; both stop the session. Any other placement needs a new ruling | 11-05 "Runbook §6 for the pair"; runbook U-12; STATE | Weekly practice | n/a |
-| B14 | No position held past the venue force-flat. If either research reference holds past 16:45 ET, the native edition differs from it, and that difference is named on the signed page | Venue rule; parity (Q2) | Source read | ☐ |
+| B14 | No position held past the venue force-flat. Both strategies are built to shut off at 16:45 ET (Joshua, 2026-11-06). How that relates to the B5 own-flat deadline is Q1 | Venue rule; D2 | Source read | ☐ |
 | B15 | Journals, exports and screenshots contain account data, so they stay in private custody and never enter this repo | AGENTS data rules | n/a | n/a |
 
 ## 4. What the 11-05 path removed
@@ -105,14 +105,22 @@ From the 11-05 exception, plus the build-specific items from §3:
 | Verification | Sim101 rerun (path step 1); Codex reviews this spec and any public harness, never the private source; Joshua signs the page | Signed page, then GO |
 | Measure | Post-session export, forward stop rule scored privately | Keep, drop or halt per strategy, then STATE |
 
-## 7. Open questions for Joshua
+## 7. Decisions and open questions
 
-- **Q1 (B10). Incident close in the build.** The 11-05 path already says it is not
-  relied on. Open: whether S-PAIR's close code stays in the eval build, switched off,
-  or is removed. Recommendation: **switched off** for the first sessions. Its safety
-  tests (U-3, U-5, U-9, U-17) can't be proven on Sim, and the operator flattens anyway.
-- **Q2 (B14).** Does either research reference hold across 16:45 ET? Answer from
-  the private source. If yes, name the difference on the signed page.
-- **Q3. Daily profit cap for the 40% consistency rule.** Recommendation: none for
-  the first sessions. Passing is not the near-term goal; the forward stop rule
-  needs clean trades.
+Decided by Joshua, 2026-11-06:
+
+- **D1 (B10).** The incident close is switched off in the eval build.
+- **D2 (B14).** Both strategies are built to shut off at 16:45 ET.
+- **D3.** No daily profit cap for now. Revisit if a single day's profit is likely to
+  exceed one third of the profit target ($2,000 of $6,000), which is below the 40%
+  consistency limit ($2,400).
+
+Open:
+
+- **Q1 (B5 vs D2). Own-flat deadline.** B5, following the runbook and the session
+  calendars, puts the own-flat deadline at 16:00 ET on a normal day. Flattening
+  starts at 15:55, and no new entries are taken after 15:45. 16:45 ET is the venue's
+  own force-flat (V), so a 16:45 shutoff leaves no margin before the venue acts.
+  Either S-PAIR's exits move to the B5 schedule, or B5 changes by your ruling and the
+  signed page names the missing margin as risk. Shortened days (V = 12:59 ET on
+  2026-11-27) need the calendar either way.
