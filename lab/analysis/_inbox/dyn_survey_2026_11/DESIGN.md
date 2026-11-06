@@ -23,12 +23,12 @@ this PR is the frozen SHA. The parity, holdout and 5h stages are separate, conti
 
 - **Session bars.** Every bar the rules use opens between 07:30 and 16:45 ET on the session date,
   so a session is that date's bars before 17:00. The 18:00 start of the session day never binds.
-- **Previous session day** for `C_prev` is the prior entry of `data.session_dates`, including a
-  calendar-closed date.
+- **Previous session day** for `C_prev` is the prior development session, including a
+  calendar-closed date. Earlier bars feed C8's warm-up only, so the first development session
+  has no `C_prev`.
 - **Calendar-listed** means `data.Calendar.closed`, the builder's rule since the 2026-11-03
   ruling on PR #1045: an entry with a non-NORMAL status. The protocol defers to builder rules.
-- **C6/C7 validity.** A missing or off-grid S drops both cells. A window failing its own condition
-  drops that cell only. Each quoted S passes both conditions, so this choice does not bind.
+- **C6/C7 validity.** A missing or off-grid S, or either window failing, drops both cells.
 - **S** is the end of CME's published settlement window, converted to ET.
 - **Unresolved trades** take precedence over eligibility, so such a cell gets no series statistics.
 - **Exposure log.** The driver appends one `planned` row per instrument before reading its bars.

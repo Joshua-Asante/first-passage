@@ -99,12 +99,10 @@ def first_hours(sessions: list[str], days: Mapping[str, Day], symbol: str) -> di
 
 
 def window_valid(cell: str, symbol: str, s: int | None) -> bool:
-    """False for C6/C7 when S is missing or off the 15m grid, or the cell's window is invalid."""
+    """False for both C6 and C7 when S is missing or off the 15m grid, or either window is invalid."""
     if cell not in ("C6", "C7"):
         return True
-    if s is None or s % 15:
-        return False
-    return (s - 30 >= clock(symbol)[0] + 60 and s <= H) if cell == "C6" else s + 30 <= H
+    return s is not None and s % 15 == 0 and s - 30 >= clock(symbol)[0] + 60 and s + 30 <= H
 
 
 def plans(cell: str, symbol: str, day: Day, prev: Day | None, fh: tuple | None, s: int | None) -> list[Plan]:
@@ -167,8 +165,9 @@ def session_trades(date: str, day: Day, todo: list[Plan], d: int) -> list[Trade]
 def cell_trades(cell: str, symbol: str, d: int, sessions: list[str], dev: list[str],
                 days: Mapping[str, Day], closed: frozenset[str], s: int | None) -> list[Trade]:
     """All trades on development sessions. ``sessions`` is every export session, in order; earlier
-    ones feed C_prev and C8 only. A closed calendar date stays a session with no trade."""
-    prev = dict(zip(sessions[1:], sessions[:-1]))
+    ones feed C8's warm-up only, so the first development session has no C_prev. A closed calendar
+    date stays a session with no trade."""
+    prev = dict(zip(dev[1:], dev[:-1]))
     fhs = first_hours(sessions, days, symbol) if cell == "C8" else {}
     out: list[Trade] = []
     for date in dev:
@@ -249,7 +248,7 @@ def evaluate_cell(cell: str, direction: str, symbol: str, sessions: list[str], d
     trades = cell_trades(cell, symbol, DIRECTIONS[direction], sessions, dev, days, closed, s)
     unresolved = sorted({t.date for t in trades if t.unresolved})
     if unresolved:
-        return {**row, "status": "UNRESOLVED", "trades": len(trades),
+        return {**row, "status": "UNRESOLVED", "trades": len(trades), "sessions_traded": len({t.date for t in trades}),
                 "unresolved": sum(t.unresolved for t in trades), "unresolved_dates": unresolved}
     st = statistics(trades, dev, symbol, commission, book)
     bad = failures(st)

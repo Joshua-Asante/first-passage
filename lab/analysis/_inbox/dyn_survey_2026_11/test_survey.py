@@ -121,7 +121,7 @@ def test_settlement_validity():
     assert S.window_valid("C1", "MNQ", None)
     assert not S.window_valid("C6", "MNQ", None) and not S.window_valid("C7", "MNQ", m("14:40"))
     assert S.window_valid("C6", "MNQ", m("16:00")) and S.window_valid("C7", "MNQ", m("16:00"))
-    assert S.window_valid("C6", "MNQ", m("16:30")) and not S.window_valid("C7", "MNQ", m("16:15"))
+    assert not S.window_valid("C6", "MNQ", m("16:30")) and not S.window_valid("C7", "MNQ", m("16:30"))
     assert not S.window_valid("C6", "MNQ", m("10:45"))  # S - 30 is before O + 60
 
 
@@ -191,6 +191,16 @@ def test_unresolved_cell_gets_no_statistics():
         del days[dates[2]][m(b)]
     row = S.evaluate_cell("C3", "cont", "MNQ", dates, dates, days, frozenset(), None, 0.91, {})
     assert row["status"] == "UNRESOLVED" and row["unresolved_dates"] == [dates[2]] and "sharpe_base" not in row
+    assert row["sessions_traded"] == 5
+
+
+def test_pre_development_session_gives_no_c_prev():
+    dates, days = trending(3)
+    for d in dates:
+        days[d][m("09:15")] = bar(100, 101)
+        days[d][m("16:30")] = bar(100, 100)
+    got = S.cell_trades("C1", "MNQ", 1, dates, dates[1:], days, frozenset(), None)
+    assert [t.date for t in got] == [dates[2]]
 
 
 def test_undefined_dsr_and_zero_variance_are_ineligible():
