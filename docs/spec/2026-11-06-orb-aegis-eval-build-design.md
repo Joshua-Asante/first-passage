@@ -27,7 +27,7 @@ not in this repo.
   instance owns only its own instrument (11-05 exception).
 - All signal, sizing and order logic is native. There are no external calls, ATI,
   CrossTrade or bridges ([AGENTS.md](../../AGENTS.md) money control 3).
-- The eval build uses S-PAIR's source set (11-05 path, "Unchanged").
+- The eval build uses S-PAIR's source set plus the two fixes in D7.
 
 ## 2. Account envelope (public venue facts)
 
@@ -102,7 +102,7 @@ From the 11-05 exception, plus the build-specific items from §3:
 |---|---|---|
 | Definition | Claude drafts this page; Joshua accepts it | The accepted spec |
 | Creation | Claude Code in Joshua's primary checkout (private) | The eval build matching S-PAIR, with the §3 confirm column ticked |
-| Verification | S-PAIR Sim101 run 11-06, accepted by Joshua; no rerun; Codex reviews this spec and any public harness, never the private source; Joshua signs the page | Signed page, then GO |
+| Verification | S-PAIR Sim101 run 11-06, accepted by Joshua, then a short Sim101 check of the D7 fixes; Codex reviews this spec and any public harness, never the private source; Joshua signs the page | Signed page, then GO |
 | Measure | Post-session export, forward stop rule scored privately | Keep, drop or halt per strategy, then STATE |
 
 ## 7. Decisions
@@ -119,3 +119,7 @@ Decided by Joshua, 2026-11-06:
 - **D6 (Tradeify source review).** Tradeify received S-PAIR's source on 11-05. Joshua sends
   them the eval files, checksums and a change list before any enable; agents never send
   private source. The first session does **not** wait for Tradeify's source-review reply.
+- **D7 (two fixes, 11-06).** Joshua reopened the source for two ORB fixes, neither changing
+  entries, exits, sizing or stops: no journal record per tick (disk), and an order id change
+  is no longer a fault. Everything else stays as S-PAIR tested it. A short Sim101 check
+  covers the two fixes; it is not a full rerun.
