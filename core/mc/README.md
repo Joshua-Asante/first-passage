@@ -3,7 +3,7 @@
 Vendor-free engine regression:
 [`tests/core/test_mc_synthetic_engine.py`](../../tests/core/test_mc_synthetic_engine.py).
 Historical MC-anchor record (not a live claim):
-[`docs/mc_anchor_history.md`](../../docs/mc_anchor_history.md).
+`docs/mc_anchor_history.md` (removed; in git history at `b7eaff7`).
 
 | Module | Job |
 |---|---|

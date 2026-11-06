@@ -4,7 +4,7 @@ Long-only XAUUSD 15min trend strategy. Pine Script v6.
 
 **Source of truth:** `guardian_gold_v5.5.pine` holds the authoritative parameter values. This CHANGELOG records decisions, rationale, and active overlays. If the two ever disagree, the Pine file wins — fix the CHANGELOG.
 
-**Public summary (2026-10-09).** Parameter values and backtest figures were removed from this public copy; the original text is preserved in the private archive (`first-passage-archive`, branch `archive/preserve-exposure-2026-10-09`). Portfolio MC anchors are owned by [`docs/mc_anchor_history.md`](../../../../docs/mc_anchor_history.md); risk% is owned by `core/historical_challenge.py`.
+**Public summary (2026-10-09).** Parameter values and backtest figures were removed from this public copy; the original text is preserved in the private archive (`first-passage-archive`, branch `archive/preserve-exposure-2026-10-09`). Portfolio MC anchors are owned by `docs/mc_anchor_history.md` (removed; in git history at `b7eaff7`); risk% is owned by `core/historical_challenge.py`.
 
 Versioning begins at v5.1 (2026-04-17). Prior development history (v3.7 → v3.8 → v3.9 → v4 → v5.1) is archived in Notion under the FXIFY Command Center.
 
@@ -34,7 +34,7 @@ _(none)_
 - Grace mechanic shortened and tightened relative to v5.1.
 
 ### Risk re-lock 0.30% → 0.34% (same-day)
-Pepperstone-sourced CSVs (2022→2026) expanded the MC panel from ~14 months to 52 months of regime coverage, revealing headroom under the 1% bust target and 5% static DD cap. The post-relock portfolio MC (G 0.34% / S 1.00% / A 1.50%) cleared both gates. Iran-Israel / Hormuz conflict overlay deactivated same day — revert triggers met. See `docs/adr/2026-04-23-guardian-risk-relock-0.34.md`, [`docs/mc_anchor_history.md`](../../../../docs/mc_anchor_history.md) and `docs/overlays/guardian_conflict_risk.md` (historical record).
+Pepperstone-sourced CSVs (2022→2026) expanded the MC panel from ~14 months to 52 months of regime coverage, revealing headroom under the 1% bust target and 5% static DD cap. The post-relock portfolio MC (G 0.34% / S 1.00% / A 1.50%) cleared both gates. Iran-Israel / Hormuz conflict overlay deactivated same day — revert triggers met. See `docs/adr/2026-04-23-guardian-risk-relock-0.34.md`, `docs/mc_anchor_history.md` (removed; in git history at `b7eaff7`) and `docs/overlays/guardian_conflict_risk.md` (historical record).
 
 ### Lock MC anchors (2026-04-23, pre-risk-relock)
 - Alchemy reference (2026-04-20, Striker v4.4 + Aegis v4.2 era).
