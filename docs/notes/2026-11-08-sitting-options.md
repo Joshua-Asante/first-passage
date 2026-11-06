@@ -420,7 +420,7 @@ Keep the monthly cadence. If time allows, close the stale rows: the Tradeify car
 - [ ] Row 6 (D4) signed publicly.
 - [ ] S-PAIR bare rerun run and accepted, on the bound values (step 1; private, confirm locally).
 - [ ] Step 3: name readback, eval build under its GO, installed disabled. The build matches the source sent to Tradeify, or is re-sent.
-- [ ] Row 5 (D3): binding with build hashes, the per-leg split, every load-required config field, and DD values (frozen, or approved under rule 4).
+- [ ] Row 5 (D3): binding with build hashes, the per-leg split, every load-required config field, and the native DD policy confirmed by Joshua with its own admission or an explicit exception.
 - [ ] Row 11 (D6): notice sent and deadline passed, or a reply received.
 - [ ] Candidate-specific ownership/eligibility (native plan :57): answer received, or the prerequisite explicitly superseded with the risk named on the signed page.
 - [ ] Row 11a (D7): CME follow-up sent, entitlement confirmed, export behaviour known, CME category accepted as risk with a pay-or-stop trigger.
