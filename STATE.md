@@ -12,10 +12,11 @@ then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
   [11-05 bare-bones eval path](https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-11-05--bare-bones-eval-path).
   Stages: 1 Ideation, 2 Validation, 3 Definition, 4 Creation, 5 Verification, then
   measure. A private build (S-PAIR) exists, and the source went to Tradeify on 11-05.
-  The design spec is a [draft](docs/spec/2026-11-06-orb-aegis-eval-build-design-DRAFT.md)
-  awaiting Joshua. Next: move S-PAIR's exits to the spec's B5 schedule (private
-  checkout), the Sim101 rerun on that build, the name readback and eval build, the
-  signed page and pre-session check, then a session GO.
+  The [design spec](docs/spec/2026-11-06-orb-aegis-eval-build-design.md) is accepted
+  (11-06). Next: move S-PAIR's exits to flat by 16:30 ET (private checkout); the
+  Sim101 rerun on that build; Joshua sends Tradeify the changed source; the name
+  readback and eval build; the signed page and pre-session check; then a session GO.
+  The first session does not wait for Tradeify's source-review reply.
 - **One candidate at a time** (Joshua, 2026-11-06): no new candidates, instruments or
   builder rounds until this pair trades on the eval or is dropped. The private port
   is built and changed by Claude Code in Joshua's primary checkout.
@@ -38,8 +39,5 @@ then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
 
 ## Open decisions (Joshua)
 
-1. **11-08 sitting:** accept or edit the [eval build design spec](docs/spec/2026-11-06-orb-aegis-eval-build-design-DRAFT.md);
-   decide whether Tradeify gets the source again after the exit change, and whether
-   the first session waits for Tradeify's source-review reply.
-2. **Data source:** Databento is retired and has no replacement. Research uses
+1. **Data source:** Databento is retired and has no replacement. Research uses
    TradingView CME exports only.

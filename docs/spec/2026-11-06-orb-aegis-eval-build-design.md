@@ -1,10 +1,11 @@
-# ORB + Aegis native eval build: design spec (DRAFT)
+# ORB + Aegis native eval build: design spec
 
-**Status:** DRAFT, 2026-11-06. Claude drafts, Joshua accepts or edits. It grants no
-build, GO, session or spend. Once accepted it is the behaviour contract that the
-private eval build is checked against at step 4 of the
+**Status:** `ACCEPTED 2026-11-06` by Joshua ("accept the spec"), with decisions D1–D6
+in §7. Claude drafted it. It grants no build, GO, session or spend. It is the
+behaviour contract that the private eval build is checked against at step 4 of the
 [11-05 bare-bones path](https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-11-05--bare-bones-eval-path)
-(the signed page and the pre-session check).
+(the signed page and the pre-session check). Changes after acceptance need Joshua's
+ruling.
 
 **Why this exists.** The pair's behaviour design was spread across the
 [pilot runbook](https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/notes/2026-10-18-native-protection-recovery-pilot-runbook.md)
@@ -124,6 +125,7 @@ Decided by Joshua, 2026-11-06:
   venue's deadline: flat by 16:30 ET on a normal day. If the evidence behind either
   strategy assumed a different exit time, the signed page names the difference.
 
-Follow-up for Joshua: Tradeify received S-PAIR's source on 11-05, before this
-change. Whether to send them the changed source is his call; agents never send
-private source.
+- **D6 (Tradeify source review).** Tradeify received S-PAIR's source on 11-05,
+  before D4 and D5. Joshua sends them the changed source once the exit change is
+  built; agents never send private source. The first session does **not** wait for
+  Tradeify's source-review reply.
