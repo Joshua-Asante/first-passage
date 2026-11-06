@@ -1,6 +1,16 @@
 ---
 name: trade-csv-reconcile
-description: Use this skill whenever Joshua uploads or references a TradingView (or broker) trade CSV and any analysis follows — Pepperstone/CME research panels, locked-book TV exports, or c1/Tradovate fill CSVs. Triggers on "analyze the CSV", "reconcile against baseline", "compute PF/WR/DD", "what does the data show", "verify the lock", "monthly analysis", "missed alpha", "panel-thirds", "re-MC pre-reconcile", or pasting/uploading a strategy backtest CSV. Also fires when portfolio-level analysis depends on per-strategy CSV metrics. Covers parsing, Entry/Exit pairing by Trade #, R-pinning per strategy archetype, headline metrics (PF/WR/DD/RF/Net), and Pine-header baseline reconciliation when a locked-book baseline applies. Required before accepting CSV metrics as canonical for a lock/MC decision; not required as ceremony before every ORB/payability research glance. Hand off to prop-firm-challenge for MC / dd_protection / c1 sizing.
+description: >-
+  Use this skill whenever Joshua uploads or references a TradingView (or broker) trade CSV and any
+  analysis follows — Pepperstone/CME research panels, locked-book TV exports, or c1/Tradovate fill
+  CSVs. Triggers on "analyze the CSV", "reconcile against baseline", "compute PF/WR/DD", "what does
+  the data show", "verify the lock", "monthly analysis", "missed alpha", "panel-thirds", "re-MC
+  pre-reconcile", or pasting/uploading a strategy backtest CSV. Also fires when portfolio-level
+  analysis depends on per-strategy CSV metrics. Covers parsing, Entry/Exit pairing by Trade #,
+  R-pinning per strategy archetype, headline metrics (PF/WR/DD/RF/Net), and Pine-header baseline
+  reconciliation when a locked-book baseline applies. Required before accepting CSV metrics as
+  canonical for a lock/MC decision; not required as ceremony before every ORB/payability research
+  glance. Hand off to prop-firm-challenge for MC / dd_protection / c1 sizing.
 ---
 
 # Trade CSV Reconcile

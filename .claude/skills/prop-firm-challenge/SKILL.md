@@ -1,6 +1,13 @@
 ---
 name: prop-firm-challenge
-description: Use this skill for firm/venue rules and portfolio Monte Carlo — the four-firm configs in core/firm_rules.py, the historical FXIFY fixture, trailing-DD/eval/consistency/inactivity rules, dd_protection mechanics, integer-contract sizing (MNQ/MYM/MGC), firm onboarding pre-flight, re-MC triggers, and portfolio_mc methodology. Triggers on firm-tier questions, drawdown/bust semantics, MC runs, or sizing math. Live execution, arming and order questions follow the AGENTS.md money controls; broker CSV parsing goes to `trade-csv-reconcile`; strategy code to `pinescript-v6`. Narrowed 2026-10-24 to firm rules and MC: legacy-book execution rules were retired.
+description: >-
+  Use this skill for firm/venue rules and portfolio Monte Carlo — the four-firm configs in
+  core/firm_rules.py, the historical FXIFY fixture, trailing-DD/eval/consistency/inactivity rules,
+  dd_protection mechanics, integer-contract sizing (MNQ/MYM/MGC), firm onboarding pre-flight, re-MC
+  triggers, and portfolio_mc methodology. Triggers on firm-tier questions, drawdown/bust semantics,
+  MC runs, or sizing math. Live execution, arming and order questions follow the AGENTS.md money
+  controls; broker CSV parsing goes to `trade-csv-reconcile`; strategy code to `pinescript-v6`.
+  Narrowed 2026-10-24 to firm rules and MC: legacy-book execution rules were retired.
 ---
 
 # Prop Firm / Portfolio Operations
