@@ -56,7 +56,7 @@ Joshua accepts.
 | B2 | Each instance sends orders only for its own instrument, recognises only its own orders and fills, and refuses to start unless that instrument is flat with no working orders. What it cannot correlate on its own instrument is an incident. The companion's activity on the other leg's instrument is not an incident. Activity on neither instrument, or on another account, is unexplained and a stop. Each instance keeps its own journal | Runbook §2.1, §2.6, §6.8; 11-05 "Runbook §6 for the pair" | Sim101 | ☐ |
 | B3 | Static per-leg cap. Each request is admitted whole or refused, never clipped. The caps sum to ≤ 80 micro-equivalents | Runbook §2.2 as replaced 11-05 | Sim101 | ☐ |
 | B4 | The strategy submits its own protective stop sized to filled quantity and resizes it on partial fills. Protection counts only once the broker reports it working. No ATM templates | Runbook §2.3 | Sim101; firm-connection residency (U-3) is accepted risk | ☐ |
-| B5 | Scheduled exit. `D = min(16:00 ET, V − 15 min, end of attended window − margin)`, where V is that day's venue flat deadline from the month's `ops/calendars/book_session_calendar_*.json` (`venue_flat_deadline_local`), not a constant 16:45. V is 16:45 ET on a normal day but earlier on shortened days (for example 12:59 ET on 2026-11-27). No new entries after `D − 15 min`; flatten starts at `D − 5 min`. No session on a day the calendar marks `DENIED` | Runbook §1 (rev9 §5); U-14 | Sim101 on a normal day; early-close days untested | ☐ |
+| B5 | Scheduled exit. `D = min(V − 15 min, end of attended window − margin)`, where V is that day's venue flat deadline (`venue_flat_deadline_local` in the month's `ops/calendars/book_session_calendar_*.json`). V is 16:45 ET on a normal day and earlier on shortened days (12:59 ET on 2026-11-27). No new entries after `D − 15 min`; flattening starts at `D − 5 min`; flat by D. On a normal day: 16:15, 16:25, 16:30 ET. The runbook's 16:00 ET cap is dropped (D5), so the calendar rows' precomputed `own_flat_deadline_utc`, `flatten_start_utc` and `risk_add_cutoff_utc`, which include that cap, are not used; derive from V. No session on a day whose row is not `PERMITTED` | Runbook §1 (rev9 §5) as changed by D5; U-14 | Sim101 on a normal day; early-close days untested | ☐ |
 | B6 | The account loss stop, account-wide incidents and stopping new risk across both legs belong to the **attending operator**, under the signed page and the stop rule. No cross-instance automation handles them. Each instance keeps its own leg's position stop (B4) and scheduled exit (B5). Any account-level threshold the operator uses is private | 11-05 "Runbook §6 for the pair"; runbook §2.4 | Attended | n/a |
 | B7 | Disconnect halts new risk at once; reconnecting never resumes trading. The connection-loss setting must not replay or recalculate into new orders | Runbook §2.5; U-4 | Accepted risk | ☐ |
 | B8 | Disabling an instance leaves working protection in place. Re-enabling is never a recovery step (the 10-17 canary showed `WaitUntilFlat` cancelling protection) | Runbook §2.3 item 5 | Sim101 canary 10-17 | ☐ |
@@ -115,11 +115,14 @@ Decided by Joshua, 2026-11-06:
   exceed one third of the profit target ($2,000 of $6,000), which is below the 40%
   consistency limit ($2,400).
 - **D4 (B5, B14).** S-PAIR's exits move to the B5 schedule: no new entries after
-  `D − 15 min`, flattening from `D − 5 min`, flat by D. On a normal day that is
-  15:45, 15:55 and 16:00 ET. D comes from the day's calendar row, so shortened days
-  are covered. This changes S-PAIR's source,
-  so path step 1 (the Sim101 rerun) runs on the changed build. The change is made in
+  `D − 15 min`, flattening from `D − 5 min`, flat by D, with D from the day's
+  calendar row, so shortened days are covered. This changes S-PAIR's source, so path
+  step 1 (the Sim101 rerun) runs on the changed build. The change is made in
   Joshua's primary checkout (§6, Creation).
+- **D5 (B5).** Drop the 16:00 ET cap the runbook inherited from the retired rail's
+  rev9 §5, which gave no reason for it. Keep the 15-minute margin before the
+  venue's deadline: flat by 16:30 ET on a normal day. If the evidence behind either
+  strategy assumed a different exit time, the signed page names the difference.
 
 Follow-up for Joshua: Tradeify received S-PAIR's source on 11-05, before this
 change. Whether to send them the changed source is his call; agents never send
