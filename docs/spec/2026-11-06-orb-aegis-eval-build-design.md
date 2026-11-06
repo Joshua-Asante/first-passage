@@ -89,7 +89,7 @@ From the 11-05 exception, plus the build-specific items from §3:
 2. Tradovate web view open; flatten path confirmed.
 3. The account is flat with no working orders, in both views (B2, B11).
 4. Both instances are on the eval account, not Sim101 or another account (U-16),
-   and the loaded build matches the S-PAIR source set.
+   and the loaded build matches the S-PAIR source set plus the D7 fixes, by checksum.
 5. Today's calendar row is `PERMITTED` and is not a shortened day (B5).
 6. The operator has the account loss threshold and the flatten path for both legs
    at hand (B6).
@@ -101,7 +101,7 @@ From the 11-05 exception, plus the build-specific items from §3:
 | Stage | Owner | Hands over |
 |---|---|---|
 | Definition | Claude drafts this page; Joshua accepts it | The accepted spec |
-| Creation | Claude Code in Joshua's primary checkout (private) | The eval build matching S-PAIR, with the §3 confirm column ticked |
+| Creation | Claude Code in Joshua's primary checkout (private) | The eval build: S-PAIR plus the D7 fixes, with the §3 confirm column ticked |
 | Verification | S-PAIR Sim101 run 11-06, accepted by Joshua, then a short Sim101 check of the D7 fixes; Codex reviews this spec and any public harness, never the private source; Joshua signs the page | Signed page, then GO |
 | Measure | Post-session export, forward stop rule scored privately | Keep, drop or halt per strategy, then STATE |
 
