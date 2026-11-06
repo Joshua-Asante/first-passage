@@ -110,7 +110,7 @@ From the 11-05 exception, plus the build-specific items from §3:
 Decided by Joshua, 2026-11-06:
 
 - **D1 (B10).** Withdrawn 11-06: the source does not change, so the incident close stays as built.
-- **D2 (B14).** Both strategies are currently built to shut off at 16:45 ET.
+- **D2 (B14).** Corrected 11-06: each strategy has its own tested scheduled exit, and they differ. Aegis's needs a bar close to fire, so it has no clock backstop. The signed page states both.
 - **D3.** No daily profit cap for now. Revisit if a single day's profit is likely to
   exceed one third of the profit target ($2,000 of $6,000), which is below the 40%
   consistency limit ($2,400).
