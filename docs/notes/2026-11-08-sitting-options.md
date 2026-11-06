@@ -252,7 +252,7 @@ Do not include a "sole operator" attestation until D8 is ruled.
 **Recommendation: B'. The critique dropped C.** Add the light scale criterion only if Joshua wants 100K results to inform scaling. Record the open scaling items:
 - funded resize (30 micros against the 80-micro eval cap);
 - the Elite Live bar on holding other accounts, including household (deep-dive :26);
-- whether the pre-cut spend ceiling (`b7eaff7:STATE.md:17`) still exists. It is absent from current STATE, so assume every spend needs fresh approval.
+- the spend ceiling. It survives c1's retirement: Joshua ruled on 11-03, effective 11-08, that it is re-homed to the retained Tradeify account's private owner record (`b7eaff7:docs/adr/2026-07-17-c1-rail-build-account-registration-go.md:517-521`). The fresh approval each spend needs (money control 6) is a separate control and does not replace the aggregate ceiling. Ask Joshua to confirm it is set in the owner record, or to supersede it explicitly. D15's survivor list (the 11-03 rulings) keeps it (Codex review).
 
 ### D12. Sequencing, GO cadence and signed-page contents (rows 13 and the fold)
 
@@ -275,6 +275,8 @@ Do not include a "sole operator" attestation until D8 is ruled.
 - a restatement of the exclusivity statement (D4);
 - what S-PAIR showed;
 - the CK:1103 acceptances: starting without a reply, CME licence, T1, T2;
+- the native-control risks S-PAIR does not prove, named and accepted: protection across a disconnect on the firm connection, and the rest of the U tests that Sim cannot prove. State that the automatic incident close is not relied on (CK:1090);
+- the attending operator's duties: account-wide incidents, stopping new risk across both legs, and the account loss stop, all under this page and the registered stop rule, with no cross-instance automation (CK:1095) (Codex review);
 - row 11a residuals;
 - who enables the strategy. Step 5 says "he enables himself", and Tradeify may ask for video of the enabling;
 - the preservation-trade placement rule;
