@@ -74,6 +74,8 @@ telemetry.jsonl
 .agents/skills/*
 !.agents/skills/strategy-validation/
 !.agents/skills/strategy-validation/SKILL.md
+!.agents/skills/computer-use/
+!.agents/skills/computer-use/SKILL.md
 .codex/
 
 # Deep-research leftovers — copyrighted source papers / raw text dumps pulled in
