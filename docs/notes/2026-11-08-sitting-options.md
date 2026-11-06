@@ -440,4 +440,3 @@ Keep the monthly cadence. If time allows, close the stale rows: the Tradeify car
 - **The MYM closing-location cell is withdrawn as an item.** It has been DEAD since 2026-08-30 (`ops/instruments/MYM.md:149`; `ops/instruments/profiles.json:161-165`, :1084).
 - **T7 (undefined eval expiry)** bears on the deletion risk. Check the dashboard billing page.
 - **Not verified here (private or mailbox):** card contents, S-PAIR status, the 10-25 and 10-31 rulings, whether caps are compiled into the source, whether any reply has arrived from Tradeify, CME or NinjaTrader, archive contents, and the ORB close timing against the 08-04 ratification (archive@8a78cdea).
-- **Codex reviewers.** The user also asked for Codex reviewers to check these decisions. That dispatch is the orchestrator's job and was not done in this step. Any Codex review must be limited to this public, value-free packet.
