@@ -37,7 +37,7 @@ Source: `core/firm_rules.py` (`_TRADEIFY_EVAL`, `_TRADEIFY_SELECT_EVAL`,
 |---|---|---|
 | Max drawdown | $3,000 trailing, ratcheting on end-of-day balance, no lock in eval, **breached intraday** | Each loss guard sits inside the floor with a margin (B6) |
 | Profit target | $6,000; at least 3 trading days | Nothing. Passing is not a strategy input |
-| Consistency | Best day at most 40% of total profit at pass (so at most $2,400 when the target is reached) | Joshua decides whether a daily profit cap exists (Q5) |
+| Consistency | Best day at most 40% of total profit at pass (so at most $2,400 when the target is reached) | Joshua decides whether a daily profit cap exists (Q3) |
 | Size cap | 80 micro-equivalents; one 6J counts as 10 micros | The static per-leg caps sum to at most 80 (B3) |
 | Session | Force-flat 16:45 ET; no weekend holds | Flat before the venue acts (B5) |
 | Activity | At least one trade per Mon–Fri week | The weekly preservation trade covers this (B13) |
@@ -53,19 +53,19 @@ Joshua accepts.
 | ID | Behaviour | Source | Proven on | Confirm in S-PAIR |
 |---|---|---|---|---|
 | B1 | Native only: no network calls, ATI, add-ons or external signals | AGENTS rule 3 | Source read | ☐ |
-| B2 | Each instance sends orders only for its own instrument and refuses to start unless that instrument is flat with no working orders | Runbook §2.1, §2.6; 11-05 | Sim101 | ☐ |
+| B2 | Each instance sends orders only for its own instrument, recognises only its own orders and fills, and refuses to start unless that instrument is flat with no working orders. What it cannot correlate on its own instrument is an incident. The companion's activity on the other leg's instrument is not an incident. Activity on neither instrument, or on another account, is unexplained and a stop. Each instance keeps its own journal | Runbook §2.1, §2.6, §6.8; 11-05 "Runbook §6 for the pair" | Sim101 | ☐ |
 | B3 | Static per-leg cap. Each request is admitted whole or refused, never clipped. The caps sum to ≤ 80 micro-equivalents | Runbook §2.2 as replaced 11-05 | Sim101 | ☐ |
 | B4 | The strategy submits its own protective stop sized to filled quantity and resizes it on partial fills. Protection counts only once the broker reports it working. No ATM templates | Runbook §2.3 | Sim101; firm-connection residency (U-3) is accepted risk | ☐ |
-| B5 | Scheduled exit. `D = min(16:00 ET, 16:45 − 15 min, end of attended window − margin)`; no new entries after `D − 15 min`; flatten starts at `D − 5 min`. Early closes and DST come from `ops/calendars/` | Runbook §1 (rev9 §5); U-14 | Sim101 on a normal day; early-close days untested | ☐ |
-| B6 | Account loss stop inside the trailing floor by a margin. It halts new risk, cancels resting entries and flattens its leg. Values are private | Runbook §2.4 | Sim101 synthetic path; ordering vs venue liquidation (U-11) is accepted risk | ☐ |
+| B5 | Scheduled exit. `D = min(16:00 ET, V − 15 min, end of attended window − margin)`, where V is that day's venue flat deadline from the month's `ops/calendars/book_session_calendar_*.json` (`venue_flat_deadline_local`), not a constant 16:45. V is 16:45 ET on a normal day but earlier on shortened days (for example 12:59 ET on 2026-11-27). No new entries after `D − 15 min`; flatten starts at `D − 5 min`. No session on a day the calendar marks `DENIED` | Runbook §1 (rev9 §5); U-14 | Sim101 on a normal day; early-close days untested | ☐ |
+| B6 | The account loss stop, account-wide incidents and stopping new risk across both legs belong to the **attending operator**, under the signed page and the stop rule. No cross-instance automation handles them. Each instance keeps its own leg's position stop (B4) and scheduled exit (B5). Any account-level threshold the operator uses is private | 11-05 "Runbook §6 for the pair"; runbook §2.4 | Attended | n/a |
 | B7 | Disconnect halts new risk at once; reconnecting never resumes trading. The connection-loss setting must not replay or recalculate into new orders | Runbook §2.5; U-4 | Accepted risk | ☐ |
 | B8 | Disabling an instance leaves working protection in place. Re-enabling is never a recovery step (the 10-17 canary showed `WaitUntilFlat` cancelling protection) | Runbook §2.3 item 5 | Sim101 canary 10-17 | ☐ |
 | B9 | A rejected or unknown order is never resent; the instance halts for review | Runbook §2.6; D-N6 | Sim101 | ☐ |
-| B10 | Incident close by the strategy (D-N1) is either enabled, closing only exactly known exposure, or disabled, so the operator flattens. Joshua picks (Q1) | Runbook §2.8 | U-3, U-5, U-9, U-17 unproven on the firm connection | ☐ |
-| B11 | Verified-flat shutdown: both views (NinjaTrader and Tradovate web) show zero positions and no working orders. Then disable, disconnect, and export the journal to private custody | Runbook §2.7 | Attended | ☐ |
+| B10 | The strategy's own incident close (D-N1) is not relied on (11-05). On an incident the operator flattens in Tradovate. Whether S-PAIR still contains the close is Q1 | Runbook §2.8; 11-05 | U-3, U-5, U-9, U-17 unproven on the firm connection | ☐ |
+| B11 | Verified-flat shutdown. Flat counts only when all of these hold: both views (NinjaTrader and Tradovate web) were read after the last request; both show zero gross positions and no working orders; no request is unresolved; every journal request has a terminal outcome; every execution is correlated. Empty grids, net zero, elapsed time or an acknowledgment do not count. Then disable, disconnect, and export the journal to private custody. If flat cannot be verified, the account stays under attended recovery | Runbook §2.7 items 3–7 | Attended | ☐ |
 | B12 | Forward stop rule: after each session, each strategy's forward trades are scored offline (keep, drop or halt). A drop or halt disables that instance before the next session | [Stop rule registration](../briefs/pre-registration/2026-10-31-tradeify-forward-stop-rule-registration.md) | Offline, private | n/a |
-| B13 | The weekly preservation trade never touches an instrument an armed instance owns. Proposed: place it with both instances disabled, or on a third instrument (Q3) | Runbook U-12; STATE | Weekly practice | n/a |
-| B14 | No position held past the venue force-flat. If either research reference holds past 16:45 ET, the native edition differs from it, and that difference is named on the signed page | Venue rule; parity (Q4) | Source read | ☐ |
+| B13 | The weekly preservation trade is placed only while both instances are disabled and the account is flat. While either instance is armed, a manual trade on its instrument is an uncorrelated fill, and a trade on any other instrument is unexplained activity; both stop the session. Any other placement needs a new ruling | 11-05 "Runbook §6 for the pair"; runbook U-12; STATE | Weekly practice | n/a |
+| B14 | No position held past the venue force-flat. If either research reference holds past 16:45 ET, the native edition differs from it, and that difference is named on the signed page | Venue rule; parity (Q2) | Source read | ☐ |
 | B15 | Journals, exports and screenshots contain account data, so they stay in private custody and never enter this repo | AGENTS data rules | n/a | n/a |
 
 ## 4. What the 11-05 path removed
@@ -89,9 +89,12 @@ From the 11-05 exception, plus the build-specific items from §3:
 3. The account is flat with no working orders, in both views (B2, B11).
 4. Both instances are on the eval account, not Sim101 or another account (U-16),
    and the loaded build matches the S-PAIR source set.
-5. Today's cutoff and flatten times are computed, including any early close (B5).
-6. The per-leg caps match the private card (B3).
-7. The session GO is in hand (AGENTS money control 1).
+5. Today's cutoff and flatten times come from the calendar, including any early
+   close (B5).
+6. The operator has the account loss threshold and the flatten path for both legs
+   at hand (B6).
+7. The per-leg caps match the private card (B3).
+8. The session GO is in hand (AGENTS money control 1).
 
 ## 6. Who does what
 
@@ -104,17 +107,12 @@ From the 11-05 exception, plus the build-specific items from §3:
 
 ## 7. Open questions for Joshua
 
-- **Q1 (B10). Incident close.** Recommendation: **disabled for the first sessions.**
-  On an incident the strategy halts and the operator flattens in Tradovate. The
-  close's safety tests (U-3, U-5, U-9, U-17) can't be proven on Sim, and an
-  attended operator is present anyway.
-- **Q2 (B6). Who runs the account loss stop?** With two instances, each reads the
-  account-level P&L and flattens its own leg. Recommendation: accept that, and
-  confirm in S-PAIR that both instances read the same account figure.
-- **Q3 (B13). Preservation trade.** Recommendation: place it with both instances
-  disabled, so an unowned fill can never land on an armed instrument.
-- **Q4 (B14).** Does either research reference hold across 16:45 ET? Answer from
+- **Q1 (B10). Incident close in the build.** The 11-05 path already says it is not
+  relied on. Open: whether S-PAIR's close code stays in the eval build, switched off,
+  or is removed. Recommendation: **switched off** for the first sessions. Its safety
+  tests (U-3, U-5, U-9, U-17) can't be proven on Sim, and the operator flattens anyway.
+- **Q2 (B14).** Does either research reference hold across 16:45 ET? Answer from
   the private source. If yes, name the difference on the signed page.
-- **Q5. Daily profit cap for the 40% consistency rule.** Recommendation: none for
+- **Q3. Daily profit cap for the 40% consistency rule.** Recommendation: none for
   the first sessions. Passing is not the near-term goal; the forward stop rule
   needs clean trades.

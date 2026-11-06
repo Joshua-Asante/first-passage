@@ -38,7 +38,7 @@ then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
 ## Open decisions (Joshua)
 
 1. **11-08 sitting:** accept or edit the [eval build design spec](docs/spec/2026-11-06-orb-aegis-eval-build-design-DRAFT.md),
-   including its questions Q1–Q5, and decide whether the first session waits for
+   including its questions Q1–Q3, and decide whether the first session waits for
    Tradeify's source-review reply.
 2. **Data source:** Databento is retired and has no replacement. Research uses
    TradingView CME exports only.
