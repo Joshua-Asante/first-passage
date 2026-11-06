@@ -65,7 +65,7 @@ Joshua accepts.
 | B11 | Verified-flat shutdown. Flat counts only when all of these hold: both views (NinjaTrader and Tradovate web) were read after the last request; both show zero gross positions and no working orders; no request is unresolved; every journal request has a terminal outcome; every execution is correlated. Empty grids, net zero, elapsed time or an acknowledgment do not count. Then disable, disconnect, and export the journal to private custody. If flat cannot be verified, the account stays under attended recovery | Runbook §2.7 items 3–7 | Attended | ☐ |
 | B12 | Forward stop rule: after each session, each strategy's forward trades are scored offline (keep, drop or halt). A drop or halt disables that instance before the next session | [Stop rule registration](../briefs/pre-registration/2026-10-31-tradeify-forward-stop-rule-registration.md) | Offline, private | n/a |
 | B13 | The weekly preservation trade is placed only while both instances are disabled and the account is flat. While either instance is armed, a manual trade on its instrument is an uncorrelated fill, and a trade on any other instrument is unexplained activity; both stop the session. Any other placement needs a new ruling | 11-05 "Runbook §6 for the pair"; runbook U-12; STATE | Weekly practice | n/a |
-| B14 | No position held past the venue force-flat. Both strategies are built to shut off at 16:45 ET (Joshua, 2026-11-06). How that relates to the B5 own-flat deadline is Q1 | Venue rule; D2 | Source read | ☐ |
+| B14 | No position held past the venue force-flat. S-PAIR currently shuts off at 16:45 ET; its exits move to the B5 schedule (D2, D4) | Venue rule; D2, D4 | Source read; Sim101 rerun of the changed build | ☐ |
 | B15 | Journals, exports and screenshots contain account data, so they stay in private custody and never enter this repo | AGENTS data rules | n/a | n/a |
 
 ## 4. What the 11-05 path removed
@@ -105,22 +105,22 @@ From the 11-05 exception, plus the build-specific items from §3:
 | Verification | Sim101 rerun (path step 1); Codex reviews this spec and any public harness, never the private source; Joshua signs the page | Signed page, then GO |
 | Measure | Post-session export, forward stop rule scored privately | Keep, drop or halt per strategy, then STATE |
 
-## 7. Decisions and open questions
+## 7. Decisions
 
 Decided by Joshua, 2026-11-06:
 
 - **D1 (B10).** The incident close is switched off in the eval build.
-- **D2 (B14).** Both strategies are built to shut off at 16:45 ET.
+- **D2 (B14).** Both strategies are currently built to shut off at 16:45 ET.
 - **D3.** No daily profit cap for now. Revisit if a single day's profit is likely to
   exceed one third of the profit target ($2,000 of $6,000), which is below the 40%
   consistency limit ($2,400).
+- **D4 (B5, B14).** S-PAIR's exits move to the B5 schedule: no new entries after
+  `D − 15 min`, flattening from `D − 5 min`, flat by D. On a normal day that is
+  15:45, 15:55 and 16:00 ET. D comes from the day's calendar row, so shortened days
+  are covered. This changes S-PAIR's source,
+  so path step 1 (the Sim101 rerun) runs on the changed build. The change is made in
+  Joshua's primary checkout (§6, Creation).
 
-Open:
-
-- **Q1 (B5 vs D2). Own-flat deadline.** B5, following the runbook and the session
-  calendars, puts the own-flat deadline at 16:00 ET on a normal day. Flattening
-  starts at 15:55, and no new entries are taken after 15:45. 16:45 ET is the venue's
-  own force-flat (V), so a 16:45 shutoff leaves no margin before the venue acts.
-  Either S-PAIR's exits move to the B5 schedule, or B5 changes by your ruling and the
-  signed page names the missing margin as risk. Shortened days (V = 12:59 ET on
-  2026-11-27) need the calendar either way.
+Follow-up for Joshua: Tradeify received S-PAIR's source on 11-05, before this
+change. Whether to send them the changed source is his call; agents never send
+private source.
