@@ -13,9 +13,9 @@ then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
   Stages: 1 Ideation, 2 Validation, 3 Definition, 4 Creation, 5 Verification, then
   measure. A private build (S-PAIR) exists, and the source went to Tradeify on 11-05.
   The [design spec](docs/spec/2026-11-06-orb-aegis-eval-build-design.md) is accepted
-  (11-06). Next: move S-PAIR's exits to flat by 16:30 ET (private checkout); the
-  Sim101 rerun on that build; Joshua sends Tradeify the changed source; the name
-  readback and eval build; the signed page and pre-session check; then a session GO.
+  (11-06) and amended: tested source, no rerun. Next: install the eval build; Joshua
+  sends Tradeify the eval files; the signed page and pre-session check; then a
+  session GO.
   The first session does not wait for Tradeify's source-review reply.
 - **One candidate at a time** (Joshua, 2026-11-06): no new candidates, instruments or
   builder rounds until this pair trades on the eval or is dropped. The private port
