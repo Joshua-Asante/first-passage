@@ -50,6 +50,8 @@ F runs in this order:
 instances, then flatten and cancel both legs, then verify both. Never wait on one
 leg's verification while the other instance is still enabled; B6 gives no automation
 that would stop it. If NinjaTrader is unavailable, the step 1 bypass applies to both.
+The general rule: step 2 covers everything that needs flattening or cancelling,
+including exposure on any other instrument (card 5), before any step 3 wait begins.
 
 A leg that has had F is not re-enabled in the same session. Re-enabling is never a
 recovery step (B8), and an incident ends automation for that session. If NinjaTrader
@@ -92,7 +94,7 @@ connection is set not to connect on startup before it reconnects
 | 2 | Rejected or unknown order on a leg (B9) | The instance halts | F on both legs (C1). A leg with no position, working order or unresolved request (an unknown order counts as unresolved) only needs disabling | Both legs end (C1) |
 | 3 | Missing or short protection (§4) | A filled leg whose broker-reported working stop is missing or covers less than its open quantity | F on both legs (C1) | Both legs end (C1) |
 | 4 | Unexplained activity on a leg's own instrument (a fill or order the instance did not send) | The instance halts with an incident (B2) | F on both legs (C1) | Both legs end (C1) |
-| 5 | Activity on neither instrument, or on another account (B2) | A position or order the pair did not send | F on both legs, then close the unexplained position and cancel its orders in Tradovate web | Ends for both legs |
+| 5 | Activity on neither instrument, or on another account (B2) | A position or order the pair did not send | F on both legs, with the unexplained position and orders included in step 2: disable both instances, then flatten and cancel both legs and the unexplained exposure in Tradovate web, then verify all of them | Ends for both legs |
 | 6 | Account loss threshold reached (B6) | §4 | F on both legs | Ends for both legs |
 | 7 | A leg is still open at the operator flatten time (B14, D2) | A position after the strategy's own scheduled exit should have run; most likely Aegis, whose exit needs a bar close | F that leg | Ends normally after §6 |
 | 8 | Account evidence lost (runbook §2.4) | The Tradovate account view is stale or unavailable beyond the freshness limit, so the loss threshold cannot be watched | F on both legs, using whatever view still works | Ends for both legs |
