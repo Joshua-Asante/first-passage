@@ -38,8 +38,8 @@ in NinjaTrader's or Tradovate's grids, still go through computer use.
 | `nt_list_sources` | The configured directories and whether each exists |
 | `nt_list_files` | Files in a source, newest first, with size and time |
 | `nt_tail` | Last N lines of a file (default: the newest) |
-| `nt_search` | Literal or regex search over the newest files, with context |
-| `nt_errors` | Errors, rejections, disconnects and exceptions in the newest log and trace files |
+| `nt_search` | Literal substring search over the newest files, with context |
+| `nt_errors` | Errors, rejections, disconnects and exceptions in the newest log and trace files (fixed built-in pattern) |
 
 Sources: `log` and `trace` under `--nt-root` (default `~/Documents/NinjaTrader 8`),
 and optionally `journal` (`--journal-dir`) and `export` (`--export-dir`), both kept
@@ -50,10 +50,23 @@ line format is assumed.
 the agent's context and never goes into this repo (data rules; spec B15).
 `--redact-file` masks regexes, one per line, `#` for comments, in all output; keep
 that file private too. Each full line is masked before it is cut to 2,000
-characters, so a match that crosses the cut is still masked. Files are read in
-bounded blocks (tails from the end, searches line by line), so memory stays bounded
-whatever the file size. Don't register the server for Codex: journals and logs can
-carry strategy parameters.
+characters, so a match that crosses the cut is still masked.
+
+The server fails closed: it refuses to start unless it gets `--redact-file` with
+at least one pattern, or `--allow-unredacted`. The two are mutually exclusive.
+With `--allow-unredacted` the agent may see account data unmasked; that data must
+never enter this repository. No default patterns ship for balances or P&L: write
+ones that fit the account's formats.
+
+**Search and memory.** Callers search with literal substrings only. Python's `re`
+has no time limit and the server runs no subprocesses, so a caller regex could
+stall every tool. `nt_search` rejects a `regex` argument, and `nt_errors` uses only
+its built-in pattern and rejects a caller `pattern`. Files are read in bounded
+blocks (tails from the end, searches line by line), so memory stays bounded
+whatever the file size.
+
+Don't register the server for Codex: journals and logs can carry strategy
+parameters.
 
 Register it in Claude Code on the NinjaTrader machine, local scope (the paths are
 machine-specific, so no `.mcp.json` is committed):

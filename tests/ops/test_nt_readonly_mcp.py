@@ -94,7 +94,7 @@ def test_search_literal_and_context(nt):
     assert lines[0] == "2 match(es)"
     assert "log/log.20261106.00000.txt:10- line 10" in lines
     assert "log/log.20261106.00000.txt:12- after" in lines
-    text, _ = call(config, "nt_search", source="log", pattern="line.1", regex=False)
+    text, _ = call(config, "nt_search", source="log", pattern="line.1")
     assert text.startswith("0 match")
 
 
@@ -144,7 +144,7 @@ def test_bad_arguments_are_tool_errors(nt):
     config, _ = nt
     assert call(config, "nt_tail", source="export")[1]
     assert call(config, "nt_tail")[1]
-    assert call(config, "nt_search", source="log", pattern="(", regex=True)[1]
+    assert call(config, "nt_search", source="log", pattern="x", regex=True)[1]
     assert call(config, "nt_tail", source="log", lines="5")[1]
 
 
@@ -215,7 +215,7 @@ def test_redaction_applies_before_line_cut(tmp_path, start):
     ("nt_search", {"source": "log", "pattern": "x", "glob": 3}),
     ("nt_search", {"source": "log", "pattern": "x", "regex": "yes"}),
     ("nt_list_files", {"source": "log", "glob": ["*"]}),
-    ("nt_errors", {"pattern": 7}),
+    ("nt_errors", {"max_files": "2"}),
 ])
 def test_wrong_argument_types_are_tool_errors(nt, name, arguments):
     config, _ = nt
@@ -323,3 +323,93 @@ def test_search_streams_lines_and_matches_previous_behaviour(nt, tmp_path):
         "journal/crlf.txt:3- b",
         "journal/crlf.txt:4: � hit two",
     ]
+
+
+# --- held findings, ruled on: fail closed without masking; literal search only ------
+
+def _write_log(tmp_path, text):
+    root = tmp_path / "NinjaTrader 8"
+    (root / "log").mkdir(parents=True)
+    (root / "trace").mkdir()
+    (root / "log" / "log.txt").write_text(text, encoding="utf-8")
+    return root
+
+
+def _run_main(argv, requests):
+    stdin = io.StringIO("".join(json.dumps(r) + "\n" for r in requests))
+    stdout = io.StringIO()
+    code = server.main(argv, stdin=stdin, stdout=stdout)
+    return code, [json.loads(line) for line in stdout.getvalue().splitlines()]
+
+
+TAIL_REQUEST = {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+                "params": {"name": "nt_tail", "arguments": {"source": "log"}}}
+
+
+def test_startup_refused_without_masking_choice(tmp_path, capsys):
+    root = _write_log(tmp_path, f"fill {SYNTHETIC_ID}\n")
+    with pytest.raises(SystemExit) as exc:
+        _run_main(["--nt-root", str(root)], [TAIL_REQUEST])
+    assert exc.value.code != 0
+    err = capsys.readouterr().err
+    assert "--redact-file" in err and "--allow-unredacted" in err
+
+
+def test_startup_refused_with_empty_redact_file(tmp_path, capsys):
+    root = _write_log(tmp_path, f"fill {SYNTHETIC_ID}\n")
+    rules = tmp_path / "redact.txt"
+    rules.write_text("# no patterns\n\n", encoding="utf-8")
+    with pytest.raises(SystemExit) as exc:
+        _run_main(["--nt-root", str(root), "--redact-file", str(rules)], [TAIL_REQUEST])
+    assert exc.value.code != 0
+    assert "no patterns" in capsys.readouterr().err
+
+
+def test_redact_file_and_allow_unredacted_are_exclusive(tmp_path):
+    root = _write_log(tmp_path, "x\n")
+    rules = tmp_path / "redact.txt"
+    rules.write_text("ACCT-\\d+\n", encoding="utf-8")
+    with pytest.raises(SystemExit) as exc:
+        _run_main(["--nt-root", str(root), "--redact-file", str(rules), "--allow-unredacted"],
+                  [TAIL_REQUEST])
+    assert exc.value.code != 0
+
+
+def test_allow_unredacted_starts_and_serves_raw(tmp_path):
+    root = _write_log(tmp_path, f"fill {SYNTHETIC_ID}\n")
+    code, responses = _run_main(["--nt-root", str(root), "--allow-unredacted"], [TAIL_REQUEST])
+    assert code == 0
+    assert responses[0]["result"]["content"][0]["text"].endswith(f"fill {SYNTHETIC_ID}")
+
+
+def test_redact_file_starts_and_masks(tmp_path):
+    root = _write_log(tmp_path, f"fill {SYNTHETIC_ID}\n")
+    rules = tmp_path / "redact.txt"
+    rules.write_text("ACCT-\\d+\n", encoding="utf-8")
+    code, responses = _run_main(["--nt-root", str(root), "--redact-file", str(rules)],
+                                [TAIL_REQUEST])
+    assert code == 0
+    text = responses[0]["result"]["content"][0]["text"]
+    assert SYNTHETIC_ID not in text and text.endswith("fill [redacted]")
+
+
+def test_search_pattern_is_literal(tmp_path):
+    root = _write_log(tmp_path, "axb(c)\na.b(c)*z\n(([x]+)+)+Z\n")
+    config = server.Config.build(root)
+    text, error = call(config, "nt_search", source="log", pattern="a.b(c)*")
+    assert not error and text.splitlines() == ["1 match(es)", "log/log.txt:2: a.b(c)*z"]
+    text, error = call(config, "nt_search", source="log", pattern="(([x]+)+)+Z")
+    assert not error and text.splitlines()[0] == "1 match(es)"
+
+
+def test_regex_options_removed_from_tools(nt):
+    config, _ = nt
+    search = server.TOOLS["nt_search"][1]["inputSchema"]["properties"]
+    errors = server.TOOLS["nt_errors"][1]["inputSchema"]["properties"]
+    assert "regex" not in search and "pattern" not in errors
+    text, error = call(config, "nt_search", source="log", pattern="rejected", regex=True)
+    assert error and "literal" in text
+    text, error = call(config, "nt_errors", pattern=".*")
+    assert error and "built-in" in text
+    text, error = call(config, "nt_errors")
+    assert not error and "insufficient margin" in text and "Connection lost" in text

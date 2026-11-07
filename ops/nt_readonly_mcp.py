@@ -12,8 +12,12 @@ NinjaTrader and never talks to it:
 Its output can carry account data (fills, account names, balances). That data
 reaches the agent's context and must never be written into this repository
 (AGENTS.md data rules, spec B15). ``--redact-file`` masks patterns, one regex per
-line, before anything leaves the server. Do not give this server to Codex: the
-journal and logs can carry strategy parameters.
+line, before anything leaves the server. The server refuses to start unless it gets
+``--redact-file`` (with at least one pattern) or ``--allow-unredacted``. Do not give
+this server to Codex: the journal and logs can carry strategy parameters.
+
+Callers search with literal substrings only: Python's ``re`` has no time limit, so a
+caller regex could stall the server. ``nt_errors`` uses one fixed built-in pattern.
 
 Sources (each optional except ``log`` and ``trace``, which derive from ``--nt-root``):
 
@@ -26,7 +30,7 @@ The files are read as plain text; no NinjaTrader line format is assumed.
 
 Run::
 
-    python ops/nt_readonly_mcp.py --nt-root "C:\\Users\\<you>\\Documents\\NinjaTrader 8"
+    python ops/nt_readonly_mcp.py --nt-root "C:\\Users\\<you>\\Documents\\NinjaTrader 8" --redact-file <private file>
 """
 from __future__ import annotations
 
@@ -53,7 +57,9 @@ MAX_LINE_CHARS = 2000
 # longer line is read past and dropped, so a single huge line cannot exhaust memory.
 MAX_LINE_BYTES = 64 * 1024
 READ_BLOCK = 64 * 1024
+# A flat alternation of literals (one optional space): linear-time on any line.
 DEFAULT_ERROR_PATTERN = r"error|exception|reject|disconnect|connection ?lost|lost connection|failed|halt"
+ERROR_MATCHER = re.compile(DEFAULT_ERROR_PATTERN, re.IGNORECASE)
 
 
 class ToolError(Exception):
@@ -239,12 +245,9 @@ def _int(arguments: dict, key: str, default: int, low: int, high: int) -> int:
     return max(low, min(high, value))
 
 
-def _compile(pattern: str, regex: bool, ignore_case: bool) -> re.Pattern[str]:
-    flags = re.IGNORECASE if ignore_case else 0
-    try:
-        return re.compile(pattern if regex else re.escape(pattern), flags)
-    except re.error as exc:
-        raise ToolError(f"bad regex: {exc}") from exc
+def _literal(pattern: str, ignore_case: bool) -> re.Pattern[str]:
+    """A matcher for the literal substring; escaped, so it cannot backtrack."""
+    return re.compile(re.escape(pattern), re.IGNORECASE if ignore_case else 0)
 
 
 # --- tools ---------------------------------------------------------------------
@@ -322,8 +325,9 @@ def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: 
 
 def tool_search(config: Config, arguments: dict) -> str:
     source = _str(arguments, "source")
-    matcher = _compile(_str(arguments, "pattern"), _bool(arguments, "regex", False),
-                       _bool(arguments, "ignore_case", True))
+    if "regex" in arguments:
+        raise ToolError("regex is not supported: nt_search patterns are literal substrings")
+    matcher = _literal(_str(arguments, "pattern"), _bool(arguments, "ignore_case", True))
     return _search(config, [source], matcher, _str(arguments, "glob", "*"),
                    _int(arguments, "max_files", 10, 1, 200),
                    _int(arguments, "max_matches", 200, 1, MAX_MATCHES),
@@ -334,8 +338,10 @@ def tool_errors(config: Config, arguments: dict) -> str:
     sources = [name for name in ("log", "trace") if config.sources[name].is_dir()]
     if not sources:
         raise ToolError("neither the log nor the trace directory exists under --nt-root")
-    matcher = _compile(_str(arguments, "pattern", DEFAULT_ERROR_PATTERN), True, True)
-    return _search(config, sources, matcher, "*",
+    if "pattern" in arguments:
+        raise ToolError("nt_errors takes no pattern: it uses its built-in error pattern; "
+                        "use nt_search for a literal search")
+    return _search(config, sources, ERROR_MATCHER, "*",
                    _int(arguments, "max_files", 2, 1, 50),
                    _int(arguments, "max_matches", 200, 1, MAX_MATCHES),
                    _int(arguments, "context", 0, 0, 10))
@@ -365,10 +371,11 @@ TOOLS: dict[str, tuple[Callable[[Config, dict], str], dict]] = {
         }, "required": ["source"], "additionalProperties": False},
     }),
     "nt_search": (tool_search, {
-        "description": "Search the newest files of a source for a substring or regex, like grep.",
+        "description": "Search the newest files of a source for a literal substring, like grep -F.",
         "inputSchema": {"type": "object", "properties": {
-            "source": _SOURCE, "pattern": {"type": "string"}, "glob": _GLOB,
-            "regex": {"type": "boolean", "description": "Default false (literal substring)"},
+            "source": _SOURCE,
+            "pattern": {"type": "string", "description": "Literal substring (not a regex)"},
+            "glob": _GLOB,
             "ignore_case": {"type": "boolean", "description": "Default true"},
             "max_files": {"type": "integer", "description": "Newest files to scan; default 10"},
             "max_matches": {"type": "integer", "description": f"Default 200, max {MAX_MATCHES}"},
@@ -377,10 +384,8 @@ TOOLS: dict[str, tuple[Callable[[Config, dict], str], dict]] = {
     }),
     "nt_errors": (tool_errors, {
         "description": ("Errors, rejections, disconnects and exceptions in the newest NinjaTrader "
-                        "log and trace files."),
+                        "log and trace files, by the built-in pattern " + DEFAULT_ERROR_PATTERN),
         "inputSchema": {"type": "object", "properties": {
-            "pattern": {"type": "string", "description": "Case-insensitive regex; default "
-                        + DEFAULT_ERROR_PATTERN},
             "max_files": {"type": "integer", "description": "Newest files per source; default 2"},
             "max_matches": {"type": "integer"},
             "context": {"type": "integer"},
@@ -470,18 +475,41 @@ def serve(config: Config, stdin=None, stdout=None) -> None:
             stdout.flush()
 
 
-def main(argv: list[str] | None = None) -> int:
+def _load_config(parser: argparse.ArgumentParser, options: argparse.Namespace) -> Config:
+    """Fail closed: refuse to serve content unless masking was chosen explicitly."""
+    if options.redact_file is None and not options.allow_unredacted:
+        parser.error("refusing to start without masking: pass --redact-file PATH, or "
+                     "--allow-unredacted to let the agent see account data unmasked")
+    try:
+        config = Config.build(options.nt_root, options.journal_dir, options.export_dir,
+                              options.redact_file)
+    except (OSError, UnicodeError, re.error) as exc:
+        parser.error(f"cannot load --redact-file: {exc}")
+    if options.redact_file is not None and not config.redactions:
+        parser.error(f"--redact-file {options.redact_file} has no patterns; refusing to start")
+    return config
+
+
+def main(argv: list[str] | None = None, stdin=None, stdout=None) -> int:
     parser = argparse.ArgumentParser(description="Read-only NinjaTrader 8 MCP server (stdio).")
     parser.add_argument("--nt-root", type=Path, default=Path.home() / "Documents" / "NinjaTrader 8",
                         help="NinjaTrader user data folder (default ~/Documents/NinjaTrader 8)")
     parser.add_argument("--journal-dir", type=Path, help="strategy journal directory (private custody)")
     parser.add_argument("--export-dir", type=Path, help="export directory (private custody)")
-    parser.add_argument("--redact-file", type=Path, help="regexes to mask in all output, one per line")
+    masking = parser.add_mutually_exclusive_group()
+    masking.add_argument("--redact-file", type=Path,
+                         help="regexes to mask in all output, one per line (required unless "
+                              "--allow-unredacted)")
+    masking.add_argument("--allow-unredacted", action="store_true",
+                         help="serve content unmasked; the agent may then see account data, "
+                              "which must never enter the repository")
     options = parser.parse_args(argv)
-    config = Config.build(options.nt_root, options.journal_dir, options.export_dir, options.redact_file)
-    sys.stdin.reconfigure(encoding="utf-8")
-    sys.stdout.reconfigure(encoding="utf-8", newline="\n")
-    serve(config)
+    config = _load_config(parser, options)
+    if stdin is None:
+        sys.stdin.reconfigure(encoding="utf-8")
+    if stdout is None:
+        sys.stdout.reconfigure(encoding="utf-8", newline="\n")
+    serve(config, stdin, stdout)
     return 0
 
 
