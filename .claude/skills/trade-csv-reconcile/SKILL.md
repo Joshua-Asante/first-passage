@@ -47,7 +47,7 @@ These steps run in this order for every CSV reconciliation task; skipping or reo
 
 **Classify each input first** (AGENTS.md, Data and credentials). Vendor bars, ticks and quotes are Licensed. Strategy exports and backtest results are Private. Broker or Tradovate fills are Private account data.
 
-- The inventory reports schema and aggregates only: filename, row count, column names and types, null counts, and the date range covered.
+- The inventory reports metadata only: filename, row count, column names and types, and null counts. No values, and no value aggregates written out (min, max or sums of prices, P&L or balances), since one can be the protected value itself. Headline metrics computed later stay in the places AGENTS.md allows.
 - Never write raw rows, per-trade figures or account data to logs, files, commits or PR text, even locally.
 - Licensed rows (bars, ticks, quotes, timestamped price levels) do not enter agent output without Joshua's word for that specific sample.
 - If a parse problem needs a row-level look, reproduce it first on a synthetic row with the same columns.
