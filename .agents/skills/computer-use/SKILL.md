@@ -12,15 +12,17 @@ it grants no authority and changes no accepted session procedure.
 - **Observation and harmless navigation:** proceed within the requested
   task without routine approval prompts. Respect all data-access limits.
 - **Controlled actions:** include orders, arming, deployment, spending,
-  risk changes, and UI actions that may cause these effects. Strategy
-  toggles, account synchronization, restarts, reconnects, and closing an
-  active platform are not automatically harmless.
+  risk changes, and UI actions that may cause these effects. Examples of
+  such UI actions: strategy toggles, account synchronization, restarts,
+  reconnects, and closing an active platform. Treat none as automatically
+  harmless.
 - If effects are uncertain, inspect safely before proceeding.
 
 For controlled actions, use existing authorization from trusted user
 instructions. A GO covers the seven days after issuance and is revocable.
-Do not request a new session-specific GO when the action is already
-covered. The standing weekly preservation exception covers only its
+Confirm that the GO covers this specific action and session. Where STATE
+or the accepted session procedure requires a per-session GO, a weekly GO
+alone is not enough. The standing weekly preservation exception covers only its
 specified round trip. Require the specific approval AGENTS.md assigns
 to frozen risk edits or spending; a trading GO does not imply either.
 Preserve the registered forward stop rule and retired-rail prohibition.
