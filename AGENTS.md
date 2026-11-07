@@ -39,10 +39,12 @@ choices with a recommendation, at stage gates. Anything deferrable is batched.
 |---|---|---|
 | Research | Claude | Codex challenges methods and claims |
 | Design | Claude; Joshua accepts | Codex is consulted on choices |
-| Engineering | Claude Code in Joshua's primary checkout for private ports; Claude for public code | Codex on public code only (`core/`, `scripts/`, tests); never private ports or parameters |
+| Engineering | Claude Code in Joshua's primary checkout for the private NinjaScript eval build; Claude for public code | Codex on public code only (`core/`, `scripts/`, tests); never private sources or parameters |
 | Verification | Codex: reviews every head; Sim101 runs and rehearsals | — |
 | Operations | Joshua | Codex by computer use under a GO; Claude keeps the procedure and public records |
 
+- Engineering does not edit the **Private sources** below (Pine, the runtime ports in
+  `BOOK_SOURCES.sha256`, `effective_inputs.json`): they stay read-only in place.
 - Verification stays independent: when Codex writes code, Claude reviews it. Neither
   agent verifies its own work.
 - Design does not grade research: Codex checks research claims before design builds on
