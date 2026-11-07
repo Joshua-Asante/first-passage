@@ -224,6 +224,33 @@ where a record pinning any other private file registers it in the same commit.
 The archive clone is `--archive`, `$FP_EVIDENCE_ARCHIVE`, or a
 `first-passage-archive` directory beside this checkout.
 
+## Agent CLI dispatch
+
+`dispatch_codex.ps1` reaches Codex through the app's bundled CLI, with the agent's own token:
+
+```powershell
+.\scripts\dispatch_codex.ps1 -Worktree <worktree> -Prompt '<prompt>' -OutputFile <scratch>\last.txt [-Sandbox read-only]
+.\scripts\dispatch_codex.ps1 -Worktree <worktree> -ReviewBase origin/main -OutputFile <scratch>\review.txt
+```
+
+It selects the credential and environment; it is not a sandbox. Requires PowerShell 7. Guarded:
+
+- **Environment.** Codex starts with a fresh environment: only the allowlisted variables
+  Windows, git and the Codex CLI need (`$EnvAllowlist` in the script, including `CODEX_HOME`),
+  plus `GH_TOKEN` set from `FP_AGENT_GH_TOKEN`. No other caller variable reaches it
+  (`GITHUB_TOKEN`, Fly or broker tokens, `OPENAI_API_KEY`, `FP_*`). It refuses with no agent
+  token, or one that is not a fine-grained PAT (`github_pat_`). Codex authenticates from its
+  own login in `CODEX_HOME`.
+- **Location.** The worktree must be a Git worktree under `<repo>\.claude\worktrees\`, with no
+  `.env` at its root.
+
+Not guarded: reads are not confined. Codex runs as the same Windows user as every agent, so it
+can still open the primary checkout and gh's stored credential files. Prompts and worktree
+contents are not screened: Codex may read what Claude reads. Secret values never go in a prompt.
+`-DryRun` runs every check and prints the command and the child's variable names, never values.
+Tests: `tests/scripts/test_dispatch_codex.py` (dry-run, plus a stub `-Codex` that records the
+child environment).
+
 ## Independent review
 
 Review is cross-agent: Codex reviews Claude's work and Claude reviews Codex's (Rule 5;
