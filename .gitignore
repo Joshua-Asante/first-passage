@@ -147,6 +147,17 @@ docs/spec/third_leg_locked_days.private.json
 lab/analysis/legacy/guardian_parity_2026-06-23/guardian_signal.py
 lab/analysis/legacy/guardian_parity_2026-06-23/test_guardian_signal.py
 
+# Accepted runtime ports and their effective inputs (core/strategies/BOOK_SOURCES.sha256).
+# Repo-wide and held here, so deleting, moving or renaming the package that owns a port root
+# (or the nested .gitignore inside it) can never un-ignore these files. Each port root keeps
+# only its README.md and .gitignore tracked. private_overrides/ holds the accepted corrected
+# Striker port, which otherwise rests on a nested lab .gitignore alone.
+**/ports/*
+!**/ports/README.md
+!**/ports/.gitignore
+**/effective_inputs.json
+**/private_overrides/
+
 # Same edge-protection class: frozen-historical OANDA stage-1 missed-alpha
 # scripts embed real locked-strategy filter/pyramid parameters (EOM block
 # days, hour-blocks, ATR-expansion thresholds, pyramid trigger/size).
