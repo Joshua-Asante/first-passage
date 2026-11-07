@@ -166,3 +166,48 @@ Joshua adopted Codex's recommendations on all three choices, 2026-11-07
   broker-reported `Working` stop does not prove it survives a disconnect (U-3). The
   bound may be relaxed later only by a ruling Joshua registers in advance, set from the
   slow tail of firm observations plus margin, never the average.
+
+## 10. Rehearsal of F
+
+Added 2026-11-07 on Joshua's direction. It produces the worst-case F time that C2's
+hard latest trigger is derived from (§3 item 4), using the weekly preservation trade.
+
+**What is measured where.**
+
+| Part of F | Rehearsed on | Why |
+|---|---|---|
+| Step 1, disable an enabled instance | Sim101 | Enabling a strategy on the eval needs a session GO; disable time is local to NinjaTrader |
+| Step 2, flatten and cancel in Tradovate web | The preservation trade, on the eval | The unproven part on the firm connection |
+| Step 3, verify against B11 | The preservation trade | The operator's time to read both views to flat, no working orders, nothing unresolved |
+
+**The rehearsal, inside the one weekly round trip.**
+
+1. On a `PERMITTED` day, starting about 16:15 ET: near the hard trigger's liquidity,
+   with room before the 16:45 ET force-flat.
+2. Both instances disabled and the account flat in both views (B13).
+3. Enter one MNQ micro as the preservation trade is usually entered.
+4. Place a resting protective stop well away from the market, so step 2 also cancels
+   a working order.
+5. Run F steps 2 and 3 as §2 says: flatten and cancel in Tradovate web, then verify.
+6. Record privately: the click, the exit fill with the stop cancelled, and verification
+   complete. No prices or account data in the record (B15).
+
+**Deriving the hard trigger.** One sample is not a worst case. For session 1, the
+trigger is the observed step 2 and 3 time plus the Sim101 step 1 time, plus an
+adverse-path allowance (slow or partial fill) and a large explicit margin, counted
+back from 16:45 ET *(signed page)*. Each later preservation trade adds a sample. The
+trigger tightens only by a ruling Joshua registers in advance, from the slow tail of
+the samples, never the average.
+
+**Limits the signed page names.**
+
+- The rehearsal covers the MNQ leg only. The 6J leg, where Aegis's exit has no clock
+  backstop, either takes a conservative margin derived from MNQ or gets its own
+  rehearsal round trip, which is outside the standing GO and needs Joshua's direction.
+- One leg is rehearsed at a time. F on both legs takes longer; the margin covers it.
+
+**Open for Joshua.**
+
+- Who performs it. Recommendation: Joshua, because it measures the operator.
+- Whether the added resting stop and the flatten-and-cancel exit still count as the
+  weekly round trip under the standing GO (AGENTS.md money control 1).
