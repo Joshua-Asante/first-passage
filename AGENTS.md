@@ -66,6 +66,31 @@ This repository is **public**.
   a head the other agent has reviewed clean (Codex reviews Claude's work, Claude
   reviews Codex's), with CI green.
 - **Doc-only PRs** merge once CI is green.
+- **Before asking for review**, the author runs the checks for what it changed and
+  lists the commands and their actual results in the PR description.
+- **PRs that touch credentials, hooks, guards, CI workflows, `core/strategies/` or
+  `core/data/`** also get `@codex security review`.
+- **A finding that recurs** on a second PR gets fixed as a class: a test, or a gate
+  in `scripts/gates.yml`, not another one-off fix.
+
+## Code Review Rules
+
+For the reviewing agent (Codex reads this section on GitHub reviews; Claude follows
+it when reviewing Codex). Report what changes behaviour or breaks a rule; skip style.
+Treat these as blocking:
+
+- **Public-repo leaks:** anything the Data and credentials rules forbid, in files,
+  tests, fixtures, logs or PR text, including paraphrased strategy parameters.
+- **Money-control breaches:** an edit to the frozen risk parameters without Joshua's
+  recorded approval; new code that can place, arm or route orders; an external engine
+  or bridge on the Tradeify path.
+- **Fixes that hide failures:** broad exceptions, silent defaults, looser schemas,
+  success exits on error, or a skipped or weakened test.
+- **Unbacked claims:** a result in the PR description with no command or output
+  behind it.
+
+On a re-review, review the commits since your last reviewed commit and what they
+affect. Don't re-raise a resolved finding unless new code reopens it.
 
 ## Running code
 
