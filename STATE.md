@@ -8,6 +8,20 @@ decisions. Replace stale lines instead of appending history.
 Get a native NinjaScript strategy trading the **Tradeify Select 100K evaluation**,
 then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
 
+- **By role** (owners per [AGENTS.md Roles](AGENTS.md#roles)). Replace a line when its
+  objective changes.
+  - **Joshua (director, operations):** run the F rehearsal (Tue 11-10), derive the hard
+    latest trigger, send Tradeify the eval files, sign the page, then give the session 1 GO.
+  - **Research (Claude):** the evidence read on the live pair: re-run the August
+    combined-book gate on ORB v7 + Aegis A-0. New candidates only under the priority rule below.
+  - **Design (Claude):** keep the spec and procedure current. Next: any change that
+    the readback's B10 answer or the evidence read forces.
+  - **Engineering (Claude Code, primary checkout):** the S-PAIR readback, including
+    B10, before the rehearsal; the c1 untangle, `.gitignore` guard first.
+  - **Verification (Codex):** review every head; audit the evidence read; review the
+    rehearsal and Sim101 records.
+  - **Measure (Claude Code, for Joshua's sign-off):** ready to score session 1 under the
+    forward stop rule.
 - **Stage:** 5 of 5, Verification, on the
   [11-05 bare-bones eval path](https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-11-05--bare-bones-eval-path).
   Stages: 1 Ideation, 2 Validation, 3 Definition, 4 Creation, 5 Verification, then
