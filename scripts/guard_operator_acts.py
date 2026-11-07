@@ -29,8 +29,9 @@ interaction, which a model's "the operator approved this" is not. A forbidden ac
 recognises is refused (``deny``). One prompt names every operator act it found in the
 call, because one answer approves all of them.
 
-  * ``pr.merge``     — pass (no prompt, no allow) under the standing GO, conditioned by
-                       AGENTS.md "Review and merge",
+  * ``pr.merge``     — ask: merges are Joshua's (AGENTS.md Roles; the agents' merge GO
+                       of 2026-10-24 ended with his 2026-11-07 ruling). An agent reports
+                       the reviewed head as ready and stops. The prompt is offered
                        **only when pinned to a full 40-hex head SHA**: the GitHub MCP
                        ``merge_pull_request`` tool with ``expectedHeadSha``; ``gh pr merge
                        --match-head-commit <sha>`` (the last one given, as gh reads it); a
@@ -53,8 +54,7 @@ call, because one answer approves all of them.
                        ``gh pr merge --auto`` (unless its last value is one of pflag's
                        false spellings, which leaves a merge, judged as ``pr.merge``); an
                        ``enablePullRequestAutoMerge`` mutation.
-                       GitHub auto-merge stays retired; only a pinned agent merge under
-                       the standing GO is allowed.
+                       GitHub auto-merge stays retired; a merge is Joshua's, pinned.
                        Server-side, ``allow_auto_merge: false`` refuses it for every form.
   * ``main.direct_push`` — deny: ``git push`` with ``main`` as a destination (``main``,
                        ``HEAD:main``, ``+x:refs/heads/main``, ``--delete main``), a bulk push
@@ -67,9 +67,8 @@ call, because one answer approves all of them.
                        refuses every push to ``main``.
   * ``pr.merge_admin`` — ask: a pinned ``gh pr merge --admin`` (unless its last value is
                        one of pflag's false spellings). ``--admin`` asks GitHub to merge
-                       past unmet requirements, which the standing GO does not cover
-                       (operator ruling 2026-09-26: "askable admin merges"; agents may not
-                       use it). Unpinned, it is ``pr.merge_unpinned``.
+                       past unmet requirements (operator ruling 2026-09-26: "askable admin
+                       merges"; agents may not use it). Unpinned, it is ``pr.merge_unpinned``.
 
 **Scope — what this hook is not.** It covers the Claude Code harness only (Codex sessions
 are not hooked). It adds a prompt where an agent session holds a
@@ -142,15 +141,12 @@ SHELL_TOOLS = frozenset({"Bash", "PowerShell"})
 _SHA = re.compile(r"[0-9a-fA-F]{40}")
 
 # Every capability id the hook emits and its decision. A deny is a registry `forbidden:`
-# entry (or the unpinned form of `pr.merge`); an ask is a registry `high` capability
-# (`pr.merge_admin` is `pr.merge` outside its standing GO). A
-# pass emits no permission decision (normal permission evaluation still runs, so the
-# rest of a compound call is never pre-approved) and only adds agent context. A
-# pinned merge passes under the operator's standing GO, conditioned by AGENTS.md "Review
-# and merge": CI green at the pinned head, plus the other agent's clean review at that head
-# for every PR, doc-only included; the pin keeps the merge to that exact head.
+# entry (or the unpinned form of `pr.merge`); an ask is a registry `high` capability.
+# A pinned merge asks: merges are Joshua's (AGENTS.md Roles, 2026-11-07), and the prompt
+# is his. The pin keeps the merge to the exact head that was reviewed. A pass (no
+# capability uses it today) would emit no permission decision and only add agent context.
 DECISION = {
-    "pr.merge": PASS,
+    "pr.merge": ASK,
     "pr.merge_admin": ASK,
     "pr.merge_unpinned": DENY,
     "pr.auto_merge": DENY,
@@ -165,24 +161,24 @@ MESSAGES = {
                           "Re-issue the merge pinned to the full 40-hex head SHA that was "
                           "reviewed: MCP `expectedHeadSha`, `gh pr merge --match-head-commit "
                           "<sha>`, a REST `sha` field, or GraphQL `expectedHeadOid`."),
-    "pr.merge": ("Merge under the operator's standing GO (pr.merge).",
-                 "Merge rule (AGENTS.md, Review and merge): required verification for "
-                 "the pinned head must have finished successfully; pending, failed or "
-                 "cancelled runs do not count, and an intentional path-based skip must be "
-                 "explained. Every PR, doc-only included, "
-                 "also needs an independent review clean at this head, from the other "
-                 "agent: Codex reviews Claude's work, Claude reviews Codex's. Otherwise "
-                 "report the PR as ready and stop."),
+    "pr.merge": ("Merge (pr.merge): merges are Joshua's (AGENTS.md Roles). Confirm only "
+                 "if you, the operator, are making this merge.",
+                 "Agents do not merge: merges are Joshua's (AGENTS.md Roles). Report the "
+                 "PR as ready, naming its head SHA, once AGENTS.md Review and merge holds: "
+                 "required verification for the pinned head must have finished "
+                 "successfully; pending, failed or cancelled runs do not count, and an "
+                 "intentional path-based skip must be explained. Every PR, doc-only "
+                 "included, also needs an independent review clean at this head, from the "
+                 "other agent: Codex reviews Claude's work, Claude reviews Codex's. Then "
+                 "stop."),
     "pr.merge_admin": ("Admin merge (pr.merge_admin): --admin asks GitHub to merge past "
-                       "unmet requirements, outside the agents' standing GO. Confirm only if "
-                       "you, the operator, are making this merge.",
-                       "`--admin` is outside the standing GO (agents may not use it). Drop "
-                       "`--admin` and merge only when the AGENTS.md Review and merge "
-                       "conditions hold; otherwise report the PR as ready and stop."),
+                       "unmet requirements. Confirm only if you, the operator, are making "
+                       "this merge.",
+                       "Agents do not merge, and `--admin` is never theirs. Report the PR "
+                       "as ready, or what blocks it, and stop."),
     "pr.auto_merge": ("Auto-merge is forbidden to agents (pr.auto_merge).",
-                      "Auto-merge is retired: an agent merges only by a pinned merge under "
-                      "the AGENTS.md Review and merge rule. Report the PR as ready "
-                      "instead."),
+                      "Auto-merge is retired, and agents do not merge (AGENTS.md Roles). "
+                      "Report the PR as ready instead."),
     "main.direct_push": ("Pushing to main is forbidden (main.direct_push): main takes PRs "
                          "only.",
                          "`main` requires a PR and the required status; a direct push "

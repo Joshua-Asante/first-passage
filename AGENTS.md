@@ -15,6 +15,44 @@ away correctness, required confirmations or honest verification reporting.
 Pre-cut documents: `git show f2c4ae3:<path>`; historical rules are not current
 authorization.
 
+## Roles
+
+Joshua directs; the agents own the work under his direction.
+
+**Joshua: director and operator of record.** He alone:
+
+- sets direction: the goal, the candidate, priorities and cuts (STATE reflects his calls);
+- rules: accepts specs and procedures, chooses between options and accepts risks on
+  the signed page. No agent decides these by default;
+- holds the money controls below: every GO, the standing GO's scope, spend, frozen
+  parameters and the stop rule;
+- merges PRs, once verification is clean. Agents never merge: they report the
+  reviewed head as ready;
+- operates the eval: enables instances, attends sessions and runs F. Agents act on the
+  eval only under his GO or the standing GO;
+- holds private material: his primary checkout, private ports, the signed page,
+  account data and anything sent outside.
+
+He does not write specs, code or reviews. Decisions reach him as short, numbered
+choices with a recommendation, at stage gates. Anything deferrable is batched.
+
+| Role | Owner | Covers | Support |
+|---|---|---|---|
+| Research | Claude | Generation (new ideas); evidence on the live candidate, which comes first | Codex challenges methods and claims |
+| Design | Claude; Joshua accepts | Build contract (the spec); operating procedure | Codex is consulted on choices |
+| Engineering | Claude Code in Joshua's primary checkout for the private NinjaScript eval build; Claude for public code | Private build; public tooling (`core/`, `scripts/`, gates, tests) | Codex writes public code only; never private sources or parameters |
+| Verification | Codex | Code review of every head, and of the frozen private eval build read in place, read-only, against its checksums (spec §6, Joshua 11-06); behaviour checks (Sim101 runs and rehearsals, reviewed from their records); evidence audit | Joshua runs the checks that need the eval or his checkout, and starts Codex's private-build review there |
+| Operations | Joshua | Session operator; venue liaison (Tradeify); measure: the session record and forward stop rule scoring after each session, done by Claude Code in his primary checkout for his sign-off | Codex by computer use under a GO; Claude keeps the procedure and public records |
+
+- Engineering does not edit the **Private sources** below (Pine, the runtime ports in
+  `BOOK_SOURCES.sha256`, `effective_inputs.json`): they stay read-only in place.
+- Verification stays independent: when Codex writes code, Claude reviews it. Neither
+  agent verifies its own work.
+- Design does not grade research: Codex checks research claims before design builds on
+  them.
+- Operations feeds design: session evidence goes back to design and the forward stop
+  rule. The procedure does not change mid-session.
+
 ## Money controls (hard rules)
 
 1. **No live orders without Joshua's direction.** Agents, Codex included, may act
@@ -80,6 +118,12 @@ Classify by meaning, not field name. Text already public stays.
   `core/data/`** also get `@codex security review`.
 - **A finding that recurs** on a second PR gets fixed as a class: a test, or a gate
   in `scripts/gates.yml`, not another one-off fix.
+- **One writer per branch.** Each PR branch has one owning session and one writer at a
+  time. Another session does not push to it without an explicit handoff the owner
+  accepts. Before editing a file another open branch or PR also changes, check them,
+  then use a separate branch or send the change to the owner. The owner names the
+  candidate head; the other agent reviews that exact head, sends findings back and
+  does not push to it. Any later push needs a review of the new head.
 
 ## Code Review Rules
 
