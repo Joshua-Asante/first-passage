@@ -158,7 +158,7 @@ Do not include a "sole operator" attestation until D8 is ruled.
 - Re-ask the 10-26 data-terms question.
 - Rule now that any eval-build change, including admitting the horizon edition, is re-sent by Joshua before it runs.
 - On the signed page, name who flattens and disables on an objection: Joshua, or an agent under that week's GO.
-- Joshua prepares a plain-language description of the strategy he can give without help, in case of a KYT interview (deep-dive :18).
+- Joshua prepares a plain-language description of the strategy he can give without help, in case of a KYT interview (deep-dive :17).
 
 **Questions.**
 - Wait for a candidate-specific ownership answer, or supersede that prerequisite explicitly and name the unresolved eligibility risk on the signed page? (Separate from the source-review wait; Codex review.)
@@ -208,8 +208,8 @@ Do not include a "sole operator" attestation until D8 is ruled.
 **State.**
 - Severity H, never ruled (`b7eaff7:…venue-fact-register-DRAFT.md:252`).
 - ESA §6.5 says to refrain from "flipping contracts just to register a 'trading day'". Current practice is a "market round trip" (`b7eaff7:STATE.md:88`).
-- The 11-05 "Unchanged" list includes "a real trade each week" (CK:1101). It is ambiguous whether that answered T1.
-- Once instances run, a manual fill on MNQ is a §6.8 incident, and a fill on any other instrument is "a stop" (CK:1094; runbook U-12, :146). A manual position held while ORB holds the opposite direction in the Equity Index group would be prohibited hedging (`core/firm_rules.py:256-266`).
+- The 11-05 "Unchanged" list keeps the weekly-trade obligation, "a real trade each week" (CK:1101). The same addendum reserves T1 as still Joshua's (CK:1103), so T1 is open.
+- Once instances run, a manual fill on MNQ or 6J is a §6.8 incident for the instance that owns that instrument (CK:1093). A fill on an instrument neither leg owns, or on another account, is unexplained and a stop (CK:1094; runbook U-12, :146). 6J is a leg instrument, not an "other" one. A manual position held while ORB holds the opposite direction in the Equity Index group would be prohibited hedging (`core/firm_rules.py:256-266`).
 
 | Option | Unblocks | Risks | Reversibility |
 |---|---|---|---|
@@ -217,7 +217,7 @@ Do not include a "sole operator" attestation until D8 is ruled.
 | **B. A genuine minimal trade: normal entry, held well past 10 seconds, exited in RTH, minimum size, never while an Aegis/ORB instance is enabled** | Removes the worst reading | Small P&L variance. If an agent places it with a resting stop, that goes beyond the standing GO's "round trip" scope unless Joshua restates the GO | Weekly |
 | C. Strategy fills count once sessions run; the preservation trade goes only in weeks with no fill (B shape) | Removes T1 in session weeks | Does nothing for the week of 11-09 | High |
 | D. Ask Tradeify first, keep current shape meanwhile | Possible safe harbour | Flags past round trips | Cannot unsend |
-| Confirm: rule that "a real trade each week" already meant B | No new decision | — | High |
+| New ruling: B is the required shape (CK:1103 left T1 open, so this is a fresh ruling, not a confirmation) | Settles T1's shape question | — | High |
 
 **Recommendation: B from the week of 11-09, moving to C once sessions run.** Either hand-place it, or restate the standing GO to cover the bracket and exit.
 
@@ -275,6 +275,7 @@ Do not include a "sole operator" attestation until D8 is ruled.
 - a restatement of the exclusivity statement (D4);
 - what S-PAIR showed;
 - the CK:1103 acceptances: starting without a reply, CME licence, T1, T2;
+- candidate-specific ownership/eligibility (native plan :57): answer received, or the prerequisite superseded and the risk accepted;
 - the native-control risks S-PAIR does not prove, named and accepted: protection across a disconnect on the firm connection, and the rest of the U tests that Sim cannot prove. State that the automatic incident close is not relied on (CK:1090);
 - the attending operator's duties: account-wide incidents, stopping new risk across both legs, and the account loss stop, all under this page and the registered stop rule, with no cross-instance automation (CK:1095) (Codex review);
 - row 11a residuals;
@@ -295,7 +296,7 @@ Do not include a "sole operator" attestation until D8 is ruled.
 | Option | Reversibility |
 |---|---|
 | A. Not fired, carry to 2027-02-08 (nothing in the tree tracks that date) | High |
-| **B. Not fired, retire as an unreachable check. Precedent: Joshua's 11-03 decompound ruling, "Repeatedly carrying an impossible future check adds no evidence" (c43d4b7)** | High (reinstate from git) |
+| **B. Not fired, retire as an unreachable check. Precedent: Joshua's 11-03 decompound ruling ("Retire with legacy book.", c43d4b7). Its recorded rationale, written by the recorder rather than quoted from Joshua, is that an impossible check adds no evidence when its subject has no live venue. The ground here differs: no compliant campaign exists** | High (reinstate from git) |
 | C. Defer | High |
 
 **Recommendation: B.** Record it in the sitting PR description.
@@ -332,7 +333,7 @@ Do not include a "sole operator" attestation until D8 is ruled.
 
 | Option | Unblocks | Risks | Reversibility |
 |---|---|---|---|
-| **A'. Retire obligations that exist only in deleted docs, except named survivors: the 11-05 eval path, the runbook sections it amends, the T1/T2 and CME reservations, the 11-03 rulings, the c1 Stage 2/3 rulings, and what kept files and code carry (frozen pre-registrations, the stop rule, lab/builder/README obligations, dated HOLDs in ops/instruments). Where deleted text conflicts with AGENTS.md or STATE, those govern. Preferably move the eval path's operative text into a kept file** | One answer for every later agent. Does not decide whether one GO covers several sessions (that is D12) | Retires unfired research falsifiers | High (git) |
+| **A'. Retire obligations that exist only in deleted docs, except named survivors: the 11-05 eval path, the pilot runbook as amended by the 11-05 path (every section it does not supersede, which D3, D12 and the checklist rely on), the T1/T2 and CME reservations, the 11-03 rulings, the c1 Stage 2/3 rulings, and what kept files and code carry (frozen pre-registrations, the stop rule, lab/builder/README obligations, dated HOLDs in ops/instruments). Where deleted text conflicts with AGENTS.md or STATE, those govern. Preferably move the eval path's operative text into a kept file** | One answer for every later agent. Does not decide whether one GO covers several sessions (that is D12) | Retires unfired research falsifiers | High (git) |
 | A as drafted (no precedence clause, eval path not named) | — | Could be read as retiring the eval path's safety conditions | High |
 | B. Everything binds through git | Full discipline | No in-tree index, so silent misses | High |
 | C. Item-by-item triage | Precise | Around 30 mostly moot items | High |
@@ -344,7 +345,7 @@ Do not include a "sole operator" attestation until D8 is ruled.
 
 **Recommendation: ratify TV-only as Joshua's own ruling.** D8 was delegated (generation note :416-417). Corrections:
 - Drop the "eval fills count as slip evidence" clause. Fills are account data that Codex and the repo cannot hold, and Aegis fills are not FX-fix fills.
-- MNQFLOW wakes only on a historical MBP-10 source for its Databento S1 window. Any other vendor needs an amended pre-registration (`lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PREREG_S2B.md:256-258`).
+- MNQFLOW wakes only on a historical MBP-10 source for its Databento S1 window. Any other vendor needs an amended pre-registration (`lab/analysis/c1/mnq_orb_flow_depth_2026-08-18/PREREG_S2B.md:254-259`).
 - TV export rights are unverified. The record treats TV as display-only for feeds (feed note :10, :56).
 - Rule separately on the 27 unregistered 11-01 pages (MZC, MZS, MZW, MHG, SIL, MNG).
 
@@ -385,7 +386,7 @@ Keep the monthly cadence. If time allows, close the stale rows: the Tradeify car
 
 **Constraints and conflicts.**
 - **D15 comes before D14 and most cleanup.** The 2-C choice between A and H depends on it. It also decides whether the 11-05 path, itself a deleted text, governs the eval. It does not decide whether one weekly GO may cover several sessions: CK:1101 and AGENTS.md:17-25 are compatible, and that question is asked separately in D12.
-- **D8 comes before D3 and D4.** A "sole owner and operator" attestation (route :398) is inconsistent with standing agent placement unless Joshua rules on it. Either a directed agent order counts as his act (surface ADR 09-30b, `b7eaff7:docs/adr/2026-07-14-cc-cursor-surface-allocation.md:896-900`), or placement narrows to the hybrid or B.
+- **D8 comes before D3 and D4.** A "sole owner and operator" attestation (route :398) is inconsistent with standing agent placement unless Joshua rules on it. Either a directed agent order counts as his act (surface ADR 09-30b, `b7eaff7:docs/adr/2026-07-14-cc-cursor-surface-allocation.md:896-900`), or placement narrows to B. The hybrid still needs the his-own-act ruling, because it keeps agent fills. Say also whether rule-1 directed agent acts on the eval stay authorized under the hybrid.
 - **T2 vs the standing preservation GO.** There is no live conflict: the 11-05 reversal is in force. The conflict is between agent placement and the venue attestation.
 - **D9 vs D3/D12.** Never place the preservation trade while an instance is enabled (CK:1094; runbook U-12). Choose its instrument so it cannot form an opposing Equity Index position. A genuine held trade placed by an agent needs the standing GO restated (AGENTS.md:21-23 covers only "the round trip").
 - **D11 moots most of D2-A and D1-B.** If the framework does not gate the 100K, its gates are out of play for this attempt.
@@ -418,7 +419,7 @@ Keep the monthly cadence. If time allows, close the stale rows: the Tradeify car
 - [ ] D8 ruled: who may place and act on the eval, consistent with any sole-operator attestation.
 - [ ] Row 1 (D1) ruled, including stop-rule drop, funded-stage and bust scope.
 - [ ] Row 4 (D2) ruled: nomination = card hashes :421/:427, ORB leg = O-0. STATE.md:9 wording fixed.
-- [ ] Row 7 (D5) recorded publicly before S-PAIR and the eval build. STATE.md:11-14 corrected.
+- [ ] Row 7 (D5) recorded publicly before S-PAIR and the eval build. STATE.md:11-14 corrected. Joshua names the substitute review for the private eval build (Codex cannot see it), done before install.
 - [ ] Row 6 (D4) signed publicly.
 - [ ] S-PAIR bare rerun run and accepted, on the bound values (step 1; private, confirm locally).
 - [ ] Step 3: name readback, eval build under its GO, installed disabled. The build matches the source sent to Tradeify, or is re-sent.
