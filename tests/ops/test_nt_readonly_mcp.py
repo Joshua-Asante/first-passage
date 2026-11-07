@@ -171,3 +171,155 @@ def test_module_has_no_write_or_network_surface():
             if name == "open":
                 assert len(node.args) >= 2 and isinstance(node.args[1], ast.Constant)
                 assert node.args[1].value in allowed_open_modes
+
+
+# --- review fixes: mask before cutting, argument types, bounded reads ---------------
+
+SYNTHETIC_ID = "ACCT-12345"
+
+
+@pytest.mark.parametrize("start", [server.MAX_LINE_CHARS - 7, server.MAX_LINE_CHARS - 3,
+                                   server.MAX_LINE_CHARS - 1])
+def test_redaction_applies_before_line_cut(tmp_path, start):
+    # The synthetic ID starts before character MAX_LINE_CHARS and ends after it.
+    root = tmp_path / "NinjaTrader 8"
+    (root / "log").mkdir(parents=True)
+    (root / "trace").mkdir()
+    prefix = "rejected "
+    line = prefix + "x" * (start - len(prefix)) + SYNTHETIC_ID + " tail"
+    assert line.index(SYNTHETIC_ID) < server.MAX_LINE_CHARS < line.index(SYNTHETIC_ID) + 10
+    (root / "log" / "log.txt").write_text(f"{line}\n", encoding="utf-8")
+    (root / "trace" / "trace.txt").write_text(f"{line}\n", encoding="utf-8")
+    rules = tmp_path / "redact.txt"
+    rules.write_text("ACCT-\\d+\n", encoding="utf-8")
+    config = server.Config.build(root, redact_file=rules)
+    expected = (prefix + "x" * (start - len(prefix)) + "[redacted] tail")[:server.MAX_LINE_CHARS]
+    outputs = {"nt_tail": call(config, "nt_tail", source="log"),
+               "nt_search": call(config, "nt_search", source="log", pattern="rejected"),
+               "nt_search_trace": call(config, "nt_search", source="trace", pattern="xxx"),
+               "nt_errors": call(config, "nt_errors")}
+    for tool, (text, error) in outputs.items():
+        assert not error, tool
+        body = [row for row in text.splitlines()[1:] if row]
+        assert body, tool
+        for row in body:
+            content = row if tool == "nt_tail" else row.split(": ", 1)[1]
+            assert content == expected, tool
+            assert not any(content.endswith(SYNTHETIC_ID[:k]) for k in range(1, 11)), tool
+
+
+@pytest.mark.parametrize("name, arguments", [
+    ("nt_tail", {"source": "log", "file": 5}),
+    ("nt_tail", {"source": 5}),
+    ("nt_search", {"source": "log", "pattern": None}),
+    ("nt_search", {"source": "log", "pattern": "x", "glob": 3}),
+    ("nt_search", {"source": "log", "pattern": "x", "regex": "yes"}),
+    ("nt_list_files", {"source": "log", "glob": ["*"]}),
+    ("nt_errors", {"pattern": 7}),
+])
+def test_wrong_argument_types_are_tool_errors(nt, name, arguments):
+    config, _ = nt
+    result = server.call_tool(config, name, arguments)
+    assert result["isError"]
+
+
+def test_malformed_calls_do_not_stop_the_server(nt):
+    config, _ = nt
+    requests = [
+        {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+         "params": {"name": "nt_tail", "arguments": {"source": "log", "file": 5}}},
+        {"jsonrpc": "2.0", "id": 2, "method": "tools/call",
+         "params": {"name": "nt_search", "arguments": {"source": "log", "pattern": None}}},
+        {"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": ["nt_tail"]},
+        {"jsonrpc": "2.0", "id": 4, "method": "initialize", "params": "x"},
+        {"jsonrpc": "2.0", "id": 5, "method": "tools/call",
+         "params": {"name": "nt_tail", "arguments": {"source": "log", "lines": 1}}},
+    ]
+    stdin = io.StringIO("\n".join(json.dumps(r) for r in requests) + "\n")
+    stdout = io.StringIO()
+    server.serve(config, stdin, stdout)
+    responses = [json.loads(line) for line in stdout.getvalue().splitlines()]
+    assert [r["id"] for r in responses] == [1, 2, 3, 4, 5]
+    assert responses[0]["result"]["isError"] and responses[1]["result"]["isError"]
+    assert responses[2]["error"]["code"] == -32602
+    assert responses[3]["error"]["code"] == -32602
+    assert not responses[4]["result"]["isError"]
+    assert responses[4]["result"]["content"][0]["text"].endswith("\nafter")
+
+
+@pytest.mark.parametrize("ending", ["\n", "\r\n", ""])
+def test_tail_reads_from_end_of_large_file(tmp_path, monkeypatch, ending):
+    monkeypatch.setattr(server, "READ_BLOCK", 64)
+    root = tmp_path / "NinjaTrader 8"
+    (root / "log").mkdir(parents=True)
+    newline = ending or "\n"
+    body = newline.join(f"row {i:05d} " + "y" * (i % 50) for i in range(1, 3001)) + ending
+    path = root / "log" / "big.txt"
+    path.write_bytes(("﻿" + body).encode("utf-8"))
+    config = server.Config.build(root)
+    expected = body.splitlines()
+    for count in (1, 7, 200, 2000):
+        text, error = call(config, "nt_tail", source="log", lines=count)
+        assert not error
+        lines = text.splitlines()
+        assert lines[1:] == expected[-count:]
+        assert lines[0] == f"big.txt: last {count} line(s)"
+    small = root / "log" / "small.txt"
+    small.write_bytes(b"\xef\xbb\xbfonly\r\nlines\n")
+    text, _ = call(config, "nt_tail", source="log", file="small.txt", lines=50)
+    assert text.splitlines() == ["small.txt: last 2 line(s)", "only", "lines"]
+
+
+def test_tail_does_not_read_whole_file(tmp_path, monkeypatch):
+    monkeypatch.setattr(server, "READ_BLOCK", 128)
+    root = tmp_path / "NinjaTrader 8"
+    (root / "log").mkdir(parents=True)
+    path = root / "log" / "big.txt"
+    path.write_text("".join(f"row {i}\n" for i in range(100_000)), encoding="utf-8")
+    config = server.Config.build(root)
+    reads = []
+    real_open = open
+
+    class Spy:
+        def __init__(self, handle):
+            self._handle = handle
+
+        def read(self, size=-1):
+            reads.append(size)
+            return self._handle.read(size)
+
+        def __getattr__(self, name):
+            return getattr(self._handle, name)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            self._handle.close()
+
+    monkeypatch.setattr(server, "open", lambda *a, **k: Spy(real_open(*a, **k)), raising=False)
+    text, _ = call(config, "nt_tail", source="log", lines=1)
+    assert text.splitlines()[1] == "row 99999"
+    assert reads and all(0 < size <= 128 for size in reads) and sum(reads) < 1024
+
+
+def test_search_streams_lines_and_matches_previous_behaviour(nt, tmp_path):
+    config, _ = nt
+    text, _ = call(config, "nt_search", source="log", pattern="line", max_matches=3)
+    assert text.splitlines() == [
+        "3 match(es); stopped at max_matches=3",
+        "log/log.20261106.00000.txt:1: line 1",
+        "log/log.20261106.00000.txt:2: line 2",
+        "log/log.20261106.00000.txt:3: line 3",
+    ]
+    crlf = config.sources["journal"] / "crlf.txt"
+    crlf.write_bytes(b"\xef\xbb\xbfa\r\nhit one\r\nb\r\n\xff hit two\r\n")
+    text, _ = call(config, "nt_search", source="journal", pattern="hit", glob="crlf.txt",
+                   context=1)
+    assert text.splitlines() == [
+        "2 match(es)",
+        "journal/crlf.txt:1- a",
+        "journal/crlf.txt:2: hit one",
+        "journal/crlf.txt:3- b",
+        "journal/crlf.txt:4: � hit two",
+    ]

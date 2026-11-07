@@ -39,7 +39,7 @@ from collections import deque
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Iterator
 
 SERVER_NAME = "nt-readonly"
 SERVER_VERSION = "0.1.0"
@@ -49,6 +49,10 @@ MAX_LINES = 2000
 MAX_MATCHES = 1000
 MAX_OUTPUT_CHARS = 200_000
 MAX_LINE_CHARS = 2000
+# Bytes of one line kept and masked before the MAX_LINE_CHARS cut; the rest of a
+# longer line is read past and dropped, so a single huge line cannot exhaust memory.
+MAX_LINE_BYTES = 64 * 1024
+READ_BLOCK = 64 * 1024
 DEFAULT_ERROR_PATTERN = r"error|exception|reject|disconnect|connection ?lost|lost connection|failed|halt"
 
 
@@ -114,6 +118,8 @@ def _files(config: Config, source: str, pattern: str = "*") -> list[Path]:
 
 def _resolve_file(config: Config, source: str, name: str | None) -> Path:
     directory = _source_dir(config, source)
+    if name is not None and "\x00" in name:
+        raise ToolError("file name contains a NUL character")
     if name is None:
         files = _files(config, source)
         if not files:
@@ -127,17 +133,103 @@ def _resolve_file(config: Config, source: str, name: str | None) -> Path:
     return candidate
 
 
-def _read_lines(path: Path) -> list[str]:
-    # NinjaTrader keeps today's log open for writing; reading still works on Windows
-    # because Python opens with shared read access.
+# NinjaTrader keeps today's log open for writing; reading still works on Windows
+# because Python opens with shared read access. Files are read in bounded blocks, so
+# memory stays bounded whatever the file size.
+
+def _split_piece(raw: bytes, first: bool, last: bool, redact: Callable[[str], str]) -> list[str]:
+    """Lines of one piece between newlines: decoded, masked whole, then cut.
+
+    Gives the same lines ``str.splitlines`` gives for the whole file (CRLF, lone CR and
+    the other Unicode breaks included). ``last`` marks a final piece with no newline.
+    """
+    text = raw.decode("utf-8-sig" if first else "utf-8", errors="replace")
+    pieces = text.splitlines() if last else (text + "\n").splitlines()
+    return [redact(line)[:MAX_LINE_CHARS] for line in pieces]
+
+
+def _iter_lines(path: Path, redact: Callable[[str], str]) -> Iterator[str]:
+    """Stream a file's lines, each masked before it is cut to MAX_LINE_CHARS."""
     with open(path, "rb") as handle:
-        data = handle.read()
-    text = data.decode("utf-8-sig", errors="replace")
-    return [line[:MAX_LINE_CHARS] for line in text.splitlines()]
+        kept = bytearray()
+        first = True
+        while block := handle.read(READ_BLOCK):
+            start = 0
+            while True:
+                newline = block.find(b"\n", start)
+                stop = len(block) if newline < 0 else newline
+                room = MAX_LINE_BYTES - len(kept)
+                if room > 0:
+                    kept += block[start:min(stop, start + room)]
+                if newline < 0:
+                    break
+                yield from _split_piece(bytes(kept), first, False, redact)
+                kept.clear()
+                first = False
+                start = newline + 1
+        if kept:
+            yield from _split_piece(bytes(kept), first, True, redact)
+
+
+def _tail_lines(path: Path, count: int, redact: Callable[[str], str]) -> list[str]:
+    """The last ``count`` lines, found by reading backwards from the end in blocks."""
+    with open(path, "rb") as handle:
+        end = handle.seek(0, 2)
+        if end == 0:
+            return []
+        handle.seek(end - 1)
+        scan_end = end - 1 if handle.read(1) == b"\n" else end
+        # The last `count` newline positions before scan_end mark where the last
+        # `count` lines start. Each block is dropped once it has been scanned.
+        newlines: list[int] = []
+        position = scan_end
+        while position > 0 and len(newlines) < count:
+            size = min(READ_BLOCK, position)
+            position -= size
+            handle.seek(position)
+            block = handle.read(size)
+            index = len(block)
+            while len(newlines) < count:
+                index = block.rfind(b"\n", 0, index)
+                if index < 0:
+                    break
+                newlines.append(position + index)
+        starts = sorted(n + 1 for n in newlines)
+        if len(newlines) < count:
+            starts.insert(0, 0)
+        ends = [s - 1 for s in starts[1:]] + [scan_end]
+        lines: list[str] = []
+        for start, stop in zip(starts, ends):
+            handle.seek(start)
+            raw = handle.read(min(stop - start, MAX_LINE_BYTES))
+            lines.extend(_split_piece(raw, start == 0, stop == end, redact))
+    return lines[-count:]
 
 
 def _relative(config: Config, source: str, path: Path) -> str:
     return path.resolve().relative_to(config.sources[source]).as_posix()
+
+
+_REQUIRED: Any = object()
+
+
+def _str(arguments: dict, key: str, default: Any = _REQUIRED) -> Any:
+    """A string argument; JSON null or absence gives the default (if there is one)."""
+    value = arguments.get(key)
+    if value is None:
+        if default is _REQUIRED:
+            raise ToolError(f"missing argument: {key}")
+        return default
+    if not isinstance(value, str):
+        raise ToolError(f"{key} must be a string")
+    return value
+
+
+def _bool(arguments: dict, key: str, default: bool) -> bool:
+    value = arguments.get(key, default)
+    if not isinstance(value, bool):
+        raise ToolError(f"{key} must be a boolean")
+    return value
 
 
 def _int(arguments: dict, key: str, default: int, low: int, high: int) -> int:
@@ -166,9 +258,9 @@ def tool_list_sources(config: Config, arguments: dict) -> str:
 
 
 def tool_list_files(config: Config, arguments: dict) -> str:
-    source = arguments["source"]
+    source = _str(arguments, "source")
     limit = _int(arguments, "limit", 50, 1, 500)
-    files = _files(config, source, arguments.get("glob", "*"))
+    files = _files(config, source, _str(arguments, "glob", "*"))
     rows = []
     for path in files[:limit]:
         stat = path.stat()
@@ -181,12 +273,11 @@ def tool_list_files(config: Config, arguments: dict) -> str:
 
 
 def tool_tail(config: Config, arguments: dict) -> str:
-    source = arguments["source"]
-    path = _resolve_file(config, source, arguments.get("file"))
+    source = _str(arguments, "source")
+    path = _resolve_file(config, source, _str(arguments, "file", None))
     count = _int(arguments, "lines", 200, 1, MAX_LINES)
-    lines = _read_lines(path)
-    tail = lines[-count:]
-    header = f"{_relative(config, source, path)}: last {len(tail)} of {len(lines)} line(s)"
+    tail = _tail_lines(path, count, config.redact)
+    header = f"{_relative(config, source, path)}: last {len(tail)} line(s)"
     return "\n".join([header, *tail])
 
 
@@ -197,7 +288,7 @@ def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: 
     truncated = False
     for source in sources:
         for path in _files(config, source, glob)[:max_files]:
-            lines = _read_lines(path)
+            lines = _iter_lines(path, config.redact)
             before: deque[tuple[int, str]] = deque(maxlen=context)
             pending_after = 0
             last_printed = -1
@@ -230,10 +321,10 @@ def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: 
 
 
 def tool_search(config: Config, arguments: dict) -> str:
-    source = arguments["source"]
-    matcher = _compile(arguments["pattern"], bool(arguments.get("regex", False)),
-                       bool(arguments.get("ignore_case", True)))
-    return _search(config, [source], matcher, arguments.get("glob", "*"),
+    source = _str(arguments, "source")
+    matcher = _compile(_str(arguments, "pattern"), _bool(arguments, "regex", False),
+                       _bool(arguments, "ignore_case", True))
+    return _search(config, [source], matcher, _str(arguments, "glob", "*"),
                    _int(arguments, "max_files", 10, 1, 200),
                    _int(arguments, "max_matches", 200, 1, MAX_MATCHES),
                    _int(arguments, "context", 0, 0, 10))
@@ -243,7 +334,7 @@ def tool_errors(config: Config, arguments: dict) -> str:
     sources = [name for name in ("log", "trace") if config.sources[name].is_dir()]
     if not sources:
         raise ToolError("neither the log nor the trace directory exists under --nt-root")
-    matcher = _compile(arguments.get("pattern", DEFAULT_ERROR_PATTERN), True, True)
+    matcher = _compile(_str(arguments, "pattern", DEFAULT_ERROR_PATTERN), True, True)
     return _search(config, sources, matcher, "*",
                    _int(arguments, "max_files", 2, 1, 50),
                    _int(arguments, "max_matches", 200, 1, MAX_MATCHES),
@@ -306,11 +397,9 @@ def call_tool(config: Config, name: str, arguments: dict) -> dict:
             raise ToolError("arguments must be an object")
         text = TOOLS[name][0](config, arguments)
         is_error = False
-    except KeyError as exc:
-        text, is_error = f"missing argument: {exc.args[0]}", True
     except (ToolError, OSError, UnicodeError) as exc:
         text, is_error = str(exc), True
-    text = config.redact(text)
+    text = config.redact(text)  # again, for error text that quotes arguments or paths
     if len(text) > MAX_OUTPUT_CHARS:
         text = text[:MAX_OUTPUT_CHARS] + f"\n[truncated at {MAX_OUTPUT_CHARS} characters]"
     return {"content": [{"type": "text", "text": text}], "isError": is_error}
@@ -327,13 +416,18 @@ def handle(config: Config, message: Any) -> dict | None:
     if "id" not in message:
         return None
     request_id = message["id"]
-    params = message.get("params") or {}
+    params = message.get("params")
+    if params is None:
+        params = {}
 
     def result(value: dict) -> dict:
         return {"jsonrpc": "2.0", "id": request_id, "result": value}
 
     def error(code: int, text: str) -> dict:
         return {"jsonrpc": "2.0", "id": request_id, "error": {"code": code, "message": text}}
+
+    if not isinstance(params, dict):
+        return error(-32602, "params must be an object")
 
     if method == "initialize":
         requested = params.get("protocolVersion")
@@ -351,10 +445,11 @@ def handle(config: Config, message: Any) -> dict | None:
     if method == "tools/list":
         return result({"tools": [{"name": name, **spec} for name, (_, spec) in TOOLS.items()]})
     if method == "tools/call":
-        try:
-            return result(call_tool(config, params.get("name"), params.get("arguments") or {}))
-        except KeyError:
-            return error(-32602, f"unknown tool: {params.get('name')!r}")
+        name = params.get("name")
+        if not isinstance(name, str) or name not in TOOLS:
+            return error(-32602, f"unknown tool: {name!r}")
+        arguments = params.get("arguments")
+        return result(call_tool(config, name, {} if arguments is None else arguments))
     return error(-32601, f"method not found: {method}")
 
 

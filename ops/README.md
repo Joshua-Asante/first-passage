@@ -49,7 +49,10 @@ line format is assumed.
 **Account data.** Output can carry fills, account names and balances. It enters
 the agent's context and never goes into this repo (data rules; spec B15).
 `--redact-file` masks regexes, one per line, `#` for comments, in all output; keep
-that file private too. Don't register the server for Codex: journals and logs can
+that file private too. Each full line is masked before it is cut to 2,000
+characters, so a match that crosses the cut is still masked. Files are read in
+bounded blocks (tails from the end, searches line by line), so memory stays bounded
+whatever the file size. Don't register the server for Codex: journals and logs can
 carry strategy parameters.
 
 Register it in Claude Code on the NinjaTrader machine, local scope (the paths are
