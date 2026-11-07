@@ -166,8 +166,10 @@ MESSAGES = {
                           "reviewed: MCP `expectedHeadSha`, `gh pr merge --match-head-commit "
                           "<sha>`, a REST `sha` field, or GraphQL `expectedHeadOid`."),
     "pr.merge": ("Merge under the operator's standing GO (pr.merge).",
-                 "Merge rule (AGENTS.md, Review and merge): every CI check must be "
-                 "COMPLETED and green at the pinned head. Every PR, doc-only included, "
+                 "Merge rule (AGENTS.md, Review and merge): required verification for "
+                 "the pinned head must have finished successfully; pending, failed or "
+                 "cancelled runs do not count, and an intentional path-based skip must be "
+                 "explained. Every PR, doc-only included, "
                  "also needs an independent review clean at this head, from the other "
                  "agent: Codex reviews Claude's work, Claude reviews Codex's. Otherwise "
                  "report the PR as ready and stop."),

@@ -165,7 +165,13 @@ def test_merge_context_matches_agents_md_review_and_merge():
     assert "AGENTS.md" in context
     assert "Every PR, doc-only included" in context
     assert "merges on that" not in context
-    assert "COMPLETED and green at the pinned head" in context
+    assert "finished successfully" in context
+    assert "COMPLETED and green" not in context  # path-based skips are allowed if explained
+    agents = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+    review = agents.split("## Review and merge", 1)[1].split("\n## ", 1)[0]
+    for phrase in ("doc-only included", "pending, failed or cancelled", "path-based skip"):
+        assert phrase in review, phrase  # AGENTS.md still says it
+        assert phrase in context, phrase  # and the hook says the same
     assert "Codex reviews Claude's work, Claude reviews Codex's" in context
     for retired in ("fourth", "three reviews", "rewrite", "Addendum 2026-10-24b"):
         assert retired not in context
