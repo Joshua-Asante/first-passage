@@ -36,7 +36,8 @@ interaction, which a model's "the operator approved this" is not. A forbidden ac
 recognises is refused (``deny``). One prompt names every operator act it found in the
 call, because one answer approves all of them.
 
-  * ``pr.merge``     — pass (no prompt, no allow) under the conditioned standing GO (Addendum 2026-10-24b),
+  * ``pr.merge``     — pass (no prompt, no allow) under the standing GO, conditioned by
+                       AGENTS.md "Review and merge",
                        **only when pinned to a full 40-hex head SHA**: the GitHub MCP
                        ``merge_pull_request`` tool with ``expectedHeadSha``; ``gh pr merge
                        --match-head-commit <sha>`` (the last one given, as gh reads it); a
@@ -203,9 +204,9 @@ _SHA = re.compile(r"[0-9a-fA-F]{40}")
 # (`pr.merge_admin` is `pr.merge` outside its standing GO). A
 # pass emits no permission decision (normal permission evaluation still runs, so the
 # rest of a compound call is never pre-approved) and only adds agent context. A
-# pinned merge passes under the operator's conditioned standing GO (surface-allocation
-# ADR, Addendum 2026-10-24b): the agent merges only after an independent review passed and
-# CI is green at the pinned head; the pin keeps the merge to that exact head.
+# pinned merge passes under the operator's standing GO, conditioned by AGENTS.md "Review
+# and merge": CI green at the pinned head, plus the other agent's clean review at that head
+# for anything but a doc-only PR; the pin keeps the merge to that exact head.
 DECISION = {
     "pr.merge": PASS,
     "pr.merge_admin": ASK,
@@ -225,23 +226,21 @@ MESSAGES = {
                           "reviewed: MCP `expectedHeadSha`, `gh pr merge --match-head-commit "
                           "<sha>`, a REST `sha` field, or GraphQL `expectedHeadOid`."),
     "pr.merge": ("Merge under the operator's standing GO (pr.merge).",
-                 "Standing GO (surface-allocation ADR, Addendum 2026-10-24b A, amended "
-                 "2026-10-25): merge only if an independent review has passed and every CI "
-                 "check is COMPLETED and green at the pinned head. For a Claude-authored PR "
-                 "that is a Codex review clean at this head, within three reviews or on a "
-                 "clean fourth; if none is clean by the fourth, return the PR to its owner "
-                 "for a rewrite. For a Codex-authored PR it is a Claude review clean at this "
-                 "head, within three reviews or on a clean fourth. Count reviews by hand. "
-                 "Otherwise report the PR as ready and stop."),
+                 "Merge rule (AGENTS.md, Review and merge): every CI check must be "
+                 "COMPLETED and green at the pinned head. A doc-only PR merges on that. "
+                 "Code, tests, gates, CI, or anything touching the AGENTS.md controls also "
+                 "needs an independent review clean at this head, from the other agent: "
+                 "Codex reviews Claude's work, Claude reviews Codex's. Otherwise report the "
+                 "PR as ready and stop."),
     "pr.merge_admin": ("Admin merge (pr.merge_admin): --admin asks GitHub to merge past "
                        "unmet requirements, outside the agents' standing GO. Confirm only if "
                        "you, the operator, are making this merge.",
-                       "`--admin` is outside the standing GO (Addendum 2026-10-24b A; agents "
-                       "may not use it). Drop `--admin` and merge only when the "
-                       "GO's conditions hold; otherwise report the PR as ready and stop."),
+                       "`--admin` is outside the standing GO (agents may not use it). Drop "
+                       "`--admin` and merge only when the AGENTS.md Review and merge "
+                       "conditions hold; otherwise report the PR as ready and stop."),
     "pr.auto_merge": ("Auto-merge is forbidden to agents (pr.auto_merge).",
                       "Auto-merge is retired: an agent merges only by a pinned merge under "
-                      "the standing GO (Addendum 2026-10-24b A). Report the PR as ready "
+                      "the AGENTS.md Review and merge rule. Report the PR as ready "
                       "instead."),
     "main.direct_push": ("Pushing to main is forbidden (main.direct_push): main takes PRs "
                          "only.",
