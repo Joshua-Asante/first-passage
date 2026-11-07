@@ -51,7 +51,7 @@ on any other hash.
    that ratio with Aegis held at its eval size.
 5. **G1 read** (framework §3–§4), on the combined day series with zero days included: SR̂ per
    chronological half; SR_LB with Lo's (2002) GMM standard error, Newey-West weights, lags 1–5;
-   z = Φ⁻¹(1 − 0.20/13). Three other standard errors are reported beside it. Per-leg reads are
+   z = Φ⁻¹(1 − 0.20/K), run at K = 13 and restated at K = 14 (see Limits). Three other standard errors are reported beside it. Per-leg reads are
    reported and don't bind, because framework §11 item 5 is open.
 6. **Reported, not binding:** flat EOD halves, each leg solo, and an Aegis fill sensitivity using
    the frozen H-AEGIS-FILL-1 central ratio.
@@ -85,17 +85,15 @@ G1 cannot rescue a failed gate under this rule.
 
 - It does not show negative expected value. The 3.0% ceiling is a preservation bar from August,
   not an economics test, and G2 was not run.
-- The G1 read does not establish an edge: it uses one exposed, tuned, in-sample history. K = 13 was
-  set by the task from the T00 ledger. It is a disclosed lower bound, not a total multiplicity
-  correction, since v1→v7 ORB tuning is unreconciled.
+- The G1 read does not establish an edge: it uses one exposed, tuned, in-sample history. K = 14 is a
+  disclosed lower bound, not a total multiplicity correction, since v1→v7 ORB tuning is unreconciled.
 
 ## Limits
 
 - In-sample, with prior performance reads of both legs.
-- **K accounting is open, for Joshua's ruling.** The frozen rule called this read K += 0, on the
-  precedent of descriptive reads. But this run can overturn a prior, and the amended Rule 26 notice
-  says every re-test counts, so that precedent doesn't clearly apply. The verdict doesn't turn on
-  this: the gate has no K term. Only the G1 bound would move.
+- **K accounting.** This re-test counts: Joshua ruled on 2026-11-07, so it is T00 trial 14 and the
+  ledger is K = 14. That supersedes the frozen rule's K += 0. The run's G1 read used z for K = 13;
+  the private record restates it for K = 14. The gate has no K term, so the verdict is unaffected.
 - A fresh account, not the owned account's state.
 - TradingView fills, apart from the Aegis sensitivity. ORB has no fill test.
 - The intraday floor is trade-level and assumes concurrent trades hit their worst together. It
