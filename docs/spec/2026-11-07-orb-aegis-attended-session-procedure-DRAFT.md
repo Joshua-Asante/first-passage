@@ -46,6 +46,11 @@ F runs in this order:
    any request is still unresolved, F is not complete. Keep watching, and if a late
    fill opens or reverses a position, repeat step 2 for it.
 
+**F on both legs** runs each step across both legs before the next: disable both
+instances, then flatten and cancel both legs, then verify both. Never wait on one
+leg's verification while the other instance is still enabled; B6 gives no automation
+that would stop it. If NinjaTrader is unavailable, the step 1 bypass applies to both.
+
 A leg that has had F is not re-enabled in the same session. Re-enabling is never a
 recovery step (B8), and an incident ends automation for that session. If NinjaTrader
 restarts, make sure neither instance is enabled from the saved workspace and the
@@ -77,20 +82,20 @@ connection is set not to connect on startup before it reconnects
 | Account evidence | Tradovate web account view | The view stops updating or is unavailable for longer than the freshness limit (runbook §2.4) | Card 8 |
 | Connection | NinjaTrader connection-loss alert | Any loss of connection (B7) | Incident card 1 |
 | Each instance's state | NinjaTrader strategies tab | An instance halts or reports a fault | Incident cards 2–4 |
-| The operator | — | The operator must leave the screen | F both legs; the session ends |
+| The operator | — | The operator must leave the screen | F on both legs; the session ends |
 
 ## 5. Incident cards
 
 | # | Situation | What the operator sees | Do | Session after |
 |---|---|---|---|---|
-| 1 | Connection lost (NinjaTrader, or the platform crashes or restarts) | Connection-loss alert; positions and orders in Tradovate web may still be live | F every leg that has a position, a working order or an unresolved request, from Tradovate web (F step 1's unavailable branch if NinjaTrader is down). Disable the other legs. Do not reconnect to resume: reconnecting never resumes trading (B7). Protection across a disconnect is unproven (U-3), so an open leg is treated as unprotected | Ends for both legs |
-| 2 | Rejected or unknown order on a leg (B9) | The instance halts | Check both views. If the leg has a position, a working order or an unresolved request (an unknown order is one), F. If it has none, disable | Both legs end (C1) |
-| 3 | Missing or short protection (§4) | A filled leg whose broker-reported working stop is missing or covers less than its open quantity | F | Both legs end (C1) |
-| 4 | Unexplained activity on a leg's own instrument (a fill or order the instance did not send) | The instance halts with an incident (B2) | F that leg | Both legs end (C1) |
-| 5 | Activity on neither instrument, or on another account (B2) | A position or order the pair did not send | F both legs, then close the unexplained position and cancel its orders in Tradovate web | Ends for both legs |
-| 6 | Account loss threshold reached (B6) | §4 | F both legs | Ends for both legs |
+| 1 | Connection lost (NinjaTrader, or the platform crashes or restarts) | Connection-loss alert; positions and orders in Tradovate web may still be live | F on both legs, flattening from Tradovate web (F step 1's bypass if NinjaTrader is down). Do not reconnect to resume: reconnecting never resumes trading (B7). Protection across a disconnect is unproven (U-3), so an open leg is treated as unprotected | Ends for both legs |
+| 2 | Rejected or unknown order on a leg (B9) | The instance halts | F on both legs (C1). A leg with no position, working order or unresolved request (an unknown order counts as unresolved) only needs disabling | Both legs end (C1) |
+| 3 | Missing or short protection (§4) | A filled leg whose broker-reported working stop is missing or covers less than its open quantity | F on both legs (C1) | Both legs end (C1) |
+| 4 | Unexplained activity on a leg's own instrument (a fill or order the instance did not send) | The instance halts with an incident (B2) | F on both legs (C1) | Both legs end (C1) |
+| 5 | Activity on neither instrument, or on another account (B2) | A position or order the pair did not send | F on both legs, then close the unexplained position and cancel its orders in Tradovate web | Ends for both legs |
+| 6 | Account loss threshold reached (B6) | §4 | F on both legs | Ends for both legs |
 | 7 | A leg is still open at the operator flatten time (B14, D2) | A position after the strategy's own scheduled exit should have run; most likely Aegis, whose exit needs a bar close | F that leg | Ends normally after §6 |
-| 8 | Account evidence lost (runbook §2.4) | The Tradovate account view is stale or unavailable beyond the freshness limit, so the loss threshold cannot be watched | F both legs, using whatever view still works | Ends for both legs |
+| 8 | Account evidence lost (runbook §2.4) | The Tradovate account view is stale or unavailable beyond the freshness limit, so the loss threshold cannot be watched | F on both legs, using whatever view still works | Ends for both legs |
 
 ## 6. End of session
 
@@ -126,7 +131,7 @@ flat (B13). After it, run §6 steps 2–3 before the next session.
 ## 9. Choices for Joshua
 
 - **C1. Scope of a leg incident (cards 2–4).** Recommendation: for the first
-  sessions, any incident ends both legs; run F on the other leg too. That matches
+  sessions, any incident ends both legs, through F on both legs (§2). That matches
   A11.2 as written ("an incident ends automated trading for that session") and keeps a
   lone operator's job simple. Once sessions have run cleanly, a leg incident could end
   that leg only, because each instance owns only its own instrument (11-05 path).
