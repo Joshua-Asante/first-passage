@@ -102,7 +102,7 @@ class ControllerMemoryJob:
     def __init__(self,memory_bytes=15*1024**3):
         if os.name != 'nt' or type(memory_bytes) is not int or not 16*1024**2 <= memory_bytes <= 15*1024**3:
             raise ReleaseError('unsupported controller memory bound')
-        from scripts.agent_handoff import WindowsJob
+        from discovery.windows_job import WindowsJob
         from discovery.orb_solo_executor import _native_types
         from types import SimpleNamespace
         self.job=WindowsJob.create()
@@ -559,7 +559,7 @@ def required_source_paths(root):
         'lab/discovery/orb_solo_series.py','lab/discovery/remc_series_builder.py',
         'lab/discovery/prop_survivor_scoring.py','lab/discovery/orb_solo_executor.py',
         'lab/discovery/orb_solo_release.py','lab/discovery/orb_solo_worker.py',
-        'scripts/agent_handoff.py','requirements-ops.lock',
+        'lab/discovery/windows_job.py','requirements-ops.lock',
         'docs/briefs/pre-registration/2026-08-26-prop-survivor-scoring-prereg-v2.md',
     )
     return [Path(root)/name for name in names]

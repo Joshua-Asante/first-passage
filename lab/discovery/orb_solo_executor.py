@@ -298,7 +298,7 @@ def run_owned(commands, *, cwd, output, pins, limits=Limits(), ledger=None, samp
         if limits.prior_cpu_seconds != prior or limits.phase_cpu_seconds != 12*3600 or limits.total_cpu_seconds != 42*3600:
             raise StopExecution('limits disagree with durable budget journal')
     verify_identity(pins)
-    from scripts.agent_handoff import WindowsJob, _spawn_windows_suspended_in_job
+    from discovery.windows_job import WindowsJob, _spawn_windows_suspended_in_job
     output = Path(output)
     if output.is_symlink():
         raise StopExecution('output symlink refused')

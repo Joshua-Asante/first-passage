@@ -402,3 +402,44 @@ structure:
 - **2026-08-03** — **Q-ICT-MNQ-1: the ICT cascade re-run on MNQ/NQ, all four layers, at $0 / K=0 / no manifest / Cap seat UNSPENT.** Governed by [`CONFIRM-FREE-NODEPLOY-2026-08-03`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/docs/notes/2026-08-03-ict-instrument-confirmation-nodeploy-ruling.md) — a free statistical replication of already-M=65-gated findings, hard-committed to no deployment, distinguished from the K-bound `WSTRUCT-M2K-1`/`SLR-MYM-1` precedents on intent (both were deploy-targeted from their first sentence; this names no deploy target). **W and D CONFIRM on independent instruments:** weekly structure-only RESOLVED on NQ (**0.5880**, CI [0.5445, 0.6315], 483 scored weeks) and MNQ (0.5751), both *above* US500's 0.5571; D SSL bear-FVG RESOLVED on NQ primary (**0.8630** vs base 0.7494), MNQ secondary AMBIGUOUS-HOLD (0.8269, first half dips below base). **The pool falsification is now three-for-three** — both pool sides sweep far *less* than radius-matched random on all three instruments (NQ SSL 0.3128 vs 0.6014; MNQ 0.3397 vs 0.6502); this is the most robust result in the study. **1H FALSIFIED** on multi-regime data, discharging its own re-proposal bar (see DEAD list). **1M fill wall NOT confirmed** — 59.06% retrace at the frozen `retraceK=6`, forcing the W3 correction above. Both archived harnesses ran **UNMODIFIED**; the W layer needed only a new OHLC→`gateBias` adapter (the `vStruct` formula survives in `PREREG-W.md` prose, so the lost `.pine` was not required) with 28 hand-computed unit tests. **Caught en route:** BAR_EXPORT **v0.2** breaks the archived D loader (its pipe regex anchors on v0.1's `...|volume$`), dropping every row and producing a *spurious* 0-bar INSUFFICIENT-N on both panels — surfaced only by the loader's own WARN, fixed at the schema-adapter layer. Also measured: TV `1!` continuous series are **not back-adjusted** (17 quarterly gaps of +0.8–1.6% at 3rd-Friday expiry, every quarter 2022-09→2026-03), motivating the pre-registered ±4-day roll exclusion. **Net: still no layer licenses a deployable edge.** No `core/`, lock, allocation, `dd_protection`, Pine, rail, or `LEG_MAP` change. [`RESULTS.md`](../../lab/analysis/_inbox/ict_mnq_2026-08/RESULTS.md) · [`RESULTS_1H_1M.md`](https://github.com/Joshua-Asante/first-passage-archive/blob/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/_inbox/ict_mnq_2026-08/RESULTS_1H_1M.md)
 - **2026-08-02** — **End-of-day-adversity line CLOSED tail-exhausted (operator ruling); raised bar recorded.** Three studies closed at **$0 / K=0 / no manifest / Cap seat UNSPENT**: `Q-SESSCONF-1` (hold-window ceiling **+0.091** vs Δ\* **+0.124** ⇒ FALSIFIED; the externally-carved-out **60–75 min class measures +0.501/+0.490 vs the incumbent's +0.842** — adverse, discharging the 07-21 domain audit's "untested" preservation), `Q-EODADV-1` (two mechanisms refuted: reversal `corr +0.0127` / NW t **+0.321**; variance expansion **1.06–1.12×**, z +0.21 — with an **exact** channel decomposition, control term identically 0, stop-out **76.3%** at **−0.488R**/event), `Q-DRIFTEX-1` (drift exhaustion FALSIFIED OOS on MYM; `t*` degenerate at **03:15 ET**, P3 missed **16×**). **N8 (new, load-bearing): the final-block anomaly does NOT survive multiplicity** — final block **t = −1.78** with **max |t| over all 11 session blocks = 1.84**, *below* the null expected max ≈2.2–2.4; the **14:00 block (−1.84) is as negative**. **Correction: `Q-SESSCONF-1`'s published z = −2.90 is superseded by t = −1.78** (that statistic differenced the ladder and estimated dispersion from the same 11 differenced points as if independent) — **do not re-quote z = −2.90**. A 4th mechanism (equity-close flow) was **not authored**: its reachability pre-flight found every date-conditional subgroup underpowered **2–5×** (needs n ≈ 1,194/subgroup). Raised bar landed in [`docs/rejected_candidates.md`](../../docs/rejected_candidates.md). **N3 "real but unharvestable" strengthened twice.** `ORB-MNQ-1` untouched (`K_eff` 2); D5 and the 16:00 clock stand; **ADR 2026-07-31 §5 unamended — the 15:30 exit stays barred.** No `core/`, lock, allocation, `dd_protection`, Pine, rail, or `LEG_MAP` change.
 - **2026-07-25** — Ledger created (attention-efficiency audit: every 2026-07 MNQ study had closed with no ledger home). Seeded W1–W4, N1–N7, the DEAD list, and the standing F2 guard from the ORB-MNQ / D5-RECOST / OPENPRESS / Q-COMPOSE closures. No `core/`, lock, allocation, `dd_protection`, or Pine change; no live-sizing implication.
+
+### 2026-11-05 — cash-open gap-failure investigation: PARK execution, untested
+
+One operator-requested return-blind investigation/proposal; $0 new spend, K=0.
+Recommend parking execution: a return inside yesterday's range before 10:00 does
+not establish further reversal after entry, and roll/adjustment provenance remains
+unverified. Related negative priors are [MSL-C1 on MYM](https://github.com/Joshua-Asante/first-passage/blob/b7eaff71abee6d7047765683170e4ad08a3d56b1/docs/briefs/closures/MSL-C1-closure-falsified.md),
+[MSL-C3-K2 on M2K](https://github.com/Joshua-Asante/first-passage/blob/b7eaff71abee6d7047765683170e4ad08a3d56b1/docs/briefs/closures/MSL-C3-K2-closure-falsified.md)
+and [OPENPRESS on MNQ/MYM](https://github.com/Joshua-Asante/first-passage/blob/b7eaff71abee6d7047765683170e4ad08a3d56b1/docs/briefs/closures/OPENPRESS-1-closure-falsified.md).
+These are advisory priors, not a prohibition on a separately registered retest.
+This recommendation is not an empirical rejection of the proposed MNQ rule.
+
+The completed metadata-only PowerShell audit checked eight November 3 annual
+`MNQ1!` exports in `core/data/tv_exports/cme/`: all eight SHA256 hashes matched
+[the registered manifest at PR #1077's merge](https://github.com/Joshua-Asante/first-passage/blob/535494eecc32aa8f9276b999cf055bf46da91a21/core/data/tv_exports/cme/SHA256SUMS).
+Coverage was 176,622 unique bar-opening timestamps, 2019-05-05T22:00Z through
+2026-11-02T21:45Z, consistently 15-minute duration. Encoded timestamps are UTC;
+convert to `America/New_York` for cash-session rules. No OHLCV values or strategy
+returns were decoded, including 2025–2026. The landing's full-validator PASS is
+prior evidence, not rerun here. Calendar completeness, missing critical bars and
+underlying-contract continuity remain unchecked; exports lack contract identifiers
+and adjustment settings. The prebuilt M15 panel was not refreshed.
+
+Proposal only: reference the immediately preceding full 09:30–16:00 cash session's
+MNQ range and final-bar close. Require a 09:30 open strictly outside that range
+and the 09:45–10:00 bar closing strictly inside; enter against the gap at the 10:00
+bar open. Stop at the adverse 09:30–10:00 extreme, target the previous cash-session
+close and otherwise flatten at noon; one trade/day. Skip invalid entry/stop/target
+ordering, incomplete or shortened sessions and unverified contract continuity.
+Use stop-first treatment for ambiguous bars. Costs remain planning assumptions to
+verify and freeze before a separately authorized test; no thresholds were tuned.
+
+Suggested exploration fence: 2020–2024, explicitly previously exposed data, not
+confirmation. Exclude all 2025–2026 prices and retain the existing 2026-11-02 through
+2027-10-29 exclusion, including after the earlier pilot's expiry. Its local owner
+is `docs/superpowers/plans/2026-10-18-mnq15-confirm-reservation.json`, SHA256
+`2830093dfc3b676bdd7b35edd08377dd6dd4dc721fdd8dc7cf7c503d10f49c0e`;
+that local record is not included in this change. No clean confirmation sample is
+certified. Revisit only with the data gaps resolved and a fixed, authorized test
+proposal; no return test, optimization or new trial registration occurred.
+M6E, MCL ORB R1 and the parked EIA work remain separate.

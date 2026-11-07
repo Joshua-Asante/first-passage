@@ -19,21 +19,6 @@ os.environ["PYTHONPATH"] = os.pathsep.join(
 
 
 @pytest.fixture
-def isolated_home(tmp_path, monkeypatch):
-    """Opt-in process-test storage, outside each test's worker workspace.
-
-    Both Python on Windows and POSIX shells must see the same home. Production
-    cache selection stays unchanged; pytest/launcher own these temporary files.
-    """
-    home = tmp_path / 'home'
-    home.mkdir()
-    monkeypatch.setenv('HOME', home.as_posix())
-    monkeypatch.setenv('USERPROFILE', str(home))
-    monkeypatch.setenv('XDG_CACHE_HOME', str(home / '.cache'))
-    return home
-
-
-@pytest.fixture
 def shell():
     """Use Git Bash on Windows, rather than the unrelated WSL launcher."""
     executable = (

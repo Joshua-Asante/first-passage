@@ -72,14 +72,8 @@ telemetry.jsonl
 .agents/*
 !.agents/skills/
 .agents/skills/*
-!.agents/skills/babysit/
-!.agents/skills/babysit/**
-!.agents/skills/relay-skill/
-!.agents/skills/relay-skill/**
 !.agents/skills/strategy-validation/
 !.agents/skills/strategy-validation/SKILL.md
-!.agents/skills/coordinator/
-!.agents/skills/coordinator/**
 .codex/
 
 # Deep-research leftovers — copyrighted source papers / raw text dumps pulled in
@@ -284,13 +278,9 @@ lab/analysis/_inbox/ict_1mexec_1_2026-08/mnq_1m.parquet
 # Only index.sqlite is disposable. Never publish captured source copies.
 .evidence/
 
-# Recall sidecar (Q-XMEM-1 Delete route): the FTS5 index is a REGENERATED
-# artifact -- `python -m ops.recall build` rebuilds it from the corpus in
-# seconds. It is also a derived copy of every markdown file including the cold
-# store, so committing it would both bloat the repo and duplicate content the
-# public-clone posture governs at the source. Staged notes live in the same
-# file; they are review scratch, not a record of authority (ledgers/SESSIONS
-# own that), so they are deliberately local-only too.
+# Retired recall sidecar index (ops/recall/ removed 2026-11). The ignore stays
+# so a stale local copy -- a derived copy of every markdown file, cold store
+# included -- is never committed.
 ops/data/recall.db
 
 # Untracked vendor / study clones — not a runtime dependency.
