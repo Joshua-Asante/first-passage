@@ -1,6 +1,7 @@
 # ORB + Aegis attended session: operator procedure (DRAFT)
 
-**Status:** DRAFT, 2026-11-07. Claude drafts, Joshua accepts or edits. It grants no
+**Status:** DRAFT, 2026-11-07. Claude drafts, Joshua accepts or edits. Joshua has
+decided the three choices in §9; the page as a whole awaits his acceptance. It grants no
 GO, order, session or spend. It is the operator's half of the
 [eval build design spec](2026-11-06-orb-aegis-eval-build-design.md): the spec says what
 the build does, and this page says what the attending operator does. Where they
@@ -67,19 +68,21 @@ connection is set not to connect on startup before it reconnects
    - today's trailing floor (highest end-of-day balance minus $3,000; the eval has no
      lock, and Tradeify enforces the floor intraday);
    - the account loss threshold, set above that floor (B6);
-   - the protection limit: how long after a fill a leg may go without a broker-reported
-     working stop covering its whole open quantity before the operator acts (§4);
+   - the observation cycle: how often a fresh broker read is taken after a fill, the
+     one cycle a stop gets to appear before the operator acts (§4, C3);
    - the freshness limit: how long the Tradovate account view may go without updating
      before the operator treats account evidence as lost (§4, card 8);
-   - the operator flatten time, before 16:45 ET (§5, C2).
+   - the hard latest trigger: the time by which F starts on any leg still open,
+     derived under C2 from a rehearsed worst-case F duration plus margin.
 3. Plan the attended window. It must cover the session from enable until verified
    flat. If it cannot, do not start.
+4. Do not start until the hard latest trigger has been derived from a rehearsal (C2).
 
 ## 4. During the session
 
 | Watch | Where | When it trips | Do |
 |---|---|---|---|
-| A leg fills | Tradovate web, that contract's orders | The broker-reported working stop quantity is below the leg's whole open quantity (missing or short) for longer than the protection limit (B4; U-3 and U-7 are unproven) | Card 3 |
+| A leg fills or part-fills | Tradovate web, that contract's orders | After one observation cycle, a fresh broker read still shows the working stop below the leg's whole open quantity, missing or short (B4, C3). A rejected or unknown protective order, a disconnect or lost broker evidence is an incident at once, not a reason to wait | Card 3; or cards 2, 1 or 8 |
 | Account equity | Tradovate web account view | At or below the account loss threshold (B6) | Card 6 |
 | Account evidence | Tradovate web account view | The view stops updating or is unavailable for longer than the freshness limit (runbook §2.4) | Card 8 |
 | Connection | NinjaTrader connection-loss alert | Any loss of connection (B7) | Incident card 1 |
@@ -96,13 +99,13 @@ connection is set not to connect on startup before it reconnects
 | 4 | Unexplained activity on a leg's own instrument (a fill or order the instance did not send) | The instance halts with an incident (B2) | F on both legs (C1) | Both legs end (C1) |
 | 5 | Activity on neither instrument, or on another account (B2) | A position or order the pair did not send | F on both legs, with the unexplained position and orders included in step 2: disable both instances, then flatten and cancel both legs and the unexplained exposure in Tradovate web, then verify all of them | Ends for both legs |
 | 6 | Account loss threshold reached (B6) | §4 | F on both legs | Ends for both legs |
-| 7 | A leg is still open at the operator flatten time (B14, D2) | A position after the strategy's own scheduled exit should have run; most likely Aegis, whose exit needs a bar close | F that leg | Ends normally after §6 |
+| 7 | A leg is still open at the hard latest trigger (B14, D2, C2) | A position after the strategy's own scheduled exit should have run; most likely Aegis, whose exit needs a bar close | F that leg | Ends normally after §6 |
 | 8 | Account evidence lost (runbook §2.4) | The Tradovate account view is stale or unavailable beyond the freshness limit, so the loss threshold cannot be watched | F on both legs, using whatever view still works | Ends for both legs |
 
 ## 6. End of session
 
 1. From each strategy's own scheduled exit until the leg is flat, watch it close.
-   Any leg still open at the operator flatten time gets F (card 7).
+   Any leg still open at the hard latest trigger gets F (card 7).
 2. **Verified flat (B11).** Both views read after the last request show zero positions
    and no working orders; no request is unresolved; every journal request has a
    terminal outcome; every execution is correlated. Empty grids, net zero, elapsed
@@ -130,17 +133,36 @@ connection is set not to connect on startup before it reconnects
 Placed only outside an armed session, with both instances disabled and the account
 flat (B13). After it, run §6 steps 2–3 before the next session.
 
-## 9. Choices for Joshua
+## 9. Decisions
 
-- **C1. Scope of a leg incident (cards 2–4).** Recommendation: for the first
-  sessions, any incident ends both legs, through F on both legs (§2). That matches
-  A11.2 as written ("an incident ends automated trading for that session") and keeps a
-  lone operator's job simple. Once sessions have run cleanly, a leg incident could end
-  that leg only, because each instance owns only its own instrument (11-05 path).
-- **C2. Operator flatten time.** It must fall before 16:45 ET and after both strategies'
-  own scheduled exits. If a strategy's tested exit is at or after a workable flatten
-  time, the operator's F pre-empts it every session. That changes behaviour against
-  the tested source, and the signed page names it. Recommendation: 16:40 ET at the
-  latest.
-- **C3. Protection limit (§4).** Set on the signed page, from how long the Sim101 runs
-  took to show a working stop after a fill.
+Joshua adopted Codex's recommendations on all three choices, 2026-11-07
+([Codex's answer](https://github.com/Joshua-Asante/first-passage/pull/1118#issuecomment-6700011227)).
+
+- **C1. Incident scope.** Whether something is an incident is judged per leg: the
+  companion's normal activity on its own instrument is not one (B2, 11-05 path). Once
+  an incident is declared on either leg, automation ends for the whole session, through
+  F on both legs (§2), as A11.2 says ("an incident ends automated trading for that
+  session"). Ending only the affected leg would need an explicit ruling by Joshua; clean
+  sessions alone do not authorise it.
+- **C2. Exit backstop: two triggers.**
+  1. *Normal:* each strategy gets its tested scheduled exit, including the bar close
+     Aegis's exit needs (D2).
+  2. *Hard latest:* whether or not that exit has fired, F starts early enough that a
+     full F, measured at its worst case in a rehearsal (submission, fills,
+     cancellation, verification and an adverse-path allowance), finishes before
+     16:45 ET, plus an explicit margin. The time is derived backwards from 16:45 ET,
+     not chosen as a round number, and is checked against both tested exits
+     *(signed page)*.
+
+  If no time both gives the tested exits a real chance and leaves that recovery time,
+  either the signed page records that the hard trigger pre-empts the tested exit and
+  Joshua accepts that difference, or the session does not run.
+- **C3. Protection check.** For the first firm sessions: after every fill or partial
+  fill, take a fresh broker read. Allow one observation cycle for a working stop
+  covering the whole open quantity to appear. If the next fresh read still shows any
+  shortfall, run F (card 3). A rejected or unknown protective order, a disconnect or
+  lost broker evidence is an incident at once (cards 2, 1, 8). Sim101 timings can
+  inform the observation cycle but cannot set the firm-connection bound (U-7). A
+  broker-reported `Working` stop does not prove it survives a disconnect (U-3). The
+  bound may be relaxed later only by a ruling Joshua registers in advance, set from the
+  slow tail of firm observations plus margin, never the average.
