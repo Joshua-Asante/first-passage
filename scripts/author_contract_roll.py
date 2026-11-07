@@ -1,4 +1,4 @@
-"""Check or regenerate the live G4 roll source artifacts (ops/c1_rail/contract_roll.py).
+"""Check or regenerate the live G4 roll source artifacts (ops/contract_roll.py).
 
   --compat-check      print the compat build's sha256 and MATCH/DIFFERS against the bound list's pinned sha
   --forward           write ops/calendars/contract_roll_forward.json
@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "ops"))
-from c1_rail import contract_roll as cr  # noqa: E402
+import contract_roll as cr  # noqa: E402
 
 
 def main(argv=None):

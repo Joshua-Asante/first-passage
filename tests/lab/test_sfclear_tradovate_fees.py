@@ -205,18 +205,6 @@ def test_c7_reference_addback_and_tradovate_deduction_once(tmp_path, cost, symbo
     assert trades == before
 
 
-def test_c8_tradeify_cost_terms_bytes_unchanged_at_cut():
-    root = Path(__file__).resolve().parents[2]
-    raw = (root / 'ops/c1_rail/qualification/production_source.py').read_bytes()
-    source = raw.decode('utf-8')
-    function = next(node for node in ast.parse(source).body
-                    if isinstance(node, ast.FunctionDef) and node.name == '_cost_terms')
-    # Pin only this contract: card B owns other functions in production_source.
-    # Exact 45a32be364e7229b181e9b4b053ac9aedd78a6a8 text, no cross-layer import.
-    assert digest(ast.get_source_segment(source, function).encode()) == (
-        '62ca0a7f39de03089407dff2942b9ab1dfafbba1116dbc0a4bcd65253a829be0')
-
-
 @pytest.mark.parametrize('raw', [b'{}', b'[]', b'null', b'not json', b'\xff',
                                b'{"schema":1,"schema":2}'])
 def test_closed_json_refuses(raw):

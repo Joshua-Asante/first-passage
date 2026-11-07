@@ -22,7 +22,7 @@ WORKFLOW = Path(__file__).resolve().parents[1] / ".github/workflows/validation-c
     ("requirements-research.lock", False),
     ("scripts/layer_bootstrap.py", False),
     ("docs/notes/example.md", False),
-    ("ops/c1_rail/c1_rail_listener.py", False),
+    ("ops/c1_rail/book_policy.py", False),
 ])
 def test_dependency_change_schedules_consumer_suite(event, changed_path, expected):
     workflow = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))

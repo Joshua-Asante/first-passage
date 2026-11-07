@@ -27,7 +27,7 @@ from functools import lru_cache
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 D19 = "ops/calendars/cme_holiday_calendar_2022_2026.json"
 CAPTURE = "ops/calendars/roll_sources/cme_calendar_capture_20261012.tsv"
 FORWARD = "ops/calendars/contract_roll_forward.json"
@@ -357,6 +357,7 @@ def _build(src, first, last, *, compat):
                     seams.append(_seam_row(cal, product, y, m)[0])
     header = {
         "schema": "contract_roll_forward/v1",
+        # The old module path below is part of the artifact's bytes; leave it.
         "purpose": ("live G4 roll source, forward rows (ops/c1_rail/contract_roll.py): the bound replay list's "
                     "rule extended over the contracts the pinned CME capture reproduces; calendar only"),
         "window": [first.isoformat(), last.isoformat()],

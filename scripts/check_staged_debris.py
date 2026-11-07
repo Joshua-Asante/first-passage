@@ -37,9 +37,7 @@ Same rules in every mode:
   empty file, and ``core.ignorecase=false`` pins case-sensitive matching, so
   the verdict is the same in every clone. Every judged path is checked --
   staged adds, copies, renames-in and modifies; every index path when the
-  stage changes any .gitignore; every HEAD path in HEAD-tree mode. The only
-  exemption is TRACKED_IGNORED_GRANDFATHERED, the files tracked on main
-  despite a matching rule before this check existed;
+  stage changes any .gitignore; every HEAD path in HEAD-tree mode;
 * oversize staged blobs -- a single file over MAX_STAGED_FILE_BYTES outside
   the allowlisted roots, or over ALLOWLISTED_MAX_STAGED_FILE_BYTES (2 MB)
   inside them. The allowlist is data-derived, not aspirational:
@@ -99,17 +97,6 @@ LARGE_FILE_ALLOWLIST_PREFIXES = (
 # split into parts under the ceiling pass -- the force-added-ignored-file check below
 # and review are the controls for those, not this number.
 ALLOWLISTED_MAX_STAGED_FILE_BYTES = 2_000_000
-
-# Files tracked on main despite a matching repository .gitignore rule before the
-# force-added-ignored-file check existed (verified on main 2026-09-26 against the
-# committed rules). Exact-path exemption, in every mode; any other tracked ignored
-# path is a finding. Shrink via review when one is untracked or its rule is
-# narrowed; never grow it to admit a new force-add.
-TRACKED_IGNORED_GRANDFATHERED = frozenset(
-    {
-        "tests/fixtures/c1_image_validation/lifecycle_state.json",
-    }
-)
 
 # Variables that bind a git process to one repository (`git rev-parse
 # --local-env-vars`). Stripped for the rule mirror so a pre-commit hook's GIT_DIR /
@@ -448,7 +435,6 @@ def collect_findings(root: Path) -> tuple[list[tuple[str, str]], str]:
         sizes = {path: size for _, _, _, size, path in tree}
         ignored = ignored_paths(root, head_rules, paths)
         extra = []
-    ignored -= TRACKED_IGNORED_GRANDFATHERED
     extra = [path for path in extra if path in ignored]
     findings = [f for f in (_judge(p, sizes.get(p), ignored) for p in paths) if f]
     findings += [(IGNORED, f"{p}: {FORCE_ADDED_IGNORED}") for p in extra]

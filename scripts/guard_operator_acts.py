@@ -9,8 +9,8 @@ are the ones registered in `scripts/seat_authority.yml`.
 best-effort, ruleset as enforcement"). This hook reads the common ways a Claude Code
 session writes an operator act and puts the call in front of the operator (``ask``) or
 refuses it (``deny``). It reads command text, so a determined or unusual form gets past
-it (see *Not read* below). What enforces is server-side or in the rail itself, verified
-read-only on 2026-09-25 (ruleset re-read 2026-10-25):
+it (see *Not read* below). What enforces is server-side, verified read-only on
+2026-09-25 (ruleset re-read 2026-10-25):
 
   * GitHub ruleset 21071355 ``main-protection`` (active on ``refs/heads/main``, empty
     bypass list, ``current_user_can_bypass: never``): a pull request is required, the
@@ -22,13 +22,6 @@ read-only on 2026-09-25 (ruleset re-read 2026-10-25):
     limit.
   * The repository setting ``allow_auto_merge: false``: GitHub refuses to enable
     auto-merge on any PR, whoever asks.
-  * The arming interlock in `ops/c1_rail/c1_rail_arm.py`
-    (``validate_c1_monitoring_acceptance.validate(require_resolved=True)``): it refuses to
-    arm unless the M1 artifact validates as RESOLVED, or ``--acknowledge-m1-unresolved``
-    is given against a structurally valid unresolved artifact (which writes an
-    ``arming_deviation`` record). It does not check for an operator GO.
-  * ``fly deploy`` has **no** server-side enforcement: only where the Fly credential is
-    held, and this hook's prompt.
 
 Operator acts (risk ``high``) are performed by the operator through an act they already
 perform. When the hook recognises one, it asks: the harness prompt is an operator
@@ -72,50 +65,6 @@ call, because one answer approves all of them.
                        hook), nor is a dry run (``--dry-run`` / ``-n`` in effect after the
                        last ``--no-dry-run``): it updates nothing. Server-side, the ruleset
                        refuses every push to ``main``.
-  * ``rail.deploy``  — ask, **only for a live execution-path app** (operator ruling
-                       2026-09-26): ``fly deploy`` / ``flyctl deploy`` whose target is
-                       ``c1-rail`` (listener) or ``c1-signal-daemon`` (`LIVE_FLY_APPS`,
-                       pinned by a test to ``deploy/*/fly.toml``); the prompt names the app.
-                       The target is read as flyctl picks it: ``-a`` / ``--app``, else
-                       ``FLY_APP``, else the ``app`` of the fly.toml it loads (``--config``,
-                       a file or a directory, or ``fly.toml`` in the WORKING_DIRECTORY
-                       argument or the tool call's ``cwd``). A relative ``--config`` beside
-                       a WORKING_DIRECTORY argument is read against both directories
-                       (``fly deploy --help``, v0.4.102, does not say which flyctl uses) and
-                       names an app only when both agree. A deploy of any other app is
-                       silent, and so is ``--help``. When the target cannot be determined it
-                       asks (fail closed): no ``-a`` and no readable fly.toml naming an app;
-                       ``FLY_APP`` in the hook's environment; a flag missing from the
-                       ``fly deploy`` table or a value that is not an app name; more than one
-                       argument; or a relative path after a directory change that runs
-                       before it (``cd``, ``Set-Location``, ``pushd`` ...; any in a loop,
-                       and any in a call that defines a function: its body runs where it
-                       is called).
-                       **Only ``-a`` names the target** (fail closed on the rest) when the
-                       deploy runs under a prefix assignment or a wrapper (``env``,
-                       ``timeout``, ``bash -c`` ...), ``pwsh``, the launcher or ``fly ssh``
-                       (a remote machine), or when anything the call runs before it, beside
-                       it (a pipeline, a background job) or in a loop with it may have
-                       changed its environment or files: a file-writing redirection (``>``,
-                       ``>>``, ``&>``, ``>|``; not ``2>&1`` or a null device), a variable
-                       assignment, a backquote body (re-read without source positions), or
-                       any program off a short read-only list (`_READ_ONLY`: ``cat``,
-                       ``echo``, ``ls``, ``grep`` ... and directory changes; none that can
-                       run another program, and none with a ``{`` argument). So ``sed -i ... fly.toml && fly deploy``, ``export
-                       FLY_APP=...; fly deploy`` and ``git pull && fly deploy`` ask; ``fly
-                       deploy && git checkout -- fly.toml`` does not. An explicit
-                       ``--config`` beside ``-a`` counts as a target too. Nothing
-                       server-side backs this prompt.
-  * ``rail.arm``     — ask: ``c1_rail_arm.py --arm`` (or argparse's ``--ar``), as a script
-                       or ``-m`` module, through the ``fp.ps1`` launcher or ``pwsh``, and
-                       inside ``fly ssh console -C '…'`` (``-sC '…'`` and ``-C'…'`` too).
-                       An arm that passes ``--acknowledge-m1-unresolved`` asks, never
-                       denies (operator ruling 2026-09-26: agents may use the override, only
-                       through this prompt), under a prompt that says M1 is not resolved,
-                       that the helper accepts it only against a structurally valid
-                       unresolved artifact and that it writes an ``arming_deviation`` record.
-                       ``--disarm`` and ``--status`` never ask:
-                       disarming is a risk-reducing exit and must never wait on a prompt.
   * ``pr.merge_admin`` — ask: a pinned ``gh pr merge --admin`` (unless its last value is
                        one of pflag's false spellings). ``--admin`` asks GitHub to merge
                        past unmet requirements, which the standing GO does not cover
@@ -125,7 +74,7 @@ call, because one answer approves all of them.
 **Scope — what this hook is not.** It covers the Claude Code harness only (Codex sessions
 are not hooked). It adds a prompt where an agent session holds a
 credential that could otherwise act; it does not replace the ruleset, the repository
-setting, the arming interlock or keeping credentials off agent environments. It cannot
+setting or keeping credentials off agent environments. It cannot
 see broker actions: since the 2026-09-30 amendment, ``trade.submit`` is an operator act,
 enforced by the operator's direction and by broker credentials staying outside agent
 environments (boundary OF-5); an agent acts only through an already-authenticated
@@ -141,7 +90,7 @@ flags are read as pflag reads them (shorthand clusters such as ``-iX POST``, a v
 flag taking the next word even when it starts with ``-``); flags before the subcommand
 name are read as cobra reads them while it looks for the subcommand (only ``-h`` /
 ``--help`` / ``--version`` are booleans there) and also the looser way this hook read
-them before. ``fly`` and ``git`` global flags the hook does not list are read both as
+them before. ``git`` global flags the hook does not list are read both as
 taking the next word and as not. A command the tokenizer cannot read falls back to raw
 regexes, toward refusing: unreadable text cannot prove a pin.
 
@@ -162,8 +111,8 @@ regexes, toward refusing: unreadable text cannot prove a pin.
     ``remote.<r>.mirror``, and gh or git flags this hook's tables do not list.
   * Other routes to the same effect: GitHub API writes to ``main`` other than a merge
     (a ``git/refs`` update, for example), other clients or scripts that call GitHub, and
-    remote execution on the rail other than ``fly ssh console -C`` (``fly machine exec``,
-    for example).
+    remote execution other than ``fly ssh console -C`` (``fly machine exec``, for
+    example).
 
 Contract: JSON on stdin (``tool_name``, ``tool_input``); on a match, Claude Code's
 PreToolUse decision JSON on stdout; on anything else, nothing (a hook ``allow`` would
@@ -176,21 +125,14 @@ import binascii
 import fnmatch
 import functools
 import json
-import os
 import re
 import sys
-from pathlib import Path
 from typing import NamedTuple
 
-try:
-    import tomllib
-except ImportError:  # Python < 3.11: `_toml_app` falls back to a regex
-    tomllib = None
-
 try:  # imported as `scripts.guard_operator_acts` (tests, repo root on sys.path)
-    from scripts._shell_tokens import Word, expand, is_assignment, program, segments
+    from scripts._shell_tokens import expand, program, segments
 except ImportError:  # run as `python scripts/guard_operator_acts.py`
-    from _shell_tokens import Word, expand, is_assignment, program, segments
+    from _shell_tokens import expand, program, segments
 
 PASS, ASK, DENY = "pass", "ask", "deny"
 
@@ -213,8 +155,6 @@ DECISION = {
     "pr.merge_unpinned": DENY,
     "pr.auto_merge": DENY,
     "main.direct_push": DENY,
-    "rail.deploy": ASK,
-    "rail.arm": ASK,
 }
 _PINNED = frozenset({"pr.merge", "pr.merge_admin"})  # caps whose detail is the head SHA
 
@@ -247,16 +187,11 @@ MESSAGES = {
                          "`main` requires a PR and the required status; a direct push "
                          "bypasses both. Push a `codex/` or `claude/` branch and "
                          "open a PR."),
-    "rail.arm": ("Arming the c1 rail is an operator act (rail.arm): M1 RESOLVED and a GO "
-                 "for this armed session. Confirm to proceed.",
-                 "Arming requires M1 RESOLVED and a per-session operator GO. Do not proceed "
-                 "unless the operator confirms this prompt."),
 }
 
 # Details that change a hit's message; its capability and decision stay the same.
 OPAQUE = "opaque"
 UNREAD = "unread"
-M1_UNRESOLVED = "m1-unresolved"
 _DETAIL_MESSAGES = {
     ("pr.merge_unpinned", OPAQUE): (
         "Refused: the request body is in a file the guard cannot read (pr.merge / "
@@ -270,63 +205,13 @@ _DETAIL_MESSAGES = {
         "The guard reads `gh` flags as gh v2.92.0 does; with an unknown flag it cannot tell "
         "an option's value from a flag, so it cannot prove the call is not an unpinned "
         "merge. Re-issue it with the documented flags only; a merge must pin the head SHA."),
-    ("rail.arm", M1_UNRESOLVED): (
-        "Arming the c1 rail with M1 UNRESOLVED (rail.arm, --acknowledge-m1-unresolved): "
-        "the arm helper accepts this only against a structurally valid unresolved M1 "
-        "artifact, and it writes an arming_deviation record (operator-ratified discretion, "
-        "ADR 2026-07-22 Addendum 2026-07-31b). Confirming is the GO for this armed session; "
-        "confirm only if you, the operator, are taking that deviation now.",
-        "Operator ruling 2026-09-26: an agent may pass --acknowledge-m1-unresolved, but only "
-        "through this operator-act prompt; the operator's answer is the GO for this armed "
-        "session, and any order, exit or cancel still needs its own operator direction. "
-        "Do not proceed unless the operator confirms "
-        "this prompt."),
 }
-
-# The Fly apps on the live execution path (operator ruling 2026-09-26): the listener and the
-# signal daemon, as `deploy/c1_rail/fly.toml` and `deploy/c1_signal_daemon/fly.toml` name
-# them (a test pins the two against those files). A deploy of any other app is silent.
-LIVE_FLY_APPS = frozenset({"c1-rail", "c1-signal-daemon"})
-UNKNOWN_APP = "?"  # a deploy whose target app the guard cannot determine
-_APP_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
-_CD_PROGRAMS = frozenset({"cd", "chdir", "pushd", "popd", "set-location", "sl",
-                          "push-location", "pop-location"})
-# Programs that write no file and set nothing a later deploy reads: before a deploy they
-# leave the fly.toml it loads trusted. Any other program, a variable assignment or a
-# file-writing redirection may have changed it (Codex thread 4111045506), so the deploy's
-# target is then read from -a only. Kept short on purpose: an omission asks, never hides.
-# No program here may run another (ripgrep's --pre does, so rg is left out), and a segment
-# with a `{` in any argument (a PowerShell scriptblock or calculated property) is not quiet.
-_READ_ONLY = _CD_PROGRAMS | frozenset({
-    "cat", "echo", "printf", "ls", "dir", "pwd", "true", "false", "test", "[", "head",
-    "tail", "grep", "wc", "which", "sleep", "get-content", "get-childitem",
-    "get-location", "select-string", "select-object", "test-path", "write-output",
-    "write-host", "out-null"})
-# A segment starting with one of these repeats, or defines a function whose body runs
-# wherever it is later called (a word ending in `()` does too): nothing in the call runs
-# strictly after a deploy inside it.
-_LOOP_WORDS = frozenset({"for", "while", "until", "select", "do", "done", "foreach",
-                         "function", "filter", "workflow", "configuration"})
-_NULL_DEVICES = frozenset({"/dev/null", "$null", "nul"})
-
-
-class _Deploy(NamedTuple):
-    """One reading of a ``fly deploy`` command line: what decides its target app."""
-
-    app: str | None       # -a / --app (last value)
-    config: str | None    # -c / --config (last value)
-    workdir: str | None   # the WORKING_DIRECTORY argument
-    readable: bool        # every flag known and valued, at most one argument
-    anchored: bool = True  # relative paths resolve against the hook's cwd
-    settled: bool = True   # its environment and files are as the hook reads them
-
 
 class Hit(NamedTuple):
     """One operator or forbidden act found in a call."""
 
     cap: str
     detail: str | None = None  # the pinned head SHA for `_PINNED`; a message detail otherwise
-    readings: tuple[_Deploy, ...] = ()  # rail.deploy: the command's readings, unresolved
 
     @property
     def decision(self) -> str:
@@ -343,13 +228,10 @@ _FALLBACK = (
     (re.compile(r"\bgit\b[^;&|\n]*\bpush\b[^;&|\n]*(?:[\s:+'\"](?:(?:refs/)?heads/)?main"
                 r"(?![\w./:-])|\s--(?:all?|b[a-z]*|m[a-z]*)(?![\w-])|\s\+?:(?=[\s'\"]|$))"),
      "main.direct_push"),
-    (re.compile(r"\b(fly|flyctl)\b.*\bdeploy\b"), "rail.deploy"),
-    (re.compile(r"c1_rail_arm\S*\s.*--arm?\b"), "rail.arm"),
 )
 
 # Flag tables: long name -> (shorthand, takes a value), as `--help` lists them. gh
-# v2.92.0 (`gh api --help`, `gh pr merge --help`, inherited flags included); fly
-# v0.4.102 global flags plus the app/config flags its commands share.
+# v2.92.0 (`gh api --help`, `gh pr merge --help`, inherited flags included).
 _GH_API_FLAGS = {
     "cache": ("", True), "field": ("F", True), "header": ("H", True),
     "hostname": ("", True), "include": ("i", False), "input": ("", True),
@@ -363,29 +245,6 @@ _GH_MERGE_FLAGS = {
     "disable-auto": ("", False), "match-head-commit": ("", True), "merge": ("m", False),
     "rebase": ("r", False), "squash": ("s", False), "subject": ("t", True),
     "repo": ("R", True), "help": ("h", False)}
-_FLY_FLAGS = {
-    "access-token": ("t", True), "app": ("a", True), "config": ("c", True),
-    "debug": ("", False), "verbose": ("", False), "help": ("h", False)}
-# `fly deploy --help`, fly v0.4.102: the command's own flags on top of `_FLY_FLAGS`. Only
-# the deploy-target reading uses it; a flag missing from it makes the target unreadable.
-# (`--depot` takes a value only after `=`, so it is a boolean for the next word.)
-_FLY_DEPLOY_FLAGS = {
-    **_FLY_FLAGS,
-    **{name: ("", True) for name in (
-        "build-arg", "build-context-warn-size", "build-secret", "build-target",
-        "buildpacks-docker-host", "buildpacks-volume", "compression", "compression-level",
-        "deploy-retries", "depot-scope", "dockerfile", "exclude-machines", "exclude-regions",
-        "file-literal", "file-local", "file-secret", "host-dedication-id", "ignorefile",
-        "image-label", "label", "lease-timeout", "max-concurrent", "max-unavailable",
-        "only-machines", "primary-region", "process-groups", "regions",
-        "release-command-timeout", "strategy", "vm-cpu-kind", "vm-cpus", "vm-memory",
-        "vm-size", "volume-initial-size", "wait-timeout")},
-    **{name: ("", False) for name in (
-        "build-only", "buildkit", "depot", "detach", "dns-checks", "flycast", "ha",
-        "https-failover", "http-failover", "local-only", "nixpacks", "no-cache",
-        "no-public-ips", "now", "push", "recreate-builder", "remote-only",
-        "skip-release-command", "smoke-checks", "update-only", "wg", "auto-confirm")},
-    "env": ("e", True), "image": ("i", True), "signal": ("s", True), "yes": ("y", False)}
 _GH_TRUE = frozenset({"1", "t", "T", "TRUE", "true", "True"})  # pflag's true spellings
 _GH_FALSE = frozenset({"0", "f", "F", "FALSE", "false", "False"})  # and its false ones
 _GRAPHQL_ENDPOINT = re.compile(r"(^|/)graphql/?(\?|$)", re.IGNORECASE)
@@ -411,7 +270,7 @@ _GIT_PUSH_LONG = ("all", "atomic", "branches", "delete", "dry-run", "exec", "fol
                   "quiet", "receive-pack", "recurse-submodules", "repo", "set-upstream",
                   "signed", "tags", "thin", "verbose", "verify")
 _MAIN = frozenset({"main", "heads/main", "refs/heads/main"})
-_PYTHONS = re.compile(r"(python(\d+(\.\d+)?)?|py|pypy3?)")
+
 
 # pwsh 7.6 and Windows PowerShell 5.1 command-line parameters (`pwsh -?`, `powershell
 # -?`), with each alias that is not a prefix of its name: what the parameter does with
@@ -446,14 +305,6 @@ _GQL_TOKEN = re.compile(
     r'|(?P<num>-?[0-9][_0-9A-Za-z.+-]*)'
     r'|(?P<punct>\.\.\.|[!&():=@\[\]{|}])')
 _OPEN, _CLOSE = frozenset("([{"), frozenset(")]}")
-
-
-def _spellings(tables: tuple[dict, ...], takes_value: bool) -> frozenset[str]:
-    """The ``--name`` / ``-x`` spellings of the flags in `tables` that do (or do not)
-    take a value."""
-    return frozenset(spelling for table in tables for name, (short, value) in table.items()
-                     if value == takes_value
-                     for spelling in (f"--{name}", f"-{short}" if short else "") if spelling)
 
 
 def _command_paths(args: list[str], values: frozenset[str], bools: frozenset[str],
@@ -662,9 +513,6 @@ def _judge_api(args: list[str]) -> list[Hit]:
     return []
 
 
-_FLY_VALUE_FLAGS = _spellings((_FLY_FLAGS,), True)
-_FLY_BOOL_FLAGS = _spellings((_FLY_FLAGS,), False)
-
 # The boolean flags gh's root and `pr` commands define. While cobra looks for the
 # subcommand, every other flag written without `=` takes the next word.
 _GH_ROOT_BOOLS = frozenset({"-h", "--help", "--version"})
@@ -753,200 +601,8 @@ def _fly_commands(args: list[str]) -> list[str]:
 def _judge_fly(args: list[str]) -> list[Hit]:
     hits: list[Hit] = []
     for command in _fly_commands(args):
-        hits += _unsettle(_command_hits(command))  # runs on the remote machine
-    paths = [path for path in _command_paths(args, _FLY_VALUE_FLAGS, _FLY_BOOL_FLAGS, 1)
-             if [args[i] for i in path] == ["deploy"]]
-    if paths and not _fly_help(args):
-        readings = tuple(dict.fromkeys(_deploy_reading(_without(args, p)) for p in paths))
-        hits.append(Hit("rail.deploy", readings=readings))
+        hits += _command_hits(command)  # runs on the remote machine
     return hits
-
-
-def _deploy_reading(args: list[str]) -> _Deploy:
-    """What decides a ``fly deploy``'s target app, read as pflag reads `args` (the command
-    line without the ``deploy`` word; cobra takes flags on either side of it)."""
-    parsed = _pflag(args, _FLY_DEPLOY_FLAGS)
-    value = dict(parsed.options)  # pflag: the last occurrence wins
-    return _Deploy(value.get("app") or None, value.get("config") or None,
-                   parsed.words[0] if parsed.words else None,
-                   not parsed.unread and len(parsed.words) <= 1)
-
-
-def _unanchor(hits: list[Hit], settled: bool = True) -> list[Hit]:
-    """`hits` with every deploy reading marked as run from a directory the hook cannot
-    see (after a ``cd``); with ``settled=False``, also with an environment and files the
-    hook cannot see (`_unsettle`)."""
-    return [hit._replace(readings=tuple(
-        r._replace(anchored=False, settled=r.settled and settled) for r in hit.readings))
-        if hit.cap == "rail.deploy" else hit for hit in hits]
-
-
-def _unsettle(hits: list[Hit]) -> list[Hit]:
-    """`hits` with every deploy reading marked as run where only ``-a`` names its target:
-    under a prefix assignment or a wrapper, the launcher, ``pwsh`` or on a remote machine,
-    or after something that may have changed its environment or files."""
-    return _unanchor(hits, settled=False)
-
-
-def _toml_app(path: Path) -> str:
-    """The ``app`` a fly.toml names, or `UNKNOWN_APP` when it cannot be read."""
-    try:
-        text = path.read_text(encoding="utf-8")
-        if tomllib is not None:
-            app = tomllib.loads(text).get("app")
-        else:
-            match = re.search(r"""(?m)^\s*app\s*=\s*["']([^"'\n]*)["']""", text)
-            app = match.group(1) if match else None
-    except (OSError, ValueError, UnicodeDecodeError):
-        return UNKNOWN_APP
-    return app if isinstance(app, str) and _APP_NAME.fullmatch(app) else UNKNOWN_APP
-
-
-def _under(base: Path | None, path: str) -> Path | None:
-    """`path` resolved against `base`; None when it is relative and `base` is unknown."""
-    resolved = Path(path)
-    if resolved.is_absolute():
-        return resolved
-    return None if base is None else base / resolved
-
-
-def _file_app(path: Path | None) -> str:
-    """The app of the fly.toml at `path` (a file, or a directory holding one)."""
-    if path is None:
-        return UNKNOWN_APP
-    try:
-        return _toml_app(path / "fly.toml" if path.is_dir() else path)
-    except (OSError, ValueError):
-        return UNKNOWN_APP
-
-
-def _config_app(reading: _Deploy, cwd: str | None) -> str:
-    """The app the fly.toml a deploy loads names: ``--config`` (a file or a directory), or
-    ``fly.toml`` in the WORKING_DIRECTORY argument or else the current directory. A
-    relative ``--config`` beside a WORKING_DIRECTORY argument is read against both the
-    current and the working directory, since ``fly deploy --help`` (v0.4.102) does not
-    say which flyctl uses; an app is named only when both readings agree. A relative path
-    whose base the hook cannot see, or any file the call may have changed first, is
-    `UNKNOWN_APP`."""
-    if not reading.settled:
-        return UNKNOWN_APP
-    base = Path(cwd) if cwd and reading.anchored else None
-    workdir = _under(base, reading.workdir) if reading.workdir else base
-    if reading.config:
-        paths = {_under(base, reading.config), _under(workdir, reading.config)}
-    else:
-        paths = {workdir}
-    apps = {_file_app(path) for path in paths}
-    return apps.pop() if len(apps) == 1 else UNKNOWN_APP
-
-
-def _deploy_targets(reading: _Deploy, cwd: str | None, fly_app_env: bool) -> set[str]:
-    """The apps one reading may deploy. flyctl takes ``-a`` over ``FLY_APP`` over the
-    config's ``app``; an explicit ``--config`` beside ``-a`` counts too (toward asking)."""
-    if not reading.readable:
-        return {UNKNOWN_APP}
-    targets = set()
-    if reading.app:
-        targets.add(reading.app if _APP_NAME.fullmatch(reading.app) else UNKNOWN_APP)
-        if not reading.config:
-            return targets
-    elif fly_app_env or not reading.settled:
-        return {UNKNOWN_APP}  # FLY_APP names the app, and the call may have set it
-    targets.add(_config_app(reading, cwd))
-    return targets
-
-
-def _resolve_deploys(hits: list[Hit], cwd: str | None) -> list[Hit]:
-    """Each deploy scoped to the live execution path (operator ruling 2026-09-26): a deploy
-    that can only reach apps off it is dropped; one that may reach a live-path app, or
-    whose target cannot be determined, asks with the app names (or `UNKNOWN_APP`) as its
-    detail. A FLY_APP the call itself may set is read in `_command_hits` (a prefix, a
-    wrapper or an earlier segment unsettles the deploy); this reads the hook's own."""
-    fly_app_env = bool(os.environ.get("FLY_APP"))
-    out = []
-    for hit in hits:
-        if hit.cap != "rail.deploy":
-            out.append(hit)
-            continue
-        targets = set().union(*(_deploy_targets(r, cwd, fly_app_env)
-                                for r in hit.readings)) if hit.readings else {UNKNOWN_APP}
-        live = sorted(t for t in targets if t.casefold() in LIVE_FLY_APPS)
-        if live or UNKNOWN_APP in targets:
-            other = len(targets) > len(live) + (UNKNOWN_APP in targets)
-            detail = ",".join(live + ([UNKNOWN_APP] if UNKNOWN_APP in targets else [])
-                              + ([_OTHER_APPS] if other else []))
-            out.append(Hit("rail.deploy", detail))
-    return list(dict.fromkeys(out))
-
-
-_OTHER_APPS = "+"  # a deploy detail marker: some reading targets an app off the live path
-
-
-def _deploy_message(detail: str) -> tuple[str, str]:
-    parts = detail.split(",")
-    names = [n for n in parts if n not in (UNKNOWN_APP, _OTHER_APPS)]
-    apps = " and ".join(names)
-    if names and UNKNOWN_APP in parts:
-        what = (f"This Fly deploy may target {apps} (live execution path); the guard "
-                f"cannot determine every app it may target")
-    elif names and _OTHER_APPS in parts:
-        what = f"This Fly deploy may target {apps}, on the live execution path"
-    elif names:
-        what = f"This Fly deploy targets {apps}, on the live execution path"
-    else:
-        what = ("The guard cannot determine this Fly deploy's target app from -a/--app, "
-                "--config or a readable fly.toml, so it is treated as a live-path deploy")
-    return (f"{what} (rail.deploy). Confirm only if you, the operator, are deploying it "
-            f"now.",
-            "Deploying a live execution-path app (the c1-rail listener or the "
-            "c1-signal-daemon) is an operator act. Do not proceed unless the operator "
-            "confirms this prompt; name the target with -a/--app or --config.")
-
-
-# The table entry is the undeterminable-target prompt; `_message` names the resolved apps.
-MESSAGES["rail.deploy"] = _deploy_message(UNKNOWN_APP)
-
-
-def _fly_readings(arg: str, help_on: bool) -> set[tuple[bool, bool]]:
-    """What the flag word ``arg`` can do, read by `_pflag`: each ``(help, takes the next
-    word)`` pair it may leave. A value flag with no value in its own word (``-a``,
-    ``-ha``, ``--app``) takes the next word, even ``--``. A flag the guard does not know
-    is read both ways, and whatever follows it in a shorthand cluster may turn help off
-    but never on; a word with ``=`` never takes another (pflag reads ``--name=v`` and a
-    shorthand's ``=v`` as the value, and every flag before them in a cluster either
-    takes the rest of the word or none of it)."""
-    parsed = _pflag([arg, ""], _FLY_FLAGS)  # "" stands in for a next word it may take
-    for name, value in parsed.options:
-        if name == "help":
-            help_on = value in _GH_TRUE
-    if not parsed.unread:
-        return {(help_on, _pflag([arg], _FLY_FLAGS).unread)}
-    if not arg.startswith("--"):  # the rest of the cluster after the unknown shorthand
-        bools = {short for short, takes in _FLY_FLAGS.values() if short and not takes}
-        help_on = help_on and "h" not in arg[1:].lstrip("".join(bools))[1:]
-    return {(help_on, False), (help_on, "=" not in arg)}
-
-
-def _fly_help(args: list[str]) -> bool:
-    """Whether cobra prints help and runs nothing: pflag leaves help true. The words are
-    read in order as pflag reads them, following every reading of a flag the guard does
-    not know, so help counts alone (``-h``, ``--help=<v>``), in a shorthand cluster
-    (``-hac1-rail``) and after a value in its own word (``-ac1-rail --help``); a word a
-    value flag takes (``-a -h``) sets nothing, and ``--`` ends the flags only where no
-    value flag takes it (``-ha -- --help=false`` deploys). Help counts only when every
-    reading leaves it true."""
-    states = {(False, False, False)}  # (help, next word is a value, flags ended)
-    for arg in args:
-        after: set[tuple[bool, bool, bool]] = set()
-        for help_on, value_next, ended in states:
-            if ended or value_next or len(arg) < 2 or arg[0] != "-":
-                after.add((help_on, False, ended))
-            elif arg == "--":
-                after.add((help_on, False, True))
-            else:
-                after |= {(on, takes, False) for on, takes in _fly_readings(arg, help_on)}
-        states = after
-    return all(help_on for help_on, _, _ in states)
 
 
 def _bulk_push(arg: str) -> bool:
@@ -1091,39 +747,6 @@ def _push_covers_main(push_args: list[str]) -> bool:
     return any(_covers_main(s) for s in _push_positional(push_args)[1:])
 
 
-def _abbrev(arg: str, option: str, shortest: int) -> bool:
-    """`arg` is `option` or an argparse abbreviation of it at least `shortest` long."""
-    name = arg.split("=", 1)[0]
-    return len(name) >= shortest and option.startswith(name)
-
-
-def _judge_arm(args: list[str]) -> list[Hit]:
-    if not any(_abbrev(a, "--arm", 4) for a in args):  # `--ar` is unique to `--arm`
-        return []
-    override = any(_abbrev(a, "--acknowledge-m1-unresolved", 5) for a in args)
-    return [Hit("rail.arm", M1_UNRESOLVED if override else None)]
-
-
-def _judge_python(args: list[str]) -> list[Hit]:
-    def module(i: int) -> str:
-        """The module a ``-m`` in the short cluster ``args[i]`` names: python reads a
-        cluster left to right, and the first option that takes a value (``-c``, ``-m``,
-        ``-W``, ``-X``) takes the rest of the word, or else the next word (``-Im mod``)."""
-        arg = args[i]
-        if not arg.startswith("-") or arg.startswith("--"):
-            return ""
-        for k, char in enumerate(arg[1:], start=2):
-            if char == "m":
-                return arg[k:] or (args[i + 1] if i + 1 < len(args) else "")
-            if char in "cWX":
-                return ""  # its value is the rest of the word, or the next word
-        return ""
-
-    target = any(a.replace("\\", "/").casefold().endswith("c1_rail_arm.py") for a in args) \
-        or any(module(i).casefold().endswith("c1_rail_arm") for i in range(len(args)))
-    return _judge_arm(args) if target else []
-
-
 def _decode_powershell(value: str) -> str:
     try:
         return base64.b64decode(value, validate=True).decode("utf-16-le")
@@ -1178,14 +801,10 @@ def _words_hits(words: list[str]) -> list[Hit]:
         return _judge_fly(args)
     if base == "git":
         return _judge_git(args)
-    if base in ("pwsh", "powershell"):  # `-WorkingDirectory` may move it
-        return _unsettle(_judge_powershell(args))
+    if base in ("pwsh", "powershell"):
+        return _judge_powershell(args)
     if base == "fp.ps1":  # the project launcher runs `<command> <args>` (AGENTS.md)
-        return _unsettle(_words_hits(args))  # from its own checkout root
-    if _PYTHONS.fullmatch(base):
-        return _judge_python(args)
-    if base.endswith("c1_rail_arm.py"):
-        return _judge_arm(args)
+        return _words_hits(args)
     return []
 
 
@@ -1193,65 +812,8 @@ def _fallback_hits(command: str) -> list[Hit]:
     hits = []
     for pattern, cap in _FALLBACK:
         if pattern.search(command):
-            unresolved = cap == "rail.arm" and "--ack" in command
-            hits.append(Hit(cap, M1_UNRESOLVED if unresolved else None))
+            hits.append(Hit(cap))
     return hits
-
-
-class _Part(NamedTuple):
-    """One segment of a command: its source span, its acts, and what it may change."""
-
-    start: int
-    end: int
-    hits: list[Hit]
-    moves: bool  # changes the directory
-    quiet: bool  # writes no file and sets nothing (`_READ_ONLY`)
-
-
-def _quiet(plain: list[str], runs: list[list[str]]) -> bool:
-    """Whether a segment leaves files and environment alone: one read-only program,
-    behind nothing but wrapper options (a ``bash -c`` / ``eval`` script is not), with no
-    ``{`` in an argument (a scriptblock may run code), or no program and no variable
-    assignment (``}``, ``done``)."""
-    if any("{" in word for word in plain[1:]):
-        return False
-    if not runs:
-        return not any(is_assignment(word) for word in plain)
-    words = runs[0]
-    return (len(runs) == 1 and program(words[0], strict=True) in _READ_ONLY
-            and plain[len(plain) - len(words):] == words)
-
-
-def _writes(command: str, start: int, text: str) -> bool:
-    """Whether the redirection whose target starts at `start` may write a file: not an
-    input (``<``, ``<<<``), a descriptor duplication (``2>&1``, ``>&-``) or a null device.
-    An fd-prefixed redirection carries its operator in `text` (``2>&1``)."""
-    lead = re.match(r"\d*([<>&|]+)", text)
-    if lead:
-        op, target = lead.group(1), text[lead.end():]
-    else:
-        op = re.search(r"[<>&|]*$", command[:start].rstrip()).group()
-        target = text
-    target = target.strip()
-    if op in ("<", "<<<") or target.casefold() in _NULL_DEVICES:
-        return False
-    return not (op.endswith("&") and re.fullmatch(r"\d*-?", target))
-
-
-def _runs_after(command: str, end: int, start: int, bodies: list) -> bool:
-    """Whether what starts at `start` runs strictly after the command ending at `end`: a
-    ``;``, newline, ``&&`` or ``||`` between them and no ``|`` or ``&`` (a pipeline or a
-    background job runs beside it). Dropped text between them (redirection targets,
-    heredoc bodies, comments) is blanked first; anything that starts before `end` (an
-    earlier segment, a ``$(...)`` in the command's own words) runs before it."""
-    if start < end:
-        return False
-    gap = list(command[end:start])
-    for body_start, body_end, *_ in bodies:
-        for i in range(max(body_start, end), min(body_end, start)):
-            gap[i - end] = " "
-    text = re.sub(r"[<>]&|&>", " ", "".join(gap)).replace("&&", ";").replace("||", ";")
-    return (";" in text or "\n" in text) and "|" not in text and "&" not in text
 
 
 def _command_hits(command: str) -> list[Hit]:
@@ -1264,47 +826,11 @@ def _command_hits_cached(command: str) -> tuple[Hit, ...]:
     # Cached by text: following every reading of nested `pwsh -c` parameters judges the
     # same suffix text many times, which would otherwise grow exponentially.
     try:
-        bodies: list = []
-        parts: list[_Part] = []
-        loop = False
-        for tokens in segments(command, strict=True, bodies=bodies):
-            if not tokens:
-                continue
-            plain = [str(t) for t in tokens]
-            loop |= (program(plain[0], strict=True) in _LOOP_WORDS
-                     or "()" in "".join(plain[:2]))  # `name() {` defines a function
-            runs = [[str(w) for w in words] for words in expand(plain, strict=True)]
-            hits: list[Hit] = []
-            for words in runs:
-                found = _words_hits(words)
-                hits += found if words == plain else _unsettle(found)  # prefixed, wrapped
-            moves = any(words and program(words[0], strict=True) in _CD_PROGRAMS
-                        for words in runs)
-            # A backquote body is re-parsed from an un-escaped copy, so its words carry
-            # no source span (and its redirections are not listed). Such a segment is
-            # placed at 0: it counts as running before any deploy, and as not quiet; a
-            # deploy inside one is unsettled (fail closed, never an unreadable command).
-            spanned = all(isinstance(t, Word) for t in tokens)
-            if spanned:
-                parts.append(_Part(tokens[0].start, tokens[-1].end, hits, moves,
-                                   _quiet(plain, runs)))
-            else:
-                parts.append(_Part(0, 0, _unsettle(hits), moves, False))
-        writes = [start for start, _, _, text, kind in bodies
-                  if kind == "target" and _writes(command, start, text)]
         out: list[Hit] = []
-        for k, part in enumerate(parts):
-            hits = part.hits
-            if any(hit.cap == "rail.deploy" for hit in hits):
-                def before(start: int, end: int = part.end) -> bool:
-                    """Runs before or beside this deploy (anything, in a loop)."""
-                    return loop or not _runs_after(command, end, start, bodies)
-                earlier = [p for j, p in enumerate(parts) if j != k and before(p.start)]
-                if any(not p.quiet for p in earlier) or any(before(w) for w in writes):
-                    hits = _unsettle(hits)
-                elif any(p.moves for p in earlier):
-                    hits = _unanchor(hits)
-            out += hits
+        for tokens in segments(command, strict=True):
+            if tokens:
+                for words in expand([str(t) for t in tokens], strict=True):
+                    out += _words_hits([str(w) for w in words])
         return tuple(dict.fromkeys(out))
     except Exception:  # unreadable (or unjudgeable): raw patterns, toward refusing
         return tuple(_fallback_hits(command))
@@ -1354,17 +880,13 @@ def _payload_hits(payload: dict) -> list[Hit]:
     if name in SHELL_TOOLS:
         command = tool_input.get("command")
         if isinstance(command, str):
-            hits = _powershell_hits(command) if name == "PowerShell" else _command_hits(command)
-            cwd = payload.get("cwd")
-            return _resolve_deploys(hits, cwd if isinstance(cwd, str) else os.getcwd())
+            return _powershell_hits(command) if name == "PowerShell" else _command_hits(command)
     return []
 
 
-def classify_command(command: str, cwd: str | None = None) -> tuple[str, str] | None:
-    """(decision, capability) for a shell command run from `cwd` (default: this process's
-    directory), or None when it is not an operator act."""
-    hits = _resolve_deploys(_command_hits(command), cwd or os.getcwd())
-    hit = _verdict(hits)
+def classify_command(command: str) -> tuple[str, str] | None:
+    """(decision, capability) for a shell command, or None when it is not an operator act."""
+    hit = _verdict(_command_hits(command))
     return (hit.decision, hit.cap) if hit else None
 
 
@@ -1375,8 +897,6 @@ def classify(payload: dict) -> tuple[str, str] | None:
 
 
 def _message(hit: Hit) -> tuple[str, str]:
-    if hit.cap == "rail.deploy":
-        return _deploy_message(hit.detail or UNKNOWN_APP)
     return _DETAIL_MESSAGES.get((hit.cap, hit.detail), MESSAGES[hit.cap])
 
 
