@@ -253,27 +253,10 @@ child environment).
 
 ## Independent review
 
-Review is cross-agent: Codex reviews Claude's work and Claude reviews Codex's (Rule 5;
-[surface-allocation ADR Addendum 2026-10-26](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-26--operator-ruling-cross-agent-review)).
-The merge rule and review limit are
-[Addendum 2026-10-24b A](../docs/adr/2026-07-14-cc-cursor-surface-allocation.md#addendum-2026-10-24b--operator-rulings-conditioned-merge-go-and-credential-custody).
-
-[The pre-ratification workflow](../.claude/workflows/pre-ratification-adversarial-panel.js)
-owns its review mechanics. Reviewers assess the source independently of the proposer's
-reasoning; synthesis is advisory and cannot supply operator ratification or execution
-authority. A Claude panel on Claude work is optional author input, not the independent
-review: the other agent owns that (Rule 5). Reviewer/delegate assignment never grants permission to edit locked surfaces.
-
-Its existing GRAND-only safety scan reads committed target text. A safety-invariant
-citation flags a hard block on synthesis; missing text flags a coverage failure, also
-blocked. Keep its fail-closed, deliberately sensitive behavior; STRATEGIC calls do not
-gain this scan. The implementation owns the matching rules. This review check does not
-replace live execution authorization or the [production protection checks](../core/dd_protection.py).
-
-Risk/sizing, validation, gate composition, brief compliance, research dedup and operational
-oversight remain with their existing code/skill/rule owners. Removing a review mechanism
-does not weaken those controls or commission new reviewer roles. New functions need
-demonstrated coverage; do not assume every judgment can be reduced to a mechanical check.
+Review is cross-agent: Codex reviews Claude's work and Claude reviews Codex's. The merge
+rule and what a reviewer treats as blocking are in
+[AGENTS.md](../AGENTS.md#review-and-merge) (Review and merge, Code Review Rules).
+A same-agent review may inform the author but is not the review.
 
 ### Separate baseline and implementation checkouts
 
