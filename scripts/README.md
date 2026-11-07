@@ -229,6 +229,19 @@ where a record pinning any other private file registers it in the same commit.
 The archive clone is `--archive`, `$FP_EVIDENCE_ARCHIVE`, or a
 `first-passage-archive` directory beside this checkout.
 
+## Agent CLI dispatch
+
+`dispatch_codex.ps1` reaches Codex through the app's bundled CLI, with the agent's own token:
+
+```powershell
+.\scripts\dispatch_codex.ps1 -Worktree <worktree> -Prompt '<prompt>' -OutputFile <scratch>\last.txt [-Sandbox read-only]
+.\scripts\dispatch_codex.ps1 -Worktree <worktree> -ReviewBase origin/main -OutputFile <scratch>eview.txt
+```
+
+It selects a credential; it does not isolate Codex. It sets `GH_TOKEN` from `FP_AGENT_GH_TOKEN`, clears
+`GITHUB_TOKEN`, and refuses to run without a fine-grained PAT or from a worktree root holding `.env`.
+Tests: `tests/scripts/test_dispatch_codex.py` (dry-run).
+
 ## Independent review
 
 Review is cross-agent: Codex reviews Claude's work and Claude reviews Codex's (Rule 5;
