@@ -53,9 +53,11 @@ MAX_LINES = 2000
 MAX_MATCHES = 1000
 MAX_OUTPUT_CHARS = 200_000
 MAX_LINE_CHARS = 2000
-# Bytes of one line kept and masked before the MAX_LINE_CHARS cut; the rest of a
-# longer line is read past and dropped, so a single huge line cannot exhaust memory.
+# A line longer than this many bytes is never shown, even in part: a mask pattern
+# may depend on the part that bounded memory cannot hold, so it is replaced whole
+# by OMITTED_LINE (fail closed). Shorter lines are masked whole, then cut.
 MAX_LINE_BYTES = 64 * 1024
+OMITTED_LINE = f"[line over {MAX_LINE_BYTES} bytes omitted]"
 READ_BLOCK = 64 * 1024
 # A flat alternation of literals (one optional space): linear-time on any line.
 DEFAULT_ERROR_PATTERN = r"error|exception|reject|disconnect|connection ?lost|lost connection|failed|halt"
@@ -143,21 +145,29 @@ def _resolve_file(config: Config, source: str, name: str | None) -> Path:
 # because Python opens with shared read access. Files are read in bounded blocks, so
 # memory stays bounded whatever the file size.
 
-def _split_piece(raw: bytes, first: bool, last: bool, redact: Callable[[str], str]) -> list[str]:
-    """Lines of one piece between newlines: decoded, masked whole, then cut.
+def _split_piece(raw: bytes, first: bool, last: bool) -> list[str]:
+    """Raw lines of one piece between newlines.
 
     Gives the same lines ``str.splitlines`` gives for the whole file (CRLF, lone CR and
     the other Unicode breaks included). ``last`` marks a final piece with no newline.
     """
     text = raw.decode("utf-8-sig" if first else "utf-8", errors="replace")
-    pieces = text.splitlines() if last else (text + "\n").splitlines()
-    return [redact(line)[:MAX_LINE_CHARS] for line in pieces]
+    return text.splitlines() if last else (text + "\n").splitlines()
 
 
-def _iter_lines(path: Path, redact: Callable[[str], str]) -> Iterator[str]:
-    """Stream a file's lines, each masked before it is cut to MAX_LINE_CHARS."""
+def _present(line: str, redact: Callable[[str], str]) -> str:
+    """What may leave the server for one raw line: masked whole, then cut."""
+    return redact(line)[:MAX_LINE_CHARS]
+
+
+def _iter_lines(path: Path) -> Iterator[str]:
+    """Stream a file's raw lines; a line over MAX_LINE_BYTES comes as OMITTED_LINE.
+
+    Callers match on these and pass anything they output through ``_present``.
+    """
     with open(path, "rb") as handle:
         kept = bytearray()
+        oversized = False
         first = True
         while block := handle.read(READ_BLOCK):
             start = 0
@@ -165,20 +175,28 @@ def _iter_lines(path: Path, redact: Callable[[str], str]) -> Iterator[str]:
                 newline = block.find(b"\n", start)
                 stop = len(block) if newline < 0 else newline
                 room = MAX_LINE_BYTES - len(kept)
-                if room > 0:
-                    kept += block[start:min(stop, start + room)]
+                if stop - start > room:
+                    oversized = True
+                elif not oversized:
+                    kept += block[start:stop]
                 if newline < 0:
                     break
-                yield from _split_piece(bytes(kept), first, False, redact)
+                if oversized:
+                    yield OMITTED_LINE
+                else:
+                    yield from _split_piece(bytes(kept), first, False)
                 kept.clear()
+                oversized = False
                 first = False
                 start = newline + 1
-        if kept:
-            yield from _split_piece(bytes(kept), first, True, redact)
+        if oversized:
+            yield OMITTED_LINE
+        elif kept:
+            yield from _split_piece(bytes(kept), first, True)
 
 
-def _tail_lines(path: Path, count: int, redact: Callable[[str], str]) -> list[str]:
-    """The last ``count`` lines, found by reading backwards from the end in blocks."""
+def _tail_lines(path: Path, count: int) -> list[str]:
+    """The last ``count`` raw lines, found by reading backwards from the end in blocks."""
     with open(path, "rb") as handle:
         end = handle.seek(0, 2)
         if end == 0:
@@ -206,9 +224,11 @@ def _tail_lines(path: Path, count: int, redact: Callable[[str], str]) -> list[st
         ends = [s - 1 for s in starts[1:]] + [scan_end]
         lines: list[str] = []
         for start, stop in zip(starts, ends):
+            if stop - start > MAX_LINE_BYTES:
+                lines.append(OMITTED_LINE)
+                continue
             handle.seek(start)
-            raw = handle.read(min(stop - start, MAX_LINE_BYTES))
-            lines.extend(_split_piece(raw, start == 0, stop == end, redact))
+            lines.extend(_split_piece(handle.read(stop - start), start == 0, stop == end))
     return lines[-count:]
 
 
@@ -279,7 +299,7 @@ def tool_tail(config: Config, arguments: dict) -> str:
     source = _str(arguments, "source")
     path = _resolve_file(config, source, _str(arguments, "file", None))
     count = _int(arguments, "lines", 200, 1, MAX_LINES)
-    tail = _tail_lines(path, count, config.redact)
+    tail = [_present(line, config.redact) for line in _tail_lines(path, count)]
     header = f"{_relative(config, source, path)}: last {len(tail)} line(s)"
     return "\n".join([header, *tail])
 
@@ -291,11 +311,13 @@ def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: 
     truncated = False
     for source in sources:
         for path in _files(config, source, glob)[:max_files]:
-            lines = _iter_lines(path, config.redact)
+            lines = _iter_lines(path)
             before: deque[tuple[int, str]] = deque(maxlen=context)
             pending_after = 0
             last_printed = -1
             name = f"{source}/{_relative(config, source, path)}"
+            # Match on the raw line, so masking cannot hide a match; every line that
+            # is output goes through _present (masked whole, then cut).
             for number, line in enumerate(lines, 1):
                 if matcher.search(line):
                     if matches >= max_matches:
@@ -304,13 +326,13 @@ def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: 
                     matches += 1
                     for ctx_number, ctx_line in before:
                         if ctx_number > last_printed:
-                            out.append(f"{name}:{ctx_number}- {ctx_line}")
-                    out.append(f"{name}:{number}: {line}")
+                            out.append(f"{name}:{ctx_number}- {_present(ctx_line, config.redact)}")
+                    out.append(f"{name}:{number}: {_present(line, config.redact)}")
                     last_printed = number
                     pending_after = context
                     before.clear()
                 elif pending_after:
-                    out.append(f"{name}:{number}- {line}")
+                    out.append(f"{name}:{number}- {_present(line, config.redact)}")
                     last_printed = number
                     pending_after -= 1
                 else:

@@ -413,3 +413,43 @@ def test_regex_options_removed_from_tools(nt):
     assert error and "built-in" in text
     text, error = call(config, "nt_errors")
     assert not error and "insufficient margin" in text and "Connection lost" in text
+
+
+# --- Codex review of 9accc66: oversized lines fail closed; match before masking -------
+
+def _masked_config(tmp_path, text, rule):
+    root = _write_log(tmp_path, text)
+    (root / "trace" / "trace.txt").write_text(text, encoding="utf-8")
+    rules = tmp_path / "redact.txt"
+    rules.write_text(rule + "\n", encoding="utf-8")
+    return server.Config.build(root, redact_file=rules)
+
+
+@pytest.mark.parametrize("ending", ["\n", ""])
+def test_oversized_line_is_omitted_not_partly_masked(tmp_path, ending):
+    # A rule that needs the end of the line: masking a 64 KiB prefix would miss it.
+    line = f"error {SYNTHETIC_ID} " + "p" * (server.MAX_LINE_BYTES + 10) + "END"
+    config = _masked_config(tmp_path, f"before\n{line}{ending}", r"ACCT-12345(?=.*END$)")
+    outputs = [call(config, "nt_tail", source="log"),
+               call(config, "nt_search", source="log", pattern="error"),
+               call(config, "nt_search", source="log", pattern="before", context=1),
+               call(config, "nt_errors")]
+    for text, error in outputs:
+        assert not error
+        assert SYNTHETIC_ID not in text and "12345" not in text
+    tail = outputs[0][0].splitlines()
+    assert tail[1:] == ["before", server.OMITTED_LINE]
+    assert outputs[2][0].splitlines()[-1].endswith(server.OMITTED_LINE)
+
+
+def test_search_matches_before_masking(tmp_path):
+    config = _masked_config(
+        tmp_path, f"ok\nOrder rejected: insufficient margin {SYNTHETIC_ID}\nok\n", r".*ACCT-\d+.*")
+    text, error = call(config, "nt_errors")
+    assert not error
+    assert text.splitlines() == ["2 match(es)", "log/log.txt:2: [redacted]",
+                                 "trace/trace.txt:2: [redacted]"]
+    text, _ = call(config, "nt_search", source="log", pattern="insufficient margin", context=1)
+    assert text.splitlines() == ["1 match(es)", "log/log.txt:1- ok", "log/log.txt:2: [redacted]",
+                                 "log/log.txt:3- ok"]
+    assert SYNTHETIC_ID not in text

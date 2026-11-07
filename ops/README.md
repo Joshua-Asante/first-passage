@@ -50,7 +50,11 @@ line format is assumed.
 the agent's context and never goes into this repo (data rules; spec B15).
 `--redact-file` masks regexes, one per line, `#` for comments, in all output; keep
 that file private too. Each full line is masked before it is cut to 2,000
-characters, so a match that crosses the cut is still masked.
+characters, so a match that crosses the cut is still masked. A line over 64 KiB
+is never shown, even in part: it comes back as `[line over 65536 bytes omitted]`,
+because a mask pattern might depend on the part that isn't held in memory.
+Searches match on the unmasked line, so masking can't hide a match, but only
+masked text is returned.
 
 The server fails closed: it refuses to start unless it gets `--redact-file` with
 at least one pattern, or `--allow-unredacted`. The two are mutually exclusive.
