@@ -37,7 +37,7 @@ Docs removed in the 2026-11 governance cut are in git history at main commit
 6. **Spending money** (subscriptions, data, compute) needs Joshua's approval.
 
 For computer-use observation, navigation, verification and recovery, follow
-[the computer-use skill](.agents/skills/computer-use/SKILL.md); it does not expand
+[the computer-use skill](.claude/skills/computer-use/SKILL.md); it does not expand
 authorization or alter accepted session procedures.
 
 ## Data and credentials (hard rules)
