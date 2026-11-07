@@ -13,8 +13,6 @@ governance_prefixes:
   - docs/
   - .claude/
   - .github/
-  # Explicit since 2026-09-20, matching the prior default.
-  - deploy/
   - tools/
 
 # scripts/ is root-resident but mixed-layer: module stem -> layer. Unlisted

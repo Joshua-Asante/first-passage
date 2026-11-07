@@ -138,11 +138,6 @@ moving/deleting a referenced target. Matching only the file containing its link
 is insufficient. Before a path-conditional re-tier, add the relevant probes to
 [`test_path_conditional_gates_are_reachable`](../tests/test_gate_manifest.py).
 
-`m1-artifact-structure` stays blocking (`always`): the
-[acceptance validator](validate_c1_monitoring_acceptance.py) rejects unreadable or
-invalid artifacts, missing required fields, invalid status and secret violations.
-It does not grant arm authority.
-
 ```text
 python scripts/gate_manifest.py --list
 python scripts/gate_manifest.py --list --all-tiers
@@ -246,8 +241,7 @@ Its existing GRAND-only safety scan reads committed target text. A safety-invari
 citation flags a hard block on synthesis; missing text flags a coverage failure, also
 blocked. Keep its fail-closed, deliberately sensitive behavior; STRATEGIC calls do not
 gain this scan. The implementation owns the matching rules. This review check does not
-replace [M1 acceptance validation](validate_c1_monitoring_acceptance.py), live execution
-authorization, or the [production protection checks](../core/dd_protection.py).
+replace live execution authorization or the [production protection checks](../core/dd_protection.py).
 
 Risk/sizing, validation, gate composition, brief compliance, research dedup and operational
 oversight remain with their existing code/skill/rule owners. Removing a review mechanism

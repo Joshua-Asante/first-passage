@@ -205,7 +205,7 @@ umbrella's original claim manifest named a `lab/analysis/...` path, and the
 | [`book_closure_overlay.json`](book_closure_overlay.json) | Schema `book_closure_overlay/v1`. The three typed book no-trade dates (2023-04-07, 2025-01-09, 2026-04-03), each flagged `overrides_d19: true`. A book permission restriction, never an exchange-closure claim. |
 | [`evidence/2026-09-15-forward-session-source-captures.json`](evidence/2026-09-15-forward-session-source-captures.json) | Quoted source statements with URLs and capture instants: Tradeify permitted times (4:45 PM ET regular, 12:59 PM ET holiday-shortened, 6 PM–5 PM ET account day), the CME 2026 Globex holiday schedule (Labor Day 6–8 September; next holiday Thanksgiving), the four product spec pages, and the retained 2026-09-07 product observations. |
 
-**Loader:** `ops/c1_rail/book_session_calendar.py`. It verifies the whole file (exact key sets,
+**Loader:** removed with the c1 rail; last at [`6337747`](https://github.com/Joshua-Asante/first-passage/blob/6337747/ops/c1_rail/book_session_calendar.py). It verified the whole file (exact key sets,
 `America/New_York` ↔ UTC mapping with DST gap/fold refusal, §5 formula equality on every row,
 predecessor chain through denied days, evidence digest, coverage bounds) and refuses the file whole on
 any defect. `SessionCalendar.session_for(now, expected_digest=...)` returns either a consumer
@@ -235,25 +235,11 @@ does not qualify settlement or activate the book.
 **Identity:** the calendar digest is the SHA-256 of the file bytes and is what `BookSession.calendar_digest`
 carries. Ratification pins that digest in the runtime's trusted configuration; a changed byte is a
 replacement freeze and a new operator decision. Current digests are pinned in
-`tests/ops/test_book_session_calendar.py`.
+[`test_book_session_calendar.py`](https://github.com/Joshua-Asante/first-passage/blob/6337747/tests/ops/test_book_session_calendar.py).
 
-**Monthly extension (November owed before 2026-10-30 21:00Z, the October candidate's coverage end;
-review due 2026-10-24):** re-capture the sources into a new dated evidence file, then run
-
-```
-python -I scripts/fp.py python scripts/author_book_session_calendar.py --first 2026-10-29 --last 2026-11-30 \
-    --calendar-id tradeify-select-100k/forward/2026-11 \
-    --deny <date> <HOLIDAY|SHORTENED|UNCERTAIN_ADJACENT|MISSING_SOURCE> "<source-backed note>" ... \
-    --evidence ops/calendars/evidence/<new-capture>.json --out ops/calendars/book_session_calendar_2026-11.json
-```
-
-The November file starts at 2026-10-29 so it carries the last two October account days as rollover overlap (settlement of the last day of a month and the first challenge of the next need both in one calendar).
-November needs `HOLIDAY`/`SHORTENED` halt evidence (`matching_halts` plus `--halts`) for the
-Thanksgiving schedule dates, and crosses the 2026-11-01 DST end.
-
-Every denied session must be named explicitly with its reason; the tool enumerates Monday–Friday
-account days inside the named horizon and nothing else. Pin the new digest in the tests and record the
-operator's ratification before activation. Never edit a ratified file in place.
+**Monthly extension:** the [author tool](https://github.com/Joshua-Asante/first-passage/blob/6337747/scripts/author_book_session_calendar.py) left with the
+rail, and no code reads these session calendars now. They stay as history. The October calendar and
+the closure overlay are still read by `lab/analysis/c1/sfclear_2026-10/`.
 
 ### Personal instance registry (G0-a)
 
