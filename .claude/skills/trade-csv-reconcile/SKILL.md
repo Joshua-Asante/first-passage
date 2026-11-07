@@ -45,7 +45,14 @@ These steps run in this order for every CSV reconciliation task; skipping or reo
 
 ### Step 1 — Inventory
 
-For each CSV: filename, row count, first 3 rows, last row. Confirm consistent column structure across files in the batch.
+**Classify each input first** (AGENTS.md, Data and credentials). Vendor bars, ticks and quotes are Licensed. Strategy exports and backtest results are Private. Broker or Tradovate fills are Private account data.
+
+- The inventory reports schema and aggregates only: filename, row count, column names and types, null counts, and the date range covered.
+- Never write raw rows, per-trade figures or account data to logs, files, commits or PR text, even locally.
+- Licensed rows (bars, ticks, quotes, timestamped price levels) do not enter agent output without Joshua's word for that specific sample.
+- If a parse problem needs a row-level look, reproduce it first on a synthetic row with the same columns.
+
+Confirm consistent column structure across files in the batch.
 
 Standard TradingView export columns (BOM-prefixed on first column, strip with `encoding='utf-8-sig'`):
 

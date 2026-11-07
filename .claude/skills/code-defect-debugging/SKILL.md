@@ -74,12 +74,19 @@ For each component boundary in the suspect path:
   Log (in this order):
     1. Type of input (DataFrame? dict? path string?)
     2. Shape / size / length
-    3. First and last 3 rows (or first 3 keys)
+    3. Schema and aggregates: column names or keys, null counts, value ranges (no raw rows; see Data class first)
     4. dtype / encoding / unit metadata if available
     5. Any field that should match an external invariant (timestamp range, expected sum, expected count)
   Then on exit:
     Same five logs for the output.
 ```
+
+**Data class first.** Before logging a boundary, classify what crosses it (AGENTS.md, Data and credentials).
+
+- Licensed vendor data (bars, ticks, quotes) and Private data (strategy exports, fills, account records, parameters) are never logged as raw rows or written to files, even locally.
+- Diagnose them on schema and aggregates, or reproduce the bug on a synthetic input of the same shape. Prefer the synthetic input: it becomes the regression test.
+- A raw vendor sample needs Joshua's word for that specific sample.
+- Open data (firm rules, hashes, synthetic fixtures) can be logged in full.
 
 **Run once, then analyze.** One full evidence pass, read as a complete artifact. No log-theorize-log cycles: theorizing mid-log selects evidence.
 
