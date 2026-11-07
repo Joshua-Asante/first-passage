@@ -15,6 +15,41 @@ away correctness, required confirmations or honest verification reporting.
 Pre-cut documents: `git show f2c4ae3:<path>`; historical rules are not current
 authorization.
 
+## Roles
+
+Joshua directs; the agents own the work under his direction.
+
+**Joshua: director and operator of record.** He alone:
+
+- sets direction: the goal, the candidate, priorities and cuts (STATE reflects his calls);
+- rules: accepts specs and procedures, chooses between options and accepts risks on
+  the signed page. No agent decides these by default;
+- holds the money controls below: every GO, the standing GO's scope, spend, frozen
+  parameters and the stop rule;
+- merges PRs, once verification is clean;
+- operates the eval: enables instances, attends sessions and runs F. Agents act on the
+  eval only under his GO or the standing GO;
+- holds private material: his primary checkout, private ports, the signed page,
+  account data and anything sent outside.
+
+He does not write specs, code or reviews. Decisions reach him as short, numbered
+choices with a recommendation, at stage gates. Anything deferrable is batched.
+
+| Role | Owner | Support |
+|---|---|---|
+| Research | Claude | Codex challenges methods and claims |
+| Design | Claude; Joshua accepts | Codex is consulted on choices |
+| Engineering | Claude Code in Joshua's primary checkout for private ports; Claude for public code | Codex on public code only (`core/`, `scripts/`, tests); never private ports or parameters |
+| Verification | Codex: reviews every head; Sim101 runs and rehearsals | — |
+| Operations | Joshua | Codex by computer use under a GO; Claude keeps the procedure and public records |
+
+- Verification stays independent: when Codex writes code, Claude reviews it. Neither
+  agent verifies its own work.
+- Design does not grade research: Codex checks research claims before design builds on
+  them.
+- Operations feeds design: session evidence goes back to design and the forward stop
+  rule. The procedure does not change mid-session.
+
 ## Money controls (hard rules)
 
 1. **No live orders without Joshua's direction.** Agents, Codex included, may act
