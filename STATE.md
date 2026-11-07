@@ -25,6 +25,15 @@ then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
   2026-11-06, and on 11-07 confirmed that this covers new instruments and builder
   rounds too. The private port is built and changed by Claude Code in Joshua's
   primary checkout.
+- **Priority for new candidates** (Joshua, 2026-11-07): new-candidate ideation and
+  research may run only if it uses none of Joshua's attention, no writes or exclusive
+  work in his primary checkout, no spend, and nothing that delays the pair's next
+  steps. Joshua's time covers discussion, decisions, anything only he can do (eval
+  actions, private exports), troubleshooting and private-checkout builds; it excludes
+  public reading, public experiments on separate branches, and deferrable decision
+  notes. This holds until the pair's first attended eval session has completed under
+  the procedure, its evidence is captured, and any incident is dealt with well enough
+  to name the next action, unless Joshua reprioritises.
 - **Status:** Joshua accepted S-PAIR on 11-06; it is not a pass as frozen. His 11-06
   GO covers the eval build only: no order, session or spend. No sizing or deployment
   is approved, and every session needs its own GO.

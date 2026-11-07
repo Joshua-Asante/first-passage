@@ -80,6 +80,12 @@ Classify by meaning, not field name. Text already public stays.
   `core/data/`** also get `@codex security review`.
 - **A finding that recurs** on a second PR gets fixed as a class: a test, or a gate
   in `scripts/gates.yml`, not another one-off fix.
+- **One writer per branch.** Each PR branch has one owning session and one writer at a
+  time. Another session does not push to it without an explicit handoff the owner
+  accepts. Before editing a file another open branch or PR also changes, check them,
+  then use a separate branch or send the change to the owner. The owner names the
+  candidate head; the other agent reviews that exact head, sends findings back and
+  does not push to it. Any later push needs a review of the new head.
 
 ## Code Review Rules
 
