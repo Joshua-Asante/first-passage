@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Updated:** 2026-11-05. Keep this to one page: the goal, live obligations, open
+**Updated:** 2026-11-06. Keep this to one page: the goal, live obligations, open
 decisions. Replace stale lines instead of appending history.
 
 ## Goal
@@ -20,7 +20,9 @@ then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
 - **One candidate at a time** (Joshua, 2026-11-06): no new candidates, instruments or
   builder rounds until this pair trades on the eval or is dropped. The private port
   is built and changed by Claude Code in Joshua's primary checkout.
-- **Status:** no sizing or deployment is approved; every session needs its own GO.
+- **Status:** Joshua accepted S-PAIR on 11-06; it is not a pass as frozen. His 11-06
+  GO covers the eval build only: no order, session or spend. No sizing or deployment
+  is approved, and every session needs its own GO.
   The [native plan](docs/superpowers/plans/2026-10-21-tradeify-native-ninjascript-strategy-plan-DRAFT.md)
   and the [qualification framework](docs/briefs/pre-registration/2026-10-26-tradeify-native-lane-prereg-DRAFT.md)
   are drafts that the 11-05 path does not wait on.
@@ -39,5 +41,6 @@ then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
 
 ## Open decisions (Joshua)
 
-1. **Data source:** Databento is retired and has no replacement. Research uses
+1. **11-08 sitting:** the remaining decisions before the first eval session.
+2. **Data source:** Databento is retired and has no replacement. Research uses
    TradingView CME exports only.
