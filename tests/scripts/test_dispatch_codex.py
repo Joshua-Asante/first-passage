@@ -1,4 +1,4 @@
-"""dispatch_codex.ps1 contract: sandbox, worktree, prompt, environment and agent-token handling."""
+"""dispatch_codex.ps1 contract: sandbox, worktree, environment and agent-token handling."""
 import os
 import shutil
 import subprocess
@@ -13,11 +13,6 @@ GIT = shutil.which("git")
 pytestmark = pytest.mark.skipif(PWSH is None or GIT is None, reason="PowerShell 7 or git not installed")
 
 AGENT = "github_pat_AGENTSECRET123"
-# Synthetic manifest entries: the script must read names from the manifest, not hard-code them.
-MANIFEST = """# test manifest
-aaaa  core/strategies/book/fixture_book_alpha.pine
-bbbb  ops/fixture_ports/fixture_port_beta.py
-"""
 
 
 def _clean_env():
@@ -40,8 +35,6 @@ def repo(tmp_path):
     (root / "README.md").write_text("x\n")
     _git("add", "README.md", cwd=root)
     _git("commit", "-q", "-m", "init", cwd=root)
-    (root / "core" / "strategies").mkdir(parents=True)
-    (root / "core" / "strategies" / "BOOK_SOURCES.sha256").write_text(MANIFEST)
     _git("worktree", "add", "-q", "--detach", str(root / ".claude" / "worktrees" / "wt"), cwd=root)
     return root
 
@@ -176,56 +169,14 @@ def test_refuses_worktree_outside_claude_worktrees(repo, tmp_path):
         assert "args:" not in out.stdout, target
 
 
-def test_refuses_when_manifest_missing(repo, wt):
-    # Fails if the private-name checks silently pass when the manifest cannot be read.
-    (repo / "core" / "strategies" / "BOOK_SOURCES.sha256").unlink()
-    out = _run(wt)
-    assert out.returncode != 0
-    assert "BOOK_SOURCES.sha256" in out.stderr + out.stdout
-
-
-@pytest.mark.parametrize("rel", [
-    "effective_inputs.json",
-    "lab/deep/nested/effective_inputs.json",
-    "notes/anything.pine",
-    "core/strategies/book/fixture_book_alpha.pine",
-    "ops/fixture_ports/fixture_port_beta.py",
-    "elsewhere/copy/fixture_port_beta.py",
-])
-def test_refuses_worktree_holding_private_files(wt, rel):
-    # Fails if a worktree holding effective_inputs.json, Pine, or a BOOK_SOURCES-listed file
-    # (at any depth) can be handed to Codex.
-    target = wt / rel
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text("private\n")
-    out = _run(wt)
-    assert out.returncode != 0
-    assert "private file" in out.stderr + out.stdout
-    assert "args:" not in out.stdout
-
-
-def test_contents_scan_skips_git_dirs(wt):
-    # Fails if the scan descends into .git (object stores are not checkout contents).
-    nested = wt / "sub" / ".git"
-    nested.mkdir(parents=True)
-    (nested / "x.pine").write_text("y\n")
-    out = _run(wt)
+def test_private_names_are_not_screened(wt):
+    # Fails if the launcher again refuses what Codex may read (Joshua's 2026-11-06 ruling):
+    # a prompt naming a private file, or a worktree holding one.
+    (wt / "notes").mkdir()
+    (wt / "notes" / "effective_inputs.json").write_text("{}")
+    (wt / "notes" / "anything.pine").write_text("y")
+    out = _run(wt, prompt="read effective_inputs.json and anything.pine")
     assert out.returncode == 0, out.stderr
-
-
-@pytest.mark.parametrize("prompt, secret", [
-    ("read effective_inputs.json and tune", "effective_inputs.json"),
-    ("look at core/strategies/book/fixture_book_alpha.pine", "fixture_book_alpha"),
-    (r"open ops\fixture_ports\fixture_port_beta.py", "fixture_port_beta"),
-    ("compare with FIXTURE_PORT_BETA.PY", "FIXTURE_PORT_BETA"),
-    ("port my_strategy_v9.pine to NinjaScript", "my_strategy_v9"),
-])
-def test_refuses_prompt_naming_private_file(wt, prompt, secret):
-    # Fails if a prompt naming a private file reaches Codex, or if the refusal echoes it.
-    out = _run(wt, prompt=prompt)
-    assert out.returncode != 0
-    assert "Refusing" in out.stderr + out.stdout
-    assert secret.lower() not in (out.stderr + out.stdout).lower()
 
 
 def test_review_mode_is_read_only_with_base_and_no_prompt(wt):

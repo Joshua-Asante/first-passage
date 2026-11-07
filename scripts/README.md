@@ -238,7 +238,7 @@ The archive clone is `--archive`, `$FP_EVIDENCE_ARCHIVE`, or a
 .\scripts\dispatch_codex.ps1 -Worktree <worktree> -ReviewBase origin/main -OutputFile <scratch>\review.txt
 ```
 
-It narrows what reaches Codex; it is not a sandbox. Requires PowerShell 7. Guarded:
+It selects the credential and environment; it is not a sandbox. Requires PowerShell 7. Guarded:
 
 - **Environment.** Codex starts with a fresh environment: only the allowlisted variables
   Windows, git and the Codex CLI need (`$EnvAllowlist` in the script, including `CODEX_HOME`),
@@ -248,16 +248,10 @@ It narrows what reaches Codex; it is not a sandbox. Requires PowerShell 7. Guard
   own login in `CODEX_HOME`.
 - **Location.** The worktree must be a Git worktree under `<repo>\.claude\worktrees\`, with no
   `.env` at its root.
-- **Contents.** It refuses a worktree holding `effective_inputs.json`, any `*.pine`, or any
-  file named in `core/strategies/BOOK_SOURCES.sha256`, at any depth (skips `.git`, does not
-  follow links). A missing manifest is a refusal.
-- **Prompt.** It refuses a `-Prompt` naming `effective_inputs.json`, a path or file name in
-  `BOOK_SOURCES.sha256`, or a `.pine` file, without echoing the match.
 
-Not guarded: reads are not confined. Codex runs as the same Windows user as every agent, so
-it can still open the primary checkout's private sources and gh's stored credential files.
-The prompt and contents checks match known private file names, not values: pasted Pine,
-parameters or account data, or a renamed copy, pass them, and the caller stays responsible.
+Not guarded: reads are not confined. Codex runs as the same Windows user as every agent, so it
+can still open the primary checkout and gh's stored credential files. Prompts and worktree
+contents are not screened: Codex may read what Claude reads. Secret values never go in a prompt.
 `-DryRun` runs every check and prints the command and the child's variable names, never values.
 Tests: `tests/scripts/test_dispatch_codex.py` (dry-run, plus a stub `-Codex` that records the
 child environment).
