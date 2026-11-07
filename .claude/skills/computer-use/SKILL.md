@@ -75,8 +75,8 @@ the exact remaining action. Continue independent safe work.
 ## Protect data
 
 - Apply AGENTS.md's viewing, credential, public-repository, and no-write
-  rules. The account-screen exception does not extend to private
-  strategy material or arbitrary programmatic account access.
+  rules. Being allowed to read account data or private strategy material
+  does not allow writing it anywhere, or arbitrary programmatic account access.
 - Do not write protected data into screenshots, temporary files,
   OCR/debug output, traces, attachments, or summaries.
 - Where capture is permitted, use a verified capture path. Redact before
