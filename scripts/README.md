@@ -235,7 +235,7 @@ The archive clone is `--archive`, `$FP_EVIDENCE_ARCHIVE`, or a
 
 ```powershell
 .\scripts\dispatch_codex.ps1 -Worktree <worktree> -Prompt '<prompt>' -OutputFile <scratch>\last.txt [-Sandbox read-only]
-.\scripts\dispatch_codex.ps1 -Worktree <worktree> -ReviewBase origin/main -OutputFile <scratch>eview.txt
+.\scripts\dispatch_codex.ps1 -Worktree <worktree> -ReviewBase origin/main -OutputFile <scratch>\review.txt
 ```
 
 It selects a credential; it does not isolate Codex. It sets `GH_TOKEN` from `FP_AGENT_GH_TOKEN`, clears
