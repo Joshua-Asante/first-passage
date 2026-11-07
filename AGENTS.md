@@ -35,13 +35,13 @@ Joshua directs; the agents own the work under his direction.
 He does not write specs, code or reviews. Decisions reach him as short, numbered
 choices with a recommendation, at stage gates. Anything deferrable is batched.
 
-| Role | Owner | Support |
-|---|---|---|
-| Research | Claude | Codex challenges methods and claims |
-| Design | Claude; Joshua accepts | Codex is consulted on choices |
-| Engineering | Claude Code in Joshua's primary checkout for the private NinjaScript eval build; Claude for public code | Codex on public code only (`core/`, `scripts/`, tests); never private sources or parameters |
-| Verification | Codex: reviews every head; Sim101 runs and rehearsals | — |
-| Operations | Joshua | Codex by computer use under a GO; Claude keeps the procedure and public records |
+| Role | Owner | Covers | Support |
+|---|---|---|---|
+| Research | Claude | Generation (new ideas); evidence on the live candidate, which comes first | Codex challenges methods and claims |
+| Design | Claude; Joshua accepts | Build contract (the spec); operating procedure | Codex is consulted on choices |
+| Engineering | Claude Code in Joshua's primary checkout for the private NinjaScript eval build; Claude for public code | Private build; public tooling (`core/`, `scripts/`, gates, tests) | Codex on public code only; never private sources or parameters |
+| Verification | Codex | Code review of every head; behaviour checks (Sim101 runs and rehearsals, reviewed from their records); evidence audit | Joshua runs the checks that need the eval or his checkout |
+| Operations | Joshua | Session operator; venue liaison (Tradeify); measure: the session record and forward stop rule scoring after each session, done by Claude Code in his primary checkout for his sign-off | Codex by computer use under a GO; Claude keeps the procedure and public records |
 
 - Engineering does not edit the **Private sources** below (Pine, the runtime ports in
   `BOOK_SOURCES.sha256`, `effective_inputs.json`): they stay read-only in place.
