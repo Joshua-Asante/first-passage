@@ -49,9 +49,9 @@ This repository is **public**.
 - **Private sources** (Pine and the runtime ports listed in
   `core/strategies/BOOK_SOURCES.sha256`, and `effective_inputs.json`) are read only
   in place, in Joshua's primary checkout. Never copy, quote, edit or upload them.
-- **Codex never receives** Pine, runtime ports, `effective_inputs.json`, strategy
-  parameters or account data. Exception: it may see account data on screen while it
-  acts on the eval; it writes none of it to logs or files.
+- **Codex reads what Claude reads** (Joshua, 2026-11-06), under the same rules:
+  private sources only in place, as above; strategy parameters and account data
+  never written to logs, files, PR text or the repository.
 - **Backtest dollar figures** go only in lab `RESULTS` files, never in PR text or
   STATE.
 - **Data changes** under `core/data/` carry a matching `SHA256SUMS` update. Don't
