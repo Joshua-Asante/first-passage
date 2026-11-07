@@ -37,7 +37,7 @@ PIN = f"--match-head-commit {SHA}"
     "gh api graphql -f query='mutation { merge" + f"PullRequest(input: {{expectedHeadOid: \"{SHA}\"}}) {{ x }} }}'",
 ])
 def test_pinned_merge_passes(command):
-    # Fails if a pinned merge under the standing GO (Addendum 2026-10-24b) prompts, or is
+    # Fails if a pinned merge under the standing GO (AGENTS.md Review and merge) prompts, or is
     # emitted as an allow that would pre-approve the rest of the call.
     assert g.classify_command(command) == ("pass", "pr.merge")
 
@@ -179,6 +179,19 @@ def test_hook_contract():
     assert "independent review" in block["additionalContext"]  # the GO's conditions
     assert _run(json.dumps({"tool_name": "Bash", "tool_input": {"command": "ls"}})) == ""
     assert _run("not json") == ""
+
+
+def test_merge_context_matches_agents_md_review_and_merge():
+    # Fails if the merge context drifts from AGENTS.md "Review and merge": doc-only PRs
+    # merge on green CI; everything else needs the other agent's clean review at the
+    # head. AGENTS.md sets no review-round limit, so the context must not add one.
+    context = g.MESSAGES["pr.merge"][1]
+    assert "AGENTS.md" in context
+    assert "doc-only" in context.lower()
+    assert "COMPLETED and green at the pinned head" in context
+    assert "Codex reviews Claude's work, Claude reviews Codex's" in context
+    for retired in ("fourth", "three reviews", "rewrite", "Addendum 2026-10-24b"):
+        assert retired not in context
 
 
 def test_settings_wire_the_hook():
