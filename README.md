@@ -14,4 +14,4 @@ Vendor data, Pine sources and executable ports of locked strategies are private,
 hash-pinned inputs and are not in this public repository.
 
 History before the 2026-11 governance cut (ADRs, briefs, notes, plans) is in git
-at main commit `b7eaff7`; older private history is in `first-passage-archive`.
+at main commit `f2c4ae3`; older private history is in `first-passage-archive`.

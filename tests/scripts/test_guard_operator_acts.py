@@ -158,12 +158,13 @@ def test_hook_contract():
 
 
 def test_merge_context_matches_agents_md_review_and_merge():
-    # Fails if the merge context drifts from AGENTS.md "Review and merge": doc-only PRs
-    # merge on green CI; everything else needs the other agent's clean review at the
-    # head. AGENTS.md sets no review-round limit, so the context must not add one.
+    # Fails if the merge context drifts from AGENTS.md "Review and merge": every PR,
+    # doc-only included, needs green CI and the other agent's clean review at the head.
+    # AGENTS.md sets no review-round limit, so the context must not add one.
     context = g.MESSAGES["pr.merge"][1]
     assert "AGENTS.md" in context
-    assert "doc-only" in context.lower()
+    assert "Every PR, doc-only included" in context
+    assert "merges on that" not in context
     assert "COMPLETED and green at the pinned head" in context
     assert "Codex reviews Claude's work, Claude reviews Codex's" in context
     for retired in ("fourth", "three reviews", "rewrite", "Addendum 2026-10-24b"):

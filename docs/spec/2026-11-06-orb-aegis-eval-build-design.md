@@ -16,7 +16,7 @@ must do today, in one place. Links point at commit `b7eaff7`.
 
 **Public/private split.** This page carries no parameters, cap values, prices or
 account data. Each row's "confirm" column is ticked locally against the private
-S-PAIR source set, in Joshua's primary checkout. The ticks go on the signed page,
+frozen source set (D7), in Joshua's primary checkout. The ticks go on the signed page,
 not in this repo.
 
 ## 1. What is being built
@@ -27,7 +27,7 @@ not in this repo.
   instance owns only its own instrument (11-05 exception).
 - All signal, sizing and order logic is native. There are no external calls, ATI,
   CrossTrade or bridges ([AGENTS.md](../../AGENTS.md) money control 3).
-- The eval build uses S-PAIR's source set plus the two fixes in D7.
+- The eval build is the frozen source set derived from S-PAIR, with the four changes in D7.
 
 ## 2. Account envelope (public venue facts)
 
@@ -51,18 +51,18 @@ runbook's U-tests are no longer gates, because Sim cannot prove them. Where
 behaviour is unproven on the firm connection, the signed page names it as risk
 Joshua accepts.
 
-| ID | Behaviour | Source | Proven on | Confirm in S-PAIR |
+| ID | Behaviour | Source | Proven on | Confirm in build |
 |---|---|---|---|---|
 | B1 | Native only: no network calls, ATI, add-ons or external signals | AGENTS rule 3 | Source read | ☐ |
 | B2 | Each instance sends orders only for its own instrument, recognises only its own orders and fills, and refuses to start unless that instrument is flat with no working orders. What it cannot correlate on its own instrument is an incident. The companion's activity on the other leg's instrument is not an incident. Activity on neither instrument, or on another account, is unexplained and a stop. Each instance keeps its own journal | Runbook §2.1, §2.6, §6.8; 11-05 "Runbook §6 for the pair" | Sim101 | ☐ |
 | B3 | Static per-leg cap. Each request is admitted whole or refused, never clipped. The caps sum to ≤ 80 micro-equivalents | Runbook §2.2 as replaced 11-05 | Sim101 | ☐ |
 | B4 | The strategy submits its own protective stop sized to filled quantity and resizes it on partial fills. Protection counts only once the broker reports it working. No ATM templates | Runbook §2.3 | Sim101; firm-connection residency (U-3) is accepted risk | ☐ |
-| B5 | Scheduled exit as S-PAIR tested it, unchanged. No session on a day whose calendar row is not `PERMITTED`, and none on a shortened day: the tested exits do not follow the venue's earlier deadline (12:59 ET on 2026-11-27) | D4 withdrawn | Sim101 on a normal day; the strategies' own cutoff close has not run on this host | ☐ |
+| B5 | Normal scheduled exits as S-PAIR tested them; the frozen set changes only exceptional close handling (D7). No session on a day whose calendar row is not `PERMITTED`, and none on a shortened day: the exits have early-close branches, but nothing shows they meet the venue's earlier deadline (12:59 ET on 2026-11-27) end to end | D4 withdrawn | Sim101 on a normal day; the strategies' own cutoff close has not run on this host | ☐ |
 | B6 | The account loss stop, account-wide incidents and stopping new risk across both legs belong to the **attending operator**, under the signed page and the stop rule. No cross-instance automation handles them. Each instance keeps its own leg's position stop (B4) and scheduled exit (B5). Any account-level threshold the operator uses is private | 11-05 "Runbook §6 for the pair"; runbook §2.4 | Attended | n/a |
 | B7 | Any loss of connection halts new risk, and any connection alert from enable onward ends automation for that session, even if the connection returns and the instance looks healthy. The operator disables first, then follows the procedure. The build alone does not guarantee this: an instance that was flat when the connection dropped can resume after a reconnect. The connection-loss setting stays on the option that does not replay or recalculate into new orders | Joshua 11-06 (private sheet: any connection alert ends ORB for the session; disconnect risk accepted, attended, with Tradovate web as the second flatten path); procedure card 1 (both legs); [A11.2](https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/adr/2026-09-17-bounded-platform-protection-incident-contract.md) (no same-session restart). Why it still applies: while disconnected an instance cannot see fills or confirm protection (U-3), so its own record may be wrong. No venue rule or recorded disconnect stands behind it. Inherited through runbook §2.5; U-4 | Accepted risk | ☐ |
 | B8 | Disabling an instance leaves working protection in place, unmanaged: nothing trails or resizes it after that, so disabling alone is not a stop. This depends on NinjaTrader's two cancel-on-disable options being off (§5). Re-enabling is never a recovery step, and the build does not block it, so this is an operator rule (the 10-17 canary showed `WaitUntilFlat` cancelling protection) | 10-17 Sim101 canary; S-PAIR 11-06 on Sim101 (orders stayed working after disable, until the manual close). Why it still applies: step 1 of the procedure's F relies on it. Runbook §2.3 item 5 | Sim101 canary 10-17; S-PAIR 11-06. Firm connection unproven (U-6) | ☐ |
 | B9 | An unknown order is never resent, and neither is a rejected entry or add. A rejected protective order is not replaced: the leg goes to its incident close (B10). A close that ends without closing the leg may be followed by another only within the limit the build carries, sized to the leg's position at that moment. Not every rejection halts the instance, so any rejected or unknown order ends the session through the operator (procedure card 2) | D-N6 (Joshua 10-19: a rejected entry is never resent and stops for review); [A12 F1](https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/adr/2026-09-17-bounded-platform-protection-incident-contract.md) (no resend of an unknown outcome); D-N1, runbook §2.8 item 5, and Joshua 11-07 (private: limit on replacement closes). Why it still applies: an unknown order may be live, so a resend can double exposure, and how Tradovate reports a rejection is unknown. Runbook §2.6 | Offline tests. S-PAIR's Sim101 run had no rejected order | ☐ |
-| B10 | The strategy's own incident close (D-N1) stays as built and is not relied on (11-05). On an incident the operator flattens in Tradovate. The signed page says how the two interact | Runbook §2.8; 11-05; D1 withdrawn | U-3, U-5, U-9, U-17 unproven on the firm connection | ☐ |
+| B10 | The strategy's own incident close (D-N1) stays in the frozen set (D7) and is not relied on (11-05). On an incident the operator flattens in Tradovate. The signed page says how the two interact | Runbook §2.8; 11-05; D1 withdrawn | U-3, U-5, U-9, U-17 unproven on the firm connection | ☐ |
 | B11 | Verified-flat shutdown. First read both views (NinjaTrader and Tradovate web) after the last request: both must show zero gross positions and no working orders, with no request unresolved. Then disable, and check that every request has a terminal outcome and every execution is correlated, using the journals and the platform's order and execution records together: a journal stops at disable, and one journal cannot be read while its instance runs. Empty grids, net zero, elapsed time or an acknowledgment do not count. Then disconnect, and export the journals to private custody. If flat cannot be verified, the account stays under attended recovery | NinjaTrader's order grid hides prior-day orders after rollover, so one view cannot prove no working orders (10-18 finding, U-13). S-PAIR 11-06: the journal ends at disable. Venue: the drawdown is breached intraday and no weekend holds (§2), so a false flat is costly. [Halt/resume contract](2026-09-14-tb-s3-halt-resume-contract.md) §3; runbook §2.7 items 3–7 | Attended | ☐ |
 | B12 | Forward stop rule: after each session, each strategy's forward trades are scored offline (keep, drop or halt). A drop or halt disables that instance before the next session | [Stop rule registration](../briefs/pre-registration/2026-10-31-tradeify-forward-stop-rule-registration.md) | Offline, private | n/a |
 | B13 | The weekly preservation trade is placed only while both instances are disabled and the account is flat. While either instance is armed, a manual trade on its instrument is an uncorrelated fill, and a trade on any other instrument is unexplained activity; both stop the session. Any other placement needs a new ruling | 11-05 "Runbook §6 for the pair"; runbook U-12; STATE | Weekly practice | n/a |
@@ -89,7 +89,7 @@ From the 11-05 exception, plus the build-specific items from §3:
 2. Tradovate web view open; flatten path confirmed.
 3. The account is flat with no working orders, in both views (B2, B11).
 4. Both instances are on the eval account, not Sim101 or another account (U-16),
-   and the loaded build matches the S-PAIR source set plus the D7 fixes, by checksum.
+   and the loaded build matches the frozen source manifest on the signed page, by checksum.
    NinjaTrader's cancel-on-disable options are off (B8).
 5. Today's calendar row is `PERMITTED` and is not a shortened day (B5).
 6. The operator has the account loss threshold and the flatten path for both legs
@@ -102,8 +102,8 @@ From the 11-05 exception, plus the build-specific items from §3:
 | Stage | Owner | Hands over |
 |---|---|---|
 | Definition | Claude drafts this page; Joshua accepts it | The accepted spec |
-| Creation | Claude Code in Joshua's primary checkout (private) | The eval build: S-PAIR plus the D7 fixes, with the §3 confirm column ticked |
-| Verification | S-PAIR Sim101 run 11-06, accepted by Joshua, then a short Sim101 check of the D7 fixes; Codex reviews this spec and any public harness, never the private source; Joshua signs the page | Signed page, then GO |
+| Creation | Claude Code in Joshua's primary checkout (private) | The eval build: the frozen set (D7), with the §3 confirm column ticked |
+| Verification | S-PAIR Sim101 run 11-06, accepted by Joshua, then a short Sim101 check of ORB on the frozen set; Codex reviews this spec, any public harness and the private source (Joshua 11-06); Joshua signs the page | Signed page, then GO |
 | Measure | Post-session export, forward stop rule scored privately | Keep, drop or halt per strategy, then STATE |
 
 ## 7. Decisions
@@ -120,13 +120,21 @@ Decided by Joshua, 2026-11-06:
 - **D6 (Tradeify source review).** Tradeify received S-PAIR's source on 11-05. Joshua sends
   them the eval files, checksums and a change list before any enable; agents never send
   private source. The first session does **not** wait for Tradeify's source-review reply.
-- **D7 (two fixes, 11-06).** Joshua reopened the source for two ORB fixes, neither changing
-  entries, exits, sizing or stops: no journal record per tick (disk), and an order id change
-  is no longer a fault. Everything else stays as S-PAIR tested it. A short Sim101 check
-  covers the two fixes; it is not a full rerun.
+- **D7 (the frozen set).** Joshua reopened the source on 11-06, ruled two further changes on
+  11-07, then froze the set. It holds four ORB changes: no journal record per tick; an order
+  id change is no longer a fault; terminal order states are handled correctly when an error
+  is reported; and replacement of a normal close is bounded. Normal signal, sizing and stop
+  calculations are unchanged; exceptional close handling changes on purpose. Aegis is
+  unchanged. Any further source change needs Joshua's ruling and a new version-named set. A
+  short Sim101 check covers ORB on the frozen set; it is not a full rerun.
 
 Decided by Joshua, 2026-11-07 ("Approve as written", on [#1129](https://github.com/Joshua-Asante/first-passage/pull/1129)):
 
 - **D8 (B7, B8, B9, B11).** Each row now names a reason that still applies to a native
   build. On a rejected or unknown order, the operator ends the session, because not every
   rejection halts the instance. In verified flat, disable comes before the journal check.
+
+Decided by Joshua, 2026-11-07 ("Approve as written", on [#1130](https://github.com/Joshua-Asante/first-passage/pull/1130)):
+
+- **D9 (§1, §5, §6, B5, B10, D7).** The spec names the frozen set and its four changes. The
+  build check points at the manifest on the signed page. Codex reviews the private source.
