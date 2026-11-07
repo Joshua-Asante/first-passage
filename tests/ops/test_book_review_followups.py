@@ -165,7 +165,7 @@ def test_pending_stop_snaps_with_pine_tie_breaking():
 
 
 def test_serialized_mode_values_are_honoured_and_junk_is_rejected():
-    from book_policy import as_mode, candidate_book_protection_policy, leg_quantities, transition_cancels
+    from c1_rail.book_policy import as_mode, candidate_book_protection_policy, leg_quantities, transition_cancels
     pol = candidate_book_protection_policy()
     assert scaled_quantity(8, mode="protected", policy=pol) == 3
     assert leg_quantities("orb_mnq_v7", 1, mode="protected", policy=pol) == (1, 0)

@@ -50,6 +50,5 @@ flat_import_roots:
   - core
   - lab
   - ops
-  - ops/c1_rail
   - ops/c1_signal_daemon
   - scripts

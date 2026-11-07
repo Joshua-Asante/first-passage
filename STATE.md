@@ -42,7 +42,7 @@ then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
 |---|---|---|
 | Weekly account-preservation trade | Week of 11-09 → 11-13 | One round trip per Mon–Fri week, placed natively. A missed week risks account deletion. Agents may place it under the standing GO. Done for 11-02 → 11-06 (11-04). This week it is the F rehearsal: Joshua places it himself, with the resting stop and flatten-and-cancel exit (procedure §10, within the standing GO). |
 | Subscription reconfirm | 11-21 | Joshua reconfirms the [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md) rows. |
-| c1 rail decommission | After the 11-08 sitting | Stages 1–2 done (hosts disarmed 11-03, both Fly apps destroyed 11-05). Rail code removed by PR; S3-4 (`book_policy`, the sizing reference) remains. |
+| c1 rail decommission | After the 11-08 sitting | Stages 1–2 done (hosts disarmed 11-03, both Fly apps destroyed 11-05). Rail code removed by PR; The sizing reference is removed; S3-4 leaves `book_policy` as the offline replay law. |
 
 ## Open decisions (Joshua)
 

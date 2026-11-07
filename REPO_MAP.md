@@ -4,7 +4,7 @@
 |---|---|
 | `core/` | Firm rules (`firm_rules.py`), drawdown protection (`dd_protection.py`), lifecycle, Monte Carlo engine (`mc/`, `portfolio_mc.py`), data loaders, strategy catalog (`strategies/`), canonical CME TradingView exports (`data/`). |
 | `lab/` | Research: discovery tooling, analysis campaigns (`analysis/`, each with its own RESULTS), validation utilities, replay. |
-| `ops/` | Operations: the offline replay library and private port root (`c1_signal_daemon/`), the last rail modules (`c1_rail/`; `book_policy` and the sizing reference, leaving at S3-4), contract rolls, instrument profiles, venue editions, calendars. |
+| `ops/` | Operations: the offline replay library and private port root (`c1_signal_daemon/`), the fixed-book law for offline replay (`c1_rail/book_policy.py`), contract rolls, instrument profiles, venue editions, calendars. |
 | `scripts/` | Launcher (`fp.py`), gate runner (`gate_manifest.py` + `gates.yml`), integrity checks, harness guard hooks, git hooks (`githooks/`). |
 | `tests/` | Pytest suites mirroring the layers. |
 | `discovery_manifests/` | Pre-registered search manifests for discovery runs. |
