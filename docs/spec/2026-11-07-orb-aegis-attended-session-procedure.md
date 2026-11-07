@@ -217,10 +217,11 @@ for them only by one of:
 
 A margin alone does not satisfy the gate for paths nobody has measured.
 
-**Open for Joshua.**
+**Decided by Joshua, 2026-11-07.**
 
-- Who performs it. Recommendation: Joshua, because it measures the operator.
-- Whether the added resting stop and the flatten-and-cancel exit still count as the
-  weekly round trip under the standing GO (AGENTS.md money control 1). Step 0 blocks
-  the modified trade until he rules.
-- For the unmeasured paths: a supported envelope, or a ruling that accepts them.
+- The modified trade (added resting stop, flatten-and-cancel exit) is within the
+  standing GO for the weekly preservation trade. Step 0 is met.
+- Joshua performs the rehearsal himself.
+- For the unmeasured paths (6J, F on both legs, partial fills), Joshua accepts the
+  assumptions by ruling. The signed page records the ruling and the margin chosen for
+  them.
