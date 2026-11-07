@@ -1,13 +1,13 @@
 # `lab/` — research (free-churn)
 
-Imports `core` + root-resident governance. **Open [`CATALOG.md`](CATALOG.md)
-In flight first** — do not glob `analysis/` to infer what is live.
+Imports `core` + root-resident governance. The work list is
+[`STATE.md`](../STATE.md); do not glob `analysis/` to infer what is live.
 
 | Path | Job |
 |---|---|
-| [`CATALOG.md`](CATALOG.md) | Generated registry (In flight / hot bodies / archived) |
-| [`analysis/`](analysis/) | Hot campaign bodies (`<theme>/<slug>/`) + flat `CARD.md` stubs |
-| [`archive/`](archive/) | Cold bodies for archived slugs |
+| [`CATALOG.md`](CATALOG.md) | Study registry, frozen 2026-11-06; `msl_preflight` still searches it |
+| [`analysis/`](analysis/) | Campaign bodies (`<theme>/<slug>/`) |
+| [`archive/`](archive/) | Closed study bodies |
 | [`research_utils/`](research_utils/) | Stable primitives (DSR, Step-0, universe gate, …) |
 | [`discovery/`](discovery/) | Gen-2 K-ledger + Stage-2/4 runner |
 | [`builder/`](builder/) | Strategy builder v1 engine (ledger, ORB compiler, gates) |

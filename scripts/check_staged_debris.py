@@ -90,7 +90,7 @@ MAX_STAGED_FILE_BYTES = 1_000_000  # "~1 MB"; largest tracked file today: 988,52
 # not an allowlisted root and falls to the tighter MAX_STAGED_FILE_BYTES cap.
 LARGE_FILE_ALLOWLIST_PREFIXES = (
     "lab/analysis/",  # research-results corpus (988 KB results.json sized this)
-    "lab/archive/",   # archived form of the same corpus (archive_lab_analysis.py moves)
+    "lab/archive/",   # closed studies from the same corpus
 )
 # Ceiling for the allowlisted roots (operator ruling 2026-09-26). ~2x the largest
 # legitimate blob at the time of the ruling (a 988,529 B results.json, since removed).
