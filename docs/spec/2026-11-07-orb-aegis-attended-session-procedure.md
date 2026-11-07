@@ -153,6 +153,12 @@ flat (B13). After it, run §6 steps 2–3 before the next session.
 Joshua adopted Codex's recommendations on all three choices, 2026-11-07
 ([Codex's answer](https://github.com/Joshua-Asante/first-passage/pull/1118#issuecomment-6700011227)).
 
+Joshua ruled again on 2026-11-07 ("Keep one cycle" and "Approve as written", on
+[#1130](https://github.com/Joshua-Asante/first-passage/pull/1130)). If NinjaTrader is
+frozen, its process is ended before flattening (F step 1). Oversized protection is an
+incident after one observation cycle (§4, card 3). Watcher failure ends the session, even
+when flat (§4). The operator watches broker activity, not instance halts (§4, cards 2 and 4).
+
 - **C1. Incident scope.** Whether something is an incident is judged per leg: the
   companion's normal activity on its own instrument is not one (B2, 11-05 path). Once
   an incident is declared on either leg, automation ends for the whole session, through

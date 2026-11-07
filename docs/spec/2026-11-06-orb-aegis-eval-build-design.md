@@ -133,3 +133,8 @@ Decided by Joshua, 2026-11-07 ("Approve as written", on [#1129](https://github.c
 - **D8 (B7, B8, B9, B11).** Each row now names a reason that still applies to a native
   build. On a rejected or unknown order, the operator ends the session, because not every
   rejection halts the instance. In verified flat, disable comes before the journal check.
+
+Decided by Joshua, 2026-11-07 ("Approve as written", on [#1130](https://github.com/Joshua-Asante/first-passage/pull/1130)):
+
+- **D9 (§1, §5, §6, B5, B10, D7).** The spec names the frozen set and its four changes. The
+  build check points at the manifest on the signed page. Codex reviews the private source.
