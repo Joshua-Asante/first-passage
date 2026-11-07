@@ -148,7 +148,7 @@ _SHA = re.compile(r"[0-9a-fA-F]{40}")
 # rest of a compound call is never pre-approved) and only adds agent context. A
 # pinned merge passes under the operator's standing GO, conditioned by AGENTS.md "Review
 # and merge": CI green at the pinned head, plus the other agent's clean review at that head
-# for anything but a doc-only PR; the pin keeps the merge to that exact head.
+# for every PR, doc-only included; the pin keeps the merge to that exact head.
 DECISION = {
     "pr.merge": PASS,
     "pr.merge_admin": ASK,
@@ -167,11 +167,10 @@ MESSAGES = {
                           "<sha>`, a REST `sha` field, or GraphQL `expectedHeadOid`."),
     "pr.merge": ("Merge under the operator's standing GO (pr.merge).",
                  "Merge rule (AGENTS.md, Review and merge): every CI check must be "
-                 "COMPLETED and green at the pinned head. A doc-only PR merges on that. "
-                 "Code, tests, gates, CI, or anything touching the AGENTS.md controls also "
-                 "needs an independent review clean at this head, from the other agent: "
-                 "Codex reviews Claude's work, Claude reviews Codex's. Otherwise report the "
-                 "PR as ready and stop."),
+                 "COMPLETED and green at the pinned head. Every PR, doc-only included, "
+                 "also needs an independent review clean at this head, from the other "
+                 "agent: Codex reviews Claude's work, Claude reviews Codex's. Otherwise "
+                 "report the PR as ready and stop."),
     "pr.merge_admin": ("Admin merge (pr.merge_admin): --admin asks GitHub to merge past "
                        "unmet requirements, outside the agents' standing GO. Confirm only if "
                        "you, the operator, are making this merge.",
