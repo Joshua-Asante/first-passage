@@ -18,9 +18,10 @@ then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
   [attended-session procedure](docs/spec/2026-11-07-orb-aegis-attended-session-procedure.md)
   (accepted 11-07; a rehearsal of F sets its hard latest trigger); then a session GO.
   The first session does not wait for Tradeify's source-review reply.
-- **One candidate at a time** (Joshua, 2026-11-06): no new candidates, instruments or
-  builder rounds until this pair trades on the eval or is dropped. The private port
-  is built and changed by Claude Code in Joshua's primary checkout.
+- **New candidates** are allowed again: Joshua overturned the one-candidate bar on
+  2026-11-06. Whether its limits on new instruments and builder rounds also fell is
+  unconfirmed. The private port is built and changed by Claude Code in Joshua's
+  primary checkout.
 - **Status:** Joshua accepted S-PAIR on 11-06; it is not a pass as frozen. His 11-06
   GO covers the eval build only: no order, session or spend. No sizing or deployment
   is approved, and every session needs its own GO.
