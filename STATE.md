@@ -15,8 +15,8 @@ then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
   The [design spec](docs/spec/2026-11-06-orb-aegis-eval-build-design.md) is accepted
   (11-06) and amended: tested source plus two ORB fixes. Next: a short Sim101 check; Joshua
   sends Tradeify the eval files; the signed page, the pre-session check and the
-  [attended-session procedure](docs/spec/2026-11-07-orb-aegis-attended-session-procedure-DRAFT.md)
-  (draft); then a session GO.
+  [attended-session procedure](docs/spec/2026-11-07-orb-aegis-attended-session-procedure.md)
+  (accepted 11-07; a rehearsal of F sets its hard latest trigger); then a session GO.
   The first session does not wait for Tradeify's source-review reply.
 - **One candidate at a time** (Joshua, 2026-11-06): no new candidates, instruments or
   builder rounds until this pair trades on the eval or is dropped. The private port

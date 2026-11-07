@@ -1,7 +1,7 @@
-# ORB + Aegis attended session: operator procedure (DRAFT)
+# ORB + Aegis attended session: operator procedure
 
-**Status:** DRAFT, 2026-11-07. Claude drafts, Joshua accepts or edits. Joshua has
-decided the three choices in §9; the page as a whole awaits his acceptance. It grants no
+**Status:** `ACCEPTED 2026-11-07` by Joshua ("accept the procedure"), with the §9
+decisions. Claude drafted it; Codex reviewed it. Changes need Joshua's ruling. It grants no
 GO, order, session or spend. It is the operator's half of the
 [eval build design spec](2026-11-06-orb-aegis-eval-build-design.md): the spec says what
 the build does, and this page says what the attending operator does. Where they
