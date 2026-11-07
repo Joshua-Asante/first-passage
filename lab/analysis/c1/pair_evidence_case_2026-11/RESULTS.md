@@ -24,14 +24,13 @@ Joshua confirmed the inputs and the sizing on 2026-11-07.
 | Leg | Export (sha256) | Use |
 |---|---|---|
 | ORB O-0 | `bff235ea0934dace…` | As captured. It is the pinned O-0 export; the 10-28 ORB export has O-N's structure and was not used |
-| Aegis A-0 | `9592577152296479…` | Has A-0's signals with equity-scaled sizes, so it is rescaled per contract to the eval's fixed size |
+| Aegis A-0 | `9592577152296479…` | Has A-0's signals at other sizes, so it is rescaled per contract to the eval's size |
 
-- **Why the rescale is sound here:** per-contract net and adverse excursion match the native
-  fixed-size exports exactly on every matched trade.
+- **Why the rescale is sound here:** per-contract net and adverse excursion match native
+  exports at other sizes exactly on every matched trade.
 - **Window:** 2022-09-01 to 2026-09-01, the O-0 export's span.
-- **Current version:** D7's fixes don't change entries, exits, sizing or stops. The exports carry
-  the ORB volume filter, which the build starts inert; the sessions affected are almost all
-  shortened days the build doesn't trade.
+- **Current version:** D7's fixes don't change entries, exits, sizing or stops. Parity between
+  these exports and the eval build is limited, and that reconciliation stays private.
 - **Per-leg sizes** are private.
 
 ## Method
@@ -47,7 +46,7 @@ on any other hash.
 3. **Binding cell.** The pair at eval sizing, under §10's timestamp-sequenced intraday-honest
    floor, bootstrapped within each chronological half. Ceiling: August's 3.0% headline bust in
    both halves, with a noise band of two binomial standard errors.
-4. **Tail-consistent sizing.** Sizing is fixed by the eval here, so this is reported rather than
+4. **Tail-consistent sizing.** The eval sets the sizing here, so this is reported rather than
    chosen: August's 95th-percentile drawdown ratio, compared with the eval's ratio, plus a cell at
    that ratio with Aegis held at its eval size.
 5. **G1 read** (framework §3–§4), on the combined day series with zero days included: SR̂ per
@@ -78,20 +77,25 @@ G1 cannot rescue a failed gate under this rule.
   tradeable size, and each leg solo.
 - **Post-hoc check, outside the frozen rule:** rolling chronological starts in the same engine,
   and bootstrap blocks longer than 5 days, give a lower bust rate than the binding cell, and
-  rolling starts reproduce the earlier private replay. Every one of those estimates stays above
-  the ceiling, so the verdict doesn't depend on the bootstrap.
+  rolling starts reproduce the earlier private replay. The point estimates all stay above the
+  ceiling. This is direction only: rolling starts overlap, no dependence-aware margin was computed,
+  and the verdict rests on the binding cell alone.
 
 ## What this does not show
 
 - It does not show negative expected value. The 3.0% ceiling is a preservation bar from August,
   not an economics test, and G2 was not run.
-- The G1 read does not establish an edge: it uses one exposed, tuned, in-sample history. K = 13 is
-  the T00 ledger and a lower bound, since v1→v7 ORB tuning is unreconciled.
+- The G1 read does not establish an edge: it uses one exposed, tuned, in-sample history. K = 13 was
+  set by the task from the T00 ledger. It is a disclosed lower bound, not a total multiplicity
+  correction, since v1→v7 ORB tuning is unreconciled.
 
 ## Limits
 
-- In-sample, with prior performance reads of both legs. This read adds K += 0, following the
-  descriptive-read precedent.
+- In-sample, with prior performance reads of both legs.
+- **K accounting is open, for Joshua's ruling.** The frozen rule called this read K += 0, on the
+  precedent of descriptive reads. But this run can overturn a prior, and the amended Rule 26 notice
+  says every re-test counts, so that precedent doesn't clearly apply. The verdict doesn't turn on
+  this: the gate has no K term. Only the G1 bound would move.
 - A fresh account, not the owned account's state.
 - TradingView fills, apart from the Aegis sensitivity. ORB has no fill test.
 - The intraday floor is trade-level and assumes concurrent trades hit their worst together. It
