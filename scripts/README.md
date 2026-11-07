@@ -238,9 +238,29 @@ The archive clone is `--archive`, `$FP_EVIDENCE_ARCHIVE`, or a
 .\scripts\dispatch_codex.ps1 -Worktree <worktree> -ReviewBase origin/main -OutputFile <scratch>\review.txt
 ```
 
-It selects a credential; it does not isolate Codex. It sets `GH_TOKEN` from `FP_AGENT_GH_TOKEN`, clears
-`GITHUB_TOKEN`, and refuses to run without a fine-grained PAT or from a worktree root holding `.env`.
-Tests: `tests/scripts/test_dispatch_codex.py` (dry-run).
+It narrows what reaches Codex; it is not a sandbox. Requires PowerShell 7. Guarded:
+
+- **Environment.** Codex starts with a fresh environment: only the allowlisted variables
+  Windows, git and the Codex CLI need (`$EnvAllowlist` in the script, including `CODEX_HOME`),
+  plus `GH_TOKEN` set from `FP_AGENT_GH_TOKEN`. No other caller variable reaches it
+  (`GITHUB_TOKEN`, Fly or broker tokens, `OPENAI_API_KEY`, `FP_*`). It refuses with no agent
+  token, or one that is not a fine-grained PAT (`github_pat_`). Codex authenticates from its
+  own login in `CODEX_HOME`.
+- **Location.** The worktree must be a Git worktree under `<repo>\.claude\worktrees\`, with no
+  `.env` at its root.
+- **Contents.** It refuses a worktree holding `effective_inputs.json`, any `*.pine`, or any
+  file named in `core/strategies/BOOK_SOURCES.sha256`, at any depth (skips `.git`, does not
+  follow links). A missing manifest is a refusal.
+- **Prompt.** It refuses a `-Prompt` naming `effective_inputs.json`, a path or file name in
+  `BOOK_SOURCES.sha256`, or a `.pine` file, without echoing the match.
+
+Not guarded: reads are not confined. Codex runs as the same Windows user as every agent, so
+it can still open the primary checkout's private sources and gh's stored credential files.
+The prompt and contents checks match known private file names, not values: pasted Pine,
+parameters or account data, or a renamed copy, pass them, and the caller stays responsible.
+`-DryRun` runs every check and prints the command and the child's variable names, never values.
+Tests: `tests/scripts/test_dispatch_codex.py` (dry-run, plus a stub `-Codex` that records the
+child environment).
 
 ## Independent review
 
