@@ -166,3 +166,62 @@ Joshua adopted Codex's recommendations on all three choices, 2026-11-07
   broker-reported `Working` stop does not prove it survives a disconnect (U-3). The
   bound may be relaxed later only by a ruling Joshua registers in advance, set from the
   slow tail of firm observations plus margin, never the average.
+
+## 10. Rehearsal of F
+
+Added 2026-11-07 on Joshua's direction. It produces the worst-case F time that C2's
+hard latest trigger is derived from (§3 item 4), using the weekly preservation trade.
+
+**What is measured where.**
+
+| Part of F | Rehearsed on | Why |
+|---|---|---|
+| Step 1, disable an enabled instance | Sim101 | Enabling a strategy on the eval needs a session GO; disable time is local to NinjaTrader |
+| Step 2, flatten and cancel in Tradovate web | The preservation trade, on the eval | The unproven part on the firm connection |
+| Step 3, verify against B11 | The preservation trade | The operator's time to read both views to flat, no working orders, nothing unresolved |
+
+**The rehearsal, inside the one weekly round trip.**
+
+0. **Scope gate.** The added resting stop and the flatten-and-cancel exit change the
+   weekly round trip. Do not place this modified trade until Joshua has ruled that the
+   standing GO covers it, or has given a specific GO. Until then the ordinary
+   preservation trade runs as usual under its existing authorization.
+1. On a `PERMITTED` day, starting about 16:15 ET: near the hard trigger's liquidity,
+   with room before the 16:45 ET force-flat.
+2. Both instances disabled and the account flat in both views (B13).
+3. Enter one MNQ micro as the preservation trade is usually entered.
+4. Place a resting protective stop well away from the market, so step 2 also cancels
+   a working order. Before going on, take a fresh broker read: the stop must show
+   working for the filled quantity. If it is rejected, unknown or missing, run F as an
+   incident and record that outcome; it is not the planned timing sample.
+5. Run F steps 2 and 3 as §2 says: flatten and cancel in Tradovate web, then verify.
+6. Record privately: the click, the exit fill with the stop cancelled, and verification
+   complete. No prices or account data in the record (B15).
+
+**Deriving the hard trigger.** One sample is not a worst case. The MNQ rehearsal
+measures only what it exercises: one contract, one leg, on MNQ. From it, the trigger
+is the observed step 2 and 3 time plus the Sim101 step 1 time, plus a slow-fill
+allowance and a large explicit margin, counted back from 16:45 ET *(signed page)*.
+Each later preservation trade adds a sample. The trigger tightens only by a ruling
+Joshua registers in advance, from the slow tail of the samples, never the average.
+
+**Paths the MNQ rehearsal does not measure.** These are the 6J leg (where Aegis's exit
+has no clock backstop), F on both legs at once, and partial fills. §3 item 4 is met
+for them only by one of:
+
+- a supported envelope: for example a 6J rehearsal round trip, which is outside the
+  standing GO and needs Joshua's direction, and a Sim101 timing of F on both legs
+  for the sequencing; or
+- an explicit ruling by Joshua, recorded on the signed page, accepting the
+  unmeasured assumptions and the margin chosen for them.
+
+A margin alone does not satisfy the gate for paths nobody has measured.
+
+**Decided by Joshua, 2026-11-07.**
+
+- The modified trade (added resting stop, flatten-and-cancel exit) is within the
+  standing GO for the weekly preservation trade. Step 0 is met.
+- Joshua performs the rehearsal himself.
+- For the unmeasured paths (6J, F on both legs, partial fills), Joshua accepts the
+  assumptions by ruling. The signed page records the ruling and the margin chosen for
+  them.
