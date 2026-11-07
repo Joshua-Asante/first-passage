@@ -16,7 +16,8 @@ card follows before the 2027-01-31 falsifier.
 Five instruments (MNQ, MYM, M2K, MGC, MCL) × eight cells × two directions: K = 80, fixed. `survey.py`
 holds the fill, cell, statistics, eligibility and selection rules. `run.py` is the one-shot
 driver: it reads a private freeze record, refuses unless HEAD is the record's frozen SHA with
-clean tracked files, refuses a second run, and writes only to private paths. The merge SHA of
+clean tracked files, refuses an output path git tracks or does not ignore, refuses a second
+run, and writes only to private paths. The merge SHA of
 this PR is the frozen SHA. The parity, holdout and 5h stages are separate, contingent work.
 
 ## Readings of the protocol
@@ -33,3 +34,12 @@ this PR is the frozen SHA. The parity, holdout and 5h stages are separate, conti
 - **Unresolved trades** take precedence over eligibility, so such a cell gets no series statistics.
 - **Exposure log.** The driver appends one `planned` row per instrument before reading its bars.
   A dropped instrument reads nothing and adds no row.
+- **One run, counted from its start (for Joshua to confirm against the private protocol).** The
+  driver creates `run.started` in the private `out` directory with an exclusive create before it
+  reads the calendar, book or any export. The marker records the frozen SHA and the UTC start
+  time and is never removed, also not when the run fails. A run that fails after the marker is
+  written therefore uses up the one run: the driver refuses another until a defect is recorded
+  and an addendum written, as it does when `report.json` exists. This is a reading, not settled:
+  the protocol says one run, and this code counts a started run as that run.
+- **Missing commission row.** Under 7.2 the instrument drops as NOT EVALUATED; the report's
+  `commissions` map records that firm and symbol with `commission: null` and the reason.

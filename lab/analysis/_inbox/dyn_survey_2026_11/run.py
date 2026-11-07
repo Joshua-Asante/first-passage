@@ -2,8 +2,8 @@
 
     python -I scripts/fp.py python lab/analysis/_inbox/dyn_survey_2026_11/run.py <freeze.json>
 
-Refuses unless HEAD is the frozen SHA, tracked files are clean and no report exists. Writes only
-to the record's private ``out`` directory and exposure log.
+Refuses unless HEAD is the frozen SHA, tracked files are clean, both output paths are private and
+no run has started. Writes only to the record's private ``out`` directory and exposure log.
 """
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ import hashlib
 import json
 import subprocess
 import sys
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -25,12 +25,15 @@ from builder import data  # noqa: E402
 from builder.gates import Costs  # noqa: E402
 from builder.instruments import minutes  # noqa: E402
 from discovery.cost_model import resolve_commission  # noqa: E402
+from discovery.remc_series_builder import OutputPathError, assert_out_dir_allowed  # noqa: E402
 from research_utils.camp_import import load_camp_sibling  # noqa: E402
 
 S = load_camp_sibling("survey", __file__)
 
 SYMBOLS = ("MNQ", "MYM", "M2K", "MGC", "MCL")
 FIRMS = ("Tradeify_Select_100K", "MFFU_Rapid_100K")
+MARKER = "run.started"
+ONE_RUN = "one run; a rerun needs a recorded defect and an addendum"
 
 
 class Refused(RuntimeError):
@@ -45,6 +48,33 @@ def check_head(frozen_sha: str) -> None:
         raise Refused(f"HEAD {head} is not the frozen SHA {frozen_sha}")
     if git("status", "--porcelain", "--untracked-files=no").strip():
         raise Refused("tracked files differ from the frozen SHA")
+
+
+def check_private(path: Path) -> None:
+    """Refuse an output path that git tracks or that sits unignored in the repository."""
+    try:
+        assert_out_dir_allowed(path, repo_root=ROOT)
+    except OutputPathError as e:
+        raise Refused(str(e)) from e
+
+
+def claim_run(out: Path, frozen_sha: str) -> Path:
+    """Create the run marker atomically before any input is read. It is never removed."""
+    marker = out / MARKER
+    try:
+        with open(marker, "x", encoding="utf-8") as fh:
+            json.dump({"frozen_sha": frozen_sha, "started": datetime.now(timezone.utc).isoformat()}, fh)
+    except FileExistsError:
+        raise Refused(f"{marker} exists: {ONE_RUN}") from None
+    return marker
+
+
+def commission_row(firm: str, symbol: str) -> dict:
+    """The report's commission entry; a missing row is recorded, not raised."""
+    try:
+        return {"commission": resolve_commission(firm, symbol), "missing": None}
+    except (KeyError, ValueError) as e:
+        return {"commission": None, "missing": str(e)}
 
 
 def commission_gap(symbol: str, quotes: dict | None) -> str | None:
@@ -117,14 +147,18 @@ def main(record_path: Path) -> dict:
     record = json.loads(record_path.read_text(encoding="utf-8"))
     check_head(record["frozen_sha"])
     out = Path(record["out"])
+    log = Path(record["exposure_log"])
+    check_private(out)
+    check_private(log)
     report_path = out / "report.json"
     if report_path.exists():
-        raise Refused(f"{report_path} exists: one run; a rerun needs a recorded defect and an addendum")
+        raise Refused(f"{report_path} exists: {ONE_RUN}")
     if set(record["instruments"]) != set(SYMBOLS):
         raise Refused(f"the record must list exactly {SYMBOLS}")
-    log = Path(record["exposure_log"])
     if not log.is_file():
         raise Refused(f"{log}: the exposure log is seeded at freeze")
+    out.mkdir(parents=True, exist_ok=True)
+    claim_run(out, record["frozen_sha"])
     calendar = data.load_calendar(Path(record["calendar"]["path"]), record["calendar"]["sha256"])
     book = data.load_book(Path(record["book"]["path"]), record["book"]["sha256"])
     rows, detail = [], {}
@@ -139,9 +173,8 @@ def main(record_path: Path) -> dict:
               "exposure_log_sha256": data.file_sha256(log), "outcome": S.outcome(rows, chosen),
               "advanced": chosen["id"] if chosen else None,
               "eligible_rises": {r["id"]: r["rise"] for r in rows if r["status"] == "ELIGIBLE"},
-              "commissions": {f: {s: resolve_commission(f, s) for s in SYMBOLS} for f in FIRMS},
+              "commissions": {f: {s: commission_row(f, s) for s in SYMBOLS} for f in FIRMS},
               "cells": rows, "instruments": detail}
-    out.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=1, sort_keys=True), encoding="utf-8")
     return report
 

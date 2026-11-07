@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import sys
+import threading
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -247,7 +248,8 @@ def test_commission_gap(monkeypatch):
 
 def test_run_refuses_a_second_run_and_a_wrong_head(tmp_path, monkeypatch):
     p = tmp_path / "freeze.json"
-    p.write_text(json.dumps({"frozen_sha": "x", "out": str(tmp_path / "out")}))
+    p.write_text(json.dumps({"frozen_sha": "x", "out": str(tmp_path / "out"),
+                             "exposure_log": str(tmp_path / "log.md")}))
     with pytest.raises(R.Refused, match="not the frozen SHA"):
         R.main(p)
     monkeypatch.setattr(R, "check_head", lambda sha: None)
@@ -277,3 +279,89 @@ def test_dropped_instrument_keeps_its_16_cells_in_k(tmp_path):
     got, detail = R.survey_instrument("MNQ", {"sha256": "abcdefgh", "path": "p"}, None, {}, log)
     assert len({r["id"] for r in got}) == 16 and {r["status"] for r in got} == {"NOT EVALUATED"}
     assert detail == {} and log.read_text() == ""       # nothing was read
+
+
+def record(tmp_path, quotes=None, **over):
+    """A synthetic freeze record with every instrument, seeded log and stub input paths."""
+    log = tmp_path / "log.md"
+    log.write_text("")
+    inst = {s: {"path": f"{s}.csv", "sha256": "abcdefgh", "quoted_commission": quotes} for s in R.SYMBOLS}
+    rec = {"frozen_sha": "x", "out": str(tmp_path / "out"), "exposure_log": str(log), "instruments": inst,
+           "calendar": {"path": "cal", "sha256": "c"}, "book": {"path": "book", "sha256": "b"}, **over}
+    p = tmp_path / "freeze.json"
+    p.write_text(json.dumps(rec))
+    return p
+
+
+def test_missing_commission_row_drops_its_cells_and_the_report_records_it(tmp_path, monkeypatch):
+    def commission(firm, symbol):
+        if (firm, symbol) == (R.FIRMS[1], "MCL"):
+            raise KeyError(f"{firm} {symbol}")
+        return 0.5
+
+    def no_bars(*a):
+        raise R.data.DataError("synthetic")
+
+    monkeypatch.setattr(R, "check_head", lambda sha: None)
+    monkeypatch.setattr(R, "resolve_commission", commission)
+    monkeypatch.setattr(R.data, "load_calendar", lambda *a: None)
+    monkeypatch.setattr(R.data, "load_book", lambda *a: {})
+    monkeypatch.setattr(R.data, "load_bars", no_bars)
+    p = record(tmp_path, {f: 0.5 for f in R.FIRMS})
+    report = R.main(p)
+    assert json.loads((tmp_path / "out" / "report.json").read_text())["k"] == S.K
+    mcl = [r for r in report["cells"] if r["id"].startswith("MCL")]
+    assert len(mcl) == 16 and all(r["status"] == "NOT EVALUATED" for r in mcl)
+    assert all(r["reason"].startswith("no commission row") for r in mcl)
+    assert report["commissions"][R.FIRMS[1]]["MCL"]["commission"] is None
+    assert "MCL" in report["commissions"][R.FIRMS[1]]["MCL"]["missing"]
+    assert report["commissions"][R.FIRMS[0]]["MCL"] == {"commission": 0.5, "missing": None}
+
+
+def test_failed_run_keeps_its_marker_and_a_second_run_is_refused(tmp_path, monkeypatch):
+    def boom(*a):
+        raise RuntimeError("synthetic failure after the marker")
+
+    monkeypatch.setattr(R, "check_head", lambda sha: None)
+    monkeypatch.setattr(R.data, "load_calendar", boom)
+    p = record(tmp_path)
+    with pytest.raises(RuntimeError, match="synthetic failure"):
+        R.main(p)
+    marker = tmp_path / "out" / R.MARKER
+    assert json.loads(marker.read_text())["frozen_sha"] == "x"
+    assert not (tmp_path / "out" / "report.json").exists()
+    monkeypatch.setattr(R.data, "load_calendar", lambda *a: pytest.fail("inputs read on a second run"))
+    with pytest.raises(R.Refused, match="one run"):
+        R.main(p)
+    assert marker.exists()
+
+
+def test_concurrent_claims_admit_one_run(tmp_path):
+    start, results = threading.Barrier(8), []
+
+    def claim():
+        start.wait()
+        try:
+            R.claim_run(tmp_path, "x")
+            results.append("ran")
+        except R.Refused:
+            results.append("refused")
+
+    threads = [threading.Thread(target=claim) for _ in range(8)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert sorted(results) == ["ran"] + ["refused"] * 7
+
+
+@pytest.mark.parametrize("field", ["out", "exposure_log"])
+def test_output_path_in_the_tracked_tree_is_refused(tmp_path, monkeypatch, field):
+    monkeypatch.setattr(R, "check_head", lambda sha: None)
+    monkeypatch.setattr(R.data, "load_calendar", lambda *a: pytest.fail("inputs read"))
+    tracked = Path(R.__file__).resolve().parent                 # this survey's tracked source dir
+    target = tracked if field == "out" else tracked / "DESIGN.md"
+    p = record(tmp_path, **{field: str(target)})
+    with pytest.raises(R.Refused, match="tracked by git"):
+        R.main(p)
+    assert not (tracked / R.MARKER).exists() and not (tmp_path / "out").exists()
