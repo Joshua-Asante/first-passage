@@ -57,90 +57,27 @@ use `python -m pytest <paths>` for an exact test selection. Child exit status is
 returned; launcher setup failures return 2. Environment version mismatches block
 execution, so use the selected interpreter directly to repair its dependencies.
 
-### Automatic verification evidence
+### Running tests
 
-`test`, `test-ops`, `python -m pytest ...`, and `check` automatically create a
-unique ignored `.cache/fp-verification/<timestamp-id>/` directory. Output streams
-remain visible and are retained alongside `record.json`. The record identifies
-the exact command, interpreter, locked versions, commit, dirty diff, hashes of
-tracked/nonignored untracked files, before/after source state, duration and exit
-status. Pytest adds `junit.xml` with counts, failures and skip reasons. An explicit
-user JUnit destination is preserved and its bytes are also retained in the evidence
-directory. Expected reports must exist, be refreshed by the run, parse correctly,
-and have counts consistent with testcase outcomes. `test_summary` contains collected,
-passed, failed, error and skipped counts; report errors prevent acceptance.
-Gate results remain in the full stdout/stderr logs and do not require JUnit.
-
-Recorded local and Docker pytest commands load `scripts.pytest_junit_subtests`.
-The locked pytest 9.1.1 producer counts subtests but otherwise reuses their
-parent's XML node. This adapter emits separate, uniquely named testcase elements
-for those outcomes and retains ordinary parent/setup/teardown reporting. The
-recorder still rejects mismatched counts and contradictory outcomes. Its summary
-counts JUnit testcases, including subtests; pytest's terminal summary reports
-parent tests and subtests separately. Custom JUnit destinations remain supported.
-The adapter uses the pinned pytest producer API; run its process regressions when
-updating pytest. Reports are retained as produced, not repaired after validation.
-
-Schema version 2 reserves `record.json` before environment checks, then atomically
-replaces it as the run advances through `not_started`, `running`, and a final
-`completed`, `failed`, or `interrupted` state. A setup failure stays `not_started`
-with its error and nonzero verification result. A hard kill can leave `running`
-with a null result; that is incomplete evidence. A missing bootstrap interpreter
-or unwritable evidence directory cannot produce a record and fails visibly.
-
-The printed record path is the evidence to cite. Child failure codes are retained;
-a successful child with source drift returns 3, and incomplete output capture
-returns 4. Invalid expected reports return 5, failed Docker cleanup returns 6,
-and interruption returns 130. Only `completed` with verification exit zero is
-acceptance. Pipe draining stops three seconds after the direct child exits if a
-descendant retains its handles; the record then rejects acceptance. The recorder
-does not kill unrelated/background descendants. Keep files, index and HEAD stable
-while checking. Ignored inputs and external services are not fingerprinted;
-records describe the selected run, not all repository behavior. These local
-artifacts are not committed or uploaded automatically. `doctor` and arbitrary
-Python commands do not create verification records.
+`test`, `test-ops`, `python -m pytest ...` and `check` run in the foreground and
+return the child's exit status; they write no record. The launcher adds
+`-c <checkout>/pyproject.toml` and `--rootdir=<checkout>` to pytest commands, so a
+test path outside the checkout still uses this checkout's configuration. Later
+arguments and `PYTEST_ADDOPTS` reach pytest unchanged. Records already under
+`.cache/fp-verification/` stay on disk; those pinned in
+[`docs/evidence/PRIVATE_EVIDENCE.sha256`](../docs/evidence/PRIVATE_EVIDENCE.sha256)
+remain evidence.
 
 For faster focused feedback, use the existing pytest-xdist installation:
 
 ```powershell
-.\fp.ps1 --workers 2 python -m pytest tests/test_record_verification.py tests/test_fp_launcher.py -q
+.\fp.ps1 --workers 2 python -m pytest tests/test_fp_launcher.py -q
 ```
 
 Workers are opt-in, bounded from 0 through 8, and use `loadscope` to group each
 module/class on one worker. Use 0 for serial execution. Startup overhead and
 imbalanced modules can outweigh parallelism; measure the same selection before
 choosing workers. Tests with shared resources may need serial execution.
-
-### Detached runs
-
-Long recorded suites (for example `tests/ops/qualification`, over 90 minutes) get
-hard-killed when they are started from an agent tool that imposes a time limit on
-its own command, which leaves the record `running` and unusable. `--detach`
-starts the same recorded run as an independent background process and returns at
-once:
-
-```powershell
-.\fp.ps1 --detach python -m pytest tests/ops/qualification -q
-```
-
-It is a launcher-level option given before the command, like `--workers`, and it
-applies only to recorded commands (a pytest task or `check`); anything else is a
-usage error. The parent creates no record of its own and never waits. It prints
-exactly two lines, `record: <absolute evidence directory>` and `pid: <child pid>`,
-and writes `<identity>.detach.json` (child pid, record directory, log path, child
-argv, UTC start time) plus `<identity>.detach.log` (the child's combined stdout
-and stderr) in `.cache/fp-verification/` beside the evidence directories. On
-Windows the child starts in a new process group without a window and breaks away
-from the caller's job when that job permits; if the breakaway is refused the
-launcher warns that the run may end with the caller. On POSIX the child starts a
-new session. The detached child reuses the reserved record identity through
-`FP_VERIFICATION_ID`, which is removed from the environment handed to the task's
-own children; a launcher run honors it only as an unused reservation (its
-`.detach.log` exists and its record directory does not), and refuses a nested
-`--detach`. The child's arguments are rebuilt from the parsed options, with a
-relative `--env`/`FP_OPS_ENV` resolved against the caller's directory; launcher
-options are never abbreviated. Completion is still judged only from `record.json` as before: poll
-it, and accept nothing but `completed` with verification exit zero.
 
 ### Azure VM deallocation watcher
 
@@ -168,10 +105,6 @@ cannot be verified. Run one watcher per VM; it never prints the subscription ID.
 Composition authority is [`gates.yml`](gates.yml) via
 [`gate_manifest.py`](gate_manifest.py).
 Do not hand-maintain a parallel list.
-
-[Evidence store](evidence_store/README.md) provides opt-in source preservation,
-decision history and declared-dependency correction queries:
-`python -m scripts.evidence_store --help`. It is advisory governance tooling.
 
 The manifest's complete tier set is `always`, `path-conditional`,
 `data-conditional`, and `audit`. The runner refuses unknown tiers (including the
@@ -321,44 +254,6 @@ oversight remain with their existing code/skill/rule owners. Removing a review m
 does not weaken those controls or commission new reviewer roles. New functions need
 demonstrated coverage; do not assume every judgment can be reduced to a mechanical check.
 
-### Checkout configuration and external tests
-
-All launcher pytest routes (`test`, `test-ops`, `python -m pytest`) supply
-`-c <selected checkout>/pyproject.toml` and `--rootdir=<selected checkout>`.
-Equivalent explicit split/equals options are accepted and normalized; conflicting
-options fail before pytest starts. Relative options resolve from that checkout,
-even when invoked from another directory. `PYTEST_ADDOPTS` is expanded into the
-recorded command and subject to the same checks. Deliberate `-o` overrides remain
-available and recorded. This selects pytest configuration/import roots; it does
-not sandbox imports or prohibit deliberate import-path overrides.
-
-Explicit external test files, including `file.py::test_name` selections, have
-SHA-256 hashes recorded before and after execution. A changed or missing file
-prevents acceptance (exit 3). External supporting imports/data and directory
-contents are outside that inventory unless separately captured. Existing custom
-JUnit destinations are outputs, not source inputs. An unchanged scratch test does
-not establish an unchanged dependency closure.
-
-### Advisory progress
-
-The recorder prints a heartbeat every 30 seconds while a child is running. Missing,
-invalid or stale observations say `test activity unavailable`. Observed active IDs,
-completed count, collected count and observation age describe pytest activity;
-completed does not mean passed, and elapsed time never triggers termination.
-`--progress-interval` on the generic recorder can change the positive finite
-interval; the launcher uses the recorder's canonical default.
-
-The launcher explicitly loads `scripts.pytest_progress` and passes its unique run
-identity/evidence directory. Each xdist worker atomically writes its own
-`progress-gw*.json`. The controller aggregates distinct node IDs from forwarded
-pytest hooks into `progress.json`; it never needs competing worker writes to that
-file. Completion is observed after teardown, including setup failures and skips.
-Worker crashes can leave active/incomplete worker snapshots. Counts and IDs are
-advisory, never acceptance evidence. Snapshots retain at most 64 active and 64
-completed IDs, 200 characters each, with a truncation flag; exact final outcomes
-still come from validated JUnit. Supervisor heartbeats are excluded from retained
-child stdout/stderr. Existing pipe draining, interruption and cleanup rules remain.
-
 ### Separate baseline and implementation checkouts
 
 Resolve and verify an exact baseline before creating isolation. Prefer native
@@ -372,13 +267,11 @@ git worktree add --detach .worktrees/test-baseline $baseline
 git worktree add -b codex/my-change .worktrees/my-change $baseline
 ```
 
-Use unique owned paths. Register each baseline's absolute path, commit, owning
-run and evidence directory in the task's retained evidence ledger. Invoke each
-checkout's own launcher from that checkout:
+Use unique owned paths, and invoke each checkout's own launcher from that checkout:
 
 ```powershell
 .\fp.ps1 doctor
-.\fp.ps1 --workers 2 python -m pytest tests/test_fp_launcher.py tests/test_record_verification.py -q --tb=short
+.\fp.ps1 --workers 2 python -m pytest tests/test_fp_launcher.py -q --tb=short
 ```
 
 Each doctor must validate that checkout's lock. A shared validated environment is
@@ -386,42 +279,11 @@ allowed only while unchanged throughout both runs; dependency changes require
 separate environments. Start with the affected baseline selection. Run a broad
 baseline only to resolve a concrete attribution question. Baseline work can run
 while implementation proceeds in the other tree, if CPU/memory contention permits.
-Never edit the measured checkout, its index or HEAD during a run. During development,
-run affected tests; after edits stop, run planned regressions and required gates.
-Baseline evidence applies only to its recorded revision, inputs and environment;
-it is never candidate acceptance evidence.
+Never edit the measured checkout during a run. During development, run affected
+tests; after edits stop, run planned regressions and required gates. A baseline
+result applies only to its revision, inputs and environment.
 
-Before removing a baseline, require a terminal run, no live child, retained
-finalized evidence outside the worktree and a clean owned tree (including review
-of ignored resources). Then use `git worktree remove <exact registered path>`.
-Never force-remove dirty or unowned worktrees. Reconcile interrupted/uncertain
-runs first; retaining an owned baseline with its evidence is safe.
-
-Caller inventory for this migration: `fp.ps1` delegates to `scripts/fp.py`;
-`tools/local_verification/run.ps1` delegates to `scripts/docker_verification.py`,
-which invokes pytest directly. Make test targets and GitHub test workflows also
-invoke pytest directly and retain their existing environment contracts. The generic
-recorder continues to accept arbitrary commands without pytest argument injection.
-No maintained launcher config workaround or older progress plugin was found to
-remove. Ambient launcher root discovery is retired; direct pytest callers, the
-JUnit adapter, Docker ownership/cleanup, suite defaults and historical records
-are retained. Rollback reverts code while retaining old/new evidence; records
-with the original root-selection defect remain unsuitable for their claimed scope.
-
-Argument files (`@path`, including nested files and `PYTEST_ADDOPTS`) are expanded
-before checkout validation and external-file inventory. They follow pytest's
-one-argument-per-line convention and resolve relative paths from the selected
-checkout. The recorded child command contains expanded arguments, and external
-argument files are also inventoried. Cycles, more than 16 nesting levels, files
-over 1,000,000 characters and expansion over 100,000 arguments fail before launch.
-Equivalent `--rootdir` values use pytest's environment-variable expansion before
-comparison. A JUnit destination overlapping a selected file (including symlink
-or hardlink aliases) is rejected before it can overwrite source. External-file
-identities retain the lexical selection, link/ancestor-link targets, resolved
-path and content digest; retargeting or deleting a selected link rejects acceptance.
-
-Configured `addopts` (including `-o addopts=...`) is materialized once, using
-pytest's precedence, into the validated recorded command. The launcher clears
-pytest's later implicit addopts expansion to prevent hidden file selections.
-JUnit paths use pytest's variable/home expansion. Existing `--log-file` values
-are treated as outputs too, with the same source-overlap rejection.
+Before removing a baseline, make sure no run is live and its tree is clean
+(including ignored resources you care about). Then use
+`git worktree remove <exact registered path>`. Never force-remove dirty or unowned
+worktrees.

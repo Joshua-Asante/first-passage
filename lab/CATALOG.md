@@ -1,14 +1,8 @@
 # Lab analysis catalog
 
-Open **In flight** first — that is the not-spent, not-`HOLD` set. **Hot bodies**
-means the body is still under `lab/analysis/<theme>/<slug>/`, not “do this next.”
-Archived studies are stub-only under `lab/analysis/<slug>/CARD.md` (body in
-`lab/archive/<slug>/`). `_inbox` is a cataloged theme: unassigned until it
-carries a RESULTS/PREREG/Verdict; outcome-bearing work is listed here and must
-leave `_inbox` before `--slug`.
-
-Do not glob `lab/analysis/` alone to infer what is live. The operator work list
-is [`STATE.md`](../STATE.md), not this file.
+**Frozen 2026-11-06.** Nothing regenerates this file and its statuses are not
+kept current. It stays because `lab/research_utils/msl_preflight.py` searches it
+for prior studies. The work list is [`STATE.md`](../STATE.md).
 
 **Camp layout (pytest):** every candidate directory that carries `test_*.py`
 must include an empty `__init__.py` at scaffold time (and keep it when
@@ -92,7 +86,7 @@ documents the camp boundary for humans/tools.
 
 | slug | status | one-liner | card | body | heavy | closed |
 |---|---|---|---|---|---|---|
-| mnq_fvg_draw_probe_2026-08-04 | CLOSED | UNDERPOWERED — V5 fired (n=117 < 150), and the disclosure beneath the power f... | lab/analysis/mnq_fvg_draw_probe_2026-08-04/CARD.md | lab/archive/mnq_fvg_draw_probe_2026-08-04/ | — | 2026-08-13 |
+| mnq_fvg_draw_probe_2026-08-04 | CLOSED | UNDERPOWERED — V5 fired (n=117 < 150), and the disclosure beneath the power f... | lab/archive/mnq_fvg_draw_probe_2026-08-04/RESULTS.md | lab/archive/mnq_fvg_draw_probe_2026-08-04/ | — | 2026-08-13 |
 | a2_panel_noise_venue_bound_2026-08-24 | ACTIVE | the A2 map's dominant uncertainty is the single 520-week DGP panel each cell sits on, not the MC path count its... | lab/analysis/c1/a2_panel_noise_venue_bound_2026-08-24/ (1 file(s) retained) | https://github.com/Joshua-Asante/first-passage-archive/tree/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/a2_panel_noise_venue_bound_2026-08-24/ | — | — |
 | aegis1p_3leg_rescore_2026-07-27 | ACTIVE | Aegis@1.00% 3-leg corrected-geometry re-MC under Tradeify envelope | — | https://github.com/Joshua-Asante/first-passage-archive/tree/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/aegis1p_3leg_rescore_2026-07-27/ | — | — |
 | aegis3leg_engine_param_2026-08-20 | ACTIVE | Parameterized Aegis 3-leg rescore engine (default 1.00% only; J14 bars new risk-arm measurement) | — | https://github.com/Joshua-Asante/first-passage-archive/tree/5d47b4dc5fd20da5e93edfed2f6eafd0d4a6ddd2/lab/analysis/c1/aegis3leg_engine_param_2026-08-20/ | — | — |

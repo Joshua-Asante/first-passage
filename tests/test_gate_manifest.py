@@ -32,7 +32,6 @@ EXPECTED_ALWAYS = {
 }
 
 EXPECTED_PATH_CONDITIONAL = {
-    "evidence-store",
     "cost-model-closed-world",
     "durable-store-pragmas",
 }
@@ -108,7 +107,6 @@ def test_pre_commit_includes_path_conditional_on_matching_paths(monkeypatch):
     data = gm.load_manifest(MANIFEST)
     selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
     assert "durable-store-pragmas" in selected
-    assert "evidence-store" not in selected
     assert "cost-model-closed-world" not in selected
 
 
@@ -176,7 +174,6 @@ def test_manifest_file_present():
 # Reachability, not just selector shape: for each path-conditional gate, staging a
 # path whose edit can cause the violation it detects must select it.
 REACHABILITY_PROBES = {
-    "evidence-store": "scripts/evidence_store/store.py",
     "cost-model-closed-world": "lab/discovery/cost_model.py",
     "durable-store-pragmas": "ops/cli.py",
 }
