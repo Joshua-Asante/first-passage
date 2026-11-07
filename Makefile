@@ -1,13 +1,12 @@
 # First Passage - convenience targets.
 # Wrappers around scripts that the pre-commit hook also calls.
 
-.PHONY: help check audit validate validate-data validate-pine boundaries lab-catalog lab-catalog-check lab-archive-check test test-ops instrument-profiles instrument-profiles-build gate-manifest gate-manifest-list
+.PHONY: help check audit validate validate-data validate-pine boundaries test test-ops instrument-profiles instrument-profiles-build gate-manifest gate-manifest-list
 
 help:
 	@echo "check                 run check-tier gates (scripts/gates.yml)"
 	@echo "audit                 run report-only diagnostics"
 	@echo "validate              data manifests + pine"
-	@echo "lab-catalog           regenerate lab/CATALOG.md"
 	@echo "gate-manifest-list    print the hard-gate roster (blocking tiers)"
 	@echo "test / test-ops       pytest (all / ops/)"
 
@@ -44,19 +43,6 @@ instrument-profiles:
 
 instrument-profiles-build:
 	@python scripts/instrument_profiles.py build
-
-# lab/CATALOG.md freshness (always-on). Stale → regenerate, then commit the delta.
-lab-catalog-check:
-	@python scripts/archive_lab_analysis.py --check --catalog-only
-
-# Rebuild lab/CATALOG.md from lab/analysis + lab/archive (commit the delta).
-lab-catalog:
-	@python scripts/archive_lab_analysis.py --regenerate-catalog
-
-# Full STM/LTM hygiene (unstubbed closes, stub shape, catalog). Not in `make check`
-# — archive promotion stays operator-fired via --slug.
-lab-archive-check:
-	@python scripts/archive_lab_analysis.py --check
 
 test:
 	@python -m pytest tests/ -x

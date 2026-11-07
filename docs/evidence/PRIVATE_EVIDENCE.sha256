@@ -509,3 +509,12 @@ b5c02ae01b9a8c42762036cb5c5c06840e16c15d64d709f4190423e2f7850356  local_artifact
 d6867faf32dc7f8c78dc07b8c21bb6b6948e7f1dd1df7d9511cd6cec7125844b  local_artifacts/m6e-fixed-20261104/summary.json
 b8cb7e1a694f020b63344961a26b4cc39be35f791064c7d33b1903cd01e1bb53  local_artifacts/m6e-fixed-20261104/review/claude-review-R1-summary.txt
 c5d7b974e8a924d061d830cd22c69d80d5dc1d6a799c118b9e52317e12c8e0dc  local_artifacts/m6e-fixed-20261104/review/provenance-check-20261105.json
+# 2026-11-07 - ORB O-0 horizon edition registration, specification v14
+# (docs/briefs/pre-registration/2026-11-07-orb-horizon-edition-registration-v14.md).
+bf2b52481a259e62ec578b9bd31033703c59f7590340b60aebdbf8858a3aaec4  local_artifacts/book-repair-2026-10/orb-edition/ORB-EDITION-HORIZON-SPEC-DRAFT-v14.md
+d0421d3797eceb78af44c592765f67ab39cee28a69578bfd765017de77587ffa  local_artifacts/book-repair-2026-10/orb-edition/ORB-EDITION-HORIZON-FREEZE-v5.json
+9682745fe72accd9747f5a8de209e8185a1e7e918df8f114dac6e865b93a0318  local_artifacts/book-repair-2026-10/orb-edition/ORB-EDITION-BASELINE-RECORD-v1.json
+6fad9616c352ce1059b092345448b3084d66ccfb19d0a66b0bfdd80af3772562  local_artifacts/book-repair-2026-10/orb-edition/ORB-EDITION-BASELINE-DELTA-v1.patch
+a8e855e87510b5a567f95c116117d6d967315bc8f7acd3c11859bd3439f2b0df  local_artifacts/book-repair-2026-10/orb-edition/orb-edition-reviews/V12-REVIEW-r1.md
+6fc85fd124b23636d0ae1dfab8aedf0c6a40a25bc1ba50f2431f03093e017e58  local_artifacts/book-repair-2026-10/orb-edition/orb-edition-reviews/V13-REVIEW-r2.md
+5346a39d3592da078d7cb7934fcbbb83ea4f2516af232a250e62907e7ba2c9ef  local_artifacts/book-repair-2026-10/orb-edition/orb-edition-reviews/V14-REVIEW-r3.md

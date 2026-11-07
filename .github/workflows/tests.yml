@@ -86,9 +86,7 @@ jobs:
         run: python -m pip install -r tools/local_verification/requirements-extra.txt
       # check_boundaries.py lives in scripts/gates.yml (always) and runs via
       # gate-manifest.yml --tier check (W5 H6 land). Do not re-list it here.
-      # --junitxml keeps per-test timings. tests/ops/conftest.py leaves the
-      # retired qualification suite out of this whole-suite run (c1 rail
-      # retired 2026-10-29).
+      # --junitxml keeps per-test timings.
       - name: Run pytest
         run: pytest tests/ -v -n 3 --dist load --junitxml="$RUNNER_TEMP/pytest-evidence/junit.xml"
       - name: Retain pytest evidence (junit)
@@ -122,8 +120,6 @@ jobs:
           pytest
           tests/governance/test_private_pine_read_in_place.py
           tests/test_claude_review_workflows.py
-          tests/test_validate_c1_monitoring_acceptance.py
-          tests/ops/test_c1_rail_arm.py
           tests/core/test_mc_mode_switching.py
           tests/scripts/test_guard_operator_acts.py
           tests/scripts/test_guard_shell_command.py

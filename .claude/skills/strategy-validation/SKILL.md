@@ -1,6 +1,6 @@
 ---
 name: strategy-validation
-description: Plan, reproduce or assess First Passage backtests, TradingView inspection and offline/native research. ALWAYS use for Joshua's TradingView backtest CSV uploads; real-or-overfit questions; parameter sweeps/config grids; robustness, plateau, placebo, permutation, multiplicity, selection effects, Step-0, panel integrity, pre-registration, forward tests, day-of-week/subset effects; deflated/probabilistic Sharpe (DSR), PBO, reality check, SPA, Romano-Wolf/StepM, model confidence set (MCS), universe correction, CPCV; "what config next" or "does the best of K survive". Also fires before ANY proposed re-run (direction flip, exit redesign, new filter); excursion counterfactuals, cost pre-flight and futures-anomaly-discovery K accounting. Use for execution/fill assumptions, costs, chronology and reproducibility; reuse existing engines. Route investigation framing to inqhiori, artifact structure to brief-authoring, CSV metrics to trade-csv-reconcile and generation to futures-anomaly-discovery.
+description: Plan, reproduce or assess First Passage backtests, TradingView inspection and offline/native research. ALWAYS use for Joshua's TradingView backtest CSV uploads; real-or-overfit questions; parameter sweeps/config grids; robustness, plateau, placebo, permutation, multiplicity, selection effects, Step-0, panel integrity, pre-registration, forward tests, day-of-week/subset effects; deflated/probabilistic Sharpe (DSR), PBO, reality check, SPA, Romano-Wolf/StepM, model confidence set (MCS), universe correction, CPCV; "what config next" or "does the best of K survive". Also fires before ANY proposed re-run (direction flip, exit redesign, new filter); excursion counterfactuals, cost pre-flight and search-ledger K accounting. Use for execution/fill assumptions, costs, chronology and reproducibility; reuse existing engines. Route CSV metrics to trade-csv-reconcile.
 ---
 
 # Strategy Validation
@@ -105,7 +105,7 @@ Every input in a concept-stage Pine script declares its status in the tooltip: S
 
 §5 tests selection WITHIN one panel (best day/slice under a demeaned null). §8
 tests selection ACROSS K distinct candidates/configs, each with its own return
-series — the case the `futures-anomaly-discovery` ledger is built to feed. Its
+series — the case the search ledger (`lab/discovery/register_search.py`) is built to feed. Its
 `register_search.py close` step emits K and a cheap Bonferroni/BH triage; §8 is the
 rigorous version. **Trigger:** any candidate that is the winner of a search over K
 strategies/configs (ledger output, grid winner, mined signal). If it came from a
@@ -198,16 +198,10 @@ prereg requires it.
 ## Boundaries
 
 - Metric definitions (R-pinning, DD reconstruction, column shims) → trade-csv-reconcile.
-- Whether to investigate at all, SNAG budgets, gate philosophy → inqhiori / programme-audit.
-- Artifact structure for records/pre-regs/handoffs → brief-authoring.
 - Instrument-level state (active concepts, dead lists, durable findings) → `ops/instruments/<SYMBOL>.md` ledger; read it before deriving.
 - Trial count K that §8 consumes, and the pre-registration of the search space →
-  `futures-anomaly-discovery` ledger
-  (`lab/discovery/register_search.py`; skill
-  `.claude/skills/futures-anomaly-discovery/scripts/register_search.py` is a
-  thin launcher — `PYTHONPATH=lab python -m discovery.register_search …`).
-- Statistical rationale — why each test exists, the 8 domains, the staged pipeline →
-  `docs/methodology/references/statistics-of-tradable-anomalies.md` (reference, not gating).
+  the search ledger, `lab/discovery/register_search.py`
+  (`PYTHONPATH=lab python -m discovery.register_search …`).
 - Universe-level tests (SPA/RealityCheck/StepM/MCS) live in `arch.bootstrap`; CPCV in
   `skfolio.model_selection`. Do not reimplement the bootstrap re-centering — subtle
   correctness lives in the vetted library.

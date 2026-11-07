@@ -228,37 +228,6 @@ def test_force_add_check_covers_renames_into_ignored_paths(repo: Path):
     assert "data.csv: force-added ignored file" in result.stdout, result.stdout
 
 
-GRANDFATHERED = "tests/fixtures/c1_image_validation/lifecycle_state.json"
-
-
-def test_grandfathered_constant_names_exactly_the_known_file():
-    """Codex P1 4111056549: the tracked-despite-ignore exemption is a named,
-    closed list, not a HEAD-membership test."""
-    assert csd.TRACKED_IGNORED_GRANDFATHERED == frozenset(
-        {
-            "tests/fixtures/c1_image_validation/lifecycle_state.json",
-        }
-    )
-
-
-def test_grandfathered_tracked_ignored_file_is_not_flagged(repo: Path):
-    """A grandfathered file tracked despite an ignore rule is never flagged."""
-    _write(repo, GRANDFATHERED, "{}\n")
-    _git(repo, "add", GRANDFATHERED)
-    _git(repo, "commit", "-q", "-m", "fixture tracked before the rule")
-    _ignore(repo, "lifecycle_state.json\n")
-    # Nothing staged: HEAD-tree mode.
-    result = _run_gate(repo)
-    assert result.returncode == 0, result.stdout + result.stderr
-    assert "HEAD tree" in result.stdout
-    # Modifying and re-staging it: still not flagged.
-    _write(repo, GRANDFATHERED, '{"k": 1}\n')
-    _git(repo, "add", GRANDFATHERED)
-    result = _run_gate(repo)
-    assert result.returncode == 0, result.stdout + result.stderr
-    assert "staged vs HEAD" in result.stdout
-
-
 def test_head_tree_mode_flags_committed_ignored_file_anywhere(repo: Path):
     """Codex P1 4111056549: CI checks ALL HEAD paths, not just lab/analysis/ and
     lab/archive/ -- a committed .env or vendor CSV elsewhere fails."""

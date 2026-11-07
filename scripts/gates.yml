@@ -6,20 +6,6 @@
 version: 1
 
 gates:
-  - id: evidence-store
-    tier: path-conditional
-    when:
-      staged_regex: '^(scripts/evidence_store/|tests/evidence_store/|scripts/gates[.]yml)'
-    cmd:
-      - python
-      - -m
-      - unittest
-      - discover
-      - -s
-      - tests/evidence_store
-      - -p
-      - test_*.py
-
   - id: data-manifests
     tier: data-conditional
     when:
@@ -49,14 +35,6 @@ gates:
       - scripts/check_pine_manifest.py
       - --check-card-pins
 
-  - id: durable-store-pragmas
-    tier: path-conditional
-    when:
-      staged_regex: '^(ops/|scripts/check_durable_store_pragmas[.]py|tests/test_check_durable_store_pragmas[.]py|scripts/gates[.]yml)'
-    cmd:
-      - python
-      - scripts/check_durable_store_pragmas.py
-
   - id: boundaries
     tier: always
     cmd:
@@ -70,13 +48,6 @@ gates:
     cmd:
       - python
       - scripts/check_cost_model_closed_world.py
-
-  - id: m1-artifact-structure
-    tier: always
-    cmd:
-      - python
-      - scripts/validate_c1_monitoring_acceptance.py
-      - docs/notes/rail_build/M1_MONITORING_ACCEPTANCE.json
 
   - id: staged-debris
     tier: always

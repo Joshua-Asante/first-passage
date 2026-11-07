@@ -27,14 +27,10 @@ EXPECTED_ALWAYS = {
     # Blanket-add rejection for local-only roots and oversize blobs; always,
     # because the violating change is an unrelated add no staged_regex selects.
     "staged-debris",
-    # Structural M1 artifact validation (corrupt JSON, bad fields, secrets).
-    "m1-artifact-structure",
 }
 
 EXPECTED_PATH_CONDITIONAL = {
-    "evidence-store",
     "cost-model-closed-world",
-    "durable-store-pragmas",
 }
 
 EXPECTED_AUDIT: set[str] = set()
@@ -89,7 +85,6 @@ def test_pre_commit_dry_run_includes_always_gates():
     for gid_cmd_fragment in (
         "check_pine_manifest.py",
         "check_boundaries.py",
-        "validate_c1_monitoring_acceptance.py",
         "check_staged_debris.py",
     ):
         assert gid_cmd_fragment in out
@@ -104,12 +99,10 @@ def test_pre_commit_skips_path_conditional_when_index_empty(monkeypatch):
 
 
 def test_pre_commit_includes_path_conditional_on_matching_paths(monkeypatch):
-    monkeypatch.setattr(gm, "staged_names", lambda: ["ops/cli.py"])
+    monkeypatch.setattr(gm, "staged_names", lambda: ["lab/discovery/cost_model.py"])
     data = gm.load_manifest(MANIFEST)
     selected = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
-    assert "durable-store-pragmas" in selected
-    assert "evidence-store" not in selected
-    assert "cost-model-closed-world" not in selected
+    assert "cost-model-closed-world" in selected
 
 
 def test_check_tier_dry_run_includes_path_conditional():
@@ -121,7 +114,6 @@ def test_check_tier_dry_run_includes_path_conditional():
     )
     for gid_cmd_fragment in (
         "check_boundaries.py",
-        "check_durable_store_pragmas.py",
         "check_cost_model_closed_world.py",
         "check_data_manifests.py",
     ):
@@ -176,9 +168,7 @@ def test_manifest_file_present():
 # Reachability, not just selector shape: for each path-conditional gate, staging a
 # path whose edit can cause the violation it detects must select it.
 REACHABILITY_PROBES = {
-    "evidence-store": "scripts/evidence_store/store.py",
     "cost-model-closed-world": "lab/discovery/cost_model.py",
-    "durable-store-pragmas": "ops/cli.py",
 }
 
 
@@ -352,20 +342,3 @@ def test_unknown_tier_fails_closed(tmp_path):
     assert "unknown gate tier" in combined, combined
 
 
-def test_m1_artifact_structure_stays_blocking():
-    """Structural validation (corruption/secrets) must still reject a commit.
-
-    validate_c1_monitoring_acceptance.py's main() runs validate() unconditionally,
-    before any --check-tree-skew branch — so the structural half must stay in a
-    blocking tier even though the tree-skew drift report (above) does not.
-    """
-    data = gm.load_manifest(MANIFEST)
-    gate = next(g for g in data["gates"] if g["id"] == "m1-artifact-structure")
-    assert gate["tier"] == "always"
-    assert "--check-tree-skew" not in gate["cmd"]
-    assert "scripts/validate_c1_monitoring_acceptance.py" in gate["cmd"]
-
-    selected_check = {g["id"] for g in gm.select_gates(data["gates"], "check")}
-    selected_precommit = {g["id"] for g in gm.select_gates(data["gates"], "pre-commit")}
-    assert "m1-artifact-structure" in selected_check
-    assert "m1-artifact-structure" in selected_precommit
