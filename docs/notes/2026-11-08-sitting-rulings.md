@@ -278,6 +278,13 @@ archives locally, and agents neither open nor copy them. If they contain Pine, r
 `effective_inputs.json`, he accepts the single copy or grants an explicit backup exception. If they
 hold account data only, he may make a private backup.
 
+**D19 closed (Joshua, 11-08, "go ahead with 1a and fix the comments").** S3-4: `ops/c1_rail/book_policy.py`
+stays where it is, as the offline replay law; it is not moved or renamed. `ops/c1_signal_daemon/` stays
+because the private ports import it and `core/strategies/BOOK_SOURCES.sha256` pins that path.
+`core/dd_geometry.py` stays (D3). The two `core/firm_rules.py` comments that cited deleted c1 files now
+say those files were removed with the rail, last at b7eaff7; comment text only, no values (money
+control 4 approval given). D19 is complete apart from Joshua's local archive check.
+
 **D20. Subscriptions.** Keep the monthly reconfirm, by 11-21. If time allows, close the stale rows
 (Tradeify carrying cost, Fly.io final bill, final charges) and fix links to deleted records.
 
