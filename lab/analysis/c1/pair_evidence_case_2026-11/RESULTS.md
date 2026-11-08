@@ -45,10 +45,12 @@ on any other hash.
    and the current engine. Allowed miss: 0.10pp. **Result: all four cells reproduced exactly.**
 3. **Binding cell.** The pair at eval sizing, under §10's timestamp-sequenced intraday-honest
    floor, bootstrapped within each chronological half. Ceiling: August's 3.0% headline bust in
-   both halves, with a noise band of two binomial standard errors.
+   both halves, with a noise band of two binomial standard errors. The band covers simulation
+   error only, not estimation error in the history.
 4. **Tail-consistent sizing.** The eval sets the sizing here, so this is reported rather than
-   chosen: August's 95th-percentile drawdown ratio, compared with the eval's ratio, plus a cell at
-   that ratio with Aegis held at its eval size.
+   chosen: the 95th-percentile drawdown ratio, computed with August's method on the current
+   series, compared with the eval's ratio, plus a cell at that ratio with Aegis held at its eval
+   size.
 5. **G1 read** (framework §3–§4), on the combined day series with zero days included: SR̂ per
    chronological half; SR_LB with Lo's (2002) GMM standard error, Newey-West weights, lags 1–5;
    z = Φ⁻¹(1 − 0.20/K), run at K = 13 and restated at K = 14 (see Limits). Three other standard errors are reported beside it. Per-leg reads are
@@ -78,8 +80,9 @@ G1 cannot rescue a failed gate under this rule.
 - **Post-hoc check, outside the frozen rule:** rolling chronological starts in the same engine,
   and bootstrap blocks longer than 5 days, give a lower bust rate than the binding cell, and
   rolling starts reproduce the earlier private replay. The point estimates all stay above the
-  ceiling. This is direction only: rolling starts overlap, no dependence-aware margin was computed,
-  and the verdict rests on the binding cell alone.
+  ceiling. This is direction only: rolling starts overlap, and the rolling figure counts late starts
+  that cannot finish, which pulls it slightly low. No dependence-aware margin was computed, and the
+  verdict rests on the binding cell alone.
 
 ## What this does not show
 
@@ -87,6 +90,9 @@ G1 cannot rescue a failed gate under this rule.
   not an economics test, and G2 was not run.
 - The G1 read does not establish an edge: it uses one exposed, tuned, in-sample history. K = 14 is a
   disclosed lower bound, not a total multiplicity correction, since v1→v7 ORB tuning is unreconciled.
+  The read uses α = 0.20 and the running K. The T00 manifest carries α = 0.05, and the framework
+  sets z from the lane's trial cap. Either would tighten it; the private record restates the
+  read under the stricter α.
 
 ## Limits
 
@@ -98,6 +104,16 @@ G1 cannot rescue a failed gate under this rule.
 - TradingView fills, apart from the Aegis sensitivity. ORB has no fill test.
 - The intraday floor is trade-level and assumes concurrent trades hit their worst together. It
   leans conservative and is not a tick path.
+- The simulation halves share the split day, a holiday with no trades, so the effect is nil. The
+  G1 halves don't overlap.
+
+## Independent review
+
+On 2026-11-07, at Joshua's request, an independent Claude reviewer read the private materials. It
+derived the verdict before reading the author's record and reached the same one, prior stands. It
+also reproduced the input checks, the G1 read with its own code, and the binding cell under new
+seeds. Its wording corrections are in this file and in the private record. This review does not
+replace Codex's.
 
 ## Provenance
 
