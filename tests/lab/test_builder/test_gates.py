@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import threading
+import time
 
 import numpy as np
 import pytest
@@ -240,6 +242,45 @@ def test_I_L5_holdout_look_is_logged_once_and_checks_dates_first(tmp_path):
     with pytest.raises(ledger.LedgerError, match="already"):
         gates.holdout_look(c, b, dates[-50:], p, "run-1", COSTS, closed=frozenset(),
             book=rep["book"], book_sha256=pinned(rep["book"]))
+
+
+def test_concurrent_holdout_looks_have_one_winner_and_the_loser_never_simulates(tmp_path, monkeypatch):
+    """#1141: two callers race for one look; the check and the append are one locked transaction,
+    so exactly one spends it and the other raises LedgerError before any holdout bar is simulated."""
+    rep, c, b, dates, p = run(tmp_path)
+    real_read, real_sim = ledger._read_locked, gates.C.simulate
+    simulated = []
+
+    def slow_read(path):  # widen the check-to-append window an unlocked check could race through
+        entries = real_read(path)
+        time.sleep(0.3)
+        return entries
+
+    def sim(*a, **kw):
+        simulated.append(threading.current_thread().name)
+        return real_sim(*a, **kw)
+    monkeypatch.setattr(ledger, "_read_locked", slow_read)
+    monkeypatch.setattr(gates.C, "simulate", sim)
+    barrier, results = threading.Barrier(2), {}
+
+    def caller():
+        barrier.wait(timeout=60)
+        try:
+            results[threading.current_thread().name] = gates.holdout_look(
+                c, b, dates[-50:], p, "run-1", COSTS, closed=frozenset(), book=rep["book"],
+                book_sha256=pinned(rep["book"]))
+        except ledger.LedgerError as e:
+            results[threading.current_thread().name] = e
+    ts = [threading.Thread(target=caller, name=f"caller-{i}") for i in (1, 2)]
+    for t in ts:
+        t.start()
+    for t in ts:
+        t.join(timeout=60)
+    won = [n for n, r in results.items() if isinstance(r, dict)]
+    lost = [n for n, r in results.items() if isinstance(r, ledger.LedgerError)]
+    assert len(won) == 1 and len(lost) == 1 and "already had its one holdout look" in str(results[lost[0]])
+    assert simulated == won
+    assert [e["kind"] for e in ledger.read(p)] == ["card", "holdout_look"]
 
 
 def test_time_window_range_and_atr_stop_compile():

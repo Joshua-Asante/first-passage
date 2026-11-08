@@ -6,7 +6,11 @@ rename) must carry the sha256 that ``run.binding`` recomputes from run.yaml and 
 list exactly run.yaml's cards with each report's sha256, and every report must match its sha256,
 carry the same binding sha256, this run_id and a final verdict (survivor | killed | unresolved).
 The survivors are the cards whose report verdict is ``survivor``; each survivor's report must
-carry well-formed book statistics, checked for every survivor before the first look. Looks are
+carry well-formed book statistics, checked for every survivor before the first look. The ledger
+must still hold the head ``builder.run`` recorded in ``verdict.json`` (``ledger_head``: that seq
+with that entry_sha256; later appends are fine), and no survivor may already have an
+``out/<card id>.holdout.json`` (defence in depth only: the file can be deleted, so the ledger's
+one-look rule and head anchor stay the guard; see ``ledger`` for their limit). Looks are
 taken in card-id order, each ledgered (``ledger.append_holdout_look``) before its holdout bars
 are simulated, and each writes ``out/<card id>.holdout.json``. After a holdout pass, gate 5g
 (step 10 portfolio fit) runs on the development-window book statistics in the card's report, so
@@ -22,7 +26,7 @@ import json
 import sys
 from pathlib import Path
 
-from builder import data, gates, run
+from builder import data, gates, ledger, run
 
 FINAL = {"survivor", "killed", "unresolved"}
 
@@ -53,7 +57,7 @@ def survivors(s: dict, cs: list, cost: dict) -> list[tuple]:
     _, marker = _read(out / "verdict.json")
     bind = run.binding(s, cs, cost)
     want = run.binding_sha256(bind)
-    if not isinstance(marker, dict) or set(marker) != {"dev_binding_sha256", "binding", "cards"}:
+    if not isinstance(marker, dict) or set(marker) != {"dev_binding_sha256", "binding", "ledger_head", "cards"}:
         raise HoldoutError(f"{out / 'verdict.json'} is not a finished development marker")
     if marker["dev_binding_sha256"] != want or run.binding_sha256(marker["binding"]) != want:
         changed = _differences(marker["binding"], bind) or ["dev_binding_sha256"]
@@ -79,6 +83,13 @@ def survivors(s: dict, cs: list, cost: dict) -> list[tuple]:
             except gates.GateError as e:
                 raise HoldoutError(f"{c.id}: {e}") from None
             keep.append((c, rep))
+    try:
+        ledger.check_holds(Path(s["ledger"]), marker["ledger_head"])
+    except ledger.LedgerError as e:
+        raise HoldoutError(str(e)) from None
+    done = [c.id for c, _ in keep if (out / f"{c.id}.holdout.json").exists()]
+    if done:
+        raise HoldoutError(f"{done} already have a holdout result in {out}; a look is never retaken")
     return keep
 
 

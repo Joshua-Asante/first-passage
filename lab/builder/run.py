@@ -25,7 +25,9 @@ printed and carried in every report as ``reachability_5f``, a description only; 
 card's 5e null size (``gates.slide_line``: the valid same-day slides and their span) is printed and carried as ``slides_5e``, so a card whose clock frame
 admits fewer than ``gates.SLIDE_MIN`` slides is seen to fail 5e before a look. Reports land in
 ``out/<card id>.report.json`` with a one-line verdict each, and each report's sha256, in
-``out/verdict.json`` with the development binding (``binding``) and its sha256. The marker is
+``out/verdict.json`` with the development binding (``binding``) and its sha256, and the ledger head
+just after this run's cards were appended (``ledger_head``: seq and entry_sha256), kept outside the
+binding because later rounds keep appending to a banked ledger. The marker is
 deleted before the cards are ledgered and written last by an atomic rename, so it exists only
 for a finished attempt (builder.holdout).
 """
@@ -180,7 +182,8 @@ def main(argv: list[str]) -> int:
     bind_sha = binding_sha256(bind)
     out = Path(s["out"])
     (out / "verdict.json").unlink(missing_ok=True)  # no completion marker survives an interrupted rerun
-    ledger.append_cards(Path(s["ledger"]), s["run_id"], cs)  # before any bar is read
+    appended = ledger.append_cards(Path(s["ledger"]), s["run_id"], cs)  # before any bar is read
+    ledger_head = {"seq": appended[-1]["seq"], "entry_sha256": appended[-1]["entry_sha256"]}
     loaded = {}
     for i in instruments:
         bars, dev, _, summary = load_data(s, i, cal)
@@ -211,7 +214,8 @@ def main(argv: list[str]) -> int:
                          "stopped_at": rep["stopped_at"], "book_s": rep["book"].get("book_s"),
                          "book_s_with_card": rep["book"].get("book_s_with_card")})
     tmp = out / "verdict.json.tmp"  # written whole, then renamed: the marker is complete or absent
-    tmp.write_text(json.dumps({"dev_binding_sha256": bind_sha, "binding": bind, "cards": verdicts}, indent=1),
+    tmp.write_text(json.dumps({"dev_binding_sha256": bind_sha, "binding": bind, "ledger_head": ledger_head,
+                               "cards": verdicts}, indent=1),
                    encoding="utf-8")
     os.replace(tmp, out / "verdict.json")
     for v in verdicts:

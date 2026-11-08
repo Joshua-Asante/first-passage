@@ -2,6 +2,10 @@
 from __future__ import annotations
 
 import json
+import multiprocessing as mp
+import threading
+import time
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -197,6 +201,166 @@ def test_I_L5_holdout_look_once_and_only_for_ledgered_cards(tmp_path):
     _forge(p, {"kind": "holdout_look", "card_sha256": card().sha256, "instrument": "MCL"})  # a second look by hand
     with pytest.raises(ledger.LedgerError, match="second look"):
         ledger.k(p, "MCL")
+
+
+# --- head anchor: rollback detection (#1134) and atomic check-and-append (#1141) ----------------
+
+def _anchored(tmp_path):
+    """Two cards, then a holdout look for the first: (path, lines, anchor path)."""
+    p, _ = _two(tmp_path)
+    ledger.append_holdout_look(p, "run-1", card())
+    return p, p.read_text().splitlines(), ledger.head_path(p)
+
+
+def test_append_writes_the_head_anchor_after_the_ledger(tmp_path):
+    p, lines, hp = _anchored(tmp_path)
+    last = json.loads(lines[-1])
+    assert json.loads(hp.read_text()) == {"seq": 3, "entry_sha256": last["entry_sha256"]} == ledger.head(p)
+    assert len(ledger.read(p)) == 3
+
+
+def test_tail_truncation_to_a_valid_prefix_is_refused_and_cannot_respend_a_look(tmp_path):
+    p, lines, _ = _anchored(tmp_path)
+    p.write_text(lines[0] + "\n" + lines[1] + "\n")  # the look is gone; the chain alone reads clean
+    with pytest.raises(ledger.LedgerError, match="rolled back"):
+        ledger.read(p)
+    with pytest.raises(ledger.LedgerError, match="rolled back"):
+        ledger.append_holdout_look(p, "run-2", card())
+    assert p.read_text() == lines[0] + "\n" + lines[1] + "\n"
+
+
+def test_k_cannot_shrink_under_rollback(tmp_path):
+    p, lines = _two(tmp_path)
+    assert ledger.k(p, "MCL") == 2
+    p.write_text(lines[0] + "\n")
+    with pytest.raises(ledger.LedgerError, match="rolled back"):
+        ledger.k(p, "MCL")
+
+
+def test_restoring_an_older_copy_is_refused(tmp_path):
+    p = tmp_path / "ledger.jsonl"
+    ledger.append_cards(p, "run-1", [card()])
+    older = p.read_bytes()
+    ledger.append_holdout_look(p, "run-1", card())
+    p.write_bytes(older)
+    with pytest.raises(ledger.LedgerError, match="rolled back"):
+        ledger.read(p)
+    p.unlink()  # deleting the ledger outright is the same rollback
+    with pytest.raises(ledger.LedgerError, match="rolled back"):
+        ledger.read(p)
+
+
+def test_a_different_history_of_the_same_length_is_refused(tmp_path):
+    p = tmp_path / "ledger.jsonl"
+    ledger.append_cards(p, "run-1", [card()])
+    other = tmp_path / "other" / "ledger.jsonl"
+    ledger.append_cards(other, "run-9", [card(BASE.replace("value: 2", "value: 3"))])
+    p.write_bytes(other.read_bytes())
+    with pytest.raises(ledger.LedgerError, match="does not hold its head anchor"):
+        ledger.read(p)
+
+
+def test_missing_anchor_is_refused_and_never_created_by_a_read(tmp_path):
+    p, _ = _two(tmp_path)
+    ledger.head_path(p).unlink()
+    for _ in range(2):
+        with pytest.raises(ledger.LedgerError, match="no head anchor"):
+            ledger.read(p)
+    assert not ledger.head_path(p).exists()
+    empty = tmp_path / "empty.jsonl"
+    empty.write_text("")
+    assert ledger.read(empty) == [] and ledger.read(tmp_path / "absent.jsonl") == []
+    assert ledger.read(tmp_path / "no-dir" / "l.jsonl") == [] and not (tmp_path / "no-dir").exists()
+
+
+@pytest.mark.parametrize("anchor", ["not json", "[]", '{"seq": 0, "entry_sha256": "' + "0" * 64 + '"}',
+                                    '{"seq": true, "entry_sha256": "' + "0" * 64 + '"}',
+                                    '{"seq": 1, "entry_sha256": "x"}'])
+def test_malformed_anchor_is_refused(tmp_path, anchor):
+    p, _ = _two(tmp_path)
+    ledger.head_path(p).write_text(anchor)
+    with pytest.raises(ledger.LedgerError):
+        ledger.read(p)
+
+
+def test_an_append_interrupted_before_its_anchor_is_refused_until_adopted(tmp_path, capsys):
+    p, _ = _two(tmp_path)
+    hp = ledger.head_path(p)
+    before = hp.read_text()
+    ledger.append_holdout_look(p, "run-1", card())
+    hp.write_text(before)  # the crash window: ledger line fsynced, anchor not yet replaced
+    with pytest.raises(ledger.LedgerError, match="1 entries past its head anchor"):
+        ledger.read(p)
+    head = json.loads(p.read_text().splitlines()[-1])["entry_sha256"]
+    assert ledger.main(["adopt-head", str(p)]) == 0  # prints only
+    shown = json.loads(capsys.readouterr().out)
+    assert shown["head"] == {"seq": 3, "entry_sha256": head} and not shown["written"] and hp.read_text() == before
+    with pytest.raises(ledger.LedgerError, match="is not the head"):
+        ledger.adopt_head(p, "f" * 64)
+    assert ledger.main(["adopt-head", str(p), "--confirm", head]) == 0
+    assert json.loads(capsys.readouterr().out)["written"] and len(ledger.read(p)) == 3
+
+
+def test_adopt_head_bootstraps_an_unanchored_ledger_but_never_launders_a_rollback(tmp_path):
+    p, lines, hp = _anchored(tmp_path)
+    p.write_text(lines[0] + "\n")  # rolled back past the anchor
+    first = json.loads(lines[0])["entry_sha256"]
+    with pytest.raises(ledger.LedgerError, match="will not overwrite"):
+        ledger.adopt_head(p, first)
+    hp.unlink()  # a pre-anchor ledger: the operator verifies the printed head, then confirms it
+    assert ledger.adopt_head(p, None)["anchor"] is None and not hp.exists()
+    assert ledger.adopt_head(p, first)["written"] and ledger.head(p) == {"seq": 1, "entry_sha256": first}
+
+
+def _look_after_a_slow_read(path: str, run_id: str, barrier, results) -> None:
+    """One caller (a spawned process): meet the other at the barrier, then spend the look with a
+    slowed locked read, so an unlocked check-then-append would let both callers pass the check."""
+    real = ledger._read_locked
+
+    def slow(p):
+        entries = real(p)
+        time.sleep(0.3)
+        return entries
+    ledger._read_locked = slow
+    barrier.wait(timeout=60)
+    try:
+        ledger.append_holdout_look(Path(path), run_id, card())
+        results.put("ok")
+    except ledger.LedgerError as e:
+        results.put(str(e))
+
+
+def test_concurrent_holdout_looks_across_processes_have_exactly_one_winner(tmp_path):
+    p = tmp_path / "ledger.jsonl"
+    ledger.append_cards(p, "run-1", [card()])
+    ctx = mp.get_context("spawn")
+    barrier, results = ctx.Barrier(2), ctx.Queue()
+    procs = [ctx.Process(target=_look_after_a_slow_read, args=(str(p), f"proc-{i}", barrier, results))
+             for i in (1, 2)]
+    for pr in procs:
+        pr.start()
+    out = sorted(results.get(timeout=120) for _ in procs)
+    for pr in procs:
+        pr.join(timeout=60)
+        assert pr.exitcode == 0
+    assert out[1] == "ok" and "already had its one holdout look" in out[0]
+    assert [e["kind"] for e in ledger.read(p)] == ["card", "holdout_look"]
+
+
+def test_concurrent_card_appends_keep_one_chain(tmp_path):
+    p = tmp_path / "ledger.jsonl"
+    cs = [card(BASE.replace("id: t-001", f"id: t-{i:03d}")) for i in range(1, 9)]
+    barrier = threading.Barrier(len(cs))
+
+    def append(c):
+        barrier.wait(timeout=60)
+        ledger.append_cards(p, c.id, [c])
+    ts = [threading.Thread(target=append, args=(c,)) for c in cs]
+    for t in ts:
+        t.start()
+    for t in ts:
+        t.join(timeout=60)
+    assert ledger.k(p, "MCL") == len(cs) and ledger.head(p)["seq"] == len(cs)
 
 
 # --- compiler --------------------------------------------------------------------------------
