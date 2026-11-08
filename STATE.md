@@ -17,7 +17,7 @@ then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
   - **Design (Claude):** keep the spec and procedure current. Next: any change that
     the readback's B10 answer or the evidence read forces.
   - **Engineering (Claude Code, primary checkout):** the S-PAIR readback, including
-    B10, before the rehearsal; the c1 untangle, `.gitignore` guard first.
+    B10, before the rehearsal.
   - **Verification (Codex):** review every head; audit the evidence read; review the
     rehearsal and Sim101 records.
   - **Measure (Claude Code, for Joshua's sign-off):** ready to score session 1 under the
