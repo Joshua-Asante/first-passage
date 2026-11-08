@@ -153,7 +153,17 @@ def test_stale_dll_fails(nt):
     age(dll, 7200)
     code, result, _ = install(root, manifest)
     assert code == 1 and result["dll_newer_than_sources"] is False
-    assert "compiled DLL is older than a compiled source" in result["failures"]
+    assert "compiled DLL is older than a compiled source or the compile project" in result["failures"]
+
+
+def test_project_newer_than_dll_fails(nt):
+    """Dropping a source from the compile project changes what compiles: rebuild needed."""
+    root, manifest = nt
+    custom = root / "bin" / "Custom"
+    age(custom / "NinjaTrader.Custom.dll", 1800)
+    code, result, _ = install(root, manifest)
+    assert code == 1 and result["dll_newer_than_sources"] is False
+    assert result["files"] == {name: "match" for name in FROZEN} and result["extra"] == []
 
 
 def test_wrong_manifest_pin_fails(nt):
@@ -268,6 +278,34 @@ def test_non_stock_reference_fails_when_compiled_in_and_warns_when_dangling(nt):
     (custom / "NinjaTrader.Custom.dll").write_bytes(b"MZ refs Vendor_AddOn_v1 System.Core")
     code, result, _ = config(root)
     assert code == 1 and "non-stock reference in use: Vendor_AddOn_v1" in result["failures"]
+
+
+def test_reference_resolved_through_hint_path_fails(nt, tmp_path):
+    root, _ = nt
+    external = tmp_path / "elsewhere"
+    external.mkdir()
+    (external / "Bridge.dll").write_bytes(b"MZ")
+    project = root / "bin" / "Custom" / "NinjaTrader.Custom.csproj"
+    project.write_text(project.read_text(encoding="utf-8").replace(
+        "</ItemGroup>", '<Reference Include="Bridge"><HintPath>'
+        + str(external / "Bridge.dll") + "</HintPath></Reference></ItemGroup>"), encoding="utf-8")
+    code, result, _ = config(root)
+    assert code == 1 and "non-stock reference in use: Bridge" in result["failures"]
+    assert result["non_stock_references"][0]["file_present"] is True
+
+
+def test_linked_workspace_fails_instead_of_counting_zero(nt, tmp_path):
+    root, _ = nt
+    outside = tmp_path / "outside.xml"
+    outside.write_text("<NinjaTrader><T>NinjaTrader.NinjaScript.Strategies.X</T></NinjaTrader>",
+                       encoding="utf-8")
+    try:
+        (root / "workspaces" / "linked.xml").symlink_to(outside)
+    except OSError:
+        pytest.skip("symlinks need privileges on this host")
+    code, result, _ = config(root)
+    assert code == 1
+    assert "link under workspaces, not inspected: linked.xml" in result["failures"]
 
 
 def test_malformed_xml_is_an_error_without_content(nt):

@@ -185,7 +185,13 @@ def _read_manifest(path: Path) -> dict[str, str]:
     return entries
 
 
-def _csproj_items(custom: Path, kind: str) -> list[str]:
+def _unescape(value: str) -> str:
+    """MSBuild %XX escapes decoded, backslashes as forward slashes."""
+    return "/".join(ESCAPE.sub(lambda m: chr(int(m.group(1), 16)), value).split("\\"))
+
+
+def _csproj_items(custom: Path, kind: str) -> list[tuple[str, str | None]]:
+    """(Include, HintPath or None) for each item of the given kind in the compile project."""
     project = custom / "NinjaTrader.Custom.csproj"
     if not project.is_file():
         return []
@@ -193,7 +199,9 @@ def _csproj_items(custom: Path, kind: str) -> list[str]:
     items = []
     for element in root.iter():
         if element.tag.rsplit("}", 1)[-1] == kind and element.get("Include"):
-            items.append(element.get("Include"))
+            hint = next((child.text.strip() for child in element
+                         if child.tag.rsplit("}", 1)[-1] == "HintPath" and child.text), None)
+            items.append((element.get("Include"), hint))
     return items
 
 
@@ -222,8 +230,8 @@ def check_install(nt_root: Path, manifest: Path, manifest_sha256: str | None,
     links: list[str] = []
     compiled = {p.relative_to(custom).as_posix(): p
                 for p in _walk(custom, links, NOT_COMPILED_DIRS) if p.suffix.lower() == ".cs"}
-    for item in _csproj_items(custom, "Compile"):
-        relative = "/".join(ESCAPE.sub(lambda m: chr(int(m.group(1), 16)), item).split("\\"))
+    for item, _ in _csproj_items(custom, "Compile"):
+        relative = _unescape(item)
         compiled.setdefault(relative, custom / relative)
 
     expected = {f"{folder}/{name}" if folder else name: name for name in entries}
@@ -248,13 +256,17 @@ def check_install(nt_root: Path, manifest: Path, manifest_sha256: str | None,
     failures += [f"link under bin/Custom: {_shown(rel)}" for rel in links]
 
     dll = custom / "NinjaTrader.Custom.dll"
+    # The compile project counts too: removing a source from it changes what compiles.
     present = [p for p in compiled.values() if p.is_file() and not _is_link(p)]
+    project = custom / "NinjaTrader.Custom.csproj"
+    if project.is_file():
+        present.append(project)
     newest = max((_changed(p) for p in present), default=None)
     dll_newer = dll.is_file() and newest is not None and dll.stat().st_mtime >= newest
     if not dll.is_file():
         failures.append("NinjaTrader.Custom.dll missing")
     elif not dll_newer:
-        failures.append("compiled DLL is older than a compiled source")
+        failures.append("compiled DLL is older than a compiled source or the compile project")
     return {
         "check": "install",
         "nt_version": _nt_version(nt_root),
@@ -282,12 +294,14 @@ def _strategy_classes(custom: Path) -> set[str]:
     return names
 
 
-def _workspace_strategy_entries(nt_root: Path, classes: set[str]) -> int:
+def _workspace_strategy_entries(nt_root: Path, classes: set[str],
+                                links: list[str]) -> int:
+    """Strategy entries in saved workspaces; links met (not followed) go to ``links``."""
     workspaces = nt_root / "workspaces"
     if not workspaces.is_dir():
         return 0
     count = 0
-    for path in _walk(workspaces, []):
+    for path in _walk(workspaces, links):
         if path.suffix.lower() != ".xml":
             continue
         for element in _parse_xml(path).iter():
@@ -332,9 +346,13 @@ def check_config(nt_root: Path) -> dict:
     if live_on_startup:
         failures.append(f"{live_on_startup} non-simulated connection(s) connect on startup")
 
-    workspace_entries = _workspace_strategy_entries(nt_root, _strategy_classes(custom))
+    workspace_links: list[str] = []
+    workspace_entries = _workspace_strategy_entries(nt_root, _strategy_classes(custom),
+                                                    workspace_links)
     if workspace_entries:
         failures.append(f"{workspace_entries} strategy entr(y/ies) in saved workspaces")
+    failures += [f"link under workspaces, not inspected: {_shown(rel)}"
+                 for rel in workspace_links]
 
     links: list[str] = []
     addons = custom / "AddOns"
@@ -357,12 +375,15 @@ def check_config(nt_root: Path) -> dict:
         with open(dll, "rb") as handle:
             dll_bytes = handle.read()
     references = []
-    for item in _csproj_items(custom, "Reference"):
+    for item, hint in _csproj_items(custom, "Reference"):
         name = item.split(",", 1)[0].strip()
         if name in STOCK_REFERENCES:
             continue
-        file_present = any(p.is_file() for p in (custom / f"{name}.dll",
-                                                 nt_root / "bin" / f"{name}.dll"))
+        candidates = [custom / f"{name}.dll", nt_root / "bin" / f"{name}.dll"]
+        if hint:
+            hinted = Path(_unescape(hint))
+            candidates.append(hinted if hinted.is_absolute() else custom / hinted)
+        file_present = any(p.is_file() for p in candidates)
         in_dll = bool(name) and name.encode("utf-8") in dll_bytes
         references.append({"name": _shown(name), "file_present": file_present,
                            "in_compiled_dll": in_dll})

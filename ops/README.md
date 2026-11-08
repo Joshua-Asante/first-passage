@@ -116,12 +116,13 @@ python -I ops/nt_install_check.py config
 - `install`: each manifest file in `bin/Custom/Strategies` is `match`, `differ`,
   `differ-eol-or-bom-only` (still a fail) or `missing`. Any other non-stock `.cs`
   NT compiles (disk or compile project) is `extra`, a fail. The compiled DLL must
-  be newer than every compiled source. Bytes are compared raw: NT compiles what is
+  be newer than every compiled source and the compile project. Bytes are compared raw: NT compiles what is
   on disk.
 - `config`: ATI off, both cancel-on-disable options off (B8), no non-simulated
   connection set to connect on startup, no strategy saved in a workspace, no
-  add-on sources, no non-stock assemblies or compile references in use. A
-  reference that resolves to nothing is a warning.
+  add-on sources, no non-stock assemblies or compile references in use (by name
+  or `HintPath`). A reference that resolves to nothing is a warning. A link met
+  under `workspaces` or `AddOns` fails, since it is not inspected.
 
 Limits: stock `@` files are trusted by name; the DLL is tied to its sources by
 file time only (recompile after every copy); `ati_enabled` false does not prove
