@@ -34,12 +34,13 @@ this PR is the frozen SHA. The parity, holdout and 5h stages are separate, conti
 - **Unresolved trades** take precedence over eligibility, so such a cell gets no series statistics.
 - **Exposure log.** The driver appends one `planned` row per instrument before reading its bars.
   A dropped instrument reads nothing and adds no row.
-- **One run, counted from its start (for Joshua to confirm against the private protocol).** The
-  driver creates `run.started` in the private `out` directory with an exclusive create before it
-  reads the calendar, book or any export. The marker records the frozen SHA and the UTC start
+- **One run, counted from its start.** The driver creates `run.started` in the private `out`
+  directory with an exclusive create before it reads the calendar, book or any export. The marker records the frozen SHA and the UTC start
   time and is never removed, also not when the run fails. A run that fails after the marker is
   written therefore uses up the one run: the driver refuses another until a defect is recorded
-  and an addendum written, as it does when `report.json` exists. This is a reading, not settled:
-  the protocol says one run, and this code counts a started run as that run.
+  and an addendum written, as it does when `report.json` exists. The protocol says one run; this
+  reading counts a started run as that run. The author's final comment on PR #1110 (2026-11-07)
+  records it as confirmed by Joshua; that record is the author's comment, not Joshua's own words.
+  `run.py` `claim_run` implements it.
 - **Missing commission row.** Under 7.2 the instrument drops as NOT EVALUATED; the report's
   `commissions` map records that firm and symbol with `commission: null` and the reason.
