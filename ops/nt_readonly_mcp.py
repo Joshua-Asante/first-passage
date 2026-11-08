@@ -171,9 +171,9 @@ def _is_link(info: Any) -> bool:
     """A symlink, junction or other reparse point that names another path."""
     if stat.S_ISLNK(info.st_mode):
         return True
-    tag = getattr(info, "st_reparse_tag", 0)
-    return bool(tag & _NAME_SURROGATE) or tag in (stat.IO_REPARSE_TAG_SYMLINK,
-                                                  stat.IO_REPARSE_TAG_MOUNT_POINT)
+    # Symlink (0xA000000C) and junction (0xA0000003) tags both carry this bit;
+    # st_reparse_tag exists only on Windows.
+    return bool(getattr(info, "st_reparse_tag", 0) & _NAME_SURROGATE)
 
 
 def _reason(exc: OSError) -> str:
