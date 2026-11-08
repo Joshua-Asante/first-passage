@@ -24,7 +24,7 @@ cells:
   - mechanism: turn-of-month
     verdict: AMBIGUOUS-PARKED
     date: 2026-07-12
-    source: "../../docs/briefs/closures/Q-HARV-0-month-end-rebalance-ES.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/Q-HARV-0-month-end-rebalance-ES.md"
 bars:
   - id: index-intraday-ohlcv-directional-timing-2026-07-21
     source: "../../docs/rejected_candidates.md"

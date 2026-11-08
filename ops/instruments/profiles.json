@@ -3,7 +3,7 @@
     "6J": {
       "venue-transfer": {
         "date": "2026-07-16",
-        "source": "../../docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md",
         "verdict": "AMBIGUOUS-PARKED"
       }
     },
@@ -17,7 +17,7 @@
     "ES": {
       "turn-of-month": {
         "date": "2026-07-12",
-        "source": "../../docs/briefs/closures/Q-HARV-0-month-end-rebalance-ES.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/Q-HARV-0-month-end-rebalance-ES.md",
         "verdict": "AMBIGUOUS-PARKED"
       }
     },
@@ -50,12 +50,12 @@
     "M2K": {
       "overnight-range-failed-extension-fade": {
         "date": "2026-08-13",
-        "source": "../../docs/briefs/closures/MSL-C3-K2-closure-falsified.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/MSL-C3-K2-closure-falsified.md",
         "verdict": "DEAD"
       },
       "pdh-pdl-failed-break-reclaim": {
         "date": "2026-08-13",
-        "source": "../../docs/briefs/closures/MSL-C3-K2-closure-falsified.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/MSL-C3-K2-closure-falsified.md",
         "verdict": "DEAD"
       }
     },
@@ -76,7 +76,7 @@
       },
       "pullback-failure-resumption": {
         "date": "2026-08-13",
-        "source": "../../docs/briefs/closures/MSL-S2A-closure-falsified.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/MSL-S2A-closure-falsified.md",
         "verdict": "DEAD"
       }
     },
@@ -99,7 +99,7 @@
       },
       "london-range-failed-extension-fade": {
         "date": "2026-08-13",
-        "source": "../../docs/briefs/closures/MSL-C2-closure-falsified.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/MSL-C2-closure-falsified.md",
         "verdict": "DEAD"
       }
     },
@@ -133,17 +133,17 @@
       },
       "intraday-momentum": {
         "date": "2026-07-21",
-        "source": "../../docs/briefs/rnd-pipeline/D5-RECOST-1-mnq-native-cost-law-rescope-scoping.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/rnd-pipeline/D5-RECOST-1-mnq-native-cost-law-rescope-scoping.md",
         "verdict": "DEAD"
       },
       "opening-pressure": {
         "date": "2026-07-21",
-        "source": "../../docs/briefs/closures/OPENPRESS-1-closure-falsified.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/OPENPRESS-1-closure-falsified.md",
         "verdict": "DEAD"
       },
       "opening-range-breakout": {
         "date": "2026-07-23",
-        "source": "../../docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md",
         "verdict": "AMBIGUOUS-PARKED"
       },
       "order-flow-depth-imbalance": {
@@ -153,7 +153,7 @@
       },
       "overnight-range-transmission": {
         "date": "2026-08-30",
-        "source": "../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md",
         "verdict": "AMBIGUOUS-PARKED"
       }
     },
@@ -170,12 +170,12 @@
       },
       "event-window-reversal": {
         "date": "2026-07-21",
-        "source": "../../docs/briefs/closures/MYM-3FPS-1-closure-falsified.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/MYM-3FPS-1-closure-falsified.md",
         "verdict": "DEAD"
       },
       "ict-liquidity": {
         "date": "2026-07-29",
-        "source": "../../docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md",
         "verdict": "DEAD"
       },
       "intraday-bar-volume-regime": {
@@ -185,37 +185,37 @@
       },
       "opening-pressure": {
         "date": "2026-07-21",
-        "source": "../../docs/briefs/closures/OPENPRESS-1-closure-falsified.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/OPENPRESS-1-closure-falsified.md",
         "verdict": "DEAD"
       },
       "opening-range-continuation": {
         "date": "2026-07-16",
-        "source": "../../docs/briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md",
         "verdict": "DEAD"
       },
       "overnight-gap-magnitude-range-conditioning": {
         "date": "2026-08-30",
-        "source": "../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md",
         "verdict": "AMBIGUOUS-PARKED"
       },
       "overnight-gap-magnitude-range-conditioning-overnight-calm": {
         "date": "2026-08-30",
-        "source": "../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md",
         "verdict": "DEAD"
       },
       "overnight-range-day-session-transfer": {
         "date": "2026-08-30",
-        "source": "../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md",
         "verdict": "AMBIGUOUS-PARKED"
       },
       "pdh-pdl-failed-break-reclaim": {
         "date": "2026-08-13",
-        "source": "../../docs/briefs/closures/MSL-C1-closure-falsified.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/MSL-C1-closure-falsified.md",
         "verdict": "DEAD"
       },
       "trend-following": {
         "date": "2026-07-23",
-        "source": "../../docs/briefs/programs/2026-07-23-tradeify-book-composition.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/programs/2026-07-23-tradeify-book-composition.md",
         "verdict": "LIVE"
       },
       "venue-transfer": {
@@ -261,17 +261,17 @@
     "NQ": {
       "intraday-momentum": {
         "date": "2026-07-21",
-        "source": "../../docs/briefs/rnd-pipeline/D5-RECOST-1-mnq-native-cost-law-rescope-scoping.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/rnd-pipeline/D5-RECOST-1-mnq-native-cost-law-rescope-scoping.md",
         "verdict": "DEAD"
       },
       "opening-pressure": {
         "date": "2026-07-21",
-        "source": "../../docs/briefs/closures/OPENPRESS-1-closure-falsified.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/OPENPRESS-1-closure-falsified.md",
         "verdict": "DEAD"
       },
       "opening-range-breakout": {
         "date": "2026-07-23",
-        "source": "../../docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md",
         "verdict": "AMBIGUOUS-PARKED"
       }
     },
@@ -337,7 +337,7 @@
       },
       "mean-reversion-fade": {
         "date": "2026-06-14",
-        "source": "../../docs/adr/2026-06-14-reject-usoil-rdm-spike-fader.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/adr/2026-06-14-reject-usoil-rdm-spike-fader.md",
         "verdict": "DEAD"
       },
       "trend-following": {
@@ -399,7 +399,7 @@
     "ZN": {
       "event-window-reversal": {
         "date": "2026-07-20",
-        "source": "../../docs/briefs/closures/H-ZNAUC-1-closure-screen-fail.md",
+        "source": "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/H-ZNAUC-1-closure-screen-fail.md",
         "verdict": "DEAD"
       }
     }

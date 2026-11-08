@@ -31,7 +31,7 @@ cells:
   - mechanism: pullback-failure-resumption
     verdict: DEAD
     date: 2026-08-13
-    source: "../../docs/briefs/closures/MSL-S2A-closure-falsified.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/MSL-S2A-closure-falsified.md"
 structure:
   - claim: "Frozen CONFIG-B-MCL geometry clears expressibility under SIGMA-NATIVE; geometry is not edge — N-SURV/N-EDGE/N-SIZE remain U until a mechanism trade series exists."
     source: "#C2"

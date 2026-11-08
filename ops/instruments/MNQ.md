@@ -25,15 +25,15 @@ cells:
   - mechanism: opening-range-breakout
     verdict: AMBIGUOUS-PARKED
     date: 2026-07-23
-    source: "../../docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md"
   - mechanism: intraday-momentum
     verdict: DEAD
     date: 2026-07-21
-    source: "../../docs/briefs/rnd-pipeline/D5-RECOST-1-mnq-native-cost-law-rescope-scoping.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/rnd-pipeline/D5-RECOST-1-mnq-native-cost-law-rescope-scoping.md"
   - mechanism: opening-pressure
     verdict: DEAD
     date: 2026-07-21
-    source: "../../docs/briefs/closures/OPENPRESS-1-closure-falsified.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/OPENPRESS-1-closure-falsified.md"
   - mechanism: ict-liquidity
     verdict: DEAD
     date: 2026-08-04
@@ -45,7 +45,7 @@ cells:
   - mechanism: overnight-range-transmission
     verdict: AMBIGUOUS-PARKED
     date: 2026-08-30
-    source: "../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md"
   - mechanism: intraday-bar-volume-regime
     verdict: AMBIGUOUS-PARKED
     date: 2026-08-30
