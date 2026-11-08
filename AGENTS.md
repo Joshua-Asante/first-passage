@@ -18,9 +18,12 @@ Docs removed in the 2026-11 governance cut are in git history at main commit
    on the Tradeify eval (place, exit or cancel orders, including through computer
    use) only when he directs, under a GO that covers the 7 days after he gives it.
    He can revoke a GO at any time.
-   **Exception:** the weekly account-preservation round trip runs under his
-   standing, revocable GO (2026-10-25). An agent may place it with no per-trade
-   direction.
+   **Suspended for eval orders (2026-11-08, D8):** Joshua places the weekly
+   preservation trade himself, by hand. Agents may remind him and verify read-only,
+   but place, change, cancel or exit no eval order, directed or not, until Tradeify
+   answers in writing whether an agent may operate his account, or he re-rules. The
+   2026-10-25 standing GO for the preservation trade is suspended.
+   [Rulings](docs/notes/2026-11-08-sitting-rulings.md).
 2. **No arming, live spend or deployment without his explicit GO** covering that
    time (a weekly GO, as in rule 1).
    The c1 Python rail is retired (2026-10-29). Its Fly apps were destroyed
