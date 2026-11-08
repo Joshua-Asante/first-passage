@@ -213,10 +213,25 @@ private receipts); the pin proves which bytes were used but keeps no copy
 
 - `python scripts/evidence_archive.py put <file>...` copies and verifies each file
   into a local clone of the archive, then prints the commit/push commands; the
-  copy is safe only once pushed. `--pinned` archives every pinned file present in
-  this checkout. It refuses a clone whose `origin` is not the archive.
+  copy is safe only once pushed. The printed push names `origin` and the branch
+  the clone's current branch tracks there. `--pinned` hashes each pinned path
+  present in this checkout once and archives it only when those bytes match one
+  of that path's pinned digests. Each pinned digest the file does not hold is
+  reported as `path present, pinned bytes differ (have <prefix>, pins <prefixes>)`;
+  the rest still run and `put` then exits 1. Explicit files are archived under
+  their current hash.
+- `put` refuses a clone unless every fetch and push URL of its `origin` is
+  `github.com/joshua-asante/first-passage-archive` (https, `git@github.com:` or
+  `ssh://` form; case, `.git` and a trailing slash ignored), and refuses one whose
+  current branch does not track a branch on `origin`. A same-named repository on
+  another owner, host or local path (including a relative path spelled
+  `github.com/joshua-asante/first-passage-archive`) is not the archive. There is no environment
+  variable or option to widen the accepted identity.
 - `python scripts/evidence_archive.py audit` reports each pinned digest as ARCHIVED, UNPUSHED or MISSING; `--verify` re-hashes.
-  Without an archive clone it prints UNVERIFIED and exits 0.
+  A non-archived pin says `bytes present here` only when the local file hashes to
+  its digest, else `path exists, pinned bytes differ`.
+  Without an archive clone, or with a clone whose origin is not the archive, it
+  prints UNVERIFIED and exits 0.
 
 Pins are read from tracked `*SHA256SUMS` / `*MANIFEST.sha256` files and from
 [`docs/evidence/PRIVATE_EVIDENCE.sha256`](../docs/evidence/PRIVATE_EVIDENCE.sha256),

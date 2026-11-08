@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import io
+import shlex
 import os
 import shutil
 import subprocess
@@ -72,6 +73,15 @@ def make_clone(tmp_path: Path, name: str) -> Path:
     return clone
 
 
+def make_archive(tmp_path: Path, monkeypatch) -> Path:
+    """A clone of a local bare remote, admitted as the archive the only supported
+    way: by monkeypatching the module's accepted identities."""
+    clone = make_clone(tmp_path, "first-passage-archive")
+    local = ea.remote_identity(str(tmp_path / "remote" / "first-passage-archive.git"))
+    monkeypatch.setattr(ea, "ARCHIVE_REMOTES", frozenset({ea.ARCHIVE_IDENTITY, local}))
+    return clone
+
+
 def run_audit(public, archive, **kw):
     out = io.StringIO()
     counts = ea.audit(public, archive, out=out, **kw)
@@ -101,8 +111,8 @@ def test_put_refuses_a_clone_that_is_not_the_archive(public, tmp_path):
     assert not (other / "evidence").exists()
 
 
-def test_put_then_push_moves_a_pin_from_missing_to_archived(public, tmp_path):
-    archive = make_clone(tmp_path, "first-passage-archive")
+def test_put_then_push_moves_a_pin_from_missing_to_archived(public, tmp_path, monkeypatch):
+    archive = make_archive(tmp_path, monkeypatch)
     counts, _ = run_audit(public, archive)
     assert counts["MISSING"] == 2
 
@@ -123,22 +133,22 @@ def test_put_then_push_moves_a_pin_from_missing_to_archived(public, tmp_path):
     assert "a.csv" not in out
 
 
-def test_put_is_idempotent(public, tmp_path):
-    archive = make_clone(tmp_path, "first-passage-archive")
+def test_put_is_idempotent(public, tmp_path, monkeypatch):
+    archive = make_archive(tmp_path, monkeypatch)
     for _ in range(2):
         ea.put([public / "data" / "a.csv"], archive, public, out=io.StringIO())
     assert len((archive / ea.INDEX).read_text(encoding="utf-8").splitlines()) == 1
 
 
 def test_put_skips_files_github_would_reject(public, tmp_path, monkeypatch):
-    archive = make_clone(tmp_path, "first-passage-archive")
+    archive = make_archive(tmp_path, monkeypatch)
     monkeypatch.setattr(ea, "MAX_BYTES", 4)
     ea.put([public / "data" / "a.csv"], archive, public, out=io.StringIO())
     assert not (archive / ea.blob_path(sha(PRIVATE))).exists()
 
 
-def test_verify_flags_bytes_that_do_not_match_their_address(public, tmp_path):
-    archive = make_clone(tmp_path, "first-passage-archive")
+def test_verify_flags_bytes_that_do_not_match_their_address(public, tmp_path, monkeypatch):
+    archive = make_archive(tmp_path, monkeypatch)
     blob = archive / ea.blob_path(sha(PRIVATE))
     blob.parent.mkdir(parents=True)
     blob.write_bytes(b"tampered\n")
@@ -159,7 +169,7 @@ def test_registry_digests_are_well_formed_and_unique():
     assert len(digests) == len(set(digests))
 
 
-def commit_crlf_under_autocrlf(public, tmp_path, *, attributes: bool):
+def commit_crlf_under_autocrlf(public, tmp_path, monkeypatch, *, attributes: bool):
     """Pin CRLF bytes in the public repo, put them into the archive, then commit
     with a hostile core.autocrlf=true. Returns (archive, digest, committed blob)."""
     digest = sha(CRLF)
@@ -168,7 +178,7 @@ def commit_crlf_under_autocrlf(public, tmp_path, *, attributes: bool):
     sums.write_text(sums.read_text(encoding="utf-8") + f"{digest} *b.csv\n", encoding="utf-8")
     git(public, "add", "data")
     git(public, "commit", "-q", "-m", "pin b.csv")
-    archive = make_clone(tmp_path, "first-passage-archive")
+    archive = make_archive(tmp_path, monkeypatch)
     ea.put([public / "data" / "b.csv"], archive, public, out=io.StringIO())
     if not attributes:
         (archive / "evidence" / ".gitattributes").unlink()
@@ -180,14 +190,14 @@ def commit_crlf_under_autocrlf(public, tmp_path, *, attributes: bool):
     return archive, digest, blob
 
 
-def test_put_writes_evidence_gitattributes(public, tmp_path):
-    archive = make_clone(tmp_path, "first-passage-archive")
+def test_put_writes_evidence_gitattributes(public, tmp_path, monkeypatch):
+    archive = make_archive(tmp_path, monkeypatch)
     ea.put([public / "data" / "a.csv"], archive, public, out=io.StringIO())
     assert (archive / "evidence" / ".gitattributes").read_bytes() == b"* -text\n"
 
 
-def test_put_refuses_conflicting_gitattributes(public, tmp_path):
-    archive = make_clone(tmp_path, "first-passage-archive")
+def test_put_refuses_conflicting_gitattributes(public, tmp_path, monkeypatch):
+    archive = make_archive(tmp_path, monkeypatch)
     attributes = archive / "evidence" / ".gitattributes"
     attributes.parent.mkdir(parents=True)
     attributes.write_bytes(b"* text\n")
@@ -195,31 +205,259 @@ def test_put_refuses_conflicting_gitattributes(public, tmp_path):
     assert not (archive / ea.blob_path(sha(PRIVATE))).exists()
 
 
-def test_put_prints_autocrlf_safe_commands(public, tmp_path):
-    archive = make_clone(tmp_path, "first-passage-archive")
+def test_put_prints_autocrlf_safe_commands(public, tmp_path, monkeypatch):
+    archive = make_archive(tmp_path, monkeypatch)
     out = io.StringIO()
     ea.put([public / "data" / "a.csv"], archive, public, out=out)
     assert "-c core.autocrlf=false add evidence" in out.getvalue()
     assert "-c core.autocrlf=false commit" in out.getvalue()
 
 
-def test_crlf_bytes_survive_commit_under_autocrlf(public, tmp_path):
-    archive, digest, blob = commit_crlf_under_autocrlf(public, tmp_path, attributes=True)
+def test_crlf_bytes_survive_commit_under_autocrlf(public, tmp_path, monkeypatch):
+    archive, digest, blob = commit_crlf_under_autocrlf(public, tmp_path, monkeypatch, attributes=True)
     assert sha(blob) == digest
     assert run_audit(public, archive, verify=True)[0]["CORRUPT"] == 0
 
 
-def test_control_without_attributes_autocrlf_corrupts(public, tmp_path):
-    _, digest, blob = commit_crlf_under_autocrlf(public, tmp_path, attributes=False)
+def test_control_without_attributes_autocrlf_corrupts(public, tmp_path, monkeypatch):
+    _, digest, blob = commit_crlf_under_autocrlf(public, tmp_path, monkeypatch, attributes=False)
     if sha(blob) == digest:
         pytest.skip("git did not convert CRLF to LF on checkin here; the control cannot bite")
     assert sha(blob) != digest
 
 
-def test_verify_hashes_committed_blob_not_working_tree(public, tmp_path):
-    archive, digest, blob = commit_crlf_under_autocrlf(public, tmp_path, attributes=False)
+def test_verify_hashes_committed_blob_not_working_tree(public, tmp_path, monkeypatch):
+    archive, digest, blob = commit_crlf_under_autocrlf(public, tmp_path, monkeypatch, attributes=False)
     if sha(blob) == digest:
         pytest.skip("git did not convert CRLF to LF on checkin here; the control cannot bite")
     (archive / ea.blob_path(digest)).write_bytes(CRLF)
     assert run_audit(public, archive, verify=True)[0]["CORRUPT"] >= 1
     assert run_audit(public, archive, verify=False)[0]["ARCHIVED"] >= 1
+
+
+# --- #1142: the archive is identified by host/owner/repo, fetch and push ---
+
+APPROVED_URLS = [
+    "https://github.com/Joshua-Asante/first-passage-archive.git",
+    "https://github.com/joshua-asante/first-passage-archive",
+    "https://github.com/Joshua-Asante/first-passage-archive/",
+    "https://token-user@github.com/Joshua-Asante/first-passage-archive.git",
+    "git@github.com:Joshua-Asante/first-passage-archive.git",
+    "git@github.com:joshua-asante/first-passage-archive",
+    "ssh://git@github.com/Joshua-Asante/first-passage-archive.git",
+    "ssh://git@github.com:22/joshua-asante/first-passage-archive/",
+]
+FOREIGN_URLS = [
+    "https://github.com/another-owner/first-passage-archive.git",
+    "git@github.com:another-owner/first-passage-archive.git",
+    "https://example.invalid/team/first-passage-archive.git",
+    "https://example.invalid/joshua-asante/first-passage-archive.git",
+    "git@example.invalid:Joshua-Asante/first-passage-archive.git",
+    "http://github.com/Joshua-Asante/first-passage-archive.git",
+    "file:///srv/github.com/joshua-asante/first-passage-archive.git",
+    "/srv/git/first-passage-archive.git",
+    "C:\\repos\\first-passage-archive.git",
+    "https://github.com/Joshua-Asante/first-passage-archive/extra.git",
+    "github.com/joshua-asante/first-passage-archive",
+    "GitHub.com/Joshua-Asante/first-passage-archive.git/",
+]
+
+
+@pytest.mark.parametrize("url", APPROVED_URLS)
+def test_remote_identity_normalizes_approved_forms(url):
+    assert ea.remote_identity(url) == ea.ARCHIVE_IDENTITY
+
+
+@pytest.mark.parametrize("url", FOREIGN_URLS)
+def test_remote_identity_rejects_same_basename_elsewhere(url):
+    assert ea.remote_identity(url) not in ea.ARCHIVE_REMOTES
+
+
+def clone_with_origin(tmp_path: Path, url: str) -> Path:
+    """A same-named clone whose origin is then pointed at url (no override)."""
+    clone = make_clone(tmp_path, "first-passage-archive")
+    git(clone, "remote", "set-url", "origin", url)
+    return clone
+
+
+@pytest.mark.parametrize("url", [APPROVED_URLS[0], APPROVED_URLS[4], APPROVED_URLS[6]])
+def test_approved_https_and_ssh_origins_are_the_archive(tmp_path, url):
+    assert ea.is_archive_clone(clone_with_origin(tmp_path, url))
+
+
+@pytest.mark.parametrize("url", FOREIGN_URLS[:3])
+def test_other_owner_or_host_is_refused(public, tmp_path, url):
+    clone = clone_with_origin(tmp_path, url)
+    assert not ea.is_archive_clone(clone)
+    assert ea.put([public / "data" / "a.csv"], clone, public) == 2
+    assert not (clone / "evidence").exists()
+
+
+def test_local_remote_with_archive_basename_needs_the_override(public, tmp_path):
+    clone = make_clone(tmp_path, "first-passage-archive")
+    assert not ea.is_archive_clone(clone)
+    assert ea.put([public / "data" / "a.csv"], clone, public) == 2
+    assert not (clone / "evidence").exists()
+    counts, out = run_audit(public, clone)
+    assert out.startswith("UNVERIFIED") and sum(counts.values()) == 0
+
+
+def test_relative_local_path_spelling_the_identity_is_refused(public, tmp_path):
+    """A repository at ./github.com/joshua-asante/first-passage-archive is a local
+    path to git, not the GitHub archive."""
+    clone = make_clone(tmp_path, "first-passage-archive")
+    bare = clone / "github.com" / "joshua-asante" / "first-passage-archive"
+    bare.mkdir(parents=True)
+    git(bare, "init", "-q", "--bare", "-b", "main")
+    git(clone, "remote", "set-url", "origin", "github.com/joshua-asante/first-passage-archive")
+    git(clone, "ls-remote", "origin")  # git resolves it as a reachable local repository
+    assert not ea.is_archive_clone(clone)
+    assert ea.put([public / "data" / "a.csv"], clone, public) == 2
+    assert not (clone / "evidence").exists()
+    counts, out = run_audit(public, clone)
+    assert out.startswith("UNVERIFIED") and sum(counts.values()) == 0
+
+
+def test_foreign_pushurl_is_refused_despite_approved_fetch_url(public, tmp_path):
+    clone = clone_with_origin(tmp_path, APPROVED_URLS[0])
+    git(clone, "remote", "set-url", "--push", "origin",
+        "https://github.com/another-owner/first-passage-archive.git")
+    assert not ea.is_archive_clone(clone)
+    assert ea.put([public / "data" / "a.csv"], clone, public) == 2
+
+
+def test_any_foreign_url_among_several_is_refused(tmp_path):
+    clone = clone_with_origin(tmp_path, APPROVED_URLS[0])
+    git(clone, "remote", "set-url", "--add", "origin", FOREIGN_URLS[0])
+    assert not ea.is_archive_clone(clone)
+
+
+def test_put_prints_a_push_naming_origin_and_the_upstream(public, tmp_path, monkeypatch):
+    archive = make_archive(tmp_path, monkeypatch)
+    out = io.StringIO()
+    ea.put([public / "data" / "a.csv"], archive, public, out=out)
+    assert out.getvalue().rstrip().endswith("push origin refs/heads/main:refs/heads/main")
+
+
+def test_printed_commands_quote_paths_and_refs_as_data(public, tmp_path, monkeypatch):
+    # Codex security review on #1160: a path or ref holding shell syntax must
+    # come back from the shell as the same single argument, never run. The
+    # names avoid characters Windows filenames forbid (git stores loose refs
+    # as files), so the suite runs there too.
+    base = tmp_path / "odd dir $(touch pwned); `id`"
+    base.mkdir()
+    archive = make_archive(base, monkeypatch)
+    branch = "x$(touch${IFS}pwned);y&z"
+    git(archive, "checkout", "-q", "-b", branch)
+    git(archive, "push", "-q", "-u", "origin", branch)
+    out = io.StringIO()
+    assert ea.put([public / "data" / "a.csv"], archive, public, out=out) == 0
+    lines = [line.strip() for line in
+             out.getvalue().split("Not safe until pushed:\n", 1)[1].strip().splitlines()]
+    expected = [["git", "-C", str(archive), "-c", "core.autocrlf=false", "add", "evidence"],
+                ["git", "-C", str(archive), "-c", "core.autocrlf=false", "commit", "-m",
+                 "evidence: archive 1 file(s)"],
+                ["git", "-C", str(archive), "push", "origin",
+                 f"refs/heads/{branch}:refs/heads/{branch}"]]
+    # POSIX tokenization of each printed line gives back exactly the argv.
+    assert [shlex.split(line) for line in lines] == expected
+    sh = shutil.which("sh")
+    if sh is None:  # e.g. Windows without Git Bash on PATH: tokenization check only
+        return
+    for line, argv in zip(lines, expected):  # what a real POSIX shell passes to git
+        res = subprocess.run([sh, "-c", "printf '%s\\0' " + line[len("git "):]],
+                             cwd=tmp_path, capture_output=True, text=True, check=True)
+        assert ["git"] + res.stdout.split("\0")[:-1] == argv
+    assert not (tmp_path / "pwned").exists()
+
+
+def test_upstream_is_found_when_a_tag_shares_the_branch_name(public, tmp_path, monkeypatch):
+    # Codex review on #1160: `symbolic-ref --short` gives "heads/main" here.
+    archive = make_archive(tmp_path, monkeypatch)
+    git(archive, "tag", "main")
+    out = io.StringIO()
+    assert ea.put([public / "data" / "a.csv"], archive, public, out=out) == 0
+    assert out.getvalue().rstrip().endswith("push origin refs/heads/main:refs/heads/main")
+
+
+def test_put_refuses_without_an_upstream_on_origin(public, tmp_path, monkeypatch):
+    archive = make_archive(tmp_path, monkeypatch)
+    git(archive, "checkout", "-q", "--detach")
+    assert ea.put([public / "data" / "a.csv"], archive, public, out=io.StringIO()) == 2
+    git(archive, "checkout", "-q", "-b", "local-only")
+    assert ea.put([public / "data" / "a.csv"], archive, public, out=io.StringIO()) == 2
+    assert not (archive / ea.blob_path(sha(PRIVATE))).exists()
+
+
+# --- #1143: put --pinned and audit compare bytes against the pinned digest ---
+
+REPLACED = b"newer bytes at the same path\n"
+
+
+def test_pinned_put_archives_a_matching_pin(public, tmp_path, monkeypatch):
+    archive = make_archive(tmp_path, monkeypatch)
+    pinned = ea.pinned_sources(public)
+    assert pinned == {public / "data" / "a.csv": {sha(PRIVATE)}}
+    assert ea.put([], archive, public, pinned=pinned, out=io.StringIO()) == 0
+    assert (archive / ea.blob_path(sha(PRIVATE))).read_bytes() == PRIVATE
+
+
+def test_pinned_put_refuses_a_replaced_source(public, tmp_path, monkeypatch, capsys):
+    archive = make_archive(tmp_path, monkeypatch)
+    (public / "data" / "a.csv").write_bytes(REPLACED)
+    out = io.StringIO()
+    assert ea.put([], archive, public, pinned=ea.pinned_sources(public), out=out) == 1
+    assert not (archive / "evidence" / "sha256").exists()
+    assert "Not safe until pushed" not in out.getvalue()
+    err = capsys.readouterr().err
+    assert (f"data/a.csv: path present, pinned bytes differ (have {sha(REPLACED)[:12]}, "
+            f"pins {sha(PRIVATE)[:12]})") in err
+    assert "newer bytes" not in err
+
+
+def test_pinned_put_with_two_pins_on_one_path_archives_the_match(public, tmp_path, monkeypatch,
+                                                                  capsys):
+    archive = make_archive(tmp_path, monkeypatch)
+    sums = public / "data" / "SHA256SUMS"
+    sums.write_text(sums.read_text(encoding="utf-8") + f"{sha(REPLACED)} *a.csv\n",
+                    encoding="utf-8")
+    (public / "data" / "a.csv").write_bytes(REPLACED)
+    pinned = ea.pinned_sources(public)
+    assert pinned == {public / "data" / "a.csv": {sha(PRIVATE), sha(REPLACED)}}
+    out = io.StringIO()
+    assert ea.put([], archive, public, pinned=pinned, out=out) == 1
+    assert (archive / ea.blob_path(sha(REPLACED))).read_bytes() == REPLACED
+    assert not (archive / ea.blob_path(sha(PRIVATE))).exists()
+    assert "Not safe until pushed" in out.getvalue()
+    err = capsys.readouterr().err
+    assert f"have {sha(REPLACED)[:12]}, pins {sha(PRIVATE)[:12]})" in err
+
+
+def test_explicit_and_pinned_lists_stay_separate(public, tmp_path, monkeypatch):
+    archive = make_archive(tmp_path, monkeypatch)
+    (public / "data" / "a.csv").write_bytes(REPLACED)
+    pinned = ea.pinned_sources(public)
+    assert ea.put([public / "data" / "a.csv"], archive, public, pinned=pinned,
+                  out=io.StringIO()) == 1
+    # The explicit file is archived under its current hash; the pin stays unmatched.
+    assert (archive / ea.blob_path(sha(REPLACED))).read_bytes() == REPLACED
+    assert not (archive / ea.blob_path(sha(PRIVATE))).exists()
+
+
+def test_main_put_pinned_passes_expected_digests(public, tmp_path, monkeypatch):
+    archive = make_archive(tmp_path, monkeypatch)
+    (public / "data" / "a.csv").write_bytes(REPLACED)
+    monkeypatch.setattr(ea, "REPO_ROOT", public)
+    assert ea.main(["--archive", str(archive), "put", "--pinned"]) == 1
+    assert not (archive / "evidence" / "sha256").exists()
+
+
+def test_audit_says_present_only_when_the_local_bytes_match(public, tmp_path, monkeypatch):
+    archive = make_archive(tmp_path, monkeypatch)
+    _, out = run_audit(public, archive)
+    assert "a.csv (bytes present here: run put --pinned)" in out
+    (public / "data" / "a.csv").write_bytes(REPLACED)
+    counts, out = run_audit(public, archive, verify=True)
+    assert counts["MISSING"] == 2
+    assert "a.csv (path exists, pinned bytes differ)" in out
+    assert "bytes present here" not in out
