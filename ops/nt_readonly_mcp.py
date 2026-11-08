@@ -28,19 +28,32 @@ comment line. A rule is ``<source> <field>``:
     trace    timestamp | kv:<Key>
     journal  json:<dotted.path>
     refusal  json:<dotted.path>
-    export   (no field can be approved)
+    export   (no field can be approved; the source is refused, see below)
 
 Log lines are ``timestamp|level|category|text``; trace lines are a timestamp, then
-text. ``kv:<Key>`` takes ``Key='value'`` or ``key=value`` pairs from that text; an
-unquoted value is a plain token (letters, digits, ``_.:+-``) that must end at
-whitespace, ``,``, ``;``, ``|``, ``&`` or the line end, or the pair is dropped.
-Journal lines are JSON records; a refusal file is one JSON object. ``json:a.b``
-walks objects, decoding a string that holds JSON on the way (``json:body.code``),
-and emits scalars only: a path ending on an object, an array or a string holding
-one gives nothing. A malformed file, an unknown source or field syntax, or a
-file with no rules stops the server from starting. Each line (record) comes back as
+text. ``kv:<Key>`` takes ``Key='value'``, ``Key="value"`` or ``Key=value`` pairs
+from that text. Every ``'`` or ``"`` opens a quoted span that runs to the next
+same quote, and keys are read only outside spans, so text inside any quoted value
+is never read as a pair. If the text has an unbalanced quote, or a backslash or a
+doubled quote (``''`` or ``""``) inside a span, the line gives no kv field at all
+(fail closed). A quoted value is the span's whole content; an unquoted value is a
+plain token (letters, digits, ``_.:+-``) that must end at whitespace, ``,``,
+``;``, ``|``, ``&`` or the line end, or the pair is dropped. A key must start the
+text or follow whitespace or one of those delimiters, and be directly followed by
+``=``. Journal lines are JSON records; a refusal file is one JSON object.
+``json:a.b`` walks objects, decoding a string that holds a JSON object on the way
+(``json:body.code``), and emits scalars only: numbers (finite), booleans, null, and
+strings of at most 128 characters drawn from letters, digits, space and ``_.:+-/@``.
+A path ending on an object, an array or any other string gives nothing. A
+malformed file, an unknown source or field syntax, or a file with no rules stops
+the server from starting. Each line (record) comes back as
 one compact JSON object of approved field -> value; a line with no approved field
 is left out and counted. Order IDs and names are not approved fields.
+
+With ``--fields-file`` the ``export`` source is refused outright by every tool
+(``nt_list_files``, ``nt_tail``, ``nt_search``; ``nt_errors`` never reads it): no
+export field can be approved, so not even file names, sizes or line counts are
+served. File names in the other sources are masked only by ``--redact-file``.
 
 Callers search with literal substrings only: Python's ``re`` has no time limit, so a
 caller regex could stall the server. ``nt_errors`` uses one fixed built-in pattern.
@@ -163,13 +176,23 @@ _JSON_RULE = re.compile(r"json:([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]
 # looks like a log line cannot carry free text out through a fixed field.
 _TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:[.:,]\d{1,7})?")
 _CODE = re.compile(r"[A-Za-z0-9_]{1,32}")
-# One pass left to right: a quoted value is consumed whole, so text inside it is
-# never read as another pair. A key starts the text or follows whitespace or a
-# delimiter (, ; | &). An unquoted value is a plain token that must end at one of
-# those; any other ending (=, /, a quote ...) drops the pair, so one value can
-# never carry another pair out with it.
+# kv text is read in two steps. First every quoted span is cut out: any ' or "
+# opens a span that runs to the next same quote, so nothing inside a span is ever
+# read as a key. A line whose free text has an unbalanced quote, or a backslash or
+# a doubled quote ('' or "") inside a span, gives no kv field at all (fail closed).
+# Then keys are read only in the text outside spans, where each span stands as one
+# _SPAN character: a key starts the text or follows whitespace or a delimiter
+# (, ; | &) and is directly followed by =. Its value is either a span right after
+# the = (the span's whole content) or a plain token that must end at one of those
+# delimiters or the line end; any other ending (=, /, a span ...) drops the pair.
+_SPAN = "\x00"
+_QUOTE = re.compile("['\"]")
 _PAIR = re.compile(r"(?<![^\s,;|&])([A-Za-z_][A-Za-z0-9_]*)="
-                   r"(?:'([^']*)'|([A-Za-z0-9_.:+-]*)(?=[\s,;|&]|$))")
+                   r"(?:(\x00)|([A-Za-z0-9_.:+-]*)(?=[\s,;|&]|$))")
+# A json: path may end on a string only if it is short plain text: no JSON, no
+# quotes or braces, nothing that could hold another record.
+MAX_JSON_STRING = 128
+_JSON_STRING = re.compile(r"[A-Za-z0-9 _.:+\-/@]*")
 _MISSING: Any = object()
 
 
@@ -185,18 +208,47 @@ def _json_object(text: str) -> dict | None:
     return value if isinstance(value, dict) else None
 
 
-def _holds_container(text: str) -> bool:
-    """Whether a string decodes, through any layers of JSON strings, to an object or array."""
-    value: Any = text
-    while isinstance(value, str):  # each decode of a JSON string is shorter: this ends
-        value = _json_value(value)
-    return isinstance(value, (dict, list))
+def _kv_pairs(free: str) -> dict[str, list[str]]:
+    """Key -> values of the pairs in a line's free text; {} when its quoting is unclear."""
+    if _SPAN in free:
+        return {}
+    outside: list[str] = []
+    spans: list[str] = []
+    start = 0
+    while (opened := _QUOTE.search(free, start)) is not None:
+        quote = opened.group()
+        close = free.find(quote, opened.end())
+        if close < 0:
+            return {}  # unbalanced quote
+        content = free[opened.end():close]
+        if "\\" in content or free.startswith(quote, close + 1):
+            return {}  # escaped or doubled quote: where the span ends is unclear
+        outside.append(free[start:opened.start()] + _SPAN)
+        spans.append(content)
+        start = close + 1
+    outside.append(free[start:])
+    text = "".join(outside)
+    pairs: dict[str, list[str]] = {}
+    for match in _PAIR.finditer(text):
+        if match.group(2) is not None:
+            value = spans[text.count(_SPAN, 0, match.start(2))]
+        else:
+            value = match.group(3)
+        pairs.setdefault(match.group(1), []).append(value)
+    return pairs
+
+
+def _plain_string(value: str) -> bool:
+    """Whether a string a json: path ends on is short plain text that may be emitted."""
+    return (len(value) <= MAX_JSON_STRING and not value.lstrip().startswith(("{", "["))
+            and _JSON_STRING.fullmatch(value) is not None)
 
 
 def _json_path(record: dict, path: str) -> Any:
     """The scalar at a dotted path; a string holding a JSON object is decoded on the way.
 
-    A path that ends on an object or array, or on a string holding one, gives nothing.
+    A path that ends on an object or array, or on a string that is not short plain
+    text (``_plain_string``), gives nothing.
     """
     value: Any = record
     for key in path.split("."):
@@ -205,7 +257,7 @@ def _json_path(record: dict, path: str) -> Any:
         if not isinstance(value, dict) or key not in value:
             return _MISSING
         value = value[key]
-    if isinstance(value, (dict, list)) or (isinstance(value, str) and _holds_container(value)):
+    if isinstance(value, (dict, list)) or (isinstance(value, str) and not _plain_string(value)):
         return _MISSING
     return value
 
@@ -262,11 +314,7 @@ class Fields:
                 free = text[stamp.end():]
         elif source in _JSON_SOURCES:
             record = _json_object(text)
-        pairs: dict[str, list[str]] = {}
-        if free is not None:
-            for match in _PAIR.finditer(free):
-                value = match.group(2) if match.group(2) is not None else match.group(3)
-                pairs.setdefault(match.group(1), []).append(value)
+        pairs = _kv_pairs(free) if free is not None else {}
         out: dict[str, Any] = {}
         for name in names:
             if name in fixed:
@@ -321,9 +369,15 @@ class Entry:
     size: int
 
 
+EXPORT_REFUSED = ("source 'export' is refused in approved-field mode: no export field can be "
+                  "approved, so not even its file names, sizes or line counts are served")
+
+
 def _source_dir(config: Config, source: str) -> Path:
     if source not in config.sources:
         raise ToolError(f"unknown or unconfigured source {source!r}; configured: {sorted(config.sources)}")
+    if config.fields is not None and source == "export":
+        raise ToolError(EXPORT_REFUSED)
     directory = config.sources[source]
     if not directory.is_dir():
         raise ToolError(f"source {source!r} directory does not exist: {directory}")
@@ -638,6 +692,8 @@ def tool_list_sources(config: Config, arguments: dict) -> str:
     rows = []
     for name, directory in sorted(config.sources.items()):
         state = "ok" if directory.is_dir() else "missing"
+        if config.fields is not None and name == "export":
+            state = "refused in approved-field mode"
         rows.append(config.redact(f"{name}\t{state}\t{directory}"))
     return "\n".join(rows)
 

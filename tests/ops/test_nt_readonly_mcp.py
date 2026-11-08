@@ -835,7 +835,7 @@ def _all_outputs(config):
 
 def test_unapproved_fields_never_appear(approved):
     for name, args, text, error in _all_outputs(approved):
-        assert not error, (name, args, text)
+        assert error == (args.get("source") == "export"), (name, args, text)
         assert MARKER not in text and "SECRET" not in text.upper(), (name, args)
         assert "Spoof" not in text and "Inner" not in text, (name, args)
 
@@ -879,12 +879,26 @@ def test_refusal_file_is_one_record(approved):
     assert text.splitlines()[0] == "1 match(es)"
 
 
-def test_exports_emit_nothing(approved):
-    text, error = call(approved, "nt_tail", source="export")
-    assert not error
-    assert text.splitlines() == ["e.csv: last 2 line(s); 2 without an approved field omitted"]
-    text, _ = call(approved, "nt_search", source="export", pattern="")
-    assert text.splitlines() == ["0 match(es); 2 line(s) without an approved field skipped"]
+@pytest.mark.parametrize("name, arguments", [
+    ("nt_list_files", {"source": "export"}),
+    ("nt_list_files", {"source": "export", "glob": "*.csv"}),
+    ("nt_tail", {"source": "export"}),
+    ("nt_tail", {"source": "export", "file": "e.csv"}),
+    ("nt_search", {"source": "export", "pattern": ""}),
+    ("nt_search", {"source": "export", "pattern": "MARKER"}),
+])
+def test_export_source_refused_in_fields_mode(approved, name, arguments):
+    # No export field can be approved, so not even names, sizes or line counts leave.
+    text, error = call(approved, name, **arguments)
+    assert error and text == server.EXPORT_REFUSED
+    assert "e.csv" not in text and MARKER not in text
+
+
+def test_export_refusal_shows_in_sources_and_errors(approved):
+    text, error = call(approved, "nt_list_sources")
+    assert not error and "export\trefused in approved-field mode\t" in text
+    text, error = call(approved, "nt_errors")
+    assert not error and "export" not in text and "e.csv" not in text
 
 
 def test_search_matches_only_approved_values(approved):
@@ -1043,11 +1057,105 @@ def test_json_path_keeps_plain_string_scalars(tmp_path):
     root = _write_log(tmp_path, "x\n")
     journal = tmp_path / "journal"
     journal.mkdir()
-    rows = [{"body": "not json"}, {"body": "42"}, {"body": json.dumps("plain")}]
+    rows = [{"body": "not json"}, {"body": "42"}, {"body": json.dumps("plain")},
+            {"body": "a" * server.MAX_JSON_STRING}, {"body": "a" * (server.MAX_JSON_STRING + 1)},
+            {"body": "2026-01-02T03:04:05Z +1.5 a_b-c/d@e"}, {"body": ""}]
     (journal / "j.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows),
                                      encoding="utf-8")
     config = server.Config.build(root, journal_dir=journal,
                                  fields_file=_fields(tmp_path, "journal json:body\n"))
     text, _ = call(config, "nt_tail", source="journal")
-    assert text.splitlines()[1:] == ['{"json:body":"not json"}', '{"json:body":"42"}',
-                                     '{"json:body":"\\"plain\\""}']
+    # A string holding quotes (a JSON string) or over the length cap gives nothing.
+    assert text.splitlines() == [
+        "j.jsonl: last 7 line(s); 2 without an approved field omitted",
+        '{"json:body":"not json"}', '{"json:body":"42"}',
+        json.dumps({"json:body": "a" * server.MAX_JSON_STRING}, separators=(",", ":")),
+        '{"json:body":"2026-01-02T03:04:05Z +1.5 a_b-c/d@e"}', '{"json:body":""}']
+
+
+# --- #1136 review: quoted spans and near-JSON strings -------------------------------
+
+LEAK = f"{MARKER}_failed"  # "failed" is in nt_errors' pattern, so nt_errors would show it
+LOG_PREFIX = "2026-11-08 10:00:00:000|INFO|Order|"
+TRACE_PREFIX = "2026-11-08 10:00:00:000 "
+QUOTED_KV_LEAKS = [
+    f'Note="free text Price={LEAK} more" Qty=1',
+    f"(Note='free Price={LEAK} x')",
+    f"Order-Note='free Price={LEAK} x'",
+    f"Note: 'free Price={LEAK} x'",
+    f"Note ='free Price={LEAK} x'",
+    f"Note='it\\'s Price={LEAK} x'",
+    f"Note='it''s Price={LEAK} x'",
+    f"Note='free Price={LEAK}",
+    f"Notè='free Price={LEAK} x'",
+]
+
+
+def _leak_outputs(config, sources):
+    outputs = [("nt_errors", *call(config, "nt_errors"))]
+    for source in sources:
+        outputs.append(("nt_tail", *call(config, "nt_tail", source=source)))
+        for pattern in ("", MARKER, "Price", "failed"):
+            outputs.append(("nt_search", *call(config, "nt_search", source=source,
+                                               pattern=pattern, context=2)))
+    return outputs
+
+
+@pytest.mark.parametrize("source, line", [
+    *(("log", LOG_PREFIX + text) for text in QUOTED_KV_LEAKS),
+    ("trace", f'{TRACE_PREFIX}Note="a Price={LEAK} b"'),
+])
+def test_text_inside_any_quoted_value_is_never_a_pair(tmp_path, source, line):
+    root = _write_log(tmp_path, "")
+    (root / source / f"{source}.txt").write_text(line + "\n", encoding="utf-8")
+    config = server.Config.build(root, fields_file=_fields(
+        tmp_path, "log kv:Price\ntrace kv:Price\n"))
+    outputs = _leak_outputs(config, [source])
+    for name, text, error in outputs:
+        assert not error, (name, text)
+        assert MARKER not in text and "kv:Price" not in text, (name, text)
+    assert outputs[0][1].splitlines()[0].startswith("0 match(es)")
+
+
+@pytest.mark.parametrize("free, expected", [
+    # Balanced quoting: quoted values of approved keys still come out whole.
+    ("Note=\"ok here\" Price=1", {"kv:Note": "ok here", "kv:Price": "1"}),
+    ("Note='a \"b\" c', Price='2'", {"kv:Note": 'a "b" c', "kv:Price": "2"}),
+    ("Note='' Price=3", {"kv:Note": "", "kv:Price": "3"}),
+    # Unclear quoting anywhere on the line: no kv field at all.
+    ("Price=4 Note='it\\'s'", {}),
+    ("Price=4 Note=\"a\"\"b\"", {}),
+    ("Price=4 Note='open", {}),
+    ("Price=4 Note=x\"", {}),
+    # A value running into a span is dropped; a key right after a span is not a key.
+    ("Price=5'x' Note=ok", {"kv:Note": "ok"}),
+    ("Note='x'Price=6", {"kv:Note": "x"}),
+])
+def test_kv_quoting_rules(tmp_path, free, expected):
+    root = _write_log(tmp_path, f"{STAMP}|1|4|{free}\n")
+    config = server.Config.build(root, fields_file=_fields(tmp_path, "log kv:Note\nlog kv:Price\n"))
+    text, error = call(config, "nt_tail", source="log")
+    assert not error
+    assert text.splitlines()[1:] == ([json.dumps(expected, separators=(",", ":"))]
+                                     if expected else [])
+
+
+@pytest.mark.parametrize("message", [
+    f'{{"code":"X","account":"{MARKER}","pnl":NaN}}',
+    f'{{"account":"{MARKER}","x":1e999}}',
+    f'{{"account":"{MARKER}"}} trailing',
+    f"{{'account': '{MARKER}'}}",
+    f'  [{{"account":"{MARKER}"}}',
+    f'"{MARKER}"',
+])
+def test_json_path_never_emits_near_json_strings(tmp_path, message):
+    root = _write_log(tmp_path, "x\n")
+    journal = tmp_path / "journal"
+    journal.mkdir()
+    (journal / "j.jsonl").write_text(json.dumps({"msg": message}) + "\n", encoding="utf-8")
+    config = server.Config.build(root, journal_dir=journal,
+                                 fields_file=_fields(tmp_path, "journal json:msg\n"))
+    for name, text, error in _leak_outputs(config, ["journal"]):
+        assert not error and MARKER not in text and "json:msg" not in text, (name, text)
+    text, _ = call(config, "nt_tail", source="journal")
+    assert text.splitlines() == ["j.jsonl: last 1 line(s); 1 without an approved field omitted"]

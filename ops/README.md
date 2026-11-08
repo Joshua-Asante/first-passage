@@ -61,22 +61,29 @@ fields; anything not on the list is dropped, never shown. Format: UTF-8 text
 | `trace` | `timestamp`, `kv:<Key>` |
 | `journal` | `json:<dotted.path>` |
 | `refusal` | `json:<dotted.path>` |
-| `export` | none |
+| `export` | none: the source is refused (below) |
 
 Log lines are `timestamp|level|category|text`; trace lines are a timestamp, then
 text. A timestamp must look like `YYYY-MM-DD hh:mm:ss` (optional fraction) and a
 level or category code like a short word or number, or that field is dropped.
-`kv:<Key>` takes `Key='value'` or `key=value` pairs from the text; a quoted value
-is read whole, so text inside it is never taken as another pair. An unquoted value
-is a plain token (letters, digits, `_.:+-`) that must end at whitespace, `,`, `;`,
+`kv:<Key>` takes `Key='value'`, `Key="value"` or `Key=value` pairs from the text.
+Every `'` or `"` opens a quoted span that runs to the next same quote, and keys
+are read only outside spans, so text inside any quoted value (whoever's key it
+follows) is never taken as a pair. If the text has an unbalanced quote, or a
+backslash or a doubled quote (`''` or `""`) inside a span, the line gives no kv
+field at all. A quoted value is the span's whole content. An unquoted value is a
+plain token (letters, digits, `_.:+-`) that must end at whitespace, `,`, `;`,
 `|`, `&` or the line end; otherwise the pair is dropped, so one value never carries
-another pair out with it. Journal lines are
+another pair out with it. A key must start the text or follow whitespace or one of
+those delimiters, and be directly followed by `=`. Journal lines are
 JSON records (`seq`, `prev`, `kind`, `body`, `hash`); a refusal file is one JSON
 object (`code`, `utc`, `fields`) and is read as one record. `json:a.b` walks
-objects, decoding a string that holds JSON on the way, so `json:body.code` reads
-`code` inside the `body` string; only scalars are emitted, never a whole object or
-array, and a path that ends on a string holding JSON (such as `json:body`) gives
-nothing. A malformed line, an unknown source or field, or a file with no rules stops
+objects, decoding a string that holds a JSON object on the way, so `json:body.code`
+reads `code` inside the `body` string. Only scalars are emitted: finite numbers,
+booleans, null, and plain strings of at most 128 characters drawn from letters,
+digits, space and `_.:+-/@`. A path that ends on an object, an array or any other
+string (JSON or near-JSON text such as `json:body`, quotes, braces, long text)
+gives nothing. A malformed line, an unknown source or field, or a file with no rules stops
 the server from starting. Order IDs and names, hashed or not, are not approved
 fields: don't list them.
 
@@ -85,6 +92,12 @@ example `{"timestamp":"…","kv:Status":"…"}`. A line with no approved field i
 out and counted in the header (`nt_tail`) or summary (`nt_search`, `nt_errors`), so
 "last N lines" still means the last N lines of the file. Searches, including
 `nt_errors`' built-in pattern, match only within approved values.
+
+With `--fields-file`, the `export` source is refused outright by `nt_list_files`,
+`nt_tail` and `nt_search` (`nt_errors` reads only `log` and `trace`), and
+`nt_list_sources` shows it as refused: no export field can be approved, so not even
+its file names, sizes or line counts are served. File names in the other sources
+are shown as they are, masked only by `--redact-file`.
 
 **Masking, as a backup.** `--redact-file` masks regexes in every emitted value;
 keep that file private too. One
