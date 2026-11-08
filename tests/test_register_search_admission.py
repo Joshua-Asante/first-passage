@@ -344,3 +344,111 @@ def test_n_edge_admits_when_necessity_limbs_clear():
     assert result.admitted
     assert result.reasons == ()
     assert result.summary["disclosures"]["em1_below_inversion_floor"] is True
+
+
+# --- Issue #1145: non-finite admission inputs refuse, never ADMIT -------------
+
+from discovery.admission_schema import NUMERIC_FIELDS, EMAdmission, load_admission  # noqa: E402
+
+# Raw JSON tokens: NaN, +/-Infinity, the string "NaN", an overflowing float
+# literal (parses to inf) and an int beyond a C double (float() overflows).
+_BAD_TOKENS = ["NaN", "Infinity", "-Infinity", '"NaN"', "1e999", "1" + "0" * 400]
+_BAD_IDS = ["nan", "inf", "-inf", "nan_string", "1e999", "int_overflow"]
+
+
+def _raw_admission_file(tmp_path, field, token, catalogue_k=1):
+    payload = _admission_payload(catalogue_k=catalogue_k)
+    payload[field] = "__BAD__"
+    text = json.dumps(payload).replace('"__BAD__"', token)
+    p = tmp_path / "admission_bad.json"
+    p.write_text(text, encoding="utf-8")
+    return str(p)
+
+
+@pytest.mark.parametrize("token", _BAD_TOKENS, ids=_BAD_IDS)
+@pytest.mark.parametrize("field", NUMERIC_FIELDS)
+def test_load_admission_rejects_non_finite_field(tmp_path, field, token):
+    with pytest.raises(ValueError, match=field):
+        load_admission(_raw_admission_file(tmp_path, field, token))
+
+
+@pytest.mark.parametrize("token", _BAD_TOKENS, ids=_BAD_IDS)
+@pytest.mark.parametrize(
+    "field", ["n_edge_net_expectancy", "n_edge_dsr", "delta_over_sigma", "em1_edge_r"]
+)
+def test_open_with_non_finite_admission_aborts_no_save(ledger, tmp_path, field, token):
+    ready = _mf_ready(tmp_path, catalogue_k=1)
+    ready["admission_file"] = _raw_admission_file(tmp_path, field, token)
+    with pytest.raises(SystemExit) as exc:
+        register_search.open_run(_open_args(**ready))
+    message = str(exc.value)
+    assert message.startswith("ABORT:")
+    assert field in message
+    assert not (ledger / "test_run.json").exists()
+
+
+def test_blind_open_with_supplied_nan_admission_aborts_no_save(ledger, tmp_path):
+    """Issue #1145 repro: blind may omit admission, but a supplied NaN check
+    must not record ADMIT."""
+    args = _open_args(
+        lane="blind", search_space_size=1, profile_cell=None, prereg=None,
+        admission_file=_raw_admission_file(tmp_path, "n_edge_net_expectancy", '"NaN"'),
+    )
+    with pytest.raises(SystemExit) as exc:
+        register_search.open_run(args)
+    assert str(exc.value).startswith("ABORT:")
+    assert not (ledger / "test_run.json").exists()
+
+
+def test_open_with_finite_n_edge_control_admits(ledger, tmp_path):
+    ready = _mf_ready(tmp_path, catalogue_k=1, n_edge_net_expectancy=0.1)
+    register_search.open_run(_open_args(**ready))
+    manifest = json.loads((ledger / "test_run.json").read_text(encoding="utf-8"))
+    assert manifest["admission"]["decision"] == "ADMIT"
+
+
+def test_numeric_string_field_still_accepted(ledger, tmp_path):
+    """Numeric strings were accepted via float() before #1145 and still are."""
+    ready = _mf_ready(tmp_path, catalogue_k=1, em2_risk_usd="275.0",
+                      n_edge_net_expectancy="0.1")
+    register_search.open_run(_open_args(**ready))
+    manifest = json.loads((ledger / "test_run.json").read_text(encoding="utf-8"))
+    assert manifest["admission"]["decision"] == "ADMIT"
+
+
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), "NaN", 10**400])
+def test_evaluate_admission_raises_on_non_finite_delta(bad):
+    adm = EMAdmission(**_admission_payload(catalogue_k=1, delta_over_sigma=bad))
+    with pytest.raises(ValueError, match="delta_over_sigma"):
+        evaluate_admission(adm, registered_k=1)
+
+
+def test_evaluate_admission_raises_on_nan_em1_disclosure():
+    adm = EMAdmission(**_admission_payload(catalogue_k=1, em1_edge_r=float("nan")))
+    with pytest.raises(ValueError, match="em1_edge_r"):
+        evaluate_admission(adm, registered_k=1)
+
+
+def test_save_refuses_nan_and_writes_nothing(ledger):
+    with pytest.raises(ValueError):
+        register_search._save({"run_id": "nan_run", "target_sr": float("nan")})
+    assert not (ledger / "nan_run.json").exists()
+
+
+_OPEN_BASE = [
+    "open", "--tool", "catch22", "--search-space-size", "2",
+    "--data-window", "2010-01-01:2020-01-01", "--hypothesis", "h",
+]
+
+
+@pytest.mark.parametrize("value", ["nan", "inf", "-inf", "1e999", "0", "1", "-0.1", "abc"])
+def test_cli_alpha_rejects_non_finite_or_out_of_range(value, capsys):
+    with pytest.raises(SystemExit) as exc:
+        register_search.build_parser().parse_args(_OPEN_BASE + ["--alpha", value])
+    assert exc.value.code == 2
+    assert "--alpha" in capsys.readouterr().err
+
+
+def test_cli_alpha_finite_control():
+    ns = register_search.build_parser().parse_args(_OPEN_BASE + ["--alpha", "0.01"])
+    assert ns.alpha == 0.01

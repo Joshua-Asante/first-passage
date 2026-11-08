@@ -56,8 +56,15 @@ def verify_manifest_backing(
     k = manifest.get("K")
     if not isinstance(k, int) or isinstance(k, bool) or k < 1:
         reasons.append("k_missing_or_invalid")
-    if manifest.get("results") is None:
+    results = manifest.get("results")
+    if results is None:
         reasons.append("no_results")
+    elif isinstance(results, dict) and isinstance(k, int) and not isinstance(k, bool):
+        # Backstop for close_run's over-K abort (issue #1144): submitted results
+        # are a subset of the K registered tests.
+        n_submitted = results.get("n_submitted")
+        if isinstance(n_submitted, int) and not isinstance(n_submitted, bool) and n_submitted > k:
+            reasons.append("n_submitted_exceeds_k")
     return ManifestCheckResult(ok=not reasons, reasons=tuple(reasons), manifest=manifest)
 
 

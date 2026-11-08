@@ -22,10 +22,12 @@ Constants and arithmetic are owned by:
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 from typing import Any, Literal, Optional
 
+from discovery.finite import require_finite
 from research_utils.axis_screen import CAP, POWER_MIN, clause_n_power, floor_at_k
 
 Decision = Literal["ADMIT", "REFUSE"]
@@ -52,6 +54,19 @@ REASON_D1 = "D1"  # retained for callers; never appended post–TNEC-1
 REASON_D2 = "D2"  # retained for callers; never appended post–TNEC-1
 REASON_N_EDGE = "N-EDGE"
 REASON_K_MISMATCH = "K_mismatch"
+
+# Every numeric EMAdmission field. A supplied value must be finite: NaN passes
+# every ``<``/``<=``/``>`` refusal test and would read ADMIT (issue #1145).
+NUMERIC_FIELDS: tuple[str, ...] = (
+    "catalogue_k",
+    "em1_edge_r",
+    "em2_risk_usd",
+    "em2_measured_edge_r",
+    "n_events",
+    "delta_over_sigma",
+    "n_edge_net_expectancy",
+    "n_edge_dsr",
+)
 
 
 @dataclass
@@ -110,6 +125,14 @@ def em2_risk_ceiling(measured_edge_r: float) -> float:
     return EM2_FRONTIER[-1][1]
 
 
+def _require_finite_fields(admission: "EMAdmission") -> None:
+    """Raise ``ValueError`` naming the first supplied non-finite numeric field."""
+    for name in NUMERIC_FIELDS:
+        value = getattr(admission, name)
+        if value is not None:
+            require_finite(value, name)
+
+
 def load_admission(path: str | Path) -> EMAdmission:
     """Load an admission JSON object into ``EMAdmission``."""
     raw = json.loads(Path(path).read_text(encoding="utf-8"))
@@ -121,7 +144,9 @@ def load_admission(path: str | Path) -> EMAdmission:
         raise ValueError(f"admission file has unknown keys: {sorted(unknown)}")
     if "catalogue_k" not in raw:
         raise ValueError("admission file missing required field 'catalogue_k'")
-    return EMAdmission(**{k: raw[k] for k in allowed if k in raw})
+    admission = EMAdmission(**{k: raw[k] for k in allowed if k in raw})
+    _require_finite_fields(admission)
+    return admission
 
 
 def _disclosure_record(admission: EMAdmission) -> dict[str, Any]:
@@ -149,10 +174,14 @@ def evaluate_admission(
     when confirm-power inputs are supplied and power < ``POWER_MIN``, when a
     supplied N-EDGE limb fails, or when any remaining EM gate limb fails
     (EM0 / EM2–EM5). EM1 and D1/D2 are disclosure-only and never refuse.
-    Does not spend K and does not write a manifest.
+    Does not spend K and does not write a manifest. Raises ``ValueError`` for a
+    supplied non-finite numeric field or a non-finite computed floor/power.
     """
+    _require_finite_fields(admission)
     reasons: list[str] = []
     floor = floor_at_k(registered_k)
+    if not math.isfinite(floor):
+        raise ValueError(f"floor_at_k({registered_k}) is not finite: {floor!r}")
     power: Optional[float] = None
 
     if admission.catalogue_k != registered_k:
@@ -170,6 +199,8 @@ def evaluate_admission(
             reasons.append(REASON_POWER)
         else:
             power = clause_n_power(admission.n_events, float(admission.delta_over_sigma))
+            if not math.isfinite(power):
+                raise ValueError(f"computed confirm power is not finite: {power!r}")
             if power < POWER_MIN:
                 reasons.append(REASON_POWER)
 

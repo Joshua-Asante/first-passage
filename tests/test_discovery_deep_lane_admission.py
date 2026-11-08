@@ -131,3 +131,33 @@ def test_all_three_reasons_can_fire_together():
         "FLOOR_ABOVE_CEILING",
         "POWER_BELOW_MIN",
     }
+
+
+# --- Issue #1145: non-finite inputs raise, never ADMIT ------------------------
+
+_BAD = [float("nan"), float("inf"), float("-inf"), "NaN", "1e999", 10**400]
+
+
+@pytest.mark.parametrize("bad", _BAD)
+def test_non_finite_target_sr_raises(bad):
+    with pytest.raises(ValueError, match="target_sr"):
+        evaluate_deep_admission(
+            DeepLaneAdmission(declared_k=10, confirm_years=6.5, target_sr=bad)
+        )
+
+
+@pytest.mark.parametrize("bad", _BAD)
+def test_non_finite_confirm_years_raises(bad):
+    with pytest.raises(ValueError, match="confirm_years"):
+        evaluate_deep_admission(
+            DeepLaneAdmission(declared_k=10, confirm_years=bad, target_sr=1.83)
+        )
+
+
+def test_numeric_string_inputs_still_accepted():
+    result = evaluate_deep_admission(
+        DeepLaneAdmission(declared_k=10, confirm_years="6.5", target_sr="1.83")
+    )
+    assert result.admitted
+    assert math.isfinite(result.summary["power"])
+    assert result.summary["target_sr"] == 1.83
