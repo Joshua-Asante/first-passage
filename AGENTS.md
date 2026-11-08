@@ -63,8 +63,8 @@ choices with a recommendation, at stage gates. Anything deferrable is batched.
    **Suspended for eval orders (2026-11-08, D8):** Joshua places the weekly
    preservation trade himself, by hand. Agents may remind him and check, read-only,
    that the account is flat with no working orders, but place, change, cancel or exit
-   no eval order, directed or not, until Tradeify answers Q5 (D10) in writing, or he
-   re-rules. The
+   no eval order, directed or not, until he re-rules after Tradeify's written answer
+   to Q5 (D10); the answer alone does not lift it. The
    2026-10-25 standing GO for the preservation trade is suspended.
    [Rulings](docs/notes/2026-11-08-sitting-rulings.md).
 2. **No arming, live spend or deployment without his explicit GO** covering that

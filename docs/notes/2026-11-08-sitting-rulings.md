@@ -32,7 +32,8 @@ Other deleted docs are cited at `b7eaff7`. Private facts are named, never record
 **D8. Who places it.** Joshua places the weekly preservation trade by hand, on his own normally
 logged-in device, with no VPN or VPS. Agents may remind him and may check, read-only, that the account
 is flat with no working orders. No agent (Codex included) places, changes, cancels or exits an order
-on the eval. This holds until Tradeify answers Q5 in writing (D10) or Joshua re-rules in his own words.
+on the eval. This holds until Joshua re-rules after Tradeify's written answer to Q5 (D10); the answer
+alone, yes or no, does not lift it (Joshua, 11-08).
 It suspends the standing preservation-trade GO of 2026-10-25 and, for eval orders, rule-1 directed
 agent acts. Rule-1 directed authority stays for other acts. No "sole owner and operator" attestation
 goes to Tradeify until Q5 is answered or he rules on it. Inactive accounts are deleted "after an email

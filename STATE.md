@@ -73,7 +73,8 @@ then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
 1. **11-08 sitting:** ruled; see the [rulings](docs/notes/2026-11-08-sitting-rulings.md).
    Still open: **T1** (whether Tradeify accepts the weekly trade's shape) and **T2**
    (whether an agent may operate the account). Joshua asks Tradeify in writing after
-   the F rehearsal (D10); its Q5 answer governs the D8 suspension.
+   the F rehearsal (D10). The D8 suspension lifts only when Joshua re-rules after
+   the Q5 answer.
 2. **The 11-07 pair-evidence verdict** ("prior stands"): Codex verification, then
    Joshua's ruling on the file. D1 already accepts it as risk for the first attempt.
 3. **Local confirmations:** the subscriber agreement (D7), the spend ceiling's scope
