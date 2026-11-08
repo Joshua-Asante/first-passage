@@ -28,8 +28,9 @@ Joshua directs; the agents own the work under his direction.
   parameters and the stop rule;
 - merges PRs, once verification is clean. Agents never merge: they report the
   reviewed head as ready;
-- operates the eval: enables instances, attends sessions and runs F. Agents act on the
-  eval only under his GO or the standing GO;
+- operates the eval: enables instances, attends sessions, runs F and, while the D8
+  suspension in money control 1 holds, places the weekly preservation trade by hand;
+  agents then place, change, cancel or exit no eval order, directed or not;
 - holds private material: his primary checkout, private ports, the signed page,
   account data and anything sent outside.
 
@@ -42,7 +43,7 @@ choices with a recommendation, at stage gates. Anything deferrable is batched.
 | Design | Claude; Joshua accepts | Build contract (the spec); operating procedure | Codex is consulted on choices |
 | Engineering | Claude Code in Joshua's primary checkout for the private NinjaScript eval build; Claude for public code | Private build; public tooling (`core/`, `scripts/`, gates, tests) | Codex writes public code only; never private sources or parameters |
 | Verification | Codex | Code review of every head, and of the frozen private eval build read in place, read-only, against its checksums (spec §6, Joshua 11-06); behaviour checks (Sim101 runs and rehearsals, reviewed from their records); evidence audit | Joshua runs the checks that need the eval or his checkout, and starts Codex's private-build review there |
-| Operations | Joshua | Session operator; venue liaison (Tradeify); measure: the session record and forward stop rule scoring after each session, done by Claude Code in his primary checkout for his sign-off | Codex by computer use under a GO; Claude keeps the procedure and public records |
+| Operations | Joshua | Session operator; venue liaison (Tradeify); measure: the session record and forward stop rule scoring after each session, done by Claude Code in his primary checkout for his sign-off | Codex by computer use under a GO, for no eval orders while the D8 suspension holds; Claude keeps the procedure and public records |
 
 - Engineering does not edit the **Private sources** below (Pine, the runtime ports in
   `BOOK_SOURCES.sha256`, `effective_inputs.json`): they stay read-only in place.
@@ -59,11 +60,15 @@ choices with a recommendation, at stage gates. Anything deferrable is batched.
    on the Tradeify eval (place, exit or cancel orders, including through computer
    use) only when he directs, under a GO that covers the 7 days after he gives it.
    He can revoke a GO at any time.
-   **Exception:** the weekly account-preservation round trip runs under his
-   standing, revocable GO (2026-10-25). An agent may place it with no per-trade
-   direction.
+   **Suspended for eval orders (2026-11-08, D8):** Joshua places the weekly
+   preservation trade himself, by hand. Agents may remind him and check, read-only,
+   that the account is flat with no working orders, but place, change, cancel or exit
+   no eval order, directed or not, until he re-rules after Tradeify's written answer
+   to Q5 (D10); the answer alone does not lift it. The
+   2026-10-25 standing GO for the preservation trade is suspended.
+   [Rulings](docs/notes/2026-11-08-sitting-rulings.md).
 2. **No arming, live spend or deployment without his explicit GO** covering that
-   time (a weekly GO, as in rule 1).
+   time (a GO within rule 1's 7-day window; one GO per session, D12).
    The c1 Python rail is retired. Nothing is rebuilt, redeployed, armed or bound to
    an account under it.
 3. **Tradeify evaluation accounts allow native strategy logic only.** That means
