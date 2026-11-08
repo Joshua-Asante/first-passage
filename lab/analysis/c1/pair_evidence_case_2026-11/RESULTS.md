@@ -4,8 +4,9 @@
 [2026-08-26 combined-book gate](../aegis_orbmnq_combined_book_2026-08-26/RESULTS.md) at the
 eval's actual sizing, in both chronological halves, by more than the frozen noise band.
 
-**Status:** awaiting Codex's verification and Joshua's ruling. It changes no strategy, sizing,
-STATE line or session procedure, and it authorizes nothing.
+**Status:** Codex-verified (#1151, #1170). Joshua accepted the verdict on 2026-11-08 ("I accept
+the prior stands verdict"); for the first attempt it is accepted as risk under sitting ruling D1. It
+changes no strategy, sizing or session procedure, and it authorizes nothing.
 
 This file carries the method and the verdict only. All figures are in a private record.
 Exploratory and in-sample; it is not a pre-registered qualification (the framework's G1 is

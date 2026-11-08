@@ -75,10 +75,11 @@ then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
    (whether an agent may operate the account). Joshua asks Tradeify in writing after
    the F rehearsal (D10). The D8 suspension lifts only when Joshua re-rules after
    the Q5 answer.
-2. **The 11-07 pair-evidence verdict** ("prior stands"): Codex verification, then
-   Joshua's ruling on the file. D1 already accepts it as risk for the first attempt.
-3. **Local confirmations:** the subscriber agreement (D7), the spend ceiling's scope
+2. **Local confirmations:** the subscriber agreement (D7), the spend ceiling's scope
    (D11) and the c1 archive contents (D19).
 
 Data source is settled: TradingView CME exports only, with the terms-of-service risk
 accepted (D16).
+
+The 11-07 pair-evidence verdict is settled: "prior stands", Codex-verified and accepted
+by Joshua on 11-08; for the first attempt it is accepted as risk under D1.
