@@ -39,21 +39,35 @@ in NinjaTrader's or Tradovate's grids, still go through computer use.
 
 Sources: `log` and `trace` under `--nt-root` (default `~/Documents/NinjaTrader 8`),
 and optionally `journal` (`--journal-dir`) and `export` (`--export-dir`), both kept
-in private custody outside the repo. Files are read as plain text; no NinjaTrader
-line format is assumed.
+in private custody outside the repo. Files are read as UTF-8 text; no NinjaTrader
+line format is assumed. A file that starts with a UTF-16/32 byte-order mark or has
+NUL bytes in its first 64 KiB is refused (NULs between characters would defeat
+every mask), and a later line with a NUL byte is omitted. Directory walks never
+follow symlinks or junctions. Hard links are not detected: a hard link inside a
+source to a file elsewhere is read like any other file.
 
 **Account data.** Output can carry fills, account names and balances. It enters
 the agent's context and never goes into this repo (data rules; spec B15).
-`--redact-file` masks regexes, one per line, `#` for comments, in all output; keep
-that file private too. Each full line is masked before it is cut to 2,000
-characters, so a match that crosses the cut is still masked. A line over 64 KiB
-is never shown, even in part: it comes back as `[line over 65536 bytes omitted]`,
-because a mask pattern might depend on the part that isn't held in memory.
-Searches match on the unmasked line, so masking can't hide a match, but only
-masked text is returned.
+`--redact-file` masks regexes in all output; keep that file private too. One
+pattern per line, leading and trailing spaces stripped; a line starting with `#`
+is a comment, so a pattern can't start with `#` (write `[#]`). The file may be
+saved with or without a UTF-8 BOM; a pattern holding an invisible format
+character (zero-width space, BOM and the like) stops the server from starting.
+Patterns run in file order, each on one line at a time, so a later pattern sees
+the earlier ones' `[redacted]`, and no pattern can span two lines. Every line is
+masked, searched or not, so patterns must be linear-time: no nested quantifiers.
 
-The server fails closed: it refuses to start unless it gets `--redact-file` with
-at least one pattern, or `--allow-unredacted`. The two are mutually exclusive.
+Each full line is masked before it is cut to 2,000 characters, so a match that
+crosses the cut is still masked. A line over 64 KiB is never shown, even in part:
+it comes back as `[line over 65536 bytes omitted]`, because a mask pattern might
+depend on the part that isn't held in memory. Searches, globs and the `file`
+argument all match the masked text, the same text that is returned: a masked
+value can't be found by searching for it, so match counts can't rebuild it. A
+file whose name holds a masked value is listed and opened by its masked name.
+
+The server fails closed: it refuses to start unless it gets `--redact-file` (a
+regular file, given once) with at least one pattern, or `--allow-unredacted`.
+Options must be spelled in full. The two are mutually exclusive.
 With `--allow-unredacted` the agent may see account data unmasked; that data must
 never enter this repository. No default patterns ship for balances or P&L: write
 ones that fit the account's formats.
@@ -63,7 +77,12 @@ has no time limit and the server runs no subprocesses, so a caller regex could
 stall every tool. `nt_search` rejects a `regex` argument, and `nt_errors` uses only
 its built-in pattern and rejects a caller `pattern`. Files are read in bounded
 blocks (tails from the end, searches line by line), so memory stays bounded
-whatever the file size.
+whatever the file size. A read stops at the size the file had when it was opened,
+so a writer that keeps appending can't make it endless, and each call stops after
+256 MiB or 20 seconds of reading. String arguments are capped at 1,024
+characters, a request line at 1 MiB, and unknown argument names are refused. A
+file that is locked, vanishes or can't be read is skipped with a `note:` line;
+the rest of the call goes on.
 
 Don't register the server for Codex: journals and logs can carry strategy
 parameters.
@@ -75,5 +94,7 @@ machine-specific, so no `.mcp.json` is committed):
 claude mcp add nt-readonly --scope local -- python -I ops/nt_readonly_mcp.py --nt-root "$HOME\Documents\NinjaTrader 8" --journal-dir <private journal dir> --redact-file <private redact file>
 ```
 
-Run that from the checkout root, or give the script's absolute path. Any Python
-3.11+ works; the server needs no packages. Tests: `tests/ops/test_nt_readonly_mcp.py`.
+Run that from the checkout root, or give the script's absolute path. Local scope
+also reaches this repo's worktrees under `.claude/worktrees/`, so sessions there
+get the server too. Any Python 3.12+ works; the server needs no packages. Tests:
+`tests/ops/test_nt_readonly_mcp.py`.
