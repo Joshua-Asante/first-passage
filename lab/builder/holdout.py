@@ -57,6 +57,9 @@ def survivors(s: dict, cs: list, cost: dict) -> list[tuple]:
     _, marker = _read(out / "verdict.json")
     bind = run.binding(s, cs, cost)
     want = run.binding_sha256(bind)
+    if isinstance(marker, dict) and set(marker) == {"dev_binding_sha256", "binding", "cards"}:
+        raise HoldoutError(f"{out / 'verdict.json'} predates the recorded ledger head; rerun builder.run "
+                           "to regenerate it (same card hashes, K unchanged) before the holdout")
     if not isinstance(marker, dict) or set(marker) != {"dev_binding_sha256", "binding", "ledger_head", "cards"}:
         raise HoldoutError(f"{out / 'verdict.json'} is not a finished development marker")
     if marker["dev_binding_sha256"] != want or run.binding_sha256(marker["binding"]) != want:

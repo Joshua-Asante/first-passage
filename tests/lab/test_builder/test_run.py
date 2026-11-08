@@ -376,6 +376,17 @@ def test_holdout_refuses_an_edited_marker_binding(spec):
     refused(path, s, "no longer describes")
 
 
+def test_holdout_refuses_a_marker_written_before_the_ledger_head_existed(spec):
+    path, s, _ = spec
+    go(path, s)
+    p = path.parent / "out" / "verdict.json"
+    m = json.loads(p.read_text())
+    del m["ledger_head"]
+    p.write_text(json.dumps(m))
+    refused(path, s, "predates the recorded ledger head; rerun builder.run")
+    assert looks(s) == []
+
+
 def test_holdout_look_is_taken_once(spec):
     path, s, _ = spec
     go(path, s)
