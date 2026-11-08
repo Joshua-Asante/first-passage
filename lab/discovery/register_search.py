@@ -59,6 +59,7 @@ from discovery.burned_segments import (
     is_window_burned,
 )
 from discovery.deep_lane_admission import DeepLaneAdmission, evaluate_deep_admission
+from discovery.finite import require_finite
 from discovery.grammar import GrammarDriftError, GrammarValidationError, load_grammar_with_hash_check
 from discovery.k_count import DEFAULT_WINDOWS, compute_k_bracket
 from research_utils.repo_root import repo_root
@@ -93,7 +94,8 @@ def _load(run_id):
 
 def _save(manifest):
     LEDGER.mkdir(parents=True, exist_ok=True)
-    _path(manifest["run_id"]).write_text(json.dumps(manifest, indent=2))
+    # allow_nan=False: a NaN/Infinity never reaches the ledger (issue #1145).
+    _path(manifest["run_id"]).write_text(json.dumps(manifest, indent=2, allow_nan=False))
 
 
 def _resolve_params(args) -> str:
@@ -425,7 +427,10 @@ def _require_admission(args, lane):
         admission = load_admission(p)
     except (ValueError, json.JSONDecodeError, TypeError) as exc:
         sys.exit(f"ABORT: --admission-file {adm_path} is not a valid admission: {exc}")
-    result = evaluate_admission(admission, registered_k=args.search_space_size)
+    try:
+        result = evaluate_admission(admission, registered_k=args.search_space_size)
+    except ValueError as exc:
+        sys.exit(f"ABORT: --admission-file {adm_path} is not a valid admission: {exc}")
     if not result.admitted:
         reason = ",".join(result.reasons) if result.reasons else "unknown"
         print(
@@ -496,13 +501,16 @@ def _require_deep_admission(args):
             "-- K = G, fully counted (GROW spec v2 Part A step 2); the "
             "declared K and the grammar's own budget must be the same number."
         )
-    result = evaluate_deep_admission(
-        DeepLaneAdmission(
-            declared_k=args.search_space_size,
-            confirm_years=float(confirm_years),
-            target_sr=float(target_sr),
+    try:
+        result = evaluate_deep_admission(
+            DeepLaneAdmission(
+                declared_k=args.search_space_size,
+                confirm_years=confirm_years,
+                target_sr=target_sr,
+            )
         )
-    )
+    except ValueError as exc:
+        sys.exit(f"ABORT: deep-lane admission inputs invalid: {exc}")
     if not result.admitted:
         reason = ",".join(result.reasons)
         print(
@@ -993,8 +1001,12 @@ def close_run(args):
     K = manifest["K"]
     alpha = manifest["alpha"]
     if len(pvals) > K:
-        print(f"[warn]   submitted {len(pvals)} p-values but K={K}. Survivors cannot "
-              f"exceed the search space — check that K is the true search size.")
+        # Submitted p-values are a subset of the K registered tests; more than K
+        # means K was under-declared. Refuse before any manifest mutation so the
+        # registration stays open; never raise K after results (issue #1144).
+        sys.exit(f"ABORT: submitted {len(pvals)} p-values but the registered K={K}. "
+                 f"Submitted results cannot exceed the declared search space; "
+                 f"'{args.run_id}' stays open.")
 
     bonf_thr = alpha / K
     bonf = [p for p in pvals if p <= bonf_thr]
@@ -1054,6 +1066,22 @@ def status(args):
         print(f"{tag:7} {m['run_id']:32} tool={m.get('tool','?'):10} K={m.get('K','?')}")
 
 
+def _finite_float(text):
+    """argparse type: a finite float (rejects nan, inf, 1e999)."""
+    try:
+        return require_finite(text, "value")
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(str(exc)) from exc
+
+
+def _alpha_float(text):
+    """argparse type: a finite significance level strictly inside (0, 1)."""
+    value = _finite_float(text)
+    if not 0.0 < value < 1.0:
+        raise argparse.ArgumentTypeError(f"alpha must be in (0, 1), got {text!r}")
+    return value
+
+
 def build_parser():
     p = argparse.ArgumentParser(description="Pre-registration ledger for discovery runs.")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -1065,7 +1093,7 @@ def build_parser():
     o.add_argument("--search-space-size", type=int, required=True,
                    help="K: number of hypotheses examined (subsequences*windows, features, "
                         "expressions tried, penalty grid size, ...). The true search size.")
-    o.add_argument("--alpha", type=float, default=0.05, help="Significance level. Default 0.05.")
+    o.add_argument("--alpha", type=_alpha_float, default=0.05, help="Significance level. Default 0.05.")
     o.add_argument("--data-window", required=True, help="e.g. 2010-06-06:2026-01-01")
     o.add_argument("--instrument", default=None,
                    help="Instrument symbol for the burned-segment check "
@@ -1095,10 +1123,10 @@ def build_parser():
     o.add_argument("--grammar-sha256", default=None,
                    help="Expected SHA256 of --grammar-file, pinned at PREREG "
                         "freeze (deep lane only; drift hard-fails the open).")
-    o.add_argument("--confirm-years", type=float, default=None,
+    o.add_argument("--confirm-years", type=_finite_float, default=None,
                    help="Frozen confirm-partition length in years (deep lane "
                         "only; charter §2.2's floor_at_k(K, confirm_years)).")
-    o.add_argument("--target-sr", type=float, default=None,
+    o.add_argument("--target-sr", type=_finite_float, default=None,
                    help="Campaign's own design-target annualized Sharpe, "
                         "named a priori (deep lane only; charter §2.2(iii) "
                         "confirm-power).")

@@ -29,6 +29,7 @@ import math
 from dataclasses import dataclass
 from typing import Any
 
+from discovery.finite import require_finite
 from research_utils.axis_screen import POWER_MIN, floor_at_k
 
 Decision = "ADMIT | REFUSE"  # documentation only; see AdmissionResult.decision
@@ -99,13 +100,19 @@ def evaluate_deep_admission(admission: DeepLaneAdmission) -> AdmissionResult:
     k = admission.declared_k
     if not isinstance(k, int) or isinstance(k, bool) or k < 1:
         raise ValueError("declared_k must be a positive int")
-    if admission.confirm_years <= 0:
+    # NaN passes every comparison below and would read ADMIT (issue #1145).
+    confirm_years = require_finite(admission.confirm_years, "confirm_years")
+    target_sr = require_finite(admission.target_sr, "target_sr")
+    if confirm_years <= 0:
         raise ValueError("confirm_years must be positive")
 
-    floor = floor_at_k(k, years=admission.confirm_years)
-    power = deep_lane_power(
-        target_sr=admission.target_sr, floor_sr=floor, years=admission.confirm_years
-    )
+    try:
+        floor = floor_at_k(k, years=confirm_years)
+    except OverflowError as exc:
+        raise ValueError(f"floor_at_k overflows at confirm_years={confirm_years!r}") from exc
+    power = deep_lane_power(target_sr=target_sr, floor_sr=floor, years=confirm_years)
+    if not (math.isfinite(floor) and math.isfinite(power)):
+        raise ValueError(f"computed floor/power not finite: floor={floor!r} power={power!r}")
 
     reasons: list[str] = []
     if k > K_CEILING:
@@ -121,10 +128,10 @@ def evaluate_deep_admission(admission: DeepLaneAdmission) -> AdmissionResult:
         "reasons": list(reasons),
         "declared_k": k,
         "k_ceiling": K_CEILING,
-        "confirm_years": admission.confirm_years,
+        "confirm_years": confirm_years,
         "floor_at_k": floor,
         "floor_ceiling": FLOOR_CEILING,
-        "target_sr": admission.target_sr,
+        "target_sr": target_sr,
         "power": round(power, 6),
         "power_min": POWER_MIN,
     }

@@ -165,3 +165,40 @@ def test_blind_lane_unaffected_by_deep_lane_wiring(ledger, tmp_path):
     assert "lane" not in manifest
     assert "grammar_sha256" not in manifest
     assert "deep_admission" not in manifest
+
+
+# --- Issue #1145: non-finite deep-lane inputs ABORT cleanly, no save ----------
+
+@pytest.mark.parametrize("field", ["target_sr", "confirm_years"])
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), "NaN", "1e999", 10**400])
+def test_deep_lane_non_finite_input_aborts_no_manifest(ledger, tmp_path, field, bad):
+    args = _deep_args(tmp_path, **{field: bad})
+    with pytest.raises(SystemExit) as exc:
+        register_search.open_run(args)
+    message = str(exc.value)
+    assert message.startswith("ABORT:")
+    assert field in message
+    assert not (ledger / "deep_run.json").exists()
+
+
+_DEEP_CLI = [
+    "open", "--tool", "grammar-refine", "--search-space-size", "1",
+    "--lane", "deep", "--data-window", "2010-01-01:2020-01-01", "--hypothesis", "h",
+]
+
+
+@pytest.mark.parametrize("flag", ["--target-sr", "--confirm-years"])
+@pytest.mark.parametrize("value", ["nan", "inf", "-inf", "1e999", "NaN"])
+def test_cli_deep_floats_reject_non_finite(flag, value, capsys):
+    with pytest.raises(SystemExit) as exc:
+        register_search.build_parser().parse_args(_DEEP_CLI + [flag, value])
+    assert exc.value.code == 2
+    assert flag in capsys.readouterr().err
+
+
+def test_cli_deep_floats_finite_control():
+    ns = register_search.build_parser().parse_args(
+        _DEEP_CLI + ["--target-sr", "1.83", "--confirm-years", "6.5"]
+    )
+    assert ns.target_sr == 1.83
+    assert ns.confirm_years == 6.5

@@ -63,3 +63,32 @@ def test_operator_stopped_closure_with_valid_k_passes(tmp_path):
     )
     result = verify_manifest_backing("run_d", ledger_dir=tmp_path)
     assert result.ok
+
+
+def test_n_submitted_above_k_fails(tmp_path):
+    """Backstop for close_run's over-K abort (issue #1144)."""
+    _write_manifest(tmp_path, "run_e", K=1, results={"n_submitted": 2})
+    result = verify_manifest_backing("run_e", ledger_dir=tmp_path)
+    assert not result.ok
+    assert "n_submitted_exceeds_k" in result.reasons
+
+
+def test_n_submitted_equal_to_k_passes(tmp_path):
+    _write_manifest(tmp_path, "run_f", K=2, results={"n_submitted": 2})
+    assert verify_manifest_backing("run_f", ledger_dir=tmp_path).ok
+
+
+def test_committed_manifests_never_exceed_k():
+    """The new backstop must not refuse any committed closed manifest."""
+    from research_utils.repo_root import repo_root
+
+    ledger = repo_root() / "discovery_manifests"
+    checked = 0
+    for path in sorted(ledger.glob("*.json")):
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(manifest, dict) or manifest.get("status") != "closed":
+            continue
+        result = verify_manifest_backing(path.stem, ledger_dir=ledger)
+        assert "n_submitted_exceeds_k" not in result.reasons, path.name
+        checked += 1
+    assert checked > 0
