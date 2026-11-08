@@ -2,6 +2,8 @@
 
 **Status: DRAFT. Proposed; decides nothing** ([Rule 32](../../operational_rules.md#rule-32--adrs-only-under-the-admission-rule)). It takes effect only after a Codex pre-ratification adjudication ([Rule 5](../../operational_rules.md#rule-5--a-separate-reviewer)), then a ratifying commit that sets this line to `RATIFIED <date>` with the §11 values (§12). Merging this draft freezes nothing. No candidate is nominated here, no run is authorised, and no capital, arming or spend authority is granted ([Rule 15](../../operational_rules.md#rule-15--capital-authorization-is-separate-and-revocable)).
 
+**Does not gate the owned Select 100K attempt** (2026-11-08 sitting ruling D2, PR #1120). That attempt's nomination is Aegis A-0 and ORB O-0, as the [10-31 forward stop-rule registration](2026-10-31-tradeify-forward-stop-rule-registration.md) names them.
+
 **Question.** Is there a strategy, or an ORB+Aegis pair counted as one candidate (§2), that can run natively at Tradeify, exclusively there, with enough edge that running it on a Tradeify Select evaluation (the account chosen in §11 item 2) and its funded account has positive expected net cash over 126 trading days within a fee budget? **The decision it changes:** whether a nominated candidate may proceed to native implementation and the deployment gates, or the lane stays parked under draft 11-08 branch (d).
 
 **Budget.** Drafting this document: one session, $0, K = 0. Each candidate later nominated by amendment counts its disclosed search trials plus one against the lane cap K_max (§3). Spend (for example a NinjaTrader licence) is not authorised here.
