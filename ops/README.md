@@ -67,11 +67,12 @@ Log lines are `timestamp|level|category|text`; trace lines are a timestamp, then
 text. A timestamp must look like `YYYY-MM-DD hh:mm:ss` (optional fraction) and a
 level or category code like a short word or number, or that field is dropped.
 `kv:<Key>` takes `Key='value'`, `Key="value"` or `Key=value` pairs from the text.
-Every `'` or `"` opens a quoted span that runs to the next same quote, and keys
-are read only outside spans, so text inside any quoted value (whoever's key it
-follows) is never taken as a pair. If the text has an unbalanced quote, or a
-backslash or a doubled quote (`''` or `""`) inside a span, the line gives no kv
-field at all. A quoted value is the span's whole content. An unquoted value is a
+A `'` or `"` opens a quoted span only directly after `Key=`; the span runs to
+the next same quote, and keys are read only outside spans, so text inside any
+quoted value (whoever's key it follows) is never taken as a pair. If the text has
+any other quote (a prose apostrophe such as `don't`, a quote after `Note:` or
+`(Note=`), an unclosed span, or a backslash or a doubled quote (`''` or `""`)
+inside a span, the line gives no kv field at all. A quoted value is the span's whole content. An unquoted value is a
 plain token (letters, digits, `_.:+-`) that must end at whitespace, `,`, `;`,
 `|`, `&` or the line end; otherwise the pair is dropped, so one value never carries
 another pair out with it. A key must start the text or follow whitespace or one of

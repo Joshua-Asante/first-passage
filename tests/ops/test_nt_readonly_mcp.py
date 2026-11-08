@@ -1088,6 +1088,11 @@ QUOTED_KV_LEAKS = [
     f"Note='it''s Price={LEAK} x'",
     f"Note='free Price={LEAK}",
     f"Notè='free Price={LEAK} x'",
+    # A prose apostrophe before a double-quoted value must not open a span of its own.
+    f"don't Note=\"x' Price={LEAK} 'y\" it's",
+    f"it's Note=\"x' Price={LEAK} 'y\" it's",
+    f"Strategy's Note=\"x' Price={LEAK} 'y\"",
+    f'Note="x" don\'t Price={LEAK} it\'s',
 ]
 
 
@@ -1104,6 +1109,8 @@ def _leak_outputs(config, sources):
 @pytest.mark.parametrize("source, line", [
     *(("log", LOG_PREFIX + text) for text in QUOTED_KV_LEAKS),
     ("trace", f'{TRACE_PREFIX}Note="a Price={LEAK} b"'),
+    ("trace", f"{TRACE_PREFIX}it's Note=\"x' Price={LEAK} 'y\" it's"),
+    ("trace", f"{TRACE_PREFIX}don't Note=\"x' Price={LEAK} 'y\" it's"),
 ])
 def test_text_inside_any_quoted_value_is_never_a_pair(tmp_path, source, line):
     root = _write_log(tmp_path, "")
@@ -1127,8 +1134,13 @@ def test_text_inside_any_quoted_value_is_never_a_pair(tmp_path, source, line):
     ("Price=4 Note=\"a\"\"b\"", {}),
     ("Price=4 Note='open", {}),
     ("Price=4 Note=x\"", {}),
-    # A value running into a span is dropped; a key right after a span is not a key.
-    ("Price=5'x' Note=ok", {"kv:Note": "ok"}),
+    # A quote anywhere but right after Key= (a prose apostrophe, a value running
+    # into a quote) gives no kv field; a key right after a span is not a key.
+    ("Price=5'x' Note=ok", {}),
+    ("don't Price=7", {}),
+    ("Price=7 it's", {}),
+    ('He said "hi" Price=7', {}),
+    ("(Note='x') Price=7", {}),
     ("Note='x'Price=6", {"kv:Note": "x"}),
 ])
 def test_kv_quoting_rules(tmp_path, free, expected):

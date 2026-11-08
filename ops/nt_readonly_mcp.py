@@ -32,11 +32,12 @@ comment line. A rule is ``<source> <field>``:
 
 Log lines are ``timestamp|level|category|text``; trace lines are a timestamp, then
 text. ``kv:<Key>`` takes ``Key='value'``, ``Key="value"`` or ``Key=value`` pairs
-from that text. Every ``'`` or ``"`` opens a quoted span that runs to the next
-same quote, and keys are read only outside spans, so text inside any quoted value
-is never read as a pair. If the text has an unbalanced quote, or a backslash or a
-doubled quote (``''`` or ``""``) inside a span, the line gives no kv field at all
-(fail closed). A quoted value is the span's whole content; an unquoted value is a
+from that text. A ``'`` or ``"`` opens a quoted span only directly after
+``Key=``; the span runs to the next same quote, and keys are read only outside
+spans, so text inside any quoted value is never read as a pair. If the text has
+any other quote (a prose apostrophe such as ``don't``, a quote after ``Note:``),
+an unclosed span, or a backslash or a doubled quote (``''`` or ``""``) inside a
+span, the line gives no kv field at all (fail closed). A quoted value is the span's whole content; an unquoted value is a
 plain token (letters, digits, ``_.:+-``) that must end at whitespace, ``,``,
 ``;``, ``|``, ``&`` or the line end, or the pair is dropped. A key must start the
 text or follow whitespace or one of those delimiters, and be directly followed by
@@ -176,10 +177,12 @@ _JSON_RULE = re.compile(r"json:([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]
 # looks like a log line cannot carry free text out through a fixed field.
 _TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:[.:,]\d{1,7})?")
 _CODE = re.compile(r"[A-Za-z0-9_]{1,32}")
-# kv text is read in two steps. First every quoted span is cut out: any ' or "
-# opens a span that runs to the next same quote, so nothing inside a span is ever
-# read as a key. A line whose free text has an unbalanced quote, or a backslash or
-# a doubled quote ('' or "") inside a span, gives no kv field at all (fail closed).
+# kv text is read in two steps. First every quoted value is cut out. A ' or " opens
+# a span only directly after Key= (a key as defined below); the span runs to the
+# next same quote, so nothing inside it is ever read as a key. Any other quote in
+# the free text (a prose apostrophe, a quote after "Note: " or "(Note=" ...), an
+# unclosed span, or a backslash or doubled quote ('' or "") inside a span gives no
+# kv field at all for that line (fail closed): where a span ends is then unclear.
 # Then keys are read only in the text outside spans, where each span stands as one
 # _SPAN character: a key starts the text or follows whitespace or a delimiter
 # (, ; | &) and is directly followed by =. Its value is either a span right after
@@ -187,6 +190,7 @@ _CODE = re.compile(r"[A-Za-z0-9_]{1,32}")
 # delimiters or the line end; any other ending (=, /, a span ...) drops the pair.
 _SPAN = "\x00"
 _QUOTE = re.compile("['\"]")
+_SPAN_KEY = re.compile(r"(?<![^\s,;|&])[A-Za-z_][A-Za-z0-9_]*=\Z")
 _PAIR = re.compile(r"(?<![^\s,;|&])([A-Za-z_][A-Za-z0-9_]*)="
                    r"(?:(\x00)|([A-Za-z0-9_.:+-]*)(?=[\s,;|&]|$))")
 # A json: path may end on a string only if it is short plain text: no JSON, no
@@ -217,6 +221,8 @@ def _kv_pairs(free: str) -> dict[str, list[str]]:
     start = 0
     while (opened := _QUOTE.search(free, start)) is not None:
         quote = opened.group()
+        if _SPAN_KEY.search(free, start, opened.start()) is None:
+            return {}  # a quote that does not open a value: an apostrophe, prose ...
         close = free.find(quote, opened.end())
         if close < 0:
             return {}  # unbalanced quote
