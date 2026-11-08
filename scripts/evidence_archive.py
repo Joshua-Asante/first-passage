@@ -18,20 +18,29 @@ would convert CRLF to LF and the committed blob would no longer hash to its own
 content address.
 
   put <file>...   copy files into a local clone of the archive (verified), then
-                  print the commit/push commands; ``--pinned`` archives every
-                  pinned file present in this checkout.
+                  print the commit/push commands. ``--pinned`` archives each
+                  pinned path present in this checkout only when its bytes hash
+                  to one of that path's pinned digests; every pinned digest a
+                  path does not hold is reported, and put exits 1 after the rest.
   audit           report-only: every pinned digest is ARCHIVED (on the
                   archive's remote-tracking branch), UNPUSHED (only in the local
                   clone) or MISSING. With no archive clone it prints UNVERIFIED.
+                  A non-archived pin is marked recoverable here only when the
+                  local file hashes to its digest.
 
 Pinned digests are read from the tracked manifests (``*SHA256SUMS``,
 ``*MANIFEST.sha256``) and from docs/evidence/PRIVATE_EVIDENCE.sha256, where a
 record that pins private evidence outside those manifests registers it.
 
 The archive clone is ``--archive``, else ``$FP_EVIDENCE_ARCHIVE``, else a
-``first-passage-archive`` directory beside this checkout. ``put`` refuses any
-clone whose ``origin`` is not the archive repository, so private bytes are never
-staged into the public clone.
+``first-passage-archive`` directory beside this checkout. It counts as the
+archive only when every fetch and every push URL of its ``origin`` names
+``github.com/joshua-asante/first-passage-archive`` (https, ``git@github.com:``
+or ``ssh://`` forms; case, ``.git`` and a trailing slash ignored). ``put``
+refuses any other clone, so private bytes are never staged into the public clone
+or a same-named repository elsewhere; ``audit`` reports it as UNVERIFIED. ``put``
+also needs the clone's current branch to track a branch on ``origin`` and prints
+a push naming both.
 """
 from __future__ import annotations
 
@@ -49,6 +58,10 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 REGISTRY = Path("docs/evidence/PRIVATE_EVIDENCE.sha256")
 ARCHIVE_NAME = "first-passage-archive"
+ARCHIVE_IDENTITY = f"github.com/joshua-asante/{ARCHIVE_NAME}"
+# Remote identities accepted as the archive. Deliberately a constant, not an
+# environment variable or option: only tests monkeypatch it, to admit a local bare remote.
+ARCHIVE_REMOTES: frozenset[str] = frozenset({ARCHIVE_IDENTITY})
 EVIDENCE_DIR = "evidence/sha256"
 INDEX = "evidence/INDEX.tsv"
 ATTRIBUTES = "evidence/.gitattributes"
@@ -56,6 +69,9 @@ ATTRIBUTES_TEXT = "* -text\n"
 # GitHub rejects pushes carrying a file over 100 MB.
 MAX_BYTES = 95 * 1024 * 1024
 _LINE = re.compile(r"^([0-9a-fA-F]{64})\s+\*?(.+?)\s*$")
+_URL = re.compile(r"^(?:https|ssh)://(?:[^@/]+@)?([^/:]+)(?::\d+)?/(.+)$", re.IGNORECASE)
+# scp-like ``user@host:path``; a one-letter host is a Windows drive, i.e. a local path.
+_SCP = re.compile(r"^(?:[^@/]+@)?([^/:\\]{2,}):(.+)$")
 
 
 @dataclass(frozen=True)
@@ -125,14 +141,51 @@ def resolve_archive(explicit: str | None) -> Path:
     return REPO_ROOT.parent / ARCHIVE_NAME
 
 
+def remote_identity(url: str) -> str:
+    """``host/owner/repo`` for an https, ``ssh://`` or scp-like git URL, lowercased,
+    without user, port, ``.git`` or a trailing slash. Anything else (a local path,
+    another scheme) comes back as its own normalized lowercased text, which never
+    equals a ``github.com/...`` identity."""
+    url = url.strip()
+    match = _URL.match(url) or (None if "://" in url else _SCP.match(url))
+    if match:
+        url = f"{match.group(1)}/{match.group(2)}"
+    else:
+        # Windows clones record local origin paths with backslashes.
+        url = url.replace("\\", "/")
+    return url.rstrip("/").removesuffix(".git").rstrip("/").lower()
+
+
+def _origin_urls(archive: Path, *flags: str) -> list[str] | None:
+    result = _git(archive, "remote", "get-url", *flags, "--all", "origin")
+    urls = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    return urls if result.returncode == 0 and urls else None
+
+
 def is_archive_clone(archive: Path) -> bool:
-    """True only for a git checkout whose origin is the private archive repository."""
+    """True only for a git checkout whose origin fetches from and pushes to the
+    private archive repository: every fetch URL and every push URL of origin must
+    be in ARCHIVE_REMOTES."""
     if not (archive / ".git").exists():
         return False
-    url = _git(archive, "remote", "get-url", "origin").stdout.strip()
-    # Windows clones record local origin paths with backslashes; normalize first.
-    url = url.replace("\\", "/").rstrip("/").removesuffix(".git").lower()
-    return url.endswith("/" + ARCHIVE_NAME)
+    fetch = _origin_urls(archive)
+    push = _origin_urls(archive, "--push")
+    if fetch is None or push is None:
+        return False
+    return all(remote_identity(url) in ARCHIVE_REMOTES for url in fetch + push)
+
+
+def _origin_upstream(archive: Path) -> tuple[str, str] | None:
+    """(current branch, origin branch ref it tracks), or None when HEAD is
+    detached or the branch's upstream is not on origin."""
+    branch = _git(archive, "symbolic-ref", "-q", "--short", "HEAD").stdout.strip()
+    if not branch:
+        return None
+    remote = _git(archive, "config", "--get", f"branch.{branch}.remote").stdout.strip()
+    merge = _git(archive, "config", "--get", f"branch.{branch}.merge").stdout.strip()
+    if remote != "origin" or not merge.startswith("refs/heads/"):
+        return None
+    return branch, merge
 
 
 def ensure_attributes(archive: Path) -> bool:
@@ -183,7 +236,8 @@ def audit(root: Path, archive: Path, *, verify: bool = False, out=None) -> dict[
     pins = collect_pins(root)
     counts = {"ARCHIVED": 0, "UNPUSHED": 0, "MISSING": 0, "CORRUPT": 0}
     if not archive.is_dir() or not is_archive_clone(archive):
-        print(f"UNVERIFIED — no {ARCHIVE_NAME} clone at {archive}; pass --archive or set "
+        print(f"UNVERIFIED — no {ARCHIVE_NAME} clone at {archive} (missing, or origin's "
+              f"fetch/push URLs are not {ARCHIVE_IDENTITY}); pass --archive or set "
               f"FP_EVIDENCE_ARCHIVE. {len(pins)} pinned digests unchecked.", file=out)
         return counts
     ref = _remote_ref(archive)
@@ -192,6 +246,7 @@ def audit(root: Path, archive: Path, *, verify: bool = False, out=None) -> dict[
         print(f"note: {archive} has no upstream branch; ARCHIVED cannot be told from UNPUSHED.",
               file=out)
         remote = set()
+    source_hashes: dict[Path, str] = {}
     for pin in pins:
         local = archive / blob_path(pin.digest)
         if pin.digest in remote:
@@ -207,61 +262,121 @@ def audit(root: Path, archive: Path, *, verify: bool = False, out=None) -> dict[
             state = "MISSING"
         counts[state] += 1
         if state != "ARCHIVED":
-            present = (" (bytes present here: run put --pinned)"
-                       if pin.local_path(root).is_file() else "")
+            present = ""
+            source = pin.local_path(root)
+            if source.is_file():
+                if source not in source_hashes:
+                    source_hashes[source] = sha256_file(source)
+                present = (" (bytes present here: run put --pinned)"
+                           if source_hashes[source] == pin.digest
+                           else " (path exists, pinned bytes differ)")
             print(f"{state:9} {pin.digest[:12]}  {pin.manifest}: {pin.name}{present}", file=out)
     summary = ", ".join(f"{k} {v}" for k, v in counts.items())
     print(f"{len(pins)} pinned digests in {len(_manifests(root))} manifests: {summary}", file=out)
     return counts
 
 
-def put(files: list[Path], archive: Path, root: Path, *, out=None) -> int:
-    """Copy each file to its content address in the archive clone and index it."""
+def pinned_sources(root: Path) -> dict[Path, set[str]]:
+    """Each pinned path present in this checkout, with every digest pinned for it."""
+    grouped: dict[Path, set[str]] = {}
+    for pin in collect_pins(root):
+        path = pin.local_path(root)
+        if path.is_file():
+            grouped.setdefault(path, set()).add(pin.digest)
+    return grouped
+
+
+def _label(source: Path, root: Path) -> str:
+    try:
+        return source.resolve().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return source.name
+
+
+def _archivable(source: Path) -> bool:
+    if not source.is_file():
+        print(f"skip (not a file): {source}", file=sys.stderr)
+        return False
+    if source.stat().st_size > MAX_BYTES:
+        print(f"skip (over {MAX_BYTES // (1024 * 1024)} MB, GitHub would reject it): {source}",
+              file=sys.stderr)
+        return False
+    return True
+
+
+def _archive_one(source: Path, digest: str, archive: Path, root: Path, out) -> str:
+    """Copy source to digest's content address and index it. Returns 'added',
+    'already', or 'failed' when the copy does not hash to digest (it is removed)."""
+    target = archive / blob_path(digest)
+    if target.is_file() and sha256_file(target) == digest:
+        print(f"already archived {digest[:12]}  {source}", file=out)
+        return "already"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(source, target)
+    if sha256_file(target) != digest:
+        target.unlink()
+        print(f"refused: copy of {source} did not verify against {digest[:12]}", file=sys.stderr)
+        return "failed"
+    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    with (archive / INDEX).open("a", encoding="utf-8", newline="\n") as handle:
+        handle.write(f"{digest}\t{source.stat().st_size}\t{stamp}\t{_label(source, root)}\n")
+    print(f"archived {digest[:12]}  {source}", file=out)
+    return "added"
+
+
+def put(files: list[Path], archive: Path, root: Path, *,
+        pinned: dict[Path, set[str]] | None = None, out=None) -> int:
+    """Copy files to their content addresses in the archive clone and index them.
+
+    ``files`` are archived under their current hash. Each ``pinned`` path is
+    hashed once and archived only when that hash is one of its pinned digests;
+    every pinned digest it does not hold is reported, and put returns 1 after
+    processing everything else."""
     out = out or sys.stdout
     if not is_archive_clone(archive):
-        print(f"refused: {archive} is not a clone whose origin is {ARCHIVE_NAME}", file=sys.stderr)
+        print(f"refused: {archive} is not a clone whose origin fetch and push URLs are "
+              f"{ARCHIVE_IDENTITY}", file=sys.stderr)
+        return 2
+    upstream = _origin_upstream(archive)
+    if upstream is None:
+        print(f"refused: {archive} is not on a branch that tracks a branch on origin; "
+              f"check out the archive branch and set its upstream", file=sys.stderr)
         return 2
     if not ensure_attributes(archive):
         print(f"refused: {archive}/{ATTRIBUTES} exists with other content; "
               f"it must be exactly \"* -text\"", file=sys.stderr)
         return 2
-    index = archive / INDEX
-    index.parent.mkdir(parents=True, exist_ok=True)
+    (archive / INDEX).parent.mkdir(parents=True, exist_ok=True)
+    jobs = [(source, sha256_file(source)) for source in files if _archivable(source)]
+    mismatched = 0
+    for source, digests in sorted((pinned or {}).items()):
+        if not _archivable(source):
+            continue
+        have = sha256_file(source)
+        if have in digests:
+            jobs.append((source, have))
+        unmatched = sorted(digests - {have})
+        if unmatched:
+            mismatched += len(unmatched)
+            print(f"{_label(source, root)}: path present, pinned bytes differ (have {have[:12]}, "
+                  f"pins {', '.join(d[:12] for d in unmatched)})", file=sys.stderr)
     added = 0
-    for source in files:
-        if not source.is_file():
-            print(f"skip (not a file): {source}", file=sys.stderr)
-            continue
-        if source.stat().st_size > MAX_BYTES:
-            print(f"skip (over {MAX_BYTES // (1024 * 1024)} MB, GitHub would reject it): {source}",
-                  file=sys.stderr)
-            continue
-        digest = sha256_file(source)
-        target = archive / blob_path(digest)
-        if target.is_file() and sha256_file(target) == digest:
-            print(f"already archived {digest[:12]}  {source}", file=out)
-            continue
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(source, target)
-        if sha256_file(target) != digest:
-            target.unlink()
-            print(f"refused: copy of {source} did not verify", file=sys.stderr)
+    for source, digest in jobs:
+        result = _archive_one(source, digest, archive, root, out)
+        if result == "failed":
             return 1
-        try:
-            label = source.resolve().relative_to(root).as_posix()
-        except ValueError:
-            label = source.name
-        stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-        with index.open("a", encoding="utf-8", newline="\n") as handle:
-            handle.write(f"{digest}\t{source.stat().st_size}\t{stamp}\t{label}\n")
-        added += 1
-        print(f"archived {digest[:12]}  {source}", file=out)
+        added += result == "added"
     if added:
+        branch, merge = upstream
         print("\nNot safe until pushed:\n"
               f"  git -C \"{archive}\" -c core.autocrlf=false add evidence\n"
               f"  git -C \"{archive}\" -c core.autocrlf=false commit "
               f"-m \"evidence: archive {added} file(s)\"\n"
-              f"  git -C \"{archive}\" push", file=out)
+              f"  git -C \"{archive}\" push origin refs/heads/{branch}:{merge}", file=out)
+    if mismatched:
+        print(f"{mismatched} pinned digest(s) not held by the file at their path; not archived",
+              file=sys.stderr)
+        return 1
     return 0
 
 
@@ -274,7 +389,8 @@ def main(argv: list[str] | None = None) -> int:
     put_cmd = sub.add_parser("put", help="archive files by content address")
     put_cmd.add_argument("files", nargs="*", type=Path)
     put_cmd.add_argument("--pinned", action="store_true",
-                         help="also archive every pinned file present in this checkout")
+                         help="also archive each pinned path present in this checkout whose "
+                              "bytes match one of its pinned digests")
     audit_cmd = sub.add_parser("audit", help="report each pinned digest's archive state")
     audit_cmd.add_argument("--verify", action="store_true",
                            help="re-hash archived bytes (committed blobs on the remote-tracking "
@@ -285,12 +401,10 @@ def main(argv: list[str] | None = None) -> int:
         audit(REPO_ROOT, archive, verify=args.verify)
         return 0
     files = list(args.files)
-    if args.pinned:
-        files += [p.local_path(REPO_ROOT) for p in collect_pins(REPO_ROOT)
-                  if p.local_path(REPO_ROOT).is_file()]
-    if not files:
+    pinned = pinned_sources(REPO_ROOT) if args.pinned else {}
+    if not files and not pinned:
         parser.error("put needs files or --pinned")
-    return put(files, archive, REPO_ROOT)
+    return put(files, archive, REPO_ROOT, pinned=pinned)
 
 
 if __name__ == "__main__":
