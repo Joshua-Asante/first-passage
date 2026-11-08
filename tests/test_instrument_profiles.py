@@ -1504,3 +1504,142 @@ def test_p4_regression_reproduces_the_real_historical_defect(tmp_path):
     p4 = [f for f in _validate(inst, tmp_path) if f.code == "P4"]
     assert len(p4) == 1
     assert "2026-07-10" in p4[0].message and "2026-04-23" in p4[0].message
+
+
+# --- #1135: sources pinned to a historical blob of this repository ---------
+
+_THIS_REPO_BLOB = "https://github.com/Joshua-Asante/first-passage/blob"
+
+
+def _git(cwd, *args):
+    return subprocess.run(
+        ["git", "-C", str(cwd), "-c", "user.name=t", "-c", "user.email=t@example.invalid",
+         "-c", "commit.gpgsign=false", "-c", "core.hooksPath=/dev/null", *args],
+        capture_output=True, text=True, check=True,
+    ).stdout.strip()
+
+
+def _pinned_repo(tmp_path):
+    """Git repo whose docs/old.md exists only in history (deleted at HEAD).
+
+    Returns (repo_root, sha of the commit that still has docs/old.md).
+    """
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "ops" / "instruments").mkdir(parents=True)
+    _git(repo, "init", "-q")
+    (repo / "docs" / "old.md").write_text("**Closed:** 2026-07-20\n\nold\n", encoding="utf-8")
+    _git(repo, "add", "docs/old.md")
+    _git(repo, "commit", "-q", "-m", "add")
+    sha = _git(repo, "rev-parse", "HEAD")
+    _git(repo, "rm", "-q", "docs/old.md")
+    _git(repo, "commit", "-q", "-m", "delete")
+    assert not (repo / "docs" / "old.md").exists()
+    return repo, sha
+
+
+def _pinned_findings(repo, source, date="2026-07-20"):
+    inst = repo / "ops" / "instruments"
+    body = VALID_LEDGER.replace('"../../docs/x.md"', f'"{source}"').replace(
+        "date: 2026-07-20", f"date: {date}"
+    )
+    (inst / "TST.md").write_text(body, encoding="utf-8")
+    profiles, load_findings = ip.load_profiles(inst)
+    assert load_findings == []
+    return ip.validate(profiles, _mechs(repo), repo)
+
+
+def _unresolved(findings):
+    return [f for f in findings if f.code == "P1" and "does not resolve" in f.message]
+
+
+def test_pinned_blob_of_this_repo_resolves(tmp_path):
+    repo, sha = _pinned_repo(tmp_path)
+    for pin in (sha, sha[:7]):
+        findings = _pinned_findings(repo, f"{_THIS_REPO_BLOB}/{pin}/docs/old.md")
+        assert findings == [], findings
+
+
+def test_pinned_blob_date_is_read_from_the_pinned_source(tmp_path):
+    """P4 still runs: the date is read via git show <sha>:<path>."""
+    repo, sha = _pinned_repo(tmp_path)
+    findings = _pinned_findings(repo, f"{_THIS_REPO_BLOB}/{sha}/docs/old.md", date="2026-07-19")
+    p4 = [f for f in findings if f.code == "P4"]
+    assert len(p4) == 1 and "2026-07-20" in p4[0].message
+    assert _unresolved(findings) == []
+
+
+def test_pinned_blob_missing_path_or_unknown_sha_is_p1(tmp_path):
+    repo, sha = _pinned_repo(tmp_path)
+    head = _git(repo, "rev-parse", "HEAD")
+    for source in (
+        f"{_THIS_REPO_BLOB}/{sha}/docs/absent.md",
+        f"{_THIS_REPO_BLOB}/{head}/docs/old.md",  # deleted at this commit
+        f"{_THIS_REPO_BLOB}/{'0' * 40}/docs/old.md",  # unknown object
+        f"{_THIS_REPO_BLOB}/{sha}/docs",  # a tree, not a blob
+        f"{_THIS_REPO_BLOB}/{sha}/docs/../docs/old.md",
+        f"{_THIS_REPO_BLOB}/main/docs/old.md",  # branch, not a pinned sha
+    ):
+        assert len(_unresolved(_pinned_findings(repo, source))) == 1, source
+
+
+def test_other_repo_or_non_blob_url_is_p1(tmp_path):
+    repo, sha = _pinned_repo(tmp_path)
+    for source in (
+        f"https://github.com/someone-else/first-passage/blob/{sha}/docs/old.md",
+        f"https://github.com/Joshua-Asante/other-repo/blob/{sha}/docs/old.md",
+        f"https://github.com/Joshua-Asante/first-passage/tree/{sha}/docs/old.md",
+        f"http://github.com/Joshua-Asante/first-passage/blob/{sha}/docs/old.md",
+        "https://example.com/docs/old.md",
+    ):
+        assert len(_unresolved(_pinned_findings(repo, source))) == 1, source
+
+
+def test_pinned_url_is_never_waived_by_public_seed_exclusion(tmp_path):
+    """The docs/notes/ substring waiver applies to local pointers only."""
+    repo, sha = _pinned_repo(tmp_path)
+    source = f"{_THIS_REPO_BLOB}/{sha}/docs/notes/absent.md"
+    assert not ip._is_public_seed_excluded_source(source)
+    assert ip._is_public_seed_excluded_source("../../docs/notes/absent.md")
+    assert len(_unresolved(_pinned_findings(repo, source))) == 1
+
+
+def test_pinned_blob_fails_closed_in_shallow_clone(tmp_path):
+    repo, sha = _pinned_repo(tmp_path)
+    shallow = tmp_path / "shallow"
+    subprocess.run(
+        ["git", "clone", "-q", "--depth", "1", repo.resolve().as_uri(), str(shallow)],
+        capture_output=True, text=True, check=True,
+    )
+    (shallow / "ops" / "instruments").mkdir(parents=True, exist_ok=True)
+    findings = _pinned_findings(shallow, f"{_THIS_REPO_BLOB}/{sha}/docs/old.md")
+    assert len(_unresolved(findings)) == 1
+
+
+def test_pinned_blob_fails_closed_outside_a_git_repo(tmp_path):
+    repo = tmp_path / "plain"
+    (repo / "ops" / "instruments").mkdir(parents=True)
+    findings = _pinned_findings(repo, f"{_THIS_REPO_BLOB}/{'a' * 40}/docs/old.md")
+    assert len(_unresolved(findings)) == 1
+
+
+def test_pinned_extra_and_cost_hurdle_sources_are_verified(tmp_path):
+    repo, sha = _pinned_repo(tmp_path)
+    good = f"{_THIS_REPO_BLOB}/{sha}/docs/old.md"
+    bad = f"{_THIS_REPO_BLOB}/{sha}/docs/absent.md"
+    path = repo / "ops" / "instruments" / "TST.md"
+
+    def prof(src):
+        return ip.Profile(
+            symbol="TST", asset_class="equity-index-futures", family=[],
+            venue_tradable=True, venue_note=None, k_bank_source="x",
+            cost_hurdle={"value": 1, "source": src}, cells=[],
+            bars=[{"id": "b", "source": src}], structure=[{"claim": "c", "source": src}],
+            path=path, lineno=5,
+        )
+
+    mechs = _mechs(repo)
+    assert ip.validate([prof(good)], mechs, repo) == []
+    bad_findings = ip.validate([prof(bad)], mechs, repo)
+    assert len(_unresolved(bad_findings)) == 3  # bars + structure + cost_hurdle
+    assert sum("cost_hurdle.source does not resolve" in f.message for f in bad_findings) == 1

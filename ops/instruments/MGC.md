@@ -27,7 +27,7 @@ cells:
   - mechanism: london-range-failed-extension-fade
     verdict: DEAD
     date: 2026-08-13
-    source: "../../docs/briefs/closures/MSL-C2-closure-falsified.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/MSL-C2-closure-falsified.md"
   - mechanism: expiry-oi-strike-convergence
     verdict: AMBIGUOUS-PARKED
     date: 2026-08-21
