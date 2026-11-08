@@ -18,15 +18,15 @@ cells:
   - mechanism: opening-range-breakout
     verdict: AMBIGUOUS-PARKED
     date: 2026-07-23
-    source: "../../docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md"
   - mechanism: intraday-momentum
     verdict: DEAD
     date: 2026-07-21
-    source: "../../docs/briefs/rnd-pipeline/D5-RECOST-1-mnq-native-cost-law-rescope-scoping.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/rnd-pipeline/D5-RECOST-1-mnq-native-cost-law-rescope-scoping.md"
   - mechanism: opening-pressure
     verdict: DEAD
     date: 2026-07-21
-    source: "../../docs/briefs/closures/OPENPRESS-1-closure-falsified.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/OPENPRESS-1-closure-falsified.md"
 bars:
   - id: index-intraday-ohlcv-directional-timing-2026-07-21
     source: "../../docs/rejected_candidates.md"

@@ -119,28 +119,3 @@ def test_bad_confirmed_base_is_not_an_add(base):
     with pytest.raises(ValueError):
         policy.add_quantity(STRIKER, base, policy=POLICY,
                             mode=Mode.NORMAL, lifecycle_tier="AUTHORIZED")
-
-
-def test_table_requires_explicit_risk_samples_and_retains_them():
-    samples = [policy.StrikerRiskInputs(Fraction(i, 2), Fraction(1), 80)
-               for i in range(1, 444, 2)]
-    rows = policy.quantity_table(POLICY, striker_inputs=samples)
-    for mode, tier, *_ in MODE_ROWS[:6]:
-        selected = [r for r in rows if r.leg_id == STRIKER
-                    and r.mode == mode and r.lifecycle_tier == tier]
-        assert {r.base for r in selected} == set(range(23))
-        for row in selected:
-            assert row.risk_inputs in samples
-            assert (row.base, row.add) == striker(
-                mode=mode, lifecycle_tier=tier,
-                risk_dollars=row.risk_inputs.risk_dollars, per_contract_risk=1)
-    with pytest.raises(TypeError):
-        policy.quantity_table(POLICY)  # pylint: disable=missing-kwoa
-    with pytest.raises(ValueError):
-        policy.quantity_table(POLICY, striker_inputs=[])
-    with pytest.raises(ValueError):
-        policy.quantity_table(POLICY, striker_inputs=[(700, 10, 80)])
-    with pytest.raises(ValueError):
-        policy.quantity_table(POLICY, lifecycle_tiers=[], striker_inputs=samples)
-    menu = policy.reachable_quantity_menu(POLICY, striker_inputs=samples)
-    assert menu[STRIKER] == {"base": set(range(1, 23)), "add": set(ADDS[1:])}

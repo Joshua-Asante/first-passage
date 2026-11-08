@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from c1_rail.book_policy import CapacityError, CapacityLedger, PolicyMismatch, is_protected, scaled_quantity
+from c1_rail.book_policy import PolicyMismatch, is_protected, leg_quantities
 from c1_signal_daemon.book_parity import ExportTrade, PortTrade, compare, load_effective_inputs
 from c1_signal_daemon.book_protocol import Bracket, FillTiming, Mode, OrderIntent, Side
 from c1_signal_daemon.feed import Bar
@@ -45,34 +45,7 @@ def test_policy_outside_the_fixed_instance_halts():
         with pytest.raises(PolicyMismatch):
             is_protected(99_000.0, 100_000.0, bad)
         with pytest.raises(PolicyMismatch):
-            scaled_quantity(8, mode=Mode.PROTECTED, policy=bad)
-
-
-def test_refused_takeover_still_reconciles_broker_truth():
-    led = CapacityLedger()
-    led.request("dj30_mym_p250", 60); led.confirm_fill("dj30_mym_p250", 60)
-    led.request("orb_mnq_v7", 3); led.confirm_fill("orb_mnq_v7", 3)
-    led.request("vanguard_mgc", 2)                                        # a resting reservation
-    d = led.request("aegis_6j", 3)
-    t = led.begin_takeover(d.takeover)
-    t.ack_cancel("orb_mnq_v7"); t.confirm_close("orb_mnq_v7", 0)
-    t.ack_cancel("vanguard_mgc")                                          # cancel acked, nothing held
-    t.ack_cancel("dj30_mym_p250"); t.confirm_close("dj30_mym_p250", 5)   # partial -> refused
-    res = led.settle_takeover()
-    assert not res.admitted and led.reserved.get("aegis_6j", 0) == 0
-    assert led.confirmed["orb_mnq_v7"] == 0                               # confirmed flat is kept
-    assert led.confirmed["dj30_mym_p250"] == 5                            # broker-reported partial is kept
-    assert led.reserved.get("vanguard_mgc", 0) == 0                       # acked cancel released it
-    assert led.micro_used() == 5
-
-
-def test_release_reservation_rejects_non_positive():
-    led = CapacityLedger()
-    led.request("vanguard_mgc", 2)
-    for bad in (-1, 0, 1.5):
-        with pytest.raises(CapacityError):
-            led.release_reservation("vanguard_mgc", bad)
-    assert led.reserved["vanguard_mgc"] == 2
+            leg_quantities("aegis_6j", 8, mode=Mode.PROTECTED, policy=bad)
 
 
 # ── emulator ─────────────────────────────────────────────────────────────
@@ -165,36 +138,17 @@ def test_pending_stop_snaps_with_pine_tie_breaking():
 
 
 def test_serialized_mode_values_are_honoured_and_junk_is_rejected():
-    from book_policy import as_mode, candidate_book_protection_policy, leg_quantities, transition_cancels
+    from c1_rail.book_policy import as_mode, candidate_book_protection_policy
     pol = candidate_book_protection_policy()
-    assert scaled_quantity(8, mode="protected", policy=pol) == 3
+    assert leg_quantities("aegis_6j", 8, mode="protected", policy=pol) == (3, 0)
     assert leg_quantities("orb_mnq_v7", 1, mode="protected", policy=pol) == (1, 0)
-    assert transition_cancels("normal", "protected", ["x"]) == ["x"]
     assert as_mode("normal") is Mode.NORMAL
     for junk in ("PROTECTED", "off", None, 1):
         with pytest.raises(ValueError):
-            scaled_quantity(8, mode=junk, policy=pol)
+            leg_quantities("aegis_6j", 8, mode=junk, policy=pol)
 
 
 # ── round 3 (2026-09-12 16:23) — final bounded pass ─────────────────────
-
-def test_displaced_leg_fill_during_takeover_refuses_it():
-    led = CapacityLedger()
-    led.request("orb_mnq_v7", 3); led.confirm_fill("orb_mnq_v7", 3)
-    led.request("dj30_mym_p250", 75)                         # pending, would be displaced
-    led.confirm_fill("dj30_mym_p250", 70)
-    d = led.request("aegis_6j", 2)
-    t = led.begin_takeover(d.takeover)
-    for l in d.takeover.displaced:
-        t.ack_cancel(l); t.confirm_close(l, 0)
-    assert t.complete()
-    led.confirm_fill("dj30_mym_p250", 5)                     # the race: a fill lands after the flat ack
-    assert t.state == "refused" and not t.complete()
-    res = led.settle_takeover()
-    assert not res.admitted and led.reserved.get("aegis_6j", 0) == 0
-    assert led.confirmed["dj30_mym_p250"] == 75              # broker truth kept (70 earlier + 5)
-    assert led.micro_used() <= 80
-
 
 def test_close_quantity_must_be_none_or_positive_int():
     for bad in (0, -1, 1.5, True):
@@ -232,24 +186,6 @@ def test_marketable_next_open_stop_in_an_oca_group_is_out_of_scope():
     e = emu()
     with pytest.raises(NotImplementedError):
         e.submit([entry("l", order_type="stop", price=105.0, oca="G")], bar(0, 100, 111, 99, 110))
-
-
-@pytest.mark.parametrize("latest_position", [5, 0])
-def test_takeover_settlement_preserves_latest_position_report(latest_position):
-    led = CapacityLedger()
-    led.request("dj30_mym_p250", 77)
-    led.confirm_fill("dj30_mym_p250", 77)
-    t = led.begin_takeover(led.request("aegis_6j", 8).takeover)
-    t.ack_cancel("dj30_mym_p250")
-    t.confirm_close("dj30_mym_p250", 0)
-    led.confirm_position("dj30_mym_p250", 5)
-    assert t.state == "refused"
-    if latest_position == 0:
-        # A later flat report after refusal must also replace the cached position.
-        led.confirm_position("dj30_mym_p250", 0)
-    assert not led.settle_takeover().admitted
-    assert led.confirmed["dj30_mym_p250"] == latest_position
-    assert led.request("aegis_6j", 8).admitted is (latest_position == 0)
 
 
 def test_parity_cli_fails_when_panel_has_no_comparable_trades(monkeypatch, capsys):

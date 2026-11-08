@@ -1,4 +1,4 @@
-"""Tradeify fixed-book protection, capacity and sizing rules — Track B.
+"""Tradeify fixed-book protection and sizing law for offline replay — Track B.
 
 Owner of the values: docs/notes/2026-09-10-tradeify-protection-selection.md
 (the operator-accepted book and policy) and the Track B umbrella
@@ -25,12 +25,6 @@ Rules (each with the selection-note / umbrella sentence it implements):
   disabled below AUTHORIZED. Adds derive from confirmed base with per-leg
   rounding. ORB base stays one micro and protected adds are refused. Call-4
   remains off-rail. Candidate calculations do not admit or deploy the policy.
-* Carried positions (TB-S1 (D)): a position open at a transition keeps its
-  size; never a resize order; resting ORB adds are cancelled on activation.
-* Capacity (TB-S1 (E), D-B8): micro-equivalents 6J=10, MGC/MYM/MNQ=1; the
-  account cap (80) counts confirmed positions plus reservations; refuse, never
-  clip; only the top-priority leg (Aegis) may displace lower-priority whole
-  legs, lowest first, through an atomic fail-closed takeover.
 * No policy -> halt (TB-S1 (A)): nothing here defaults a trigger or scale.
 
 Integer arithmetic uses exact rationals so the D-B10 floor can never be
@@ -39,16 +33,13 @@ moved by a binary64 product (the #332 hazard).
 from __future__ import annotations
 
 import math
-import re
 import sys
-from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
 from enum import Enum
 from fractions import Fraction
 from pathlib import Path
-from typing import Iterable
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 for _p in (str(_REPO_ROOT / "core"), str(_REPO_ROOT / "ops")):
@@ -115,39 +106,6 @@ def require_policy(policy: ProtectionPolicy | None) -> ProtectionPolicy:
             f"policy ({policy.reference_mode}, trigger={policy.trigger}, scale={policy.scale}) "
             f"is not the fixed book instance (trailing, {CANDIDATE_TRIGGER}, {CANDIDATE_SCALE}); halting")
     return policy
-
-
-
-@dataclass(frozen=True)
-class PersonalP0Policy:
-    """Named personal instance: NORMAL sizing plus the separate running-peak halt."""
-    tier: str = "Personal_Tradovate"
-
-
-def require_personal_p0(policy) -> PersonalP0Policy:
-    """P0 is explicit and personal only; it is never a ProtectionPolicy surrogate."""
-    if type(policy) is not PersonalP0Policy:
-        raise PolicyAbsent("an explicit PersonalP0Policy is required")
-    if policy.tier != "Personal_Tradovate":
-        raise PolicyMismatch("P0 requires the Personal_Tradovate instance")
-    return policy
-
-
-def account_micro_cap(tier: str) -> int:
-    """Resolve the public tier cap without coercion or an unbounded fallback."""
-    cap = FIRM_RULES[tier]["micro_contract_cap"]
-    if type(cap) is not int or cap <= 0:
-        raise ValueError("account micro cap must be a positive integer")
-    return cap
-
-
-def _quantity_policy(policy, mode):
-    if isinstance(policy, PersonalP0Policy):
-        require_personal_p0(policy)
-        if as_mode(mode) is not Mode.NORMAL:
-            raise PolicyMismatch("personal P0 never enters PROTECTED")
-        return policy
-    return require_policy(policy)
 
 
 def drawdown_from_peak(equity: float, peak: float) -> float:
@@ -243,233 +201,6 @@ def leg(leg_id: str) -> LegSpec:
         raise KeyError(f"unknown leg_id {leg_id!r}; fixed book: {sorted(LEG_BY_ID)}") from None
 
 
-# ── successor size vector ────────────────────────────────────────────────
-# T00 successor build card 2026-10-10 (S-1, S-2, S-5, §2.3). A per-leg size
-# carried beside the fixed policy, never inside it: `require_policy` and the
-# protection cell are unchanged. `size=None` is today's quantity, and every
-# form can only lower it. The live rail passes no size.
-
-class AddsRule(str, Enum):
-    UNCHANGED = "UNCHANGED"                      # today's add rule
-    OFF_WHEN_PROTECTED = "OFF_WHEN_PROTECTED"    # no add on a PROTECTED day
-    OFF = "OFF"                                  # no add
-
-
-_RATIONAL = re.compile(r"(0|[1-9][0-9]*)/([1-9][0-9]*)")
-_SIZE_FIELDS: dict[str, tuple[str, ...]] = {
-    "aegis_6j": ("base", "adds"),
-    "dj30_mym_p250": ("risk_multiplier", "cap_reserve_multiplier", "max_base", "adds"),
-    "vanguard_mgc": ("base_by_port", "adds"),
-    "orb_mnq_v7": ("base", "adds"),
-}
-
-
-def _int_in(value: object, low: int, high: int, name: str) -> int:
-    if type(value) is not int or not low <= value <= high:
-        raise ValueError(f"{name} must be an integer in {low}..{high}, got {value!r}")
-    return value
-
-
-def _unit_rational(text: object, name: str) -> Fraction:
-    """An ``"n/d"`` string in [0, 1]; never a float or a decimal string."""
-    match = _RATIONAL.fullmatch(text) if type(text) is str else None
-    if match is None:
-        raise ValueError(f"{name} must be an 'n/d' string, got {text!r}")
-    value = Fraction(int(match[1]), int(match[2]))
-    if value > 1:
-        raise ValueError(f"{name} must be in [0, 1], got {text!r}")
-    return value
-
-
-@dataclass(frozen=True)
-class LegSize:
-    """One leg's size. Fields the leg does not use stay None (`_SIZE_FIELDS`).
-
-    Aegis and ORB: ``base`` (0..8, 0..1). Striker: ``risk_multiplier`` and
-    ``cap_reserve_multiplier`` in [0, 1], optional ``max_base`` 0..22. Vanguard:
-    ``base_by_port`` ((1, 0..1), (2, 0..2)). Construction refuses any value
-    above today's; `validate_size_vector` adds the canonical-encoding rules.
-    """
-    leg_id: str
-    base: int | None = None
-    risk_multiplier: str | None = None
-    cap_reserve_multiplier: str | None = None
-    max_base: int | None = None
-    base_by_port: tuple[tuple[int, int], ...] | None = None
-    adds: AddsRule = AddsRule.UNCHANGED
-
-    def __post_init__(self) -> None:
-        spec = leg(self.leg_id)
-        if not isinstance(self.adds, AddsRule):
-            raise ValueError(f"{self.leg_id}: adds must be an AddsRule, got {self.adds!r}")
-        for name in ("base", "risk_multiplier", "cap_reserve_multiplier", "max_base", "base_by_port"):
-            if name not in _SIZE_FIELDS[self.leg_id] and getattr(self, name) is not None:
-                raise ValueError(f"{self.leg_id}: {name} is not a size field of this leg")
-        if self.leg_id == "dj30_mym_p250":
-            _unit_rational(self.risk_multiplier, "risk_multiplier")
-            _unit_rational(self.cap_reserve_multiplier, "cap_reserve_multiplier")
-            if self.max_base is not None:
-                _int_in(self.max_base, 0, max(spec.normal_base_values), "max_base")
-        elif self.leg_id == "vanguard_mgc":
-            ports = self.base_by_port
-            if (type(ports) is not tuple
-                    or [p[0] if type(p) is tuple and len(p) == 2 and type(p[0]) is int else None
-                        for p in ports] != list(spec.normal_base_values)):
-                raise ValueError("vanguard_mgc base_by_port must be ((1, size), (2, size))")
-            for port, size in ports:
-                _int_in(size, 0, port, f"vanguard_mgc base_by_port[{port}]")
-        else:
-            _int_in(self.base, 0, spec.normal_base_values[0], f"{self.leg_id} base")
-
-    def as_mapping(self) -> dict:
-        """This leg's entry in the startup policy's ``sizing`` mapping."""
-        out: dict = {}
-        for name in _SIZE_FIELDS[self.leg_id]:
-            value = getattr(self, name)
-            if name == "adds":
-                value = value.value
-            elif name == "base_by_port":
-                value = {str(port): size for port, size in value}
-            elif name == "max_base" and value is None:
-                continue
-            out[name] = value
-        return out
-
-
-def _identity_ladder(leg_id: str) -> list[dict]:
-    """Inputs that witness every Striker form: each risk ratio 1..23 at the full
-    allocation and each allocation at ratio 23. A risk multiplier below one lowers
-    ratio 1, a cap multiplier below one lowers allocation 7, and a max_base below
-    22 lowers ratio 23 at allocation 80."""
-    if leg_id == "dj30_mym_p250":
-        cap = ACCOUNT_MICRO_CAP
-        return ([dict(risk_dollars=r, per_contract_risk=1, cap_alloc=cap) for r in range(1, 24)]
-                + [dict(risk_dollars=23, per_contract_risk=1, cap_alloc=a) for a in range(cap)])
-    if leg_id == "vanguard_mgc":
-        return [dict(normal_base=q) for q in LEG_BY_ID[leg_id].normal_base_values]
-    return [{}]
-
-
-@dataclass(frozen=True)
-class SizeVector:
-    legs: tuple[LegSize, ...]          # one per fixed-book leg, in BOOK_LEGS order
-
-    def __post_init__(self) -> None:
-        if (type(self.legs) is not tuple or not all(isinstance(x, LegSize) for x in self.legs)
-                or tuple(x.leg_id for x in self.legs) != tuple(LEG_BY_ID)):
-            raise ValueError("a SizeVector holds one LegSize per fixed-book leg, in book order")
-
-    def leg(self, leg_id: str) -> LegSize:
-        for size in self.legs:
-            if size.leg_id == leg_id:
-                return size
-        leg(leg_id)                                  # raises: unknown or retired
-        raise KeyError(leg_id)
-
-    def as_mapping(self) -> dict:
-        return {size.leg_id: size.as_mapping() for size in self.legs}
-
-    @property
-    def is_identity(self) -> bool:
-        """Today's quantities for every leg x mode x tier x ladder input, whatever the encoding (S-5)."""
-        policy = candidate_book_protection_policy()
-        for size in self.legs:
-            spec = LEG_BY_ID[size.leg_id]
-            for tier in TIER_MULTIPLIER:
-                for mode in (Mode.NORMAL, Mode.PROTECTED):
-                    common = dict(mode=mode, policy=policy, lifecycle_tier=tier)
-                    if any(entry_quantities(spec.leg_id, size=size, **common, **inputs)
-                           != entry_quantities(spec.leg_id, **common, **inputs)
-                           for inputs in _identity_ladder(spec.leg_id)):
-                        return False
-                    if any(add_quantity(spec.leg_id, b, size=size, **common)
-                           != add_quantity(spec.leg_id, b, **common)
-                           for b in range(max(spec.normal_base_values) + 1)):
-                        return False
-        return True
-
-
-def _require_canonical(size: LegSize) -> None:
-    """S-5: one vector, one encoding; a field that cannot change any quantity is refused."""
-    spec = LEG_BY_ID[size.leg_id]
-
-    def refuse(why: str) -> None:
-        raise ValueError(f"{size.leg_id}: non-canonical sizing: {why}")
-    if size.leg_id == "dj30_mym_p250":
-        m, c = Fraction(size.risk_multiplier), Fraction(size.cap_reserve_multiplier)
-        for text, value in ((size.risk_multiplier, m), (size.cap_reserve_multiplier, c)):
-            if text != f"{value.numerator}/{value.denominator}":
-                refuse(f"{text!r} is not a reduced fraction")
-        reserve = 1 + Fraction(spec.add_pct, 100)
-        ceiling = math.inf if size.max_base is None else size.max_base
-        # c acts only through min(floor(a * c / reserve), max_base) for allocations
-        # a = 1..80; the smallest c giving that table is its one encoding.
-        smallest = max(min(math.floor(a * c / reserve), ceiling) * reserve / a
-                       for a in range(1, ACCOUNT_MICRO_CAP + 1))
-        off = m == 0 or smallest == 0
-        if off and (m, c, size.max_base) != (0, 0, None):
-            refuse("an off Striker leg is risk 0/1, cap 0/1 and no max_base")
-        if c != smallest:
-            refuse(f"cap_reserve_multiplier {size.cap_reserve_multiplier} gives the same cap terms as "
-                   f"{smallest.numerator}/{smallest.denominator}; use the smallest")
-        cap_reach = math.floor(ACCOUNT_MICRO_CAP * c / reserve)
-        if size.max_base is not None and size.max_base >= cap_reach:
-            refuse(f"max_base {size.max_base} can never undercut the cap term (at most {cap_reach})")
-    elif size.leg_id == "vanguard_mgc":
-        off = all(s == 0 for _, s in size.base_by_port)
-    else:
-        off = size.base == 0
-    if size.adds is not AddsRule.UNCHANGED:
-        if spec.max_adds == 0:
-            refuse("a leg without adds keeps adds UNCHANGED")
-        if off:
-            refuse("an off leg keeps adds UNCHANGED")
-        if size.adds is AddsRule.OFF_WHEN_PROTECTED and size.leg_id in ("vanguard_mgc", "orb_mnq_v7"):
-            refuse("OFF_WHEN_PROTECTED is already this leg's rule")
-
-
-def validate_size_vector(mapping: object) -> SizeVector:
-    """The startup policy's ``sizing`` mapping -> SizeVector, canonical encoding only."""
-    if not isinstance(mapping, Mapping) or set(mapping) != set(LEG_BY_ID):
-        raise ValueError(f"sizing must map exactly the fixed-book legs {sorted(LEG_BY_ID)}")
-    legs = []
-    for spec in BOOK_LEGS:
-        entry = mapping[spec.leg_id]
-        allowed = set(_SIZE_FIELDS[spec.leg_id])
-        if not isinstance(entry, Mapping) or not allowed - {"max_base"} <= set(entry) <= allowed:
-            raise ValueError(f"{spec.leg_id}: sizing fields must be {sorted(allowed)} "
-                             "(max_base optional, Striker only)")
-        fields = dict(entry)
-        if type(fields["adds"]) is not str or fields["adds"] not in AddsRule.__members__:
-            raise ValueError(f"{spec.leg_id}: adds must be one of {list(AddsRule.__members__)}")
-        fields["adds"] = AddsRule(fields["adds"])
-        if "max_base" in fields and fields["max_base"] is None:
-            raise ValueError("max_base, when present, must be an integer")
-        if "base_by_port" in fields:
-            ports = fields["base_by_port"]
-            if not isinstance(ports, Mapping) or set(ports) != {"1", "2"}:
-                raise ValueError("vanguard_mgc base_by_port must map exactly '1' and '2'")
-            fields["base_by_port"] = ((1, ports["1"]), (2, ports["2"]))
-        size = LegSize(spec.leg_id, **fields)
-        _require_canonical(size)
-        legs.append(size)
-    return SizeVector(tuple(legs))
-
-
-IDENTITY_SIZE_VECTOR = validate_size_vector({
-    "aegis_6j": {"base": 8, "adds": "UNCHANGED"},
-    "dj30_mym_p250": {"risk_multiplier": "1/1", "cap_reserve_multiplier": "1/1", "adds": "UNCHANGED"},
-    "vanguard_mgc": {"base_by_port": {"1": 1, "2": 2}, "adds": "UNCHANGED"},
-    "orb_mnq_v7": {"base": 1, "adds": "UNCHANGED"},
-})
-
-
-def _leg_size(size: LegSize | None, leg_id: str) -> LegSize | None:
-    if size is not None and (not isinstance(size, LegSize) or size.leg_id != leg_id):
-        raise ValueError(f"{leg_id}: size must be this leg's LegSize or None, got {size!r}")
-    return size
-
-
 # ── quantities ───────────────────────────────────────────────────────────
 
 def as_mode(mode) -> Mode:
@@ -488,19 +219,6 @@ def lifecycle_multiplier(tier: str) -> Fraction:
     return Fraction(str(TIER_MULTIPLIER[tier]))
 
 
-def scaled_quantity(normal_qty: int, *, mode: Mode, policy: ProtectionPolicy | None,
-                    lifecycle_tier: str = "AUTHORIZED") -> int:
-    """D-B10: floor(normal x scale x lifecycle), exact rationals, never a float floor."""
-    policy = _quantity_policy(policy, mode)
-    mode = as_mode(mode)
-    if type(normal_qty) is not int or normal_qty < 0:
-        raise ValueError(f"normal_qty must be a non-negative int, got {normal_qty!r}")
-    scale = Fraction(CANDIDATE_SCALE) if mode is Mode.PROTECTED else Fraction(1)
-    if mode is Mode.PROTECTED and Fraction(str(policy.scale)) != scale:
-        raise ValueError(f"policy scale {policy.scale} is not the fixed {CANDIDATE_SCALE}")
-    return int(math.floor(Fraction(normal_qty) * scale * lifecycle_multiplier(lifecycle_tier)))
-
-
 def _positive_risk(value: object, field_name: str) -> Fraction:
     """Preserve rational/decimal inputs; reject bool, strings and nonfinite data."""
     if isinstance(value, bool) or not isinstance(value, (int, float, Fraction, Decimal)):
@@ -515,28 +233,22 @@ def _positive_risk(value: object, field_name: str) -> Fraction:
 
 
 def add_quantity(leg_id: str, confirmed_base: int, *, mode: Mode,
-                 policy: ProtectionPolicy | None, lifecycle_tier: str,
-                 size: LegSize | None = None) -> int:
+                 policy: ProtectionPolicy | None, lifecycle_tier: str) -> int:
     """Per-tier add from confirmed base, never from intended or normal add size.
 
     The caller must obtain base evidence from the execution owner; this pure
     function neither verifies broker evidence nor reserves account capacity.
     A nonzero lifecycle haircut has already affected the executed base and
     must not be applied a second time. Current zero-authorization/mode gates
-    still refuse new adds without resizing the carried base. ``size.adds``
-    can only refuse an add today's rule places.
+    still refuse new adds without resizing the carried base.
     """
     spec = leg(leg_id)
-    _quantity_policy(policy, mode)
+    require_policy(policy)
     mode = as_mode(mode)
-    size = _leg_size(size, leg_id)
     multiplier = lifecycle_multiplier(lifecycle_tier)
     if type(confirmed_base) is not int or not 0 <= confirmed_base <= max(spec.normal_base_values):
         raise ValueError(f"{leg_id}: invalid confirmed base {confirmed_base!r}")
     if confirmed_base == 0 or multiplier == 0 or spec.max_adds == 0:
-        return 0
-    if size is not None and (size.adds is AddsRule.OFF or (
-            size.adds is AddsRule.OFF_WHEN_PROTECTED and mode is Mode.PROTECTED)):
         return 0
     if leg_id in {"vanguard_mgc", "orb_mnq_v7"}:
         if lifecycle_tier != "AUTHORIZED" or mode is Mode.PROTECTED:
@@ -547,19 +259,17 @@ def add_quantity(leg_id: str, confirmed_base: int, *, mode: Mode,
 def entry_quantities(leg_id: str, *, mode: Mode, policy: ProtectionPolicy | None,
                      lifecycle_tier: str, normal_base: int | None = None,
                      risk_dollars: object = None, per_contract_risk: object = None,
-                     cap_alloc: int | None = None, size: LegSize | None = None) -> tuple[int, int]:
+                     cap_alloc: int | None = None) -> tuple[int, int]:
     """Requested base and prospective add *assuming a complete base fill*.
 
     Striker requires unscaled risk dollars, per-contract risk and an explicit
     allocation. A rounded normal quantity cannot recover those inputs. For
     an actual add, call add_quantity with the confirmed base instead of using
-    this prospective tuple. All outputs still require capacity admission.
-    ``size`` replaces each leg's normal quantity with its own (S-2); None is today's.
+    this prospective tuple.
     """
     spec = leg(leg_id)
-    _quantity_policy(policy, mode)
+    require_policy(policy)
     mode = as_mode(mode)
-    size = _leg_size(size, leg_id)
     lifecycle = lifecycle_multiplier(lifecycle_tier)
     scale = Fraction(CANDIDATE_SCALE) if mode is Mode.PROTECTED else Fraction(1)
     if leg_id == "dj30_mym_p250":
@@ -567,31 +277,23 @@ def entry_quantities(leg_id: str, *, mode: Mode, policy: ProtectionPolicy | None
             raise ValueError("Striker normal_base diagnostic must be an integer in 0..22")
         risk = _positive_risk(risk_dollars, "risk_dollars")
         denominator = _positive_risk(per_contract_risk, "per_contract_risk")
-        cap = account_micro_cap(policy.tier) if isinstance(policy, PersonalP0Policy) else ACCOUNT_MICRO_CAP
-        if type(cap_alloc) is not int or not 0 <= cap_alloc <= cap:
+        if type(cap_alloc) is not int or not 0 <= cap_alloc <= ACCOUNT_MICRO_CAP:
             raise ValueError("cap_alloc must be an explicit integer within the account cap")
         risk_term = risk * scale * lifecycle / denominator
         cap_term = Fraction(cap_alloc) / (1 + Fraction(spec.add_pct, 100))
-        if size is not None:
-            risk_term *= Fraction(size.risk_multiplier)
-            cap_term *= Fraction(size.cap_reserve_multiplier)
         base = min(math.floor(risk_term), math.floor(cap_term))
-        if size is not None and size.max_base is not None:
-            base = min(base, size.max_base)
     elif leg_id == "vanguard_mgc":
         if type(normal_base) is not int or normal_base not in spec.normal_base_values:
             raise ValueError("vanguard_mgc requires normal_base 1 or 2")
-        sized_base = normal_base if size is None else dict(size.base_by_port)[normal_base]
-        base = math.floor(sized_base * scale) if lifecycle_tier == "AUTHORIZED" else 0
+        base = math.floor(normal_base * scale) if lifecycle_tier == "AUTHORIZED" else 0
     else:
         fixed_base = spec.normal_base_values[0]
         if normal_base is not None and (type(normal_base) is not int or normal_base != fixed_base):
             raise ValueError(f"{leg_id}: normal_base must equal fixed quantity {fixed_base}")
-        sized_base = fixed_base if size is None else size.base
         applied_scale = Fraction(1) if leg_id == "orb_mnq_v7" else scale
-        base = math.floor(sized_base * applied_scale * lifecycle)
+        base = math.floor(fixed_base * applied_scale * lifecycle)
     return base, add_quantity(leg_id, base, mode=mode, policy=policy,
-                              lifecycle_tier=lifecycle_tier, size=size)
+                              lifecycle_tier=lifecycle_tier)
 
 
 def leg_quantities(leg_id: str, normal_base: int, *, mode: Mode, policy: ProtectionPolicy | None,
@@ -608,83 +310,6 @@ def leg_quantities(leg_id: str, normal_base: int, *, mode: Mode, policy: Protect
     return entry_quantities(leg_id, normal_base=normal_base, mode=mode, policy=policy,
                             lifecycle_tier=lifecycle_tier, risk_dollars=risk_dollars,
                             per_contract_risk=per_contract_risk, cap_alloc=cap_alloc)
-
-
-@dataclass(frozen=True)
-class StrikerRiskInputs:
-    """Explicit input witness for an offline quantity table, not broker evidence."""
-    risk_dollars: Fraction
-    per_contract_risk: Fraction
-    cap_alloc: int
-
-
-@dataclass(frozen=True)
-class QuantityRow:
-    leg_id: str
-    normal_base: int
-    normal_add: int
-    lifecycle_tier: str
-    mode: Mode
-    base: int
-    add: int
-    risk_inputs: StrikerRiskInputs | None = None
-
-
-def quantity_table(policy: ProtectionPolicy | None,
-                   lifecycle_tiers: Iterable[str] = ("AUTHORIZED", "WATCH-1", "WATCH-2"),
-                   *, striker_inputs: Iterable[StrikerRiskInputs]
-                   ) -> list[QuantityRow]:
-    """Evaluate supplied risk samples and fixed/quantity legs at each tier/mode.
-
-    Keep each Striker witness with its row: the same normal integer may map
-    to different protected quantities. Coverage of these samples is the
-    caller's obligation; no private export parity is implied by this table.
-    """
-    policy = require_policy(policy)
-    tiers = tuple(lifecycle_tiers)
-    if not tiers:
-        raise ValueError("lifecycle_tiers must not be empty")
-    for tier in tiers:
-        lifecycle_multiplier(tier)
-    inputs = tuple(striker_inputs)
-    if not inputs or any(not isinstance(item, StrikerRiskInputs) for item in inputs):
-        raise ValueError("striker_inputs requires explicit StrikerRiskInputs samples")
-    rows: list[QuantityRow] = []
-    for spec in BOOK_LEGS:
-        samples = [(nb, None) for nb in spec.normal_base_values]
-        if spec.leg_id == "dj30_mym_p250":
-            samples = []
-            for item in inputs:
-                nb, _ = entry_quantities(spec.leg_id, mode=Mode.NORMAL, policy=policy,
-                                          lifecycle_tier="AUTHORIZED",
-                                          risk_dollars=item.risk_dollars,
-                                          per_contract_risk=item.per_contract_risk,
-                                          cap_alloc=item.cap_alloc)
-                samples.append((nb, item))
-        for nb, item in samples:
-            for tier in tiers:
-                for mode in (Mode.NORMAL, Mode.PROTECTED):
-                    b, a = entry_quantities(
-                        spec.leg_id, normal_base=nb, mode=mode, policy=policy,
-                        lifecycle_tier=tier, risk_dollars=item.risk_dollars if item else None,
-                        per_contract_risk=item.per_contract_risk if item else None,
-                        cap_alloc=item.cap_alloc if item else None)
-                    rows.append(QuantityRow(spec.leg_id, nb, spec.normal_add(nb),
-                                            tier, mode, b, a, item))
-    return rows
-
-
-def reachable_quantity_menu(policy: ProtectionPolicy | None, *,
-                            striker_inputs: Iterable[StrikerRiskInputs]) -> dict[str, dict[str, set[int]]]:
-    """Distinct quantities witnessed by supplied inputs; not a complete reachability proof."""
-    menu: dict[str, dict[str, set[int]]] = {}
-    for row in quantity_table(policy, striker_inputs=striker_inputs):
-        kinds = menu.setdefault(row.leg_id, {"base": set(), "add": set()})
-        if row.base > 0:
-            kinds["base"].add(row.base)
-        if row.base > 0 and row.add > 0:
-            kinds["add"].add(row.add)
-    return menu
 
 
 # ── timing: prior-close mode selection ───────────────────────────────────
@@ -747,272 +372,6 @@ class BookProtectionClock:
                 "last_settled_date": (self.last_settled_date.isoformat()
                                       if self.last_settled_date else None),
                 "mode_next": self._mode_next.value}
-
-
-# ── carried positions ─────────────────────────────────────────────────────
-
-def transition_cancels(previous: Mode, new: Mode, resting_orb_adds: Iterable[str]) -> list[str]:
-    """TB-S1 (D): entering PROTECTED cancels resting ORB adds; nothing is ever resized."""
-    previous, new = as_mode(previous), as_mode(new)
-    if previous is not Mode.PROTECTED and new is Mode.PROTECTED:
-        return list(resting_orb_adds)
-    return []
-
-
-# ── capacity ─────────────────────────────────────────────────────────────
-
-class CapacityError(RuntimeError):
-    pass
-
-
-@dataclass(frozen=True)
-class TakeoverPlan:
-    requester: str
-    contracts: int
-    displaced: tuple[str, ...]      # lowest priority first, whole legs
-
-
-@dataclass(frozen=True)
-class CapacityDecision:
-    admitted: bool
-    reason: str
-    micro_used_before: int
-    micro_requested: int
-    takeover: TakeoverPlan | None = None
-
-
-@dataclass
-class Takeover:
-    """Atomic, fail-closed priority takeover (TB-S1 (E), TB-S3 (E), D-B8).
-
-    Sequence per displaced leg: cancel pending -> broker cancel ack -> close
-    -> broker-confirmed ZERO position. Only when every displaced leg is acked
-    and confirmed flat does the ledger reconcile and admit the requester. Any
-    unacked cancel, partial/rejected/unknown/timed-out close refuses the
-    requester; the ledger never admits an order that could exceed the cap if a
-    displaced order later fills.
-    """
-
-    plan: TakeoverPlan
-    state: str = "pending"            # pending | admitted | refused
-    cancel_acked: set[str] = field(default_factory=set)
-    closed_confirmed: set[str] = field(default_factory=set)
-    confirmed_positions: dict[str, int] = field(default_factory=dict)   # every broker-reported position
-    events: list[dict] = field(default_factory=list)
-    refuse_reason: str | None = None
-
-    def _event(self, kind: str, **detail) -> None:
-        self.events.append({"kind": kind, "requester": self.plan.requester, **detail})
-
-    def ack_cancel(self, leg_id: str) -> None:
-        self._require_pending()
-        self._require_displaced(leg_id)
-        self.cancel_acked.add(leg_id)
-        self._event("capacity_takeover_cancel_ack", leg_id=leg_id)
-
-    def confirm_close(self, leg_id: str, confirmed_position: int) -> None:
-        self._require_pending()
-        self._require_displaced(leg_id)
-        if confirmed_position < 0:
-            raise CapacityError("confirmed position must be >= 0")
-        self.confirmed_positions[leg_id] = confirmed_position   # broker truth is kept even on refusal
-        if leg_id not in self.cancel_acked:
-            self.fail(leg_id, "close reported before the leg's cancel was acknowledged")
-            return
-        if confirmed_position != 0:
-            self.fail(leg_id, f"close not flat: broker-confirmed position {confirmed_position}")
-            return
-        self.closed_confirmed.add(leg_id)
-        self._event("capacity_takeover_close_confirmed", leg_id=leg_id)
-
-    def fail(self, leg_id: str, reason: str) -> None:
-        self._require_pending()
-        self.state = "refused"
-        self.refuse_reason = f"{leg_id}: {reason}"
-        self._event("capacity_takeover_refused", leg_id=leg_id, reason=reason)
-
-    def complete(self) -> bool:
-        return (self.state == "pending"
-                and set(self.plan.displaced) <= self.cancel_acked
-                and set(self.plan.displaced) <= self.closed_confirmed)
-
-    def _require_pending(self) -> None:
-        if self.state != "pending":
-            raise CapacityError(f"takeover already {self.state}")
-
-    def _require_displaced(self, leg_id: str) -> None:
-        if leg_id not in self.plan.displaced:
-            raise CapacityError(f"{leg_id!r} is not a displaced leg of this takeover")
-
-
-@dataclass
-class CapacityLedger:
-    """In-memory offline compatibility ledger; not durable or operation-aware.
-
-    Production owner event accounting lives in book_capacity; persistence and
-    verified broker evidence remain TB-I3 responsibilities.
-    """
-
-    cap: int = ACCOUNT_MICRO_CAP
-    confirmed: dict[str, int] = field(default_factory=dict)   # leg_id -> contracts
-    reserved: dict[str, int] = field(default_factory=dict)    # leg_id -> contracts
-    events: list[dict] = field(default_factory=list)
-    _takeover: Takeover | None = field(default=None, init=False)
-
-    # -- accounting -------------------------------------------------------
-    @staticmethod
-    def micro_of(leg_id: str, contracts: int) -> int:
-        return leg(leg_id).micro_equiv * contracts
-
-    def leg_micro(self, leg_id: str) -> int:
-        return self.micro_of(leg_id, self.confirmed.get(leg_id, 0) + self.reserved.get(leg_id, 0))
-
-    def micro_used(self) -> int:
-        return sum(self.leg_micro(l) for l in set(self.confirmed) | set(self.reserved))
-
-    def _event(self, kind: str, **detail) -> None:
-        self.events.append({"kind": kind, **detail})
-
-    # -- requests ---------------------------------------------------------
-    def request(self, leg_id: str, contracts: int) -> CapacityDecision:
-        spec = leg(leg_id)
-        if not isinstance(contracts, int) or contracts <= 0:
-            raise CapacityError(f"contracts must be a positive int, got {contracts!r}")
-        if self._takeover is not None and self._takeover.state == "pending":
-            return CapacityDecision(False, "takeover in progress", self.micro_used(),
-                                    self.micro_of(leg_id, contracts))
-        used = self.micro_used()
-        need = self.micro_of(leg_id, contracts)
-        if used + need <= self.cap:
-            self.reserved[leg_id] = self.reserved.get(leg_id, 0) + contracts
-            self._event("capacity_reserved", leg_id=leg_id, contracts=contracts,
-                        micro_used=self.micro_used())
-            return CapacityDecision(True, "within cap", used, need)
-        # Refuse, never clip. Only the top-priority leg may displace.
-        if spec.priority != 1:
-            self._event("capacity_refused", leg_id=leg_id, contracts=contracts,
-                        micro_used=used, micro_requested=need)
-            return CapacityDecision(False, "would exceed the account cap; refused (not clipped)",
-                                    used, need)
-        # Displace whole lower-priority legs from the lowest priority upward.
-        displaced: list[str] = []
-        freed = 0
-        for other in sorted(BOOK_LEGS, key=lambda s: -s.priority):
-            if other.priority <= spec.priority:
-                continue
-            held = self.leg_micro(other.leg_id)
-            if held == 0:
-                continue
-            if used - freed + need <= self.cap:
-                break
-            displaced.append(other.leg_id)
-            freed += held
-        if used - freed + need > self.cap:
-            self._event("capacity_refused", leg_id=leg_id, contracts=contracts,
-                        micro_used=used, micro_requested=need, reason="cap unreachable")
-            return CapacityDecision(False, "cap unreachable even after displacing every "
-                                    "lower-priority leg", used, need)
-        plan = TakeoverPlan(leg_id, contracts, tuple(displaced))
-        self._event("capacity_takeover_planned", leg_id=leg_id, displaced=list(displaced))
-        return CapacityDecision(False, "takeover required before admission", used, need,
-                                takeover=plan)
-
-    def begin_takeover(self, plan: TakeoverPlan) -> Takeover:
-        if self._takeover is not None and self._takeover.state == "pending":
-            raise CapacityError("a takeover is already pending")
-        self._takeover = Takeover(plan)
-        self._takeover._event("capacity_takeover_begin", displaced=list(plan.displaced))
-        return self._takeover
-
-    def settle_takeover(self) -> CapacityDecision:
-        """Reconcile after the broker confirmations; admits the requester or refuses."""
-        t = self._takeover
-        if t is None:
-            raise CapacityError("no takeover to settle")
-        used = self.micro_used()
-        need = self.micro_of(t.plan.requester, t.plan.contracts)
-        if t.state == "refused" or not t.complete():
-            if t.state == "pending":
-                t.fail(t.plan.requester, "settle called before every displaced leg was "
-                                         "cancel-acked and confirmed flat")
-            # Fail closed for the requester, but never discard broker truth: an
-            # acknowledged cancel has released that leg's reservation, and a
-            # reported position (flat or partial) is the leg's exposure now.
-            for leg_id in t.cancel_acked:
-                self.reserved.pop(leg_id, None)
-            for leg_id, pos in t.confirmed_positions.items():
-                self.confirmed[leg_id] = pos
-            self.events.extend(t.events)
-            self._event("capacity_requester_refused", leg_id=t.plan.requester,
-                        reason=t.refuse_reason, reconciled=sorted(t.confirmed_positions))
-            self._takeover = None
-            return CapacityDecision(False, f"takeover refused: {t.refuse_reason}",
-                                    self.micro_used(), need)
-        for leg_id in t.plan.displaced:
-            self.reserved.pop(leg_id, None)
-            self.confirmed.pop(leg_id, None)
-        used_after = self.micro_used()
-        if used_after + need > self.cap:
-            t.state = "refused"
-            t.refuse_reason = "cap still exceeded after reconciliation"
-            self.events.extend(t.events)
-            self._takeover = None
-            return CapacityDecision(False, t.refuse_reason, used_after, need)
-        self.reserved[t.plan.requester] = self.reserved.get(t.plan.requester, 0) + t.plan.contracts
-        t.state = "admitted"
-        t._event("capacity_takeover_admitted", contracts=t.plan.contracts,
-                 micro_used=self.micro_used())
-        self.events.extend(t.events)
-        self._takeover = None
-        return CapacityDecision(True, "admitted after confirmed takeover", used_after, need)
-
-    # -- broker truth -----------------------------------------------------
-    def _displaced_leg_moved(self, leg_id: str, what: str) -> None:
-        """Cancel/fill race (umbrella TB-S1 (E)): any fill or position change reported for a
-        displaced leg while its takeover is pending invalidates the earlier flat confirmation
-        and refuses the requester. The ledger still records the broker truth."""
-        t = self._takeover
-        if t is not None and t.state == "pending" and leg_id in t.plan.displaced:
-            t.closed_confirmed.discard(leg_id)
-            t.fail(leg_id, f"{what} reported for a displaced leg after its cancel/close was confirmed")
-
-    def confirm_fill(self, leg_id: str, contracts: int) -> None:
-        """A reserved entry/add filled (fully or partially) — move reservation to confirmed."""
-        leg(leg_id)
-        if contracts <= 0 or contracts > self.reserved.get(leg_id, 0):
-            raise CapacityError(f"{leg_id}: fill {contracts} exceeds reservation "
-                                f"{self.reserved.get(leg_id, 0)}")
-        self.reserved[leg_id] -= contracts
-        self.confirmed[leg_id] = self.confirmed.get(leg_id, 0) + contracts
-        self._event("capacity_fill_confirmed", leg_id=leg_id, contracts=contracts)
-        self._displaced_leg_moved(leg_id, "fill")
-        if self._takeover is not None and self._takeover.state == "refused":
-            self._takeover.confirmed_positions[leg_id] = self.confirmed[leg_id]
-
-    def release_reservation(self, leg_id: str, contracts: int | None = None) -> None:
-        leg(leg_id)
-        held = self.reserved.get(leg_id, 0)
-        if contracts is not None and (not isinstance(contracts, int) or contracts <= 0):
-            raise CapacityError(f"release contracts must be a positive int, got {contracts!r}")
-        rel = held if contracts is None else contracts
-        if rel > held:
-            raise CapacityError(f"{leg_id}: release {rel} exceeds reservation {held}")
-        self.reserved[leg_id] = held - rel
-        self._event("capacity_reservation_released", leg_id=leg_id, contracts=rel)
-
-    def confirm_position(self, leg_id: str, contracts: int) -> None:
-        """Reconcile the confirmed position to broker truth (exits, flattens, restarts)."""
-        leg(leg_id)
-        if contracts < 0:
-            raise CapacityError("confirmed position must be >= 0")
-        self.confirmed[leg_id] = contracts
-        self._event("capacity_position_confirmed", leg_id=leg_id, contracts=contracts)
-        if contracts > 0:
-            self._displaced_leg_moved(leg_id, "non-flat position")
-        if self._takeover is not None and self._takeover.state == "refused":
-            # Settlement must not restore an older flat/partial close report.
-            # Keep subsequent updates, including zero, after the refusal too.
-            self._takeover.confirmed_positions[leg_id] = contracts
 
 
 # ── governance self-checks used by tests ─────────────────────────────────

@@ -21,10 +21,9 @@ sys.path.insert(0, str(REPO))
 from scripts import guard_operator_acts as g  # noqa: E402
 
 MERGE = "gh pr " + "merge"
-DEPLOY = "fly " + "deploy"
-ARM = "python ops/c1_rail/c1_rail_arm.py --" + "arm"
 SHA = "0123456789abcdef0123456789abcdef01234567"
 PIN = f"--match-head-commit {SHA}"
+ADMIN = f"{MERGE} 501 --admin {PIN}"
 
 
 @pytest.mark.parametrize("command", [
@@ -36,10 +35,10 @@ PIN = f"--match-head-commit {SHA}"
     "gh api -X PUT repos/o/r/pulls/501/" + f"merge -f sha={SHA}",
     "gh api graphql -f query='mutation { merge" + f"PullRequest(input: {{expectedHeadOid: \"{SHA}\"}}) {{ x }} }}'",
 ])
-def test_pinned_merge_passes(command):
-    # Fails if a pinned merge under the standing GO (Addendum 2026-10-24b) prompts, or is
-    # emitted as an allow that would pre-approve the rest of the call.
-    assert g.classify_command(command) == ("pass", "pr.merge")
+def test_pinned_merge_asks(command):
+    # Fails if a pinned merge goes through without Joshua's prompt: merges are his
+    # (AGENTS.md Roles, 2026-11-07), and the agents' merge GO has ended.
+    assert g.classify_command(command) == ("ask", "pr.merge")
 
 
 @pytest.mark.parametrize("command", [
@@ -58,7 +57,7 @@ def test_unpinned_merge_denied(command):
 @pytest.mark.parametrize("command", [
     f"bash -c '{MERGE} 501 {PIN}; {MERGE} 502 --auto'",
     f"{MERGE} 501 {PIN} && {MERGE} 502 --auto",
-    f"sh -c '{DEPLOY}; {MERGE} 502 --auto'",
+    f"sh -c '{ADMIN}; {MERGE} 502 --auto'",
 ])
 def test_deny_wins_over_ask_in_one_command(command):
     # Fails if a promptable act earlier in a command launders a forbidden one after it
@@ -79,7 +78,7 @@ def test_mcp_tools():
     # Fails if the GitHub MCP merge path bypasses the operator, or auto-merge is askable.
     merge = "mcp__github__merge_pull_request"
     assert g.classify({"tool_name": merge, "tool_input": {"expectedHeadSha": SHA}}) == (
-        "pass", "pr.merge")
+        "ask", "pr.merge")
     assert g.classify({"tool_name": merge, "tool_input": {}}) == ("deny", "pr.merge_unpinned")
     assert g.classify({"tool_name": merge, "tool_input": {"expectedHeadSha": "abc"}}) == (
         "deny", "pr.merge_unpinned")
@@ -89,37 +88,14 @@ def test_mcp_tools():
 
 
 @pytest.mark.parametrize("command", [
-    f"{DEPLOY} -a c1-rail",
-    "flyctl -a c1-rail " + "deploy --image x",
-])
-def test_rail_deploy_asks(command):
-    # Fails if a c1 rail deploy can run without an operator prompt.
-    assert g.classify_command(command) == ("ask", "rail.deploy")
-
-
-@pytest.mark.parametrize("command", [
-    f"{ARM} --hours 4",
-    "python3 -m ops.c1_rail.c1_rail_arm --" + "arm",
-    "fly ssh console -a c1-rail -C '" + ARM + "'",
-])
-def test_arm_asks(command):
-    # Fails if arming the rail can run without an operator prompt.
-    assert g.classify_command(command) == ("ask", "rail.arm")
-
-
-@pytest.mark.parametrize("command", [
-    "python ops/c1_rail/c1_rail_arm.py --disarm",
-    "python ops/c1_rail/c1_rail_arm.py --status",
-    "fly ssh console -a c1-rail -C 'python ops/c1_rail/c1_rail_arm.py --disarm'",
-    "fly status -a c1-rail",
     "gh pr view 501",
     "gh pr create --title 'do not " + MERGE + " yet' --body x",
-    f"git commit -m 'document {MERGE} and {DEPLOY}'",
+    f"git commit -m 'document {MERGE} and git push origin main'",
     f"grep -rn '{MERGE}' docs/",
-    f"echo '{ARM}'",
+    f"echo '{ADMIN}'",
 ])
-def test_data_and_risk_reducing_exits_are_silent(command):
-    # Fails if disarm/status waits on a prompt, or if text that only mentions an act asks
+def test_data_is_silent(command):
+    # Fails if text that only mentions an act asks
     # (a background agent has nobody to answer a prompt — guard_shell_command F29).
     assert g.classify_command(command) is None
 
@@ -175,10 +151,31 @@ def test_hook_contract():
                                       "tool_input": {"expectedHeadSha": SHA}})))
     block = out["hookSpecificOutput"]
     assert block["hookEventName"] == "PreToolUse"
-    assert "permissionDecision" not in block  # a pass never pre-approves the call
-    assert "independent review" in block["additionalContext"]  # the GO's conditions
+    assert block["permissionDecision"] == "ask"  # merges are Joshua's
+    assert SHA in block["permissionDecisionReason"]
+    assert "independent review" in block["additionalContext"]  # when to report it ready
     assert _run(json.dumps({"tool_name": "Bash", "tool_input": {"command": "ls"}})) == ""
     assert _run("not json") == ""
+
+
+def test_merge_context_matches_agents_md_review_and_merge():
+    # Fails if the merge context drifts from AGENTS.md "Review and merge": every PR,
+    # doc-only included, needs green CI and the other agent's clean review at the head.
+    # AGENTS.md sets no review-round limit, so the context must not add one.
+    context = g.MESSAGES["pr.merge"][1]
+    assert "AGENTS.md" in context
+    assert "Every PR, doc-only included" in context
+    assert "merges on that" not in context
+    assert "finished successfully" in context
+    assert "COMPLETED and green" not in context  # path-based skips are allowed if explained
+    agents = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+    review = agents.split("## Review and merge", 1)[1].split("\n## ", 1)[0]
+    for phrase in ("doc-only included", "pending, failed or cancelled", "path-based skip"):
+        assert phrase in review, phrase  # AGENTS.md still says it
+        assert phrase in context, phrase  # and the hook says the same
+    assert "Codex reviews Claude's work, Claude reviews Codex's" in context
+    for retired in ("fourth", "three reviews", "rewrite", "Addendum 2026-10-24b"):
+        assert retired not in context
 
 
 def test_settings_wire_the_hook():
@@ -244,8 +241,8 @@ def test_unreadable_push_to_main_fails_closed():
 def test_prompt_names_the_sha_the_merge_pins():
     # Fails if the operator is shown a SHA other than the one GitHub will enforce
     # (Codex #503 threads Dr1 / TGt).
-    # A pinned merge alone passes without a prompt; with a deploy it prompts and must name it.
-    block = _reason(f"git show {OLD} && {MERGE} 501 {PIN} && {DEPLOY} -a c1-rail")
+    # A pinned merge prompts, beside an admin merge too, and must name its SHA.
+    block = _reason(f"git show {OLD} && {MERGE} 501 {PIN} && {ADMIN}")
     assert block["permissionDecision"] == "ask"
     assert SHA in block["permissionDecisionReason"]
     assert OLD not in block["permissionDecisionReason"]
@@ -253,17 +250,14 @@ def test_prompt_names_the_sha_the_merge_pins():
 
 def test_prompt_names_every_act_and_sha_in_one_call():
     # Fails if one approval covers an operator act the prompt does not name.
-    two = _reason(f"{MERGE} 501 {PIN} && {MERGE} 502 --match-head-commit {OLD} && {ARM}")
+    two = _reason(f"{ADMIN} && {MERGE} 502 --match-head-commit {OLD}")
     assert SHA in two["permissionDecisionReason"] and OLD in two["permissionDecisionReason"]
-    mixed = _reason(f"{DEPLOY} -a c1-rail && {MERGE} 501 {PIN}")
-    assert "rail.deploy" in mixed["permissionDecisionReason"]
-    assert "pr.merge" in mixed["permissionDecisionReason"]
-    assert SHA in mixed["permissionDecisionReason"]
+    assert "pr.merge" in two["permissionDecisionReason"]
 
 
 @pytest.mark.parametrize("command,expected", [
     (f"{MERGE} 501 {PIN} --match-head-commit ''", ("deny", "pr.merge_unpinned")),
-    (f"{MERGE} 501 --match-head-commit abc {PIN}", ("pass", "pr.merge")),
+    (f"{MERGE} 501 --match-head-commit abc {PIN}", ("ask", "pr.merge")),
 ])
 def test_repeated_pin_uses_the_last_value(command, expected):
     # Fails if the guard reads a different `--match-head-commit` than gh does (pflag:
@@ -331,14 +325,14 @@ def test_graphql_pin_must_be_structurally_active(query, fields):
 def test_graphql_pin_through_variables_asks(query, fields):
     # Fails if a merge pinned through a GraphQL variable is refused as unpinned.
     command = f"gh api graphql -f query='{query}'{fields}"
-    assert g.classify_command(command) == ("pass", "pr.merge")
+    assert g.classify_command(command) == ("ask", "pr.merge")
 
 
 @pytest.mark.parametrize("command,expected", [
     ("gh api -X PUT repos/o/r/pulls/501/" + f"merge -H sha={SHA}", ("deny", "pr.merge_unpinned")),
-    ("gh api -X PUT repos/o/r/pulls/501/" + f"merge --raw-field=sha={SHA}", ("pass", "pr.merge")),
-    ("gh api -X PUT repos/o/r/pulls/501/" + f"merge -F sha={SHA}", ("pass", "pr.merge")),
-    ("gh api -X PUT repos/o/r/pulls/501/" + f"merge -f=sha={SHA}", ("pass", "pr.merge")),
+    ("gh api -X PUT repos/o/r/pulls/501/" + f"merge --raw-field=sha={SHA}", ("ask", "pr.merge")),
+    ("gh api -X PUT repos/o/r/pulls/501/" + f"merge -F sha={SHA}", ("ask", "pr.merge")),
+    ("gh api -X PUT repos/o/r/pulls/501/" + f"merge -f=sha={SHA}", ("ask", "pr.merge")),
 ])
 def test_rest_pin_must_be_a_request_field(command, expected):
     # Fails if a `sha=` that is not a request field (a header) is taken as the pin.
@@ -346,28 +340,23 @@ def test_rest_pin_must_be_a_request_field(command, expected):
 
 
 @pytest.mark.parametrize("command", [
-    "pwsh -File ./fp.ps1 python ops/c1_rail/c1_rail_arm.py --" + "arm",
-    "./fp.ps1 python ops/c1_rail/c1_rail_arm.py --" + "arm",
-    "powershell -NoProfile -ExecutionPolicy Bypass -File fp.ps1 python -m ops.c1_rail.c1_rail_arm --" + "arm",
-    "python ops/c1_rail/c1_rail_arm.py --" + "ar",
-    "python -I scripts/fp.py python ops/c1_rail/c1_rail_arm.py --" + "arm",
+    f"pwsh -File ./fp.ps1 {ADMIN}",
+    f"./fp.ps1 {ADMIN}",
+    f"powershell -NoProfile -ExecutionPolicy Bypass -File fp.ps1 {ADMIN}",
 ])
-def test_launcher_and_abbreviated_arm_ask(command):
-    # Fails if the repository's own launcher (`fp.ps1`, via pwsh or directly) or
-    # argparse's `--ar` abbreviation arms the rail without an operator prompt
-    # (Codex #503 thread TG-; `--ar` found in the babysit re-check).
-    assert g.classify_command(command) == ("ask", "rail.arm")
+def test_launcher_asks(command):
+    # Fails if the repository's own launcher (`fp.ps1`, via pwsh or directly) hides an
+    # operator act from the prompt (Codex #503 thread TG-).
+    assert g.classify_command(command) == ("ask", "pr.merge_admin")
 
 
 @pytest.mark.parametrize("command", [
-    "./fp.ps1 python ops/c1_rail/c1_rail_arm.py --disarm",
-    "python ops/c1_rail/c1_rail_arm.py --dis",
     "./fp.ps1 test",
     "pwsh -File ./fp.ps1 doctor",
     "pwsh -NoProfile -Command 'git status'",
 ])
 def test_launcher_exits_and_checks_are_silent(command):
-    # Fails if the launcher's ordinary commands or a disarm through it prompt.
+    # Fails if the launcher's ordinary commands prompt.
     assert g.classify_command(command) is None
 
 
@@ -391,12 +380,11 @@ def test_powershell_tool_calls_are_judged():
     call = {"tool_name": "PowerShell", "tool_input": {"command": f"{MERGE} 501 --auto"}}
     assert g.classify(call) == ("deny", "pr.auto_merge")
     pinned = {"tool_name": "PowerShell", "tool_input": {"command": f"{MERGE} 501 {PIN}"}}
-    assert g.classify(pinned) == ("pass", "pr.merge")
+    assert g.classify(pinned) == ("ask", "pr.merge")
 
 
 @pytest.mark.parametrize("command,expected", [
-    ("Set-Location C:\\repo; .\\fp.ps1 python ops\\c1_rail\\c1_rail_arm.py --" + "arm",
-     ("ask", "rail.arm")),
+    (f"Set-Location C:\\repo; .\\fp.ps1 {ADMIN}", ("ask", "pr.merge_admin")),
     ("C:\\tools\\gh.exe pr " + "merge 501 --auto", ("deny", "pr.auto_merge")),
     ("Set-Location C:\\repo; .\\fp.ps1 python -m pytest tests\\scripts", None),
 ])
@@ -406,34 +394,21 @@ def test_powershell_backslash_paths_are_read_as_paths(command, expected):
     assert g.classify({"tool_name": "PowerShell", "tool_input": {"command": command}}) == expected
 
 
-@pytest.mark.parametrize("flag", ["--acknowledge-m1-unresolved 'attended test'",
-                                  "--ack 'attended test'"])
-def test_m1_override_prompt_does_not_claim_resolved(flag):
-    # Fails if an arm that bypasses an unresolved M1 is put to the operator under a prompt
-    # that says M1 is RESOLVED (Codex #503 thread Dr-; whether to refuse it outright
-    # is an operator decision, so it still asks).
-    command = f"{ARM} --hours 4 {flag}"
-    assert g.classify_command(command) == ("ask", "rail.arm")
-    reason = _reason(command)["permissionDecisionReason"]
-    assert "UNRESOLVED" in reason and "acknowledge-m1-unresolved" in reason
-    assert "M1 RESOLVED and a GO" not in reason
-
-
 # --- 2026-09-25 verifier round on fd126c3: argv is read the way gh (cobra/pflag) and pwsh
 # read it, and a flag whose arity the guard cannot know is read both ways. ---
 
-LAUNCH_ARM = "-File ./fp.ps1 python ops/c1_rail/c1_rail_arm.py --" + "arm"
+LAUNCH_ADMIN = f"-File ./fp.ps1 {ADMIN}"
 UNPINNED_Q = "mutation { merge" + GQL_MERGE + '(input: {pullRequestId: "x"}) { x } }'
 PINNED_Q = ("mutation { merge" + GQL_MERGE
             + f'(input: {{pullRequestId: "x", expectedHeadOid: "{SHA}"}}) {{ x }} }}')
 
 
 @pytest.mark.parametrize("command,expected", [
-    (f"pwsh -ep Bypass {LAUNCH_ARM}", ("ask", "rail.arm")),
-    (f"pwsh -wd . {LAUNCH_ARM}", ("ask", "rail.arm")),
-    (f"pwsh -of Text {LAUNCH_ARM}", ("ask", "rail.arm")),
-    (f"pwsh -if Text {LAUNCH_ARM}", ("ask", "rail.arm")),
-    (f"pwsh -ea x {LAUNCH_ARM}", ("ask", "rail.arm")),
+    (f"pwsh -ep Bypass {LAUNCH_ADMIN}", ("ask", "pr.merge_admin")),
+    (f"pwsh -wd . {LAUNCH_ADMIN}", ("ask", "pr.merge_admin")),
+    (f"pwsh -of Text {LAUNCH_ADMIN}", ("ask", "pr.merge_admin")),
+    (f"pwsh -if Text {LAUNCH_ADMIN}", ("ask", "pr.merge_admin")),
+    (f"pwsh -ea x {LAUNCH_ADMIN}", ("ask", "pr.merge_admin")),
     (f"pwsh -ep Bypass -c '{MERGE} 1'", ("deny", "pr.merge_unpinned")),
     (f"pwsh -i -ec {_encoded(MERGE + ' 1 --auto')}", ("deny", "pr.auto_merge")),
     (f"pwsh -NewParam x -c '{MERGE} 1'", ("deny", "pr.merge_unpinned")),
@@ -448,10 +423,10 @@ def test_powershell_parameters_are_read_as_pwsh_reads_them(command, expected):
 
 
 def test_powershell_tool_launcher_with_execution_policy_asks():
-    # Fails if the common Windows idiom `-ep Bypass` hides an arm from the PowerShell tool.
-    command = "pwsh -ep Bypass -File .\\fp.ps1 python ops\\c1_rail\\c1_rail_arm.py --" + "arm"
+    # Fails if the common Windows idiom `-ep Bypass` hides an act from the PowerShell tool.
+    command = f"pwsh -ep Bypass -File .\\fp.ps1 {ADMIN}"
     assert g.classify({"tool_name": "PowerShell", "tool_input": {"command": command}}) == (
-        "ask", "rail.arm")
+        "ask", "pr.merge_admin")
 
 
 @pytest.mark.parametrize("command", [
@@ -492,8 +467,8 @@ def test_a_pin_inside_another_options_value_is_not_a_pin(spoof):
     (f"{MERGE} 501 -t --match-head-commit={SHA}", ("deny", "pr.merge_unpinned")),
     (f"{MERGE} 501 -b --auto", ("deny", "pr.merge_unpinned")),
     (f"{MERGE} 501 --no-such-flag {PIN}", ("deny", "pr.merge_unpinned")),
-    (f"{MERGE} 501 -sd {PIN}", ("pass", "pr.merge")),
-    (f"{MERGE} 501 -s -t 'Title' -b 'Body' {PIN}", ("pass", "pr.merge")),
+    (f"{MERGE} 501 -sd {PIN}", ("ask", "pr.merge")),
+    (f"{MERGE} 501 -s -t 'Title' -b 'Body' {PIN}", ("ask", "pr.merge")),
     (f"{MERGE} 501 --help", None),
 ])
 def test_merge_options_are_read_as_pflag_reads_them(command, expected):
@@ -507,7 +482,7 @@ def test_merge_options_are_read_as_pflag_reads_them(command, expected):
     ("gh -b x pr " + "merge 501", ("deny", "pr.merge_unpinned")),
     ("gh -A a@b pr " + "merge 501 --auto", ("deny", "pr.auto_merge")),
     ("gh --subject s pr " + "merge 501 --auto", ("deny", "pr.auto_merge")),
-    (f"gh --match-head-commit {SHA} pr " + "merge 501", ("pass", "pr.merge")),
+    (f"gh --match-head-commit {SHA} pr " + "merge 501", ("ask", "pr.merge")),
     ("gh --no-such-flag v pr " + "merge 501", ("deny", "pr.merge_unpinned")),
     ("gh -R o/r pr view 501", None),
     # While cobra looks for the subcommand only -h/--help/--version are booleans at the
@@ -529,21 +504,6 @@ def test_flags_before_the_command_path_are_read_as_cobra_reads_them(command, exp
     # Fails if a merge flag written before `pr merge` (cobra accepts it there) hides the
     # merge, including a forbidden auto-merge (found in the fd126c3 re-check), or if a
     # boolean of the merge command is taken as one before the subcommand is found.
-    assert g.classify_command(command) == expected
-
-
-@pytest.mark.parametrize("command,expected", [
-    ("fly -t tok " + "deploy", ("ask", "rail.deploy")),
-    ("fly --access-token tok " + "deploy", ("ask", "rail.deploy")),
-    ("fly --no-such-flag v " + "deploy", ("ask", "rail.deploy")),
-    (f"fly ssh console -a c1-rail -sC '{ARM}'", ("ask", "rail.arm")),
-    (f"fly ssh console -a c1-rail -C'{ARM}'", ("ask", "rail.arm")),
-    ("fly -t tok status -a c1-rail", None),
-    ("fly ssh console -a c1-rail -sC 'python ops/c1_rail/c1_rail_arm.py --disarm'", None),
-])
-def test_fly_flags_are_read_as_cobra_reads_them(command, expected):
-    # Fails if a global flag's value (`-t <token>`) or a shorthand cluster (`-sC '…'`)
-    # hides a deploy or an arm (found in the fd126c3 re-check).
     assert g.classify_command(command) == expected
 
 
@@ -571,7 +531,7 @@ def test_unreadable_push_to_heads_main_fails_closed():
     ("g`h pr " + "merge 501 `-`-auto", ("deny", "pr.auto_merge")),
     ("gh pr m`u{65}rge 501", ("deny", "pr.merge_unpinned")),
     ('pwsh -c "echo x`ngh pr ' + 'merge 1"', ("deny", "pr.merge_unpinned")),
-    ("gh pr " + f"merge 501 `\n  {PIN}", ("pass", "pr.merge")),
+    ("gh pr " + f"merge 501 `\n  {PIN}", ("ask", "pr.merge")),
     ('git commit -m "say `"gh pr ' + 'merge`" later"', None),
     ("Write-Output a`tb", None),
 ])
@@ -584,7 +544,7 @@ def test_powershell_backtick_escapes_are_resolved(command, expected):
 
 @pytest.mark.parametrize("command,expected", [
     ("gh api -X PUT repos/o/r/pulls//1/" + "merge", ("deny", "pr.merge_unpinned")),
-    ("gh api -X PUT repos/o/r/pulls/1//" + f"merge -f sha={SHA}", ("pass", "pr.merge")),
+    ("gh api -X PUT repos/o/r/pulls/1//" + f"merge -f sha={SHA}", ("ask", "pr.merge")),
 ])
 def test_merge_path_with_repeated_slashes_is_a_merge(command, expected):
     # Fails if a doubled slash takes a REST merge path out of the guard's reading.
@@ -644,15 +604,15 @@ def test_push_that_is_not_a_dry_run_is_still_judged(command):
 
 
 @pytest.mark.parametrize("command,expected", [
-    (f"{MERGE} 501 --auto=false {PIN}", ("pass", "pr.merge")),
-    (f"{MERGE} 501 --auto=0 {PIN}", ("pass", "pr.merge")),
-    (f"{MERGE} 501 --auto=f {PIN}", ("pass", "pr.merge")),
-    (f"{MERGE} 501 --auto=F {PIN}", ("pass", "pr.merge")),
-    (f"{MERGE} 501 --auto=FALSE {PIN}", ("pass", "pr.merge")),
-    (f"{MERGE} 501 --auto=False {PIN}", ("pass", "pr.merge")),
-    (f"{MERGE} 501 --auto --auto=false {PIN}", ("pass", "pr.merge")),
+    (f"{MERGE} 501 --auto=false {PIN}", ("ask", "pr.merge")),
+    (f"{MERGE} 501 --auto=0 {PIN}", ("ask", "pr.merge")),
+    (f"{MERGE} 501 --auto=f {PIN}", ("ask", "pr.merge")),
+    (f"{MERGE} 501 --auto=F {PIN}", ("ask", "pr.merge")),
+    (f"{MERGE} 501 --auto=FALSE {PIN}", ("ask", "pr.merge")),
+    (f"{MERGE} 501 --auto=False {PIN}", ("ask", "pr.merge")),
+    (f"{MERGE} 501 --auto --auto=false {PIN}", ("ask", "pr.merge")),
     (f"{MERGE} 501 --auto=false --squash", ("deny", "pr.merge_unpinned")),
-    ("gh --auto=false pr " + f"merge 501 {PIN}", ("pass", "pr.merge")),
+    ("gh --auto=false pr " + f"merge 501 {PIN}", ("ask", "pr.merge")),
     (f"{MERGE} 501 --auto {PIN}", ("deny", "pr.auto_merge")),
     (f"{MERGE} 501 --auto=true {PIN}", ("deny", "pr.auto_merge")),
     (f"{MERGE} 501 --auto=1 {PIN}", ("deny", "pr.auto_merge")),
@@ -704,36 +664,6 @@ def test_bulk_push_not_cleared_is_still_denied(command):
     assert g.classify_command(command) == ("deny", "main.direct_push")
 
 
-@pytest.mark.parametrize("command", [
-    DEPLOY + " --help",
-    DEPLOY + " -h",
-    "fly -h " + "deploy",
-    "fly --help " + "deploy",
-    "flyctl " + "deploy -a c1-rail --help",
-    DEPLOY + " --help=true",
-    DEPLOY + " --help=false -h",
-])
-def test_fly_deploy_help_is_silent(command):
-    # Fails if `fly deploy --help` / `-h` (cobra prints help and deploys nothing) asks as
-    # rail.deploy (Codex #503, 4109578936).
-    assert g.classify_command(command) is None
-
-
-@pytest.mark.parametrize("command", [
-    DEPLOY,
-    DEPLOY + " -a c1-rail",
-    DEPLOY + " -a -h",
-    DEPLOY + " --image -h",
-    DEPLOY + " --help=false",
-    DEPLOY + " -h --help=false",
-    DEPLOY + " -- -h",
-])
-def test_fly_deploy_that_is_not_help_still_asks(command):
-    # Fails if a `-h` that is another flag's value, a help flag turned off later, or a word
-    # after `--` silences a real deploy.
-    assert g.classify_command(command) == ("ask", "rail.deploy")
-
-
 # --- 2026-09-25 babysit repairs (Codex review of #503 at 8bb2e32, 4109815693 / 4109815694) ---
 
 @pytest.mark.parametrize("command", [
@@ -780,92 +710,7 @@ def test_push_repository_word_is_not_a_refspec(command):
     assert g.classify_command(command) is None
 
 
-@pytest.mark.parametrize("command", [
-    DEPLOY + " -ac1-rail --help",
-    DEPLOY + " -ac1-rail -h",
-    DEPLOY + " -tTOKEN --help",
-    DEPLOY + " -cfly.toml -h",
-    "fly -ac1-rail " + "deploy --help",
-    DEPLOY + " -hac1-rail",
-])
-def test_fly_help_after_an_attached_flag_value_is_silent(command):
-    # Fails if `-ac1-rail` (pflag: `-a` takes `c1-rail` from its own word) is read as
-    # still taking the next word, so the `--help` after it is ignored and a deploy that
-    # prints help asks as rail.deploy (Codex #503, 4109815694).
-    assert g.classify_command(command) is None
-
-
-@pytest.mark.parametrize("command", [
-    DEPLOY + " -a -h",
-    DEPLOY + " -xa -h",
-    DEPLOY + " -xy -h",
-    DEPLOY + " -h -x --help=false",
-    DEPLOY + " -h --image --help=false",
-])
-def test_fly_help_that_may_be_a_value_still_asks(command):
-    # Fails if a `-h` that a cluster's final value flag (known, or unknown and so read
-    # both ways) takes as its value silences a real deploy, or if a `--help=false` that
-    # an unknown flag may take as its value is ignored (read one way, it turns help off).
-    assert g.classify_command(command) == ("ask", "rail.deploy")
-
-
-@pytest.mark.parametrize("command", [
-    "python -Im ops.c1_rail.c1_rail_arm --" + "arm",
-    "python -Imops.c1_rail.c1_rail_arm --" + "arm",
-    "python -I -m ops.c1_rail.c1_rail_arm --" + "arm",
-])
-def test_python_module_in_a_short_cluster_is_read(command):
-    # Fails if `-m` inside a python short cluster (`-Im mod`: python takes the rest of
-    # the word, or else the next word) hides the arm module. Same class as 4109815694.
-    assert g.classify_command(command) == ("ask", "rail.arm")
-
-
-@pytest.mark.parametrize("command", [
-    "python -Wm ops.c1_rail.c1_rail_arm --" + "arm",
-    "python -Xm ops.c1_rail.c1_rail_arm --" + "arm",
-])
-def test_python_cluster_value_is_not_a_module(command):
-    # Fails if an `m` that is another option's attached value (`-Wm`: the warning filter
-    # `m`) is read as `-m`. `ops.c1_rail.c1_rail_arm` is then a script path that does
-    # not end in `.py`, so nothing arms.
-    assert g.classify_command(command) is None
-
-
 # --- 2026-09-25 verifier follow-up on the 4109815694 repair (`--` taken as a value) ---
-
-@pytest.mark.parametrize("command", [
-    DEPLOY + " -ha -- --help=false",
-    DEPLOY + " -hc -- -h=false",
-    DEPLOY + " -ac1-rail -he -- --help=false",  # a live-path app (2026-09-26 scoping)
-    DEPLOY + " -h -a -- --help=false",
-    DEPLOY + " --help --app -- -h=false",
-    DEPLOY + " -h -x -- --help=false",
-    DEPLOY + " -a -a -- -h",
-    DEPLOY + " -a -ha -- --help",
-])
-def test_fly_double_dash_taken_as_a_value_does_not_end_the_flags(command):
-    # Fails if `--` always ends the help scan. pflag lets a value flag with no value in
-    # its own word (`-ha`, `--app`) take the next word even when it is `--`, so the
-    # `--help=false` after it is a flag: help is off and fly deploys. An unknown flag
-    # (`-x`, `-he`) may do the same, so the word after its `--` may turn help off.
-    # And a `--` that a value flag's value already filled (`-a -a --`) does end them.
-    assert g.classify_command(command) == ("ask", "rail.deploy")
-
-
-@pytest.mark.parametrize("command", [
-    DEPLOY + " -h -- --help=false",
-    DEPLOY + " -h -x -- app",
-    DEPLOY + " -a -- --help",
-    DEPLOY + " --image=x --help",
-    DEPLOY + " -e=x -h",
-    DEPLOY + " -xe=v -h",
-])
-def test_fly_help_is_still_read_around_double_dash_and_attached_values(command):
-    # Fails if a `--` that ends the flags stops being read as the end (`-h -- ...`), if
-    # a `--` that `-a` takes as its app name hides the `--help` after it, or if a flag
-    # the guard does not know that carries its value after `=` (`--image=x`, `-e=x`) is
-    # read as taking the next word: pflag never lets a word with `=` take another.
-    assert g.classify_command(command) is None
 
 
 # --- 2026-09-26 babysit repair (verifier on eb565d1: bulk word in value position) ---
@@ -905,353 +750,37 @@ def test_bulk_push_in_option_position_is_still_denied(command):
     assert g.classify_command(command) == ("deny", "main.direct_push")
 
 
-# --- 2026-09-26 operator rulings (surface-allocation ADR, Addendum 2026-09-26) ---
-# "deploy prompt shouldn't fire more than it needs to": rail.deploy asks only for a Fly
-# deploy whose target app is on the live execution path, names that app, and asks when the
-# target cannot be determined. "agents can use the arming override": the M1-override arm
-# asks, never denies, under wording that says what the override does.
-
-RAIL_TOML = "deploy/c1_rail/fly.toml"
-DAEMON_TOML = "deploy/c1_signal_daemon/fly.toml"
-
-
-def _fly_app(path: Path) -> str:
-    import tomllib
-    return tomllib.loads(path.read_text(encoding="utf-8"))["app"]
-
-
-def _other_app_dir(tmp_path: Path) -> Path:
-    (tmp_path / "fly.toml").write_text('app = "some-other-app"\n', encoding="utf-8")
-    return tmp_path
-
-
-def _deploy_reason(command: str, cwd: Path) -> dict:
-    out = _run(json.dumps({"tool_name": "Bash", "tool_input": {"command": command},
-                           "cwd": str(cwd)}))
-    return json.loads(out)["hookSpecificOutput"] if out else {}
-
-
-def test_live_fly_apps_match_the_deploy_configs():
-    # Fails if the hook's live-path app list drifts from the app names the repository's
-    # own deploy configs deploy (the listener and the signal daemon).
-    assert g.LIVE_FLY_APPS == frozenset({_fly_app(REPO / RAIL_TOML),
-                                         _fly_app(REPO / DAEMON_TOML)})
-    assert g.LIVE_FLY_APPS == frozenset({"c1-rail", "c1-signal-daemon"})
-
-
-@pytest.mark.parametrize("command,app", [
-    (f"{DEPLOY} -a c1-rail", "c1-rail"),
-    (f"{DEPLOY} --app=c1-signal-daemon --image x", "c1-signal-daemon"),
-    (f"{DEPLOY} --config {RAIL_TOML}", "c1-rail"),
-    (f"{DEPLOY} -c {DAEMON_TOML}", "c1-signal-daemon"),
-    (f"{DEPLOY} --config deploy/c1_signal_daemon", "c1-signal-daemon"),
-    (f"{DEPLOY} deploy/c1_rail", "c1-rail"),
-])
-def test_live_path_deploy_asks_and_names_the_app(command, app):
-    # Fails if a deploy of the listener or the signal daemon runs without an operator
-    # prompt, or if the prompt does not name the app being deployed.
-    assert g.classify_command(command, cwd=str(REPO)) == ("ask", "rail.deploy")
-    block = _deploy_reason(command, REPO)
-    assert block["permissionDecision"] == "ask"
-    assert app in block["permissionDecisionReason"]
-
-
-@pytest.mark.parametrize("command", [
-    f"{DEPLOY} -a some-other-app",
-    f"{DEPLOY} --app some-other-app --image x",
-    "flyctl -a some-other-app " + "deploy",
-])
-def test_deploy_of_another_app_is_silent(command):
-    # Fails if a deploy of an app off the live execution path prompts (the operator
-    # ruling: the deploy prompt should not fire more than it needs to).
-    assert g.classify_command(command, cwd=str(REPO)) is None
-
-
-def test_config_naming_another_app_is_silent(tmp_path):
-    # Fails if a --config (absolute or relative) or a working-directory fly.toml whose
-    # app is off the live path prompts.
-    other = _other_app_dir(tmp_path)
-    toml = (other / "fly.toml").as_posix()
-    assert g.classify_command(f"{DEPLOY} --config {toml}", cwd=str(REPO)) is None
-    assert g.classify_command(f"{DEPLOY} -c fly.toml", cwd=str(other)) is None
-    assert g.classify_command(DEPLOY, cwd=str(other)) is None
-    assert g.classify_command(f"{DEPLOY} 2>&1 | tail -5", cwd=str(other)) is None
-    assert _deploy_reason(DEPLOY, other) == {}  # the hook reads the payload's cwd
-
-
-@pytest.mark.parametrize("command", [
-    DEPLOY,
-    f"{DEPLOY} --image registry.fly.io/x:1",
-    f"{DEPLOY} --config missing/fly.toml",
-    f"{DEPLOY} -a -h",
-    f"{DEPLOY} -a",
-    f"{DEPLOY} one two",
-    f"{DEPLOY} 'unterminated",
-])
-def test_deploy_with_no_determinable_target_asks(command, tmp_path):
-    # Fails if a deploy whose target app the guard cannot determine (no -a/--app, no
-    # readable fly.toml, a value that is not an app name, an unreadable command) goes
-    # through silently: it fails closed.
-    assert g.classify_command(command, cwd=str(tmp_path)) == ("ask", "rail.deploy")
-
-
-def test_undeterminable_deploy_prompt_says_so(tmp_path):
-    # Fails if the operator is shown an app name the guard did not determine.
-    block = _deploy_reason(DEPLOY, tmp_path)
-    assert block["permissionDecision"] == "ask"
-    assert "cannot determine" in block["permissionDecisionReason"]
-
-
-@pytest.mark.parametrize("command", [
-    "cd elsewhere && " + DEPLOY,
-    "Set-Location elsewhere; " + DEPLOY,
-    "bash -c 'cd elsewhere; " + DEPLOY + "'",
-    "env -C elsewhere " + DEPLOY,
-    "pwsh -wd elsewhere -c '" + DEPLOY + "'",
-    "./fp.ps1 " + DEPLOY,
-    "FLY_APP=c1-rail " + DEPLOY,
-    f"{DEPLOY} -a some-other-app --config {RAIL_TOML}",
-])
-def test_deploy_whose_directory_or_app_may_differ_asks(command, tmp_path):
-    # Fails if the guard resolves a relative fly.toml against a directory the command
-    # may have left (cd, env -C, pwsh -wd, the launcher), ignores FLY_APP, or lets an
-    # -a flag hide a live-path --config: each fails closed. The hook's own directory
-    # holds a fly.toml for another app, so only the fail-closed reading asks.
-    other = _other_app_dir(tmp_path)
-    cwd = str(REPO) if RAIL_TOML in command else str(other)
-    assert g.classify_command(command, cwd=cwd) == ("ask", "rail.deploy")
-
-
-def test_deploy_after_cd_with_an_explicit_other_app_is_silent(tmp_path):
-    # Fails if a directory change makes an explicit off-path -a prompt.
-    assert g.classify_command("cd elsewhere && " + DEPLOY + " -a some-other-app",
-                              cwd=str(tmp_path)) is None
-
-
-@pytest.mark.parametrize("flag", ["--acknowledge-m1-unresolved 'attended test'",
-                                  "--ack 'attended test'"])
-@pytest.mark.parametrize("wrap", ["{}", "fly ssh console -a c1-rail -C \"{}\"",
-                                  "./fp.ps1 {}", "{} 'unterminated"])
-def test_m1_override_arm_asks_and_never_denies(flag, wrap):
-    # Fails if an agent's M1-override arm is refused (operator ruling 2026-09-26: agents
-    # may use it, through the prompt) or is put to the operator without saying that it
-    # needs a structurally valid unresolved artifact and writes an arming_deviation record.
-    command = wrap.format(f"{ARM} --hours 4 {flag}")
-    assert g.classify_command(command) == ("ask", "rail.arm")
-    block = _reason(command)
-    assert block["permissionDecision"] == "ask"
-    reason = block["permissionDecisionReason"]
-    assert "UNRESOLVED" in reason and "arming_deviation" in reason
-    assert "structurally valid" in reason
-    assert "2026-09-26" in block["additionalContext"]
-
-
-# --- Codex review of #511 at b9d71f2 (threads 4111045500, 4111045502, 4111045505,
-# 4111045506). A deploy's target is read from a fly.toml only when nothing the call runs
-# before (or beside) the deploy can have changed its directory, its environment or the
-# files it reads; otherwise only -a/--app names it, and without one it asks.
-
-def _other_toml(tmp_path: Path) -> str:
-    return (_other_app_dir(tmp_path) / "fly.toml").as_posix()
-
-
-@pytest.mark.parametrize("template", [
-    "env FLY_A\"\"PP=c1-rail {deploy}",
-    "FLY_A''PP=c1-rail {deploy}",
-    "export FLY_A\"\"PP=c1-rail; {deploy}",
-    "export FLY_APP=c1-rail && {deploy}",
-    "FLY_APP=c1-rail; {deploy}",
-    "FLY_APP=\"$X\" {deploy}",
-    "env -u X FLY_APP=$(cat f) {deploy}",
-    "set -a; . ./vars; {deploy}",
-    "source vars && {deploy}",
-])
-@pytest.mark.parametrize("config", ["", " --config {toml}"])
-def test_fly_app_the_call_may_set_asks(template, config, tmp_path):
-    # Fails if an environment change the call makes before its deploy (a FLY_APP prefix,
-    # export or wrapper assignment in any quoting, a sourced file) lets an off-path
-    # fly.toml decide the target: FLY_APP overrides the config's app (thread 4111045500).
-    toml = _other_toml(tmp_path)
-    command = template.format(deploy=DEPLOY + config.format(toml=toml))
-    assert g.classify_command(command, cwd=str(tmp_path)) == ("ask", "rail.deploy")
-
-
-def test_powershell_fly_app_assignment_asks(tmp_path):
-    # Fails if a PowerShell `$env:FLY_APP` assignment (backtick-split) before the deploy
-    # is missed and the off-path fly.toml decides the target.
-    _other_app_dir(tmp_path)
-    payload = {"tool_name": "PowerShell", "cwd": str(tmp_path),
-               "tool_input": {"command": "$env:FLY_A`PP='c1-rail'; " + DEPLOY}}
-    assert g.classify(payload) == ("ask", "rail.deploy")
-
-
-@pytest.mark.parametrize("command", [
-    DEPLOY + " && cd elsewhere",
-    DEPLOY + "; Set-Location elsewhere",
-    DEPLOY + " -c fly.toml; popd",
-])
-def test_directory_change_after_the_deploy_is_silent(command, tmp_path):
-    # Fails if a cd that runs after the deploy unanchors it (thread 4111045502).
-    _other_app_dir(tmp_path)
-    assert g.classify_command(command, cwd=str(tmp_path)) is None
-
-
-@pytest.mark.parametrize("command", [
-    DEPLOY + " -a some-other-app; cd elsewhere; " + DEPLOY,
-    "for d in a b; do " + DEPLOY + "; cd $d; done",
-    "function f {\n " + DEPLOY + "\n}\ncd elsewhere\nf",
-    "function f\n{\n " + DEPLOY + "\n}\ncd elsewhere\nf",
-    "function f() {\n " + DEPLOY + "\n}\ncd elsewhere; f",
-    "f() {\n " + DEPLOY + "\n}\ncd elsewhere; f",
-])
-def test_deploy_after_a_directory_change_still_asks(command, tmp_path):
-    # Fails if the order rule lets a deploy that runs after a cd (later in the call, on
-    # a later pass of a loop, or in a function called after it) read the hook's directory.
-    _other_app_dir(tmp_path)
-    assert g.classify_command(command, cwd=str(tmp_path)) == ("ask", "rail.deploy")
-
-
-@pytest.mark.parametrize("command", [
-    "function f {\n " + DEPLOY + "\n}\ncd elsewhere\nf",
-    "function f\n{\n " + DEPLOY + "\n}\ncd elsewhere\nf",
-    "function Deploy-It {\n  " + DEPLOY + " --remote-only\n}\nPush-Location elsewhere\n"
-    "Deploy-It\nPop-Location",
-    "filter F {\n " + DEPLOY + "\n}\nSet-Location elsewhere\nF",
-])
-def test_powershell_function_called_after_a_directory_change_asks(command, tmp_path):
-    # Fails if a deploy written inside a PowerShell function reads the hook's directory
-    # although the function is called after a directory change (its body runs there).
-    _other_app_dir(tmp_path)
-    payload = {"tool_name": "PowerShell", "cwd": str(tmp_path),
-               "tool_input": {"command": command}}
-    assert g.classify(payload) == ("ask", "rail.deploy")
-
-
 @pytest.mark.parametrize("command,expected", [
     ('echo `date`; git push origin ma""in', ("deny", "main.direct_push")),
     ("echo `date`; g''it push origin main", ("deny", "main.direct_push")),
     ("echo `date`; gh pr me''rge 5", ("deny", "pr.merge_unpinned")),
-    ("echo `date`; " + ARM.replace("--arm", "--a''rm"), ("ask", "rail.arm")),
-    ("echo `date`; f''ly deploy -a c1-rail", ("ask", "rail.deploy")),
-    ("echo `date`; git commit -m 'mention " + DEPLOY + " and git push origin main'",
-     None),
-    ("grep -n `echo fly` deploy.md", None),
-    ("echo `date` && " + DEPLOY + " --help", None),
-    ("echo `date` && " + DEPLOY + " -a some-other-app", None),
-    ("echo `echo \\`date\\`` && " + DEPLOY + " -a some-other-app", None),
-    ("echo `sed -i s/x/y/ fly.toml` && " + DEPLOY, ("ask", "rail.deploy")),
-    ("echo `echo x > fly.toml` && " + DEPLOY, ("ask", "rail.deploy")),
-    ("echo `" + DEPLOY + "`", ("ask", "rail.deploy")),
+    ("echo `date`; " + ADMIN.replace("--admin", "--adm''in"), ("ask", "pr.merge_admin")),
+    ("echo `date`; git commit -m 'mention git push origin main'", None),
+    ("grep -n `echo gh` merge.md", None),
+    ("echo `" + ADMIN + "`", ("ask", "pr.merge_admin")),
 ])
-def test_backquotes_are_read_not_dropped_to_raw_patterns(command, expected, tmp_path):
+def test_backquotes_are_read_not_dropped_to_raw_patterns(command, expected):
     # Fails if a backquote substitution (whose re-parsed words carry no source span)
     # drops the whole command to the raw-pattern fallback: quote-split acts would be
     # missed and mentions in data would decide.
-    _other_app_dir(tmp_path)
-    assert g.classify_command(command, cwd=str(tmp_path)) == expected
-
-
-@pytest.mark.parametrize("toml,app", [(RAIL_TOML, "c1-rail"),
-                                      (DAEMON_TOML, "c1-signal-daemon")])
-def test_documented_deploy_command_names_the_app(toml, app):
-    # Fails if the deploy command the README documents (`fly deploy . --config
-    # deploy/…/fly.toml` from the repo root) is put to the operator as an undeterminable
-    # target instead of naming the app (thread 4111045505).
-    folder = toml.rsplit("/", 1)[0]
-    command = f"{DEPLOY} . --config {toml} --dockerfile {folder}/Dockerfile"
-    assert g.classify_command(command, cwd=str(REPO)) == ("ask", "rail.deploy")
-    reason = _deploy_reason(command, REPO)["permissionDecisionReason"]
-    assert app in reason and "cannot determine" not in reason
-
-
-def test_relative_config_beside_a_working_directory(tmp_path):
-    # Fails if a relative --config beside a WORKING_DIRECTORY argument is read one way
-    # only: flyctl's rule is not documented (`fly deploy --help`), so the guard reads it
-    # against both the current and the working directory and names an app only when
-    # both agree; otherwise it asks.
-    _other_app_dir(tmp_path)
-    sub = tmp_path / "sub"
-    sub.mkdir()
-    assert g.classify_command(f"{DEPLOY} . --config fly.toml", cwd=str(tmp_path)) is None
-    (sub / "fly.toml").write_text('app = "c1-rail"\n', encoding="utf-8")
-    assert g.classify_command(f"{DEPLOY} sub --config fly.toml",
-                              cwd=str(tmp_path)) == ("ask", "rail.deploy")
-    (sub / "fly.toml").write_text('app = "a-third-app"\n', encoding="utf-8")
-    assert g.classify_command(f"{DEPLOY} sub --config fly.toml",
-                              cwd=str(tmp_path)) == ("ask", "rail.deploy")
-
-
-@pytest.mark.parametrize("template", [
-    "sed -i s/x/y/ fly.toml && {deploy}",
-    "sed -i s/x/y/ {toml} && {deploy}",
-    "cat x > fly.toml; {deploy}",
-    "echo x >> {toml}; {deploy}",
-    "echo x | tee fly.toml; {deploy}",
-    "cp a fly.toml && {deploy}",
-    "mv a {toml} && {deploy}",
-    "rm {toml} && {deploy}",
-    "git checkout -- fly.toml && {deploy}",
-    "git restore {toml}; {deploy}",
-    "python -c 'print(1)' && {deploy}",
-    "node -e 1; {deploy}",
-    "some-unknown-tool && {deploy}",
-    "echo $(sed -i s/x/y/ fly.toml); {deploy}",
-    "cat <<EOF > fly.toml\napp = 'c1-rail'\nEOF\n{deploy}",
-    "{deploy} > fly.toml",
-    "{deploy} | tee {toml}",
-    "{deploy} & sed -i s/x/y/ fly.toml",
-    "{deploy} --image $(sed -i s/x/y/ fly.toml)",
-    "while true; do {deploy}; sed -i s/x/y/ fly.toml; done",
-    "bash -c 'sed -i s/x/y/ {toml}; {deploy}'",
-    "fly ssh console -a c1-rail -C '{deploy}'",
-    "rg --pre ./x.sh app . ; {deploy}",
-    "cat x | Select-Object @{{e={{sed -i s/x/y/ fly.toml}}}}; {deploy}",
-])
-@pytest.mark.parametrize("config", ["", " --config {toml}"])
-def test_deploy_after_a_possible_file_write_asks(template, config, tmp_path):
-    # Fails if a segment that may write files before (or beside) the deploy — a
-    # redirection, tee, sed -i, cp/mv/rm, git checkout/restore, an interpreter, any
-    # program off the read-only list — leaves the fly.toml it reads trusted, or a deploy
-    # on a remote machine is resolved against a local file (thread 4111045506).
-    toml = _other_toml(tmp_path)
-    command = template.format(deploy=DEPLOY + config.format(toml=toml), toml=toml)
-    assert g.classify_command(command, cwd=str(tmp_path)) == ("ask", "rail.deploy")
-
-
-@pytest.mark.parametrize("template", [
-    "ls && {deploy}",
-    "cat fly.toml; {deploy}",
-    "grep app {toml} && {deploy}",
-    "echo hi && {deploy} 2>&1 | tail -5",
-    "{deploy} 2>&1 | Select-Object -Last 5",
-    "{deploy} 2>/dev/null",
-    "{deploy} && sed -i s/x/y/ fly.toml",
-    "{deploy}; git checkout -- fly.toml",
-])
-@pytest.mark.parametrize("config", ["", " --config {toml}"])
-def test_read_only_or_later_segments_keep_the_target(template, config, tmp_path):
-    # Fails if a read-only program before the deploy, or a write that runs only after it,
-    # makes an off-path deploy prompt (the deploy prompt should not fire more than it
-    # needs to).
-    toml = _other_toml(tmp_path)
-    command = template.format(deploy=DEPLOY + config.format(toml=toml), toml=toml)
-    assert g.classify_command(command, cwd=str(tmp_path)) is None
+    assert g.classify_command(command) == expected
 
 
 @pytest.mark.parametrize("command", [
-    f"{MERGE} 501 {PIN} && {DEPLOY} -a c1-rail",
-    f"bash -c '{MERGE} 501 {PIN}; {ARM}'",
+    f"{MERGE} 501 {PIN} && {ADMIN}",
+    f"bash -c '{MERGE} 501 {PIN}; {ADMIN}'",
 ])
 def test_allowed_merge_cannot_launder_an_operator_act(command):
-    # Fails if an allowed merge earlier in a call lets a deploy or arm run without a prompt.
+    # Fails if a merge earlier in a call lets another operator act run without a prompt.
     assert g.classify_command(command)[0] == "ask"
 
 
-def test_merge_pass_never_pre_approves_a_bundled_command():
-    # Fails if a pinned merge bundled with an unrecognised command emits an allow, which
-    # would skip normal permission evaluation for the whole call (Codex #902).
+def test_bundled_merge_still_asks():
+    # Fails if a pinned merge bundled with an unrecognised command goes through without
+    # Joshua's prompt, or emits an allow that would skip normal permission evaluation for
+    # the whole call (Codex #902).
     block = _reason(f"{MERGE} 501 {PIN} && python scripts/anything.py")
-    assert "permissionDecision" not in block
+    assert block["permissionDecision"] == "ask"
     assert "independent review" in block["additionalContext"]
 
 
@@ -1262,13 +791,13 @@ def test_merge_pass_never_pre_approves_a_bundled_command():
     (f"{MERGE} 501 --admin=true {PIN}", ("ask", "pr.merge_admin")),
     (f"{MERGE} 501 --admin=false --admin {PIN}", ("ask", "pr.merge_admin")),
     (f"bash -c '{MERGE} 501 --admin {PIN}'", ("ask", "pr.merge_admin")),
-    (f"{MERGE} 501 --admin --admin=false {PIN}", ("pass", "pr.merge")),
+    (f"{MERGE} 501 --admin --admin=false {PIN}", ("ask", "pr.merge")),
     (f"{MERGE} 501 --admin", ("deny", "pr.merge_unpinned")),
     (f"{MERGE} 501 --admin {PIN} && {MERGE} 502 --auto", ("deny", "pr.auto_merge")),
 ])
 def test_pinned_admin_merge_asks(command, expected):
-    # Fails if a pinned `--admin` merge passes silently under the standing GO, which does
-    # not cover merging past unmet requirements ("askable admin merges", 2026-09-26;
+    # Fails if a pinned `--admin` merge is not put to Joshua as an admin merge: it merges
+    # past unmet requirements ("askable admin merges", 2026-09-26;
     # merge-train hard rule 5), or if the ask outranks an unpinned or auto-merge deny.
     assert g.classify_command(command) == expected
 
@@ -1279,3 +808,16 @@ def test_admin_merge_prompt_names_the_sha():
     assert block["permissionDecision"] == "ask"
     assert "pr.merge_admin" in block["permissionDecisionReason"]
     assert SHA in block["permissionDecisionReason"]
+
+
+@pytest.mark.parametrize("command,expected", [
+    (f"fly ssh console -a host -C '{MERGE} 1'", ("deny", "pr.merge_unpinned")),
+    (f"fly ssh console -a host -sC '{MERGE} 1'", ("deny", "pr.merge_unpinned")),
+    (f"fly ssh console -a host -C'{MERGE} 1'", ("deny", "pr.merge_unpinned")),
+    (f"fly ssh console -a host --command='{ADMIN}'", ("ask", "pr.merge_admin")),
+    ("fly ssh console -a host -C 'ls'", None),
+    ("fly status -a host", None),
+])
+def test_fly_ssh_command_is_judged(command, expected):
+    # Fails if an act run on a remote machine through `fly ssh console -C` goes unread.
+    assert g.classify_command(command) == expected

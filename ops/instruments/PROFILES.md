@@ -141,9 +141,9 @@ A directional bet keyed to a scheduled settlement, auction, or macro-release win
 |---|---|---|---|
 | EURUSD | DEAD | 2026-06-22 | ../../docs/rejected_candidates.md |
 | MGC | DEAD | 2026-08-10 | ../../lab/analysis/harvest/tnec_l2_sourcing_2026-08-10/DELTA_EXTRACTION_R8.md |
-| MYM | DEAD | 2026-07-21 | ../../docs/briefs/closures/MYM-3FPS-1-closure-falsified.md |
+| MYM | DEAD | 2026-07-21 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/MYM-3FPS-1-closure-falsified.md |
 | NG | DEAD | 2026-07-21 | ../../lab/archive/ng_eia_recon_2026-07/RESULTS.md |
-| ZN | DEAD | 2026-07-20 | ../../docs/briefs/closures/H-ZNAUC-1-closure-screen-fail.md |
+| ZN | DEAD | 2026-07-20 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/H-ZNAUC-1-closure-screen-fail.md |
 
 
 ## expiry-oi-strike-convergence
@@ -179,7 +179,7 @@ ICT-style liquidity-sweep / fair-value-gap geometry (sweep → FVG → opposing-
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
 | MNQ | DEAD | 2026-08-04 | ../../lab/archive/mnq_fvg_draw_probe_2026-08-04/RESULTS.md |
-| MYM | DEAD | 2026-07-29 | ../../docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md |
+| MYM | DEAD | 2026-07-29 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md |
 | SPX500 | DEAD | 2026-06-17 | #D2 |
 
 
@@ -225,8 +225,8 @@ A next-bar or intraday continuation signal keyed to the prior bar's or prior ses
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| MNQ | DEAD | 2026-07-21 | ../../docs/briefs/rnd-pipeline/D5-RECOST-1-mnq-native-cost-law-rescope-scoping.md |
-| NQ | DEAD | 2026-07-21 | ../../docs/briefs/rnd-pipeline/D5-RECOST-1-mnq-native-cost-law-rescope-scoping.md |
+| MNQ | DEAD | 2026-07-21 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/rnd-pipeline/D5-RECOST-1-mnq-native-cost-law-rescope-scoping.md |
+| NQ | DEAD | 2026-07-21 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/rnd-pipeline/D5-RECOST-1-mnq-native-cost-law-rescope-scoping.md |
 
 
 ## london-range-failed-extension-fade
@@ -237,7 +237,7 @@ A next-bar or intraday continuation signal keyed to the prior bar's or prior ses
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| MGC | DEAD | 2026-08-13 | ../../docs/briefs/closures/MSL-C2-closure-falsified.md |
+| MGC | DEAD | 2026-08-13 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/MSL-C2-closure-falsified.md |
 
 
 ## mean-reversion-fade
@@ -251,7 +251,7 @@ Fading an overextended move back toward a reference level rather than following 
 | EURGBP | DEAD | 2026-06-21 | #D1 |
 | SPX500 | DEAD | 2026-06-07 | #D1 |
 | USDCAD | DEAD | 2026-06-26 | ../../lab/archive/usdcad_fade_2026-06-26/RESULTS.md |
-| USOIL | DEAD | 2026-06-14 | ../../docs/adr/2026-06-14-reject-usoil-rdm-spike-fader.md |
+| USOIL | DEAD | 2026-06-14 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/adr/2026-06-14-reject-usoil-rdm-spike-fader.md |
 
 
 ## naive-direction-mirror
@@ -274,9 +274,9 @@ Opening-session volume or range interpreted as directional pressure predicting t
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| MNQ | DEAD | 2026-07-21 | ../../docs/briefs/closures/OPENPRESS-1-closure-falsified.md |
-| MYM | DEAD | 2026-07-21 | ../../docs/briefs/closures/OPENPRESS-1-closure-falsified.md |
-| NQ | DEAD | 2026-07-21 | ../../docs/briefs/closures/OPENPRESS-1-closure-falsified.md |
+| MNQ | DEAD | 2026-07-21 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/OPENPRESS-1-closure-falsified.md |
+| MYM | DEAD | 2026-07-21 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/OPENPRESS-1-closure-falsified.md |
+| NQ | DEAD | 2026-07-21 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/OPENPRESS-1-closure-falsified.md |
 
 
 ## opening-range-breakout
@@ -288,9 +288,9 @@ Trading the break of a session opening range in the direction of the break.
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
 | GER40 | AMBIGUOUS-PARKED | 2026-06-22 | #G2 |
-| MNQ | AMBIGUOUS-PARKED | 2026-07-23 | ../../docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md |
+| MNQ | AMBIGUOUS-PARKED | 2026-07-23 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md |
 | NAS100 | AMBIGUOUS-PARKED | 2026-06-23 | #N7 |
-| NQ | AMBIGUOUS-PARKED | 2026-07-23 | ../../docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md |
+| NQ | AMBIGUOUS-PARKED | 2026-07-23 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/programs/2026-07-17-0808-packet-delta-and-sequence.md |
 | SPX500 | DEAD | 2026-06-22 | ../../lab/analysis/legacy/us500_discovery_2026-06-22/RESULTS.md |
 | USDCAD | DEAD | 2026-06-14 | ../../lab/archive/usdcad_reverse_2026-06-14/RESULTS.md |
 | ZB | DEAD | 2026-07-20 | ../../lab/archive/orb_zb_recon_2026-07/RESULTS.md |
@@ -305,7 +305,7 @@ Entering in the direction of an opening-range break and holding the position for
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| MYM | DEAD | 2026-07-16 | ../../docs/briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md |
+| MYM | DEAD | 2026-07-16 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md |
 
 
 ## order-flow-depth-imbalance
@@ -329,7 +329,7 @@ Entering in the direction of an opening-range break and holding the position for
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| MYM | AMBIGUOUS-PARKED | 2026-08-30 | ../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md |
+| MYM | AMBIGUOUS-PARKED | 2026-08-30 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md |
 
 
 ## overnight-gap-magnitude-range-conditioning-overnight-calm
@@ -340,7 +340,7 @@ Entering in the direction of an opening-range break and holding the position for
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| MYM | DEAD | 2026-08-30 | ../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md |
+| MYM | DEAD | 2026-08-30 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md |
 
 
 ## overnight-range-day-session-transfer
@@ -351,7 +351,7 @@ Entering in the direction of an opening-range break and holding the position for
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| MYM | AMBIGUOUS-PARKED | 2026-08-30 | ../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md |
+| MYM | AMBIGUOUS-PARKED | 2026-08-30 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md |
 
 
 ## overnight-range-failed-extension-fade
@@ -362,7 +362,7 @@ Entering in the direction of an opening-range break and holding the position for
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| M2K | DEAD | 2026-08-13 | ../../docs/briefs/closures/MSL-C3-K2-closure-falsified.md |
+| M2K | DEAD | 2026-08-13 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/MSL-C3-K2-closure-falsified.md |
 
 
 ## overnight-range-transmission
@@ -375,7 +375,7 @@ Entering in the direction of an opening-range break and holding the position for
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| MNQ | AMBIGUOUS-PARKED | 2026-08-30 | ../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md |
+| MNQ | AMBIGUOUS-PARKED | 2026-08-30 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md |
 
 
 ## pdh-pdl-breakout-rth
@@ -395,8 +395,8 @@ _No instrument has a recorded verdict on this mechanism._
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| M2K | DEAD | 2026-08-13 | ../../docs/briefs/closures/MSL-C3-K2-closure-falsified.md |
-| MYM | DEAD | 2026-08-13 | ../../docs/briefs/closures/MSL-C1-closure-falsified.md |
+| M2K | DEAD | 2026-08-13 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/MSL-C3-K2-closure-falsified.md |
+| MYM | DEAD | 2026-08-13 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/MSL-C1-closure-falsified.md |
 
 
 ## prior-session-breakout-continuation
@@ -418,7 +418,7 @@ _No instrument has a recorded verdict on this mechanism._
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| MCL | DEAD | 2026-08-13 | ../../docs/briefs/closures/MSL-S2A-closure-falsified.md |
+| MCL | DEAD | 2026-08-13 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/MSL-S2A-closure-falsified.md |
 
 
 ## regime-overlay
@@ -461,7 +461,7 @@ Riding an established directional move rather than fading it or timing its start
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
 | BTCUSD | DEAD | 2026-06-30 | ../../docs/ltm/briefs/Q-BTC-3-closure-falsified.md |
-| MYM | LIVE | 2026-07-23 | ../../docs/briefs/programs/2026-07-23-tradeify-book-composition.md |
+| MYM | LIVE | 2026-07-23 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/programs/2026-07-23-tradeify-book-composition.md |
 | NAS100 | LIVE | 2026-05-05 | ../../core/strategies/_archive/nas/LOCK.md |
 | USDCAD | DEAD | 2026-06-14 | ../../lab/archive/usdcad_reverse_2026-06-14/RESULTS.md |
 | USOIL | AMBIGUOUS-PARKED | 2026-06-15 | #RGC-001 |
@@ -477,7 +477,7 @@ A calendar-timed return premium around the turn of the month, from institutional
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| ES | AMBIGUOUS-PARKED | 2026-07-12 | ../../docs/briefs/closures/Q-HARV-0-month-end-rebalance-ES.md |
+| ES | AMBIGUOUS-PARKED | 2026-07-12 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/Q-HARV-0-month-end-rebalance-ES.md |
 | EURUSD | AMBIGUOUS-PARKED | 2026-06-10 | ../../docs/rejected_candidates.md |
 | SPX500 | DEAD | 2026-06-16 | #F5 |
 
@@ -490,7 +490,7 @@ Porting a locked strategy to a different venue or contract without re-deriving p
 
 | Instrument | Verdict | Date | Source |
 |---|---|---|---|
-| 6J | AMBIGUOUS-PARKED | 2026-07-16 | ../../docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md |
+| 6J | AMBIGUOUS-PARKED | 2026-07-16 | https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/adr/2026-07-16-self-funded-lane-close-striker-micro-reconstruction.md |
 | MJY | DEAD | 2026-07-05 | #M1 |
 | MYM | DEAD | 2026-07-09 | ../../lab/archive/striker_dj30_mym_prototype_2026-07/RESULTS.md |
 | YM | DEAD | 2026-07-09 | ../../lab/archive/striker_dj30_mym_prototype_2026-07/RESULTS.md |

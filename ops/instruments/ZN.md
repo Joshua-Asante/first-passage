@@ -19,7 +19,7 @@ cells:
   - mechanism: event-window-reversal
     verdict: DEAD
     date: 2026-07-20
-    source: "../../docs/briefs/closures/H-ZNAUC-1-closure-screen-fail.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/H-ZNAUC-1-closure-screen-fail.md"
 bars:
   - id: treasury-complex-tail-exhaustion
     source: "ZN.md#R1"

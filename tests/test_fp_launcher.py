@@ -4,12 +4,10 @@ import importlib.util
 import json
 import os
 from pathlib import Path
-import re
 import shutil
 import site
 import subprocess
 import sys
-import time
 import venv
 
 import pytest
@@ -42,9 +40,6 @@ def checkout(tmp_path):
     launcher = SOURCE / "scripts/fp.py"
     assert launcher.is_file(), "operations launcher has not been implemented"
     shutil.copy2(launcher, root / "scripts/fp.py")
-    shutil.copy2(SOURCE / "scripts/record_verification.py", root / "scripts/record_verification.py")
-    shutil.copy2(SOURCE / "scripts/pytest_progress.py", root / "scripts/pytest_progress.py")
-    shutil.copy2(SOURCE / "scripts/pytest_junit_subtests.py", root / "scripts/pytest_junit_subtests.py")
     shutil.copy2(SOURCE / "scripts/gate_manifest.py", root / "scripts/gate_manifest.py")
     (root / "requirements-ops.lock").write_text(
         f"pytest=={importlib.metadata.version('pytest')}\n", encoding="utf-8"
@@ -58,71 +53,41 @@ def checkout(tmp_path):
     return root
 
 
+XDIST_PROBE = 'def test_worker():\n    import os\n    assert os.environ["PYTEST_XDIST_WORKER"].startswith("gw")\n'
+
+
 @pytest.mark.parametrize('fails', [False, True])
-def test_pytest_automatically_records_actual_result(checkout, ops_env, fails):
+def test_pytest_runs_directly_and_returns_its_result(checkout, ops_env, fails):
     (checkout / 'test_example.py').write_text('def test_value():\n    assert ' + str(not fails) + '\n')
     result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_example.py', '-q')
     assert result.returncode == int(fails), result.stderr
-    records = list((checkout / '.cache/fp-verification').glob('*/record.json'))
-    assert len(records) == 1
-    record = json.loads(records[0].read_text())
-    assert record['exit_code'] == int(fails) and record['source_stable']
-    assert record['junit'][0]['suites'][0]['failures'] == str(int(fails))
-    assert Path(record['metadata']['python']).samefile(Path(ops_env) / ('Scripts/python.exe' if os.name == 'nt' else 'bin/python'))
-    assert 'test_example.py' in record['before']['files']
+    assert ('1 failed' if fails else '1 passed') in result.stdout
+    assert not (checkout / '.cache/fp-verification').exists()
 
 
-def test_workers_are_opt_in_and_recorded(checkout, ops_env):
-    (checkout / 'test_parallel.py').write_text('def test_worker():\n    import os\n    assert os.environ["PYTEST_XDIST_WORKER"].startswith("gw")\n')
-    result = launch(checkout, '--env', ops_env, '--workers', '2', 'python', '-m', 'pytest', 'test_parallel.py', '-q')
+@pytest.mark.parametrize('selection', [('test_parallel.py', '-q'), ('-q', '--', 'test_parallel.py')])
+def test_workers_run_pytest_under_xdist(checkout, ops_env, selection):
+    (checkout / 'test_parallel.py').write_text(XDIST_PROBE)
+    result = launch(checkout, '--env', ops_env, '--workers', '2', 'python', '-m', 'pytest', *selection)
     assert result.returncode == 0, result.stdout + result.stderr
-    record = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
-    assert record['metadata']['workers'] == 2
-    assert '--dist=loadscope' in record['command']
 
 
-@pytest.mark.parametrize('workers', [0, 2])
-def test_subtests_have_individual_verified_outcomes(checkout, ops_env, workers):
-    (checkout / 'test_subtests.py').write_text(
-        'import unittest\n'
-        'class TestCases(unittest.TestCase):\n'
-        '    def test_values(self):\n'
-        '        for value in (1, 2):\n'
-        '            with self.subTest(label="same"):\n'
-        '                self.assertGreater(value, 0)\n', encoding='utf-8')
-    result = launch(checkout, '--env', ops_env, '--workers', str(workers),
-                    'python', '-m', 'pytest', 'test_subtests.py', '-q')
+def test_zero_workers_run_serially(checkout, ops_env):
+    (checkout / 'test_serial.py').write_text('def test_serial():\n    import os\n    assert "PYTEST_XDIST_WORKER" not in os.environ\n')
+    result = launch(checkout, '--env', ops_env, '--workers', '0', 'python', '-m', 'pytest', 'test_serial.py', '-q')
     assert result.returncode == 0, result.stdout + result.stderr
-    record = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
-    assert record['test_summary'] == dict(collected=3, passed=3, failed=0, errors=0, skipped=0)
-    assert record['report_errors'] == [] and record['source_stable']
 
 
-def test_setup_failure_has_not_started_record(checkout):
-    result = launch(checkout, '--env', str(checkout / 'missing'), 'test', '-q')
-    assert result.returncode != 0
-    records = list((checkout / '.cache/fp-verification').glob('*/record.json'))
-    assert len(records) == 1
-    record = json.loads(records[0].read_text())
-    assert record['status'] == 'not_started' and record['exit_code'] is None
-    assert record['verification_exit_code'] != 0 and record['error']
-
-
-def test_custom_junit_is_preserved_and_retained(checkout, ops_env, tmp_path):
-    (checkout / 'test_custom.py').write_text('def test_ok():\n    assert True\n')
-    report = tmp_path / 'custom report.xml'
-    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest',
-                    'test_custom.py', '--junitxml', str(report), '-q')
-    assert result.returncode == 0, result.stdout + result.stderr
-    saved = next((checkout / '.cache/fp-verification').glob('*/record.json'))
-    record = json.loads(saved.read_text())
-    assert record['test_summary']['passed'] == 1
-    assert (saved.parent / record['junit'][0]['file']).read_bytes() == report.read_bytes()
+def test_workers_are_refused_outside_pytest(checkout, ops_env):
+    result = launch(checkout, '--env', ops_env, '--workers', '2', 'python', '-c', "print('RAN')")
+    assert result.returncode == 2 and '--workers applies only to pytest commands' in result.stderr
+    assert 'RAN' not in result.stdout
 
 
 def launch(root, *args, env=None):
     process_env = os.environ.copy()
     process_env.pop("FP_OPS_ENV", None)
+    process_env.pop("PYTEST_XDIST_WORKER", None)  # Set when this suite itself runs under xdist.
     process_env.update(env or {})
     return subprocess.run(
         [sys.executable, "-I", str(root / "scripts/fp.py"), *args],
@@ -307,6 +272,7 @@ def test_powershell_native_error_preference_preserves_exit_status(checkout, ops_
     )
     assert result.returncode == 17, result.stderr
 
+
 @pytest.mark.parametrize('route', [('python', '-m', 'pytest'), ('test',), ('test-ops',)])
 def test_external_tests_use_checkout_configuration(checkout, ops_env, route):
     for folder, value in [(checkout.parent, 'PARENT'), (checkout, 'CHECKOUT')]:
@@ -317,48 +283,6 @@ def test_external_tests_use_checkout_configuration(checkout, ops_env, route):
     external = checkout.parent / 'test_external.py'
     external.write_text('from sentinel import VALUE\ndef test_root():\n    assert VALUE == "CHECKOUT"\n')
     result = launch(checkout, '--env', ops_env, *route, str(external), '-q')
-    assert result.returncode == 0, result.stdout + result.stderr
-    saved = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
-    assert saved['metadata']['pytest_config'] == str(checkout / 'pyproject.toml')
-    assert saved['metadata']['pytest_root'] == str(checkout)
-    assert saved['external_files']['before'][str(external)]
-    assert saved['external_files']['stable']
-
-
-@pytest.mark.parametrize('option', ['-c', '-c=', '--rootdir', '--rootdir='])
-@pytest.mark.parametrize('equivalent', [False, True])
-def test_explicit_pytest_configuration(checkout, ops_env, option, equivalent):
-    (checkout / 'pyproject.toml').write_text('[tool.pytest.ini_options]\n')
-    (checkout / 'test_ok.py').write_text('def test_ok():\n    pass\n')
-    target = checkout if equivalent else checkout.parent
-    if option.startswith('-c'):
-        target = target / 'pyproject.toml'
-        if not equivalent:
-            target.write_text('[tool.pytest.ini_options]\n')
-    args = [option + str(target)] if option.endswith('=') else [option, str(target)]
-    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_ok.py', *args, '-q')
-    assert (result.returncode == 0) == equivalent, result.stdout + result.stderr
-    if not equivalent:
-        assert 'conflicting pytest' in result.stderr.lower()
-
-
-def test_mutated_external_test_cannot_pass_verification(checkout, ops_env):
-    (checkout / 'pyproject.toml').write_text('[tool.pytest.ini_options]\n')
-    external = checkout.parent / 'test_mutates.py'
-    external.write_text('from pathlib import Path\ndef test_mutation():\n    Path(__file__).write_text("# changed")\n')
-    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', str(external), '-q')
-    assert result.returncode != 0
-    saved = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
-    assert saved['exit_code'] == 0 and saved['source_stable']
-    assert not saved['external_files']['stable']
-
-
-def test_existing_custom_junit_is_output_not_external_source(checkout, ops_env):
-    (checkout / 'test_ok.py').write_text('def test_ok():\n    pass\n')
-    report = checkout.parent / 'old.xml'
-    report.write_text('old output')
-    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest',
-                    'test_ok.py', '--junitxml', str(report), '-q')
     assert result.returncode == 0, result.stdout + result.stderr
 
 
@@ -376,365 +300,3 @@ def test_deliberate_overrides_are_retained(checkout, ops_env):
     result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_override.py',
                     '-o', 'pythonpath=alternate', '-q')
     assert result.returncode == 0, result.stdout + result.stderr
-    saved = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
-    assert 'pythonpath=alternate' in saved['command']
-
-
-def test_environment_config_conflict_is_rejected(checkout, ops_env):
-    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', '-q',
-                    env={'PYTEST_ADDOPTS': '--rootdir=..'})
-    assert result.returncode != 0 and 'Conflicting pytest' in result.stderr
-
-@pytest.mark.parametrize('hidden', ['--rootdir=..', '-c\n../pyproject.toml'])
-def test_argument_files_cannot_bypass_checkout_contract(checkout, ops_env, hidden):
-    (checkout.parent / 'pyproject.toml').write_text('[tool.pytest.ini_options]\n')
-    (checkout / 'test_ok.py').write_text('def test_ok():\n    pass\n')
-    (checkout / 'nested.args').write_text(hidden + '\ntest_ok.py\n')
-    (checkout / 'outer.args').write_text('@nested.args\n')
-    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', '@outer.args', '-q')
-    assert result.returncode != 0, result.stdout + result.stderr
-    assert 'Conflicting pytest' in result.stderr
-
-
-def test_argument_file_external_tests_are_measured(checkout, ops_env):
-    external = checkout.parent / 'test_from_args.py'
-    external.write_text('from pathlib import Path\ndef test_mutate():\n    Path(__file__).write_text("changed")\n')
-    args = checkout.parent / 'selection.args'
-    args.write_text(str(external) + '\n')
-    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', '@' + str(args), '-q')
-    assert result.returncode != 0, result.stdout + result.stderr
-    record = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
-    assert record['exit_code'] == 0 and not record['external_files']['stable']
-
-
-@pytest.mark.parametrize('option', ['--junit-xml', '--junitxml='])
-def test_external_test_cannot_be_its_own_report(checkout, ops_env, option):
-    external = checkout.parent / 'test_overlap.py'
-    original = 'def test_ok():\n    pass\n'
-    external.write_text(original)
-    args = [option + str(external)] if option.endswith('=') else [option, str(external)]
-    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', str(external), *args, '-q')
-    assert result.returncode != 0, result.stdout + result.stderr
-    assert external.read_text() == original
-    assert 'overlap' in result.stderr.lower()
-
-
-@pytest.mark.parametrize('syntax', ['$FP_TEST_CHECKOUT', '${FP_TEST_CHECKOUT}'])
-def test_root_variables_are_expanded_before_comparison(checkout, ops_env, syntax):
-    (checkout / 'test_ok.py').write_text('def test_ok():\n    pass\n')
-    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_ok.py', '-q',
-                    env={'FP_TEST_CHECKOUT': str(checkout), 'PYTEST_ADDOPTS': '--rootdir=' + syntax})
-    assert result.returncode == 0, result.stdout + result.stderr
-
-
-@pytest.mark.parametrize('retarget', [False, True])
-def test_retargeted_external_symlink_cannot_pass(checkout, ops_env, retarget):
-    link = checkout.parent / 'test_selected.py'
-    old = checkout.parent / 'original.py'
-    new = checkout.parent / 'replacement.py'
-    old.write_text('from pathlib import Path\ndef test_retarget():\n'
-                   f'    p = Path({str(link)!r})\n    p.unlink()\n    p.symlink_to({str(new)!r})\n')
-    if not retarget:
-        old.write_text('def test_unchanged():\n    pass\n')
-    new.write_text(old.read_text())
-    try:
-        link.symlink_to(old)
-    except OSError:
-        pytest.skip('Symlink creation unavailable')
-    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', str(link), '-q')
-    assert (result.returncode == 0) == (not retarget), result.stdout + result.stderr
-    record = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
-    assert record['exit_code'] == 0
-    assert record['external_files']['stable'] == (not retarget)
-    assert str(link) in record['external_files']['before']
-
-@pytest.mark.parametrize('overlap', [False, True])
-@pytest.mark.parametrize('syntax', ['variable', 'home'])
-def test_expanded_report_destinations(checkout, ops_env, overlap, syntax):
-    external = checkout.parent / 'test_report_path.py'
-    original = 'def test_ok():\n    pass\n'
-    external.write_text(original)
-    report = external if overlap else checkout.parent / 'result.xml'
-    value = '$FP_REPORT' if syntax == 'variable' else '~/' + report.name
-    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', str(external),
-                    '--junitxml=' + value, '-q', env={'FP_REPORT': str(report),
-                    'HOME': str(checkout.parent), 'USERPROFILE': str(checkout.parent)})
-    assert external.read_text() == original
-    assert (result.returncode == 0) == (not overlap), result.stdout + result.stderr
-    if overlap:
-        assert 'overlap' in result.stderr.lower()
-    else:
-        assert report.is_file()
-
-
-def test_hardlinked_report_cannot_overwrite_external_test(checkout, ops_env):
-    external = checkout.parent / 'test_hardlink.py'
-    original = 'def test_ok():\n    pass\n'
-    external.write_text(original)
-    report = checkout.parent / 'alias.xml'
-    os.link(external, report)
-    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', str(external),
-                    '--junitxml', str(report), '-q')
-    assert result.returncode != 0 and 'overlap' in result.stderr.lower()
-    assert external.read_text() == original
-
-
-@pytest.mark.parametrize('invalid', ['cycle', 'missing'])
-def test_invalid_argument_files_fail_before_pytest(checkout, ops_env, invalid):
-    if invalid == 'cycle':
-        (checkout / 'args.txt').write_text('@args.txt\n')
-    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', '@args.txt')
-    assert result.returncode != 0
-    record = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
-    assert record['status'] == 'not_started' and record['exit_code'] is None
-    assert record['error']
-
-
-def test_nested_argument_files_from_environment_are_recorded(checkout, ops_env):
-    external = checkout.parent / 'test_argument_ok.py'
-    external.write_text('def test_ok():\n    pass\n')
-    inner = checkout.parent / 'inner.args'
-    inner.write_text('--rootdir\n' + str(checkout) + '\n' + str(external) + '\n')
-    (checkout / 'outer.args').write_text('@' + str(inner) + '\n')
-    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', '-q',
-                    env={'PYTEST_ADDOPTS': '@outer.args'})
-    assert result.returncode == 0, result.stdout + result.stderr
-    record = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
-    assert str(external) in record['external_files']['before']
-    assert str(inner) in record['external_files']['before']
-    assert not any(a.startswith('@') for a in record['command'])
-
-
-@pytest.mark.parametrize('entry', ['config', 'override'])
-def test_configured_argument_files_cannot_hide_external_mutation(checkout, ops_env, entry):
-    external = checkout.parent / 'test_configured.py'
-    external.write_text('from pathlib import Path\ndef test_mutate():\n    Path(__file__).write_text("changed")\n')
-    (checkout / 'args.txt').write_text(str(external) + '\n')
-    if entry == 'config':
-        (checkout / 'pyproject.toml').write_text('[tool.pytest.ini_options]\naddopts = "@args.txt"\n')
-        args = []
-    else:
-        args = ['-o', 'addopts=@args.txt']
-    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', *args, '-q')
-    assert result.returncode != 0, result.stdout + result.stderr
-    record = json.loads(next((checkout / '.cache/fp-verification').glob('*/record.json')).read_text())
-    assert record['exit_code'] == 0 and not record['external_files']['stable']
-    assert str(external) in record['external_files']['before']
-
-
-def test_existing_log_output_is_not_external_source(checkout, ops_env):
-    (checkout / 'test_logged.py').write_text('def test_ok():\n    import logging\n    logging.warning("observed")\n')
-    log = checkout.parent / 'existing.log'
-    log.write_text('old output')
-    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_logged.py',
-                    '--log-file', str(log), '-q')
-    assert result.returncode == 0, result.stdout + result.stderr
-    assert 'observed' in log.read_text()
-
-@pytest.mark.parametrize('option', ['-o', '-o=', '--override-ini='])
-def test_effective_addopts_override_precedes_config(checkout, ops_env, option):
-    (checkout / 'pyproject.toml').write_text('[tool.pytest.ini_options]\naddopts = "--rootdir=.."\n')
-    (checkout / 'test_ok.py').write_text('def test_ok():\n    pass\n')
-    (checkout / 'args.txt').write_text('test_ok.py\n')
-    value = 'addopts=@args.txt'
-    args = [option + value] if option.endswith('=') else [option, value]
-    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', *args, '-q')
-    assert result.returncode == 0, result.stdout + result.stderr
-
-
-def test_native_addopts_is_expanded_only_once(checkout, ops_env):
-    (checkout / 'pyproject.toml').write_text('[tool.pytest]\naddopts = ["-o", "addopts=@does-not-exist", "test_ok.py"]\n')
-    (checkout / 'test_ok.py').write_text('def test_ok():\n    pass\n')
-    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', '-q')
-    assert result.returncode == 0, result.stdout + result.stderr
-
-
-def test_argument_file_preserves_symlink_parent_semantics(checkout, ops_env):
-    target = checkout.parent / 'target'
-    (target / 'sub').mkdir(parents=True)
-    link = checkout / 'link'
-    try:
-        link.symlink_to(target / 'sub', target_is_directory=True)
-    except OSError:
-        pytest.skip('Symlink creation unavailable')
-    (checkout / 'test_ok.py').write_text('def test_ok():\n    pass\n')
-    (checkout / 'args.txt').write_text('--rootdir=..\n')
-    (target / 'args.txt').write_text('test_ok.py\n')
-    result = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', '@link/../args.txt', '-q')
-    assert result.returncode == 0, result.stdout + result.stderr
-
-
-DETACHED_IDENTITY = re.compile(r'\d{8}T\d{6}Z-[0-9a-f]{12}')
-
-
-def detached_report(result):
-    """Read the launcher's two-line detached-run report."""
-    lines = [line for line in result.stdout.splitlines() if line.strip()]
-    assert len(lines) == 2, result.stdout + result.stderr
-    assert lines[0].startswith('record: ') and lines[1].startswith('pid: '), result.stdout
-    record = Path(lines[0][len('record: '):])
-    return record, int(lines[1][len('pid: '):])
-
-
-def await_final_record(checkout, identity, timeout=120.0):
-    """Poll the detached child's record.json until it leaves its transient states."""
-    path = checkout / '.cache/fp-verification' / identity / 'record.json'
-    deadline = time.monotonic() + timeout
-    while time.monotonic() < deadline:
-        try:
-            record = json.loads(path.read_text(encoding='utf-8'))
-        except (OSError, ValueError):
-            record = None
-        if record is not None and record['status'] not in ('not_started', 'running'):
-            return record
-        time.sleep(0.5)
-    log = path.parent.parent / f'{identity}.detach.log'
-    tail = log.read_text(encoding='utf-8', errors='replace')[-4000:] if log.is_file() else '<no log>'
-    raise AssertionError(f'detached run did not finish within {timeout:.0f}s: {path}\n{tail}')
-
-
-def test_detach_returns_immediately_and_records_completion(checkout, ops_env):
-    (checkout / 'test_detached.py').write_text('def test_ok():\n    assert True\n', encoding='utf-8')
-    started = time.monotonic()
-    result = launch(checkout, '--env', ops_env, '--detach', 'python', '-m', 'pytest', 'test_detached.py', '-q')
-    assert result.returncode == 0, result.stdout + result.stderr
-    assert time.monotonic() - started < 60, 'the parent must not wait for the detached child'
-    record, pid = detached_report(result)
-    assert record == checkout / '.cache/fp-verification' / record.name
-    assert DETACHED_IDENTITY.fullmatch(record.name)
-    descriptor = json.loads((record.parent / f'{record.name}.detach.json').read_text(encoding='utf-8'))
-    assert descriptor['pid'] == pid
-    assert descriptor['record'] == str(record)
-    assert descriptor['log'] == str(record.parent / f'{record.name}.detach.log')
-    assert descriptor['argv'][1:3] == ['-I', str(checkout / 'scripts/fp.py')]
-    assert '--detach' not in descriptor['argv'] and 'test_detached.py' in descriptor['argv']
-    assert (record.parent / f'{record.name}.detach.log').is_file()
-    final = await_final_record(checkout, record.name)
-    assert final['status'] == 'completed'
-    assert final['verification_exit_code'] == 0
-    assert final['test_summary']['passed'] == 1
-
-
-def test_detach_failing_suite_records_failed(checkout, ops_env):
-    (checkout / 'test_detached_failure.py').write_text(
-        'def test_fails():\n    assert False, "detached failure"\n', encoding='utf-8')
-    result = launch(checkout, '--env', ops_env, '--detach', 'python', '-m', 'pytest',
-                    'test_detached_failure.py', '-q')
-    assert result.returncode == 0, result.stdout + result.stderr
-    record, _ = detached_report(result)
-    final = await_final_record(checkout, record.name)
-    assert final['status'] == 'failed'
-    assert final['exit_code'] == 1 and final['verification_exit_code'] == 1
-
-
-@pytest.mark.parametrize('arguments', [['doctor'], ['python', '-c', 'pass']])
-def test_detach_rejected_for_unrecorded_commands(checkout, ops_env, arguments):
-    result = launch(checkout, '--env', ops_env, '--detach', *arguments)
-    assert result.returncode == 2
-    assert '--detach applies only to recorded commands (pytest tasks and check)' in result.stderr
-    assert 'pass' not in result.stdout
-    assert not list((checkout / '.cache/fp-verification').glob('*/record.json'))
-
-
-def test_detach_identity_env_validation(checkout, ops_env):
-    (checkout / 'test_identity.py').write_text('def test_ok():\n    assert True\n', encoding='utf-8')
-    malformed = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_identity.py', '-q',
-                       env={'FP_VERIFICATION_ID': 'not-an-identity'})
-    assert malformed.returncode == 2
-    assert 'fp: invalid FP_VERIFICATION_ID' in malformed.stderr
-    assert not list((checkout / '.cache/fp-verification').glob('*/record.json'))
-    identity = '20250101T000000Z-0123456789ab'
-    unreserved = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_identity.py', '-q',
-                        env={'FP_VERIFICATION_ID': identity})
-    assert unreserved.returncode == 2
-    assert 'not an unused detached reservation' in unreserved.stderr
-    (checkout / '.cache/fp-verification').mkdir(parents=True, exist_ok=True)
-    (checkout / '.cache/fp-verification' / f'{identity}.detach.log').write_bytes(b'')
-    accepted = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_identity.py', '-q',
-                      env={'FP_VERIFICATION_ID': identity})
-    assert accepted.returncode == 0, accepted.stdout + accepted.stderr
-    record = json.loads((checkout / '.cache/fp-verification' / identity / 'record.json').read_text())
-    assert record['status'] == 'completed'
-    reused = launch(checkout, '--env', ops_env, 'python', '-m', 'pytest', 'test_identity.py', '-q',
-                    env={'FP_VERIFICATION_ID': identity})
-    assert reused.returncode == 2 and 'not an unused detached reservation' in reused.stderr
-
-
-def test_detach_identity_not_leaked(checkout, ops_env):
-    (checkout / 'test_no_identity_leak.py').write_text(
-        'import os\n\n\ndef test_identity_is_not_inherited():\n'
-        '    assert os.environ.get("FP_VERIFICATION_ID") is None\n', encoding='utf-8')
-    result = launch(checkout, '--env', ops_env, '--detach', 'python', '-m', 'pytest',
-                    'test_no_identity_leak.py', '-q')
-    assert result.returncode == 0, result.stdout + result.stderr
-    record, _ = detached_report(result)
-    final = await_final_record(checkout, record.name)
-    assert final['status'] == 'completed' and final['verification_exit_code'] == 0
-    assert final['test_summary'] == dict(collected=1, passed=1, failed=0, errors=0, skipped=0)
-
-
-def test_detach_parent_returns_before_the_suite_ends(checkout, ops_env):
-    (checkout / 'test_slow.py').write_text('import time\n\n\ndef test_slow():\n    time.sleep(20)\n',
-                                           encoding='utf-8')
-    started = time.monotonic()
-    result = launch(checkout, '--env', ops_env, '--detach', 'python', '-m', 'pytest', 'test_slow.py', '-q')
-    assert result.returncode == 0, result.stdout + result.stderr
-    assert time.monotonic() - started < 15, 'the parent ran the suite instead of detaching it'
-    record, _ = detached_report(result)
-    assert not (record / 'record.json').is_file() or \
-        json.loads((record / 'record.json').read_text(encoding='utf-8'))['status'] in ('not_started', 'running')
-    assert await_final_record(checkout, record.name)['status'] == 'completed'
-
-
-@pytest.mark.parametrize('flag', ['--det', '--detac'])
-def test_detach_abbreviation_is_rejected(checkout, ops_env, flag):
-    result = launch(checkout, '--env', ops_env, flag, 'python', '-m', 'pytest', 'x.py')
-    assert result.returncode == 2 and 'unrecognized arguments' in result.stderr
-    assert not list((checkout / '.cache/fp-verification').glob('*.detach.json'))
-
-
-def test_detach_child_argv_is_rebuilt_from_options(checkout, ops_env):
-    """The child's argv is rebuilt from the parsed options: a relative --env arrives resolved
-    against the caller's directory, --workers is kept, and --detach is gone."""
-    (checkout / 'test_rebuilt.py').write_text('def test_ok():\n    assert True\n', encoding='utf-8')
-    relative = os.path.relpath(ops_env, checkout.parent)
-    result = launch(checkout, '--env', relative, '--workers', '0', '--detach', 'python', '-m', 'pytest',
-                    'test_rebuilt.py', '-q')
-    assert result.returncode == 0, result.stdout + result.stderr
-    record, _ = detached_report(result)
-    argv = json.loads((record.parent / f'{record.name}.detach.json').read_text(encoding='utf-8'))['argv']
-    assert argv[3:] == ['--env', str(Path(ops_env).resolve()), '--workers', '0', 'python', '-m', 'pytest',
-                        'test_rebuilt.py', '-q']
-    assert await_final_record(checkout, record.name)['status'] == 'completed'
-
-
-def test_detach_empty_env_is_refused_in_the_parent(checkout, ops_env):
-    result = launch(checkout, '--env', ' ', '--detach', 'python', '-m', 'pytest', 'x.py')
-    assert result.returncode == 2 and 'Operations environment selection is empty' in result.stderr
-    assert not list((checkout / '.cache/fp-verification').glob('*.detach.json'))
-
-
-def test_record_persist_retries_a_denied_replace(tmp_path, monkeypatch):
-    """Windows denies os.replace while a poller holds record.json open; persist retries."""
-    spec = importlib.util.spec_from_file_location('recorder_retry', SOURCE / 'scripts/record_verification.py')
-    recorder = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(recorder)
-    real, calls = os.replace, []
-
-    def flaky(source, target):
-        calls.append(target)
-        if len(calls) < 3:
-            raise PermissionError(5, 'Access is denied')
-        real(source, target)
-    record = object.__new__(recorder.RunRecord)
-    record.output, record.data = tmp_path, {'status': 'running'}
-    monkeypatch.setattr(recorder.os, 'replace', flaky)
-    monkeypatch.setattr(recorder.time, 'sleep', lambda _: None)
-    record.persist()
-    assert len(calls) == 3 and json.loads((tmp_path / 'record.json').read_text()) == {'status': 'running'}
-
-
-def test_detach_refused_inside_a_detached_run(checkout, ops_env):
-    result = launch(checkout, '--env', ops_env, '--detach', 'python', '-m', 'pytest', 'x.py',
-                    env={'FP_VERIFICATION_ID': '20250101T000000Z-0123456789ab'})
-    assert result.returncode == 2 and '--detach cannot run inside a detached run' in result.stderr

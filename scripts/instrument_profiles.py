@@ -12,7 +12,9 @@ This module:
 
 Design: docs/superpowers/specs/2026-07-25-instrument-profiles-design.md
 
-Reads only committed text -> environment-independent (green on CI / clone).
+Reads only committed text. Sources pinned as this-repo blob/<sha>/<path> URLs
+are read from local history via `git cat-file`/`git show`, so a shallow clone
+without that commit reports them as P1 (fail closed).
 Exit codes: 0 = clean; 1 = one or more HARD findings.
 """
 from __future__ import annotations
@@ -21,6 +23,7 @@ import argparse
 import difflib
 import json
 import re
+import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -388,9 +391,83 @@ _PUBLIC_SEED_EXCLUDED = ("docs/ltm/", "docs/notes/", "docs/superpowers/")
 
 
 def _is_public_seed_excluded_source(source: str) -> bool:
-    """True when a pointer targets a tree curated out of the public seed."""
+    """True when a local pointer targets a tree curated out of the public seed.
+
+    URL pointers are never waived: a pinned blob either verifies or is a P1.
+    """
     norm = source.replace("\\", "/")
+    if _is_url(norm):
+        return False
     return any(prefix in norm for prefix in _PUBLIC_SEED_EXCLUDED)
+
+
+# Historical records deleted from the working tree (5510ca9) are cited as
+# blobs pinned to a pre-cut commit of THIS repository. Such a pointer is
+# historical provenance, not current authorization.
+_PINNED_BLOB_RE = re.compile(
+    r"^https://github\.com/Joshua-Asante/first-passage/blob/"
+    r"(?P<sha>[0-9a-f]{7,40})/(?P<path>[^#?]+)(?:#.*)?$"
+)
+
+
+def _is_url(source: str) -> bool:
+    return bool(re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*://", source))
+
+
+def _pinned_blob(source: str) -> tuple[str, str] | None:
+    """(sha, repo path) for a this-repo blob/<sha>/<path> URL, else None."""
+    m = _PINNED_BLOB_RE.match(source)
+    if not m:
+        return None
+    path = m.group("path")
+    parts = path.split("/")
+    if path.startswith("/") or any(p in ("", ".", "..") for p in parts):
+        return None
+    return m.group("sha"), path
+
+
+def _git_show_blob(sha: str, path: str, cwd: Path) -> str | None:
+    """Text of `<sha>:<path>` from the git repo containing `cwd`, or None.
+
+    Fails closed: a missing object (unknown or ambiguous sha, absent path,
+    shallow clone without that commit), a non-blob, or any git error -> None.
+    """
+    spec = f"{sha}:{path}"
+    try:
+        kind = subprocess.run(
+            ["git", "-C", str(cwd), "cat-file", "-t", spec],
+            capture_output=True, text=True, check=False,
+        )
+        if kind.returncode != 0 or kind.stdout.strip() != "blob":
+            return None
+        shown = subprocess.run(
+            ["git", "-C", str(cwd), "show", spec],
+            capture_output=True, check=False,
+        )
+    except OSError:
+        return None
+    if shown.returncode != 0:
+        return None
+    return shown.stdout.decode("utf-8", errors="replace")
+
+
+def _source_text(source: str, profile: Profile) -> str | None:
+    """Text a resolvable source points at, or None when it does not resolve.
+
+    Anchor-only (#X) -> the ledger itself; this-repo pinned blob URL -> the
+    blob via git; any other URL -> None; else a path relative to the ledger.
+    """
+    if source.startswith("#"):
+        return profile.path.read_text(encoding="utf-8", errors="replace")
+    if _is_url(source):
+        pinned = _pinned_blob(source)
+        if pinned is None:
+            return None
+        return _git_show_blob(*pinned, profile.path.parent)
+    target = profile.path.parent / source.split("#")[0]
+    if not target.exists():
+        return None
+    return target.read_text(encoding="utf-8", errors="replace")
 
 
 def _resolve(source: str, profile: Profile) -> bool:
@@ -398,11 +475,17 @@ def _resolve(source: str, profile: Profile) -> bool:
 
     Empty / missing source is NOT vacuously resolved — an unsourced claim must
     fail the gate (ADR forbidden-moves: blocks never carry an unsourced claim).
+    A URL resolves only as a this-repo blob/<sha>/<path> pin whose object
+    `git cat-file` finds locally; other repos, missing objects, shallow clones
+    and git errors all fail closed.
     """
     if not source:
         return False
     if source.startswith("#"):
         return True
+    if _is_url(source):
+        pinned = _pinned_blob(source)
+        return pinned is not None and _git_show_blob(*pinned, profile.path.parent) is not None
     return (profile.path.parent / source.split("#")[0]).exists()
 
 
@@ -450,10 +533,10 @@ def _check_date_provenance(cell: Cell, prof: Profile, rel: str) -> list[Finding]
     if not source:
         return []  # already a P1 from _resolve; do not double-report
     anchor_only = source.startswith("#")
-    target = prof.path if anchor_only else (prof.path.parent / source.split("#")[0])
-    if not target.exists():
+    raw = _source_text(source, prof)
+    if raw is None:
         return []  # already a P1 from _resolve
-    text = normalize(target.read_text(encoding="utf-8", errors="replace"))
+    text = normalize(raw)
     declared = {m.group(2) for m in LABEL_RE.finditer(text)}
 
     if len(declared) == 1 and not anchor_only:
@@ -571,6 +654,14 @@ def _check_finding_annotation_truncation(
     return out
 
 
+def _unresolved_message(source: str) -> str:
+    msg = f"source {source!r} does not resolve"
+    if _is_url(source):
+        msg += (" — a URL must be a this-repo blob/<sha>/<path> pin present in local"
+                " git history (unshallow the clone if the commit is missing)")
+    return msg
+
+
 def validate(
     profiles: list[Profile], mechanisms: dict[str, Mechanism], repo_root: Path
 ) -> list[Finding]:
@@ -613,7 +704,7 @@ def validate(
                 if _is_public_seed_excluded_source(cell.source):
                     continue
                 findings.append(
-                    Finding(rel, prof.lineno, "P1", f"source {cell.source!r} does not resolve")
+                    Finding(rel, prof.lineno, "P1", _unresolved_message(cell.source))
                 )
             else:
                 findings.extend(_check_date_provenance(cell, prof, rel))
@@ -633,7 +724,7 @@ def validate(
                     if _is_public_seed_excluded_source(src):
                         continue
                     findings.append(
-                        Finding(rel, prof.lineno, "P1", f"source {src!r} does not resolve")
+                        Finding(rel, prof.lineno, "P1", _unresolved_message(src))
                     )
         hurdle_src = prof.cost_hurdle.get("source", "") if prof.cost_hurdle else ""
         if prof.cost_hurdle and not _resolve(hurdle_src, prof):

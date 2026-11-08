@@ -2,19 +2,12 @@
 from __future__ import annotations
 
 import argparse
-from contextlib import nullcontext
-import importlib.util
-from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
 import re
-import shlex
 import subprocess
 import sys
-import tempfile
-import tomllib
-from uuid import uuid4
 
 
 # Executed by the selected interpreter, not by the bootstrap Python on PATH.
@@ -43,11 +36,6 @@ except md.PackageNotFoundError:
 print(json.dumps({'python': sys.executable, 'version': sys.version.split()[0],
                   'errors': errors, 'signing': signing}))
 """
-
-
-DETACH_ENVIRONMENT = 'FP_VERIFICATION_ID'
-IDENTITY_PATTERN = re.compile(r'\d{8}T\d{6}Z-[0-9a-f]{12}')
-CREATE_BREAKAWAY_FROM_JOB = 0x01000000
 
 
 def resolve_environment(root: Path, explicit: str | None) -> Path:
@@ -107,7 +95,7 @@ def prepare(root: Path, environment: Path) -> tuple[Path, dict[str, str], dict]:
     child_env["PATH"] = str(python.parent) + os.pathsep + child_env.get("PATH", "")
     child_env["VIRTUAL_ENV"] = str(environment)
     child_env["PYTHONNOUSERSITE"] = "1"
-    for key in ("PYTHONHOME", "PYTHONPATH", DETACH_ENVIRONMENT):
+    for key in ("PYTHONHOME", "PYTHONPATH"):
         child_env.pop(key, None)
     expected = locked_requirements(root / "requirements-ops.lock")
     result = subprocess.run(
@@ -124,179 +112,12 @@ def prepare(root: Path, environment: Path) -> tuple[Path, dict[str, str], dict]:
     return python, child_env, report
 
 
-def expand_pytest_argument_files(root: Path, args: list[str]) -> tuple[list[str], set[Path]]:
-    """Match pytest's one-argument-per-line files, before any validation."""
-    files = set()
-    remaining = 100_000
-
-    def expand(arguments, stack):
-        nonlocal remaining
-        result = []
-        for argument in arguments:
-            remaining -= 1
-            if remaining < 0:
-                raise ValueError('Pytest argument file expansion exceeds 100000 arguments')
-            if not argument.startswith('@'):
-                result.append(argument)
-                continue
-            path = root / argument[1:]
-            identity = path.resolve()
-            if identity in stack or len(stack) >= 16:
-                raise ValueError(f'Cyclic or excessively nested pytest argument file: {path}')
-            with path.open('r', encoding=sys.getfilesystemencoding(),
-                           errors=sys.getfilesystemencodeerrors()) as source:
-                content = source.read(1_000_001)
-            if len(content) > 1_000_000:
-                raise ValueError(f'Pytest argument file exceeds 1000000 characters: {path}')
-            files.add(path)
-            # Like argparse, nested relative paths resolve from pytest's cwd,
-            # not from the containing argument file's directory.
-            result.extend(expand(content.splitlines(), (*stack, identity)))
-        return result
-
-    return expand(args, ()), files
-
-
-def configured_pytest_arguments(root: Path, args: list[str]) -> list[str]:
-    """Materialize pytest's single addopts layer so inputs cannot hide in it."""
-    config = tomllib.loads((root / 'pyproject.toml').read_text(encoding='utf-8'))
-    table = config.get('tool', {}).get('pytest', {})
-    native = {key: value for key, value in table.items() if key != 'ini_options'}
-    legacy = table.get('ini_options', {})
-    if native and legacy:
-        raise ValueError('Cannot combine native pytest configuration and ini_options')
-    value = (native or legacy).get('addopts', [])
-    iterator = iter(args)
-    for argument in iterator:
-        if argument == '--':
-            break
-        override = None
-        if argument in ('-o', '--override-ini'):
-            override = next(iterator, '')
-        elif argument.startswith('--override-ini='):
-            override = argument.split('=', 1)[1]
-        elif argument.startswith('-o') and not argument.startswith('--'):
-            override = argument[2:].removeprefix('=')
-        if override is not None:
-            name, separator, selected = override.partition('=')
-            if separator and name.strip() == 'addopts':
-                value = selected
-    if isinstance(value, str):
-        return shlex.split(value)
-    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
-        raise ValueError('Pytest addopts must be a string or list of strings')
-    return value
-
-
-def pytest_report_selection(args: list[str]) -> tuple[list[str], dict[str, str]]:
-    """Separate output option values from possible source paths, honoring --."""
-    inputs = []
-    outputs = {}
-    iterator = iter(args)
-    for argument in iterator:
-        if argument == '--':
-            inputs.extend(iterator)
-            break
-        key, separator, value = argument.partition('=')
-        if key in ('--junitxml', '--junit-xml', '--log-file'):
-            if not separator:
-                value = next(iterator, '')
-            if not value:
-                raise ValueError(f'{key} destination is missing')
-            outputs['junit' if key != '--log-file' else 'log'] = value
-        else:
-            inputs.append(argument)
-    return inputs, outputs
-
-
-def verification_identity(directory: Path) -> str:
-    """Reuse an unused detached reservation, or mint a fresh record identity."""
-    inherited = os.environ.get(DETACH_ENVIRONMENT)
-    if inherited is None:
-        return datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid4().hex[:12]
-    if not IDENTITY_PATTERN.fullmatch(inherited):
-        raise ValueError('invalid FP_VERIFICATION_ID')
-    if not (directory / f'{inherited}.detach.log').is_file() or (directory / inherited).exists():
-        raise ValueError('FP_VERIFICATION_ID is not an unused detached reservation; unset it')
-    return inherited
-
-
-def detached_arguments(root: Path, options: argparse.Namespace) -> list[str]:
-    """The child's launcher arguments, rebuilt from the parsed options without --detach.
-    A relative environment selection resolves against the caller's directory here, because
-    the child starts in the checkout root."""
-    selection = options.env if options.env is not None else os.environ.get('FP_OPS_ENV')
-    tokens = [] if selection is None else ['--env', str(resolve_environment(root, selection))]
-    if options.workers is not None:
-        tokens += ['--workers', str(options.workers)]
-    return [*tokens, options.command, *options.args]
-
-
-def start_detached(root: Path, tokens: list[str]) -> int:
-    """Start the recorded run as an independent child and return without waiting."""
-    identity = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid4().hex[:12]
-    directory = root / '.cache' / 'fp-verification'
-    directory.mkdir(parents=True, exist_ok=True)
-    record, log = directory / identity, directory / f'{identity}.detach.log'
-    child_argv = [sys.executable, '-I', str(Path(__file__).resolve()), *tokens]
-    environment = os.environ.copy()
-    environment[DETACH_ENVIRONMENT] = identity
-    with log.open('wb') as sink:
-        spawn = dict(cwd=root, stdin=subprocess.DEVNULL, stdout=sink,
-                     stderr=subprocess.STDOUT, env=environment)
-        if os.name == 'nt':
-            creationflags = (subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
-                             | CREATE_BREAKAWAY_FROM_JOB)
-            try:
-                child = subprocess.Popen(child_argv, creationflags=creationflags, **spawn)
-            except OSError:
-                print("fp: warning: could not break away from the caller's job; "
-                      "the run may end with the caller", file=sys.stderr)
-                child = subprocess.Popen(child_argv, creationflags=creationflags
-                                         & ~CREATE_BREAKAWAY_FROM_JOB, **spawn)
-        else:
-            child = subprocess.Popen(child_argv, start_new_session=True, **spawn)
-    (directory / f'{identity}.detach.json').write_text(json.dumps(
-        dict(pid=child.pid, record=str(record), log=str(log), argv=child_argv,
-             started_utc=datetime.now(timezone.utc).isoformat()), indent=2)
-        + '\n', encoding='utf-8')
-    print(f'record: {record}')
-    print(f'pid: {child.pid}')
-    return 0
-
-
-def pytest_configuration_args(root: Path, args: list[str]) -> list[str]:
-    """Normalize checkout selection and reject competing explicit selections."""
-    result = []
-    iterator = iter(args)
-    for argument in iterator:
-        if argument == '--':
-            result.extend([argument, *iterator])
-            break
-        key, separator, value = argument.partition('=')
-        if key in ('-c', '--config-file', '--rootdir'):
-            if not separator:
-                value = next(iterator, '')
-        elif argument.startswith('-c') and not argument.startswith('--'):
-            key, value = '-c', argument[2:]
-        else:
-            result.append(argument)
-            continue
-        expected = root if key == '--rootdir' else root / 'pyproject.toml'
-        comparable = os.path.expandvars(value) if key == '--rootdir' else value
-        if not value or (root / comparable).resolve() != expected.resolve():
-            raise ValueError(f'Conflicting pytest {key}: expected {expected}, got {value!r}')
-    return ['-c', str(root / 'pyproject.toml'), '--rootdir=' + str(root), *result]
-
-
 def main(argv: list[str] | None = None) -> int:
     """Validate and run a task without changing the invoking shell's environment."""
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     parser.add_argument("--env", help="operations venv directory (before the command); defaults to FP_OPS_ENV")
     parser.add_argument('--workers', type=int, choices=range(0, 9),
                         help='Opt-in pytest workers, 0 through 8; nonzero uses loadscope')
-    parser.add_argument('--detach', action='store_true',
-                        help='start a recorded run as an independent background process and return at once')
     parser.add_argument("command", choices=("doctor", "python", "test", "test-ops", "check"))
     parser.add_argument("args", nargs=argparse.REMAINDER, help="arguments passed unchanged to the command")
     options = parser.parse_args(argv)
@@ -304,97 +125,35 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("doctor does not accept additional arguments")
     pytest_task = options.command in ('test', 'test-ops') or (
         options.command == 'python' and options.args[:2] == ['-m', 'pytest'])
-    recorded = pytest_task or options.command == 'check'
     if options.workers is not None and not pytest_task:
         parser.error('--workers applies only to pytest commands')
-    if options.detach and not recorded:
-        parser.error('--detach applies only to recorded commands (pytest tasks and check)')
-    if options.detach and DETACH_ENVIRONMENT in os.environ:
-        parser.error('--detach cannot run inside a detached run')
     root = Path(__file__).resolve().parents[1]
     try:
-        if options.detach:
-            return start_detached(root, detached_arguments(root, options))
-        record = None
-        if recorded:
-            spec = importlib.util.spec_from_file_location('fp_recorder', root / 'scripts/record_verification.py')
-            recorder = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(recorder)
-            directory = root / '.cache' / 'fp-verification'
-            output = directory / verification_identity(directory)
-            record = recorder.RunRecord(root, output, [options.command, *options.args], allow_ignored=True)
-        with record if record is not None else nullcontext():
-            if record is not None:
-                record.begin()
-            selection = options.env if options.env is not None else os.environ.get("FP_OPS_ENV")
-            environment = resolve_environment(root, selection)
-            python, child_env, report = prepare(root, environment)
-            if options.command == "doctor":
-                print(f"Checkout: {root}\nEnvironment: {environment}\nPython: {report['python']} "
-                      f"({report['version']})\nLocked packages matched: {report['locked_packages']}\n"
-                      f"Optional signing dependency: {report['signing']}")
-                return 0
-            commands = {
-                "python": [],
-                "test": ["-m", "pytest", "tests/"],
-                "test-ops": ["-m", "pytest", "tests/ops/"],
-                "check": ["scripts/gate_manifest.py", "--tier", "check"],
-            }
-            command = [str(python), *commands[options.command], *options.args]
-            if record is None:
-                return subprocess.call(command, cwd=root, env=child_env)
-            report['workers'] = options.workers
-            report['locked_requirements'] = locked_requirements(root / 'requirements-ops.lock')
-            record.data['metadata'] = report
-            reports = []
-            if pytest_task:
-                # Parse ambient arguments once, so they cannot silently override
-                # the checkout contract or escape the recorded command.
-                ambient = shlex.split(child_env.pop('PYTEST_ADDOPTS', ''))
-                expanded, argument_files = expand_pytest_argument_files(root, [*ambient, *command[3:]])
-                configured, config_files = expand_pytest_argument_files(
-                    root, configured_pytest_arguments(root, expanded))
-                argument_files |= config_files
-                # Suppress pytest's later addopts expansion: it is now explicit.
-                command[3:] = pytest_configuration_args(root, [*configured, *expanded])
-                report.update(pytest_config=str(root / 'pyproject.toml'), pytest_root=str(root))
-                input_args, output_options = pytest_report_selection(command[3:])
-                destination = output_options.get('junit')
-                source_candidates = {
-                    Path(os.path.abspath(root / arg.split('::', 1)[0]))
-                    for arg in input_args if not arg.startswith('-')
-                    and (root / arg.split('::', 1)[0]).is_file()
-                } | argument_files
-                trailing = []
-                if '--' in command:
-                    delimiter = command.index('--')
-                    trailing, command = command[delimiter:], command[:delimiter]
-                pytest_options = command[3:]
-                command += ['-o', 'addopts=', '-p', 'scripts.pytest_junit_subtests', '-p', 'scripts.pytest_progress']
-                child_env['FP_PYTEST_PROGRESS_DIR'] = str(output)
-                child_env['FP_PYTEST_PROGRESS_RUN'] = record.data['run_id']
-                if options.workers is not None:
-                    command += ['-n', str(options.workers)]
-                    if options.workers:
-                        command += ['--dist=loadscope']
-                if destination is None:
-                    destination = str(output / 'junit.xml')
-                    command += ['--junitxml=' + destination]
-                reports = [(root / os.path.expanduser(os.path.expandvars(destination))).resolve()]
-                outputs = [*reports]
-                if 'log' in output_options:
-                    outputs.append((root / output_options['log']).resolve())
-                if any(p.resolve() == out or (out.exists() and p.samefile(out))
-                       for p in source_candidates for out in outputs):
-                    raise ValueError('Pytest output overlaps a selected source or argument file')
-                record.track_external_files({p for p in source_candidates
-                                             if not p.is_relative_to(root) or
-                                             not p.resolve().is_relative_to(root)})
-            with tempfile.TemporaryDirectory(prefix='fp-pytest-') as scratch:
-                if pytest_task and not any(a == '--basetemp' or a.startswith('--basetemp=') for a in pytest_options):
-                    command += ['--basetemp=' + str(Path(scratch) / 'pytest')]
-                record.execute(command + (trailing if pytest_task else []), env=child_env, reports=reports)
-        return record.data['verification_exit_code']
+        selection = options.env if options.env is not None else os.environ.get("FP_OPS_ENV")
+        environment = resolve_environment(root, selection)
+        python, child_env, report = prepare(root, environment)
+        if options.command == "doctor":
+            print(f"Checkout: {root}\nEnvironment: {environment}\nPython: {report['python']} "
+                  f"({report['version']})\nLocked packages matched: {report['locked_packages']}\n"
+                  f"Optional signing dependency: {report['signing']}")
+            return 0
+        commands = {
+            "python": [],
+            "test": ["-m", "pytest", "tests/"],
+            "test-ops": ["-m", "pytest", "tests/ops/"],
+            "check": ["scripts/gate_manifest.py", "--tier", "check"],
+        }
+        arguments = [*commands[options.command], *options.args]
+        if pytest_task:
+            # Ahead of the passed arguments, so a `--` among them cannot swallow these.
+            # Pinned because pytest otherwise finds its root from the test paths given.
+            launcher_options = ['-c', str(root / 'pyproject.toml'), '--rootdir=' + str(root)]
+            if options.workers is not None:
+                launcher_options += ['-n', str(options.workers)]
+                if options.workers:
+                    launcher_options += ['--dist=loadscope']
+            arguments[2:2] = launcher_options
+        return subprocess.call([str(python), *arguments], cwd=root, env=child_env)
     except (OSError, ValueError, subprocess.TimeoutExpired) as exc:
         print(f"fp: {exc}", file=sys.stderr)
         return 2

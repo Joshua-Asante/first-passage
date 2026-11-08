@@ -1,6 +1,16 @@
 ---
 name: trade-csv-reconcile
-description: Use this skill whenever Joshua uploads or references a TradingView (or broker) trade CSV and any analysis follows — Pepperstone/CME research panels, locked-book TV exports, or c1/Tradovate fill CSVs. Triggers on "analyze the CSV", "reconcile against baseline", "compute PF/WR/DD", "what does the data show", "verify the lock", "monthly analysis", "missed alpha", "panel-thirds", "re-MC pre-reconcile", or pasting/uploading a strategy backtest CSV. Also fires when portfolio-level analysis depends on per-strategy CSV metrics. Covers parsing, Entry/Exit pairing by Trade #, R-pinning per strategy archetype, headline metrics (PF/WR/DD/RF/Net), and Pine-header baseline reconciliation when a locked-book baseline applies. Required before accepting CSV metrics as canonical for a lock/MC decision; not required as ceremony before every ORB/payability research glance. Hand off to prop-firm-challenge for MC / dd_protection / c1 sizing; to c1-rail for live rail fill questions.
+description: >-
+  Use this skill whenever Joshua uploads or references a TradingView (or broker) trade CSV and any
+  analysis follows — Pepperstone/CME research panels, locked-book TV exports, or c1/Tradovate fill
+  CSVs. Triggers on "analyze the CSV", "reconcile against baseline", "compute PF/WR/DD", "what does
+  the data show", "verify the lock", "monthly analysis", "missed alpha", "panel-thirds", "re-MC
+  pre-reconcile", or pasting/uploading a strategy backtest CSV. Also fires when portfolio-level
+  analysis depends on per-strategy CSV metrics. Covers parsing, Entry/Exit pairing by Trade #,
+  R-pinning per strategy archetype, headline metrics (PF/WR/DD/RF/Net), and Pine-header baseline
+  reconciliation when a locked-book baseline applies. Required before accepting CSV metrics as
+  canonical for a lock/MC decision; not required as ceremony before every ORB/payability research
+  glance. Hand off to prop-firm-challenge for MC / dd_protection / c1 sizing.
 ---
 
 # Trade CSV Reconcile
@@ -11,7 +21,7 @@ Canonical pipeline for parsing TradingView (and related) trade CSVs, computing h
 
 **Source-of-truth hierarchy:** Pine source on disk (authoritative for locked strategies) → Pine-header backtest panel (lock-of-record) → `references/baselines.md` (cached anchors) → memory (lossy). If baselines disagree with a fresh Pine read, the Pine read wins; update `references/baselines.md`.
 
-**Boundary:** `prop-firm-challenge` covers MC, dd_protection, firm tiers; `c1-rail` covers live rail fills/arming. This skill stops at verified per-strategy CSV metrics (R-pinned; scaled only when portfolio MC needs it). Do NOT duplicate dd_protection, MC, or rail logic here.
+**Boundary:** `prop-firm-challenge` covers MC, dd_protection, firm tiers; live orders and arming follow the AGENTS.md money controls. This skill stops at verified per-strategy CSV metrics (R-pinned; scaled only when portfolio MC needs it). Do NOT duplicate dd_protection, MC, or rail logic here.
 
 **Full reconcile pipeline is mandatory** before portfolio MC, before a version lock, or before treating a CSV as a lock/MC canonical input. **It is not** for ORB/payability native-harness remeasures, Tradovate fill dumps for rail forensics, or one-off research CSVs with no lock claim: run Steps 1–4 and skip baseline reconcile and $200K scaling unless asked.
 
@@ -35,7 +45,14 @@ These steps run in this order for every CSV reconciliation task; skipping or reo
 
 ### Step 1 — Inventory
 
-For each CSV: filename, row count, first 3 rows, last row. Confirm consistent column structure across files in the batch.
+**Classify each input first** (AGENTS.md, Data and credentials). Vendor bars, ticks and quotes are Licensed. Strategy exports and backtest results are Private. Broker or Tradovate fills are Private account data.
+
+- The inventory reports metadata only: filename, row count, column names and types, and null counts. No values, and no value aggregates written out (min, max or sums of prices, P&L or balances), since one can be the protected value itself. Headline metrics computed later stay in the places AGENTS.md allows.
+- Never write raw rows, per-trade figures or account data to logs, files, commits or PR text, even locally.
+- Licensed rows (bars, ticks, quotes, timestamped price levels) do not enter agent output without Joshua's word for that specific sample.
+- If a parse problem needs a row-level look, reproduce it first on a synthetic row with the same columns.
+
+Confirm consistent column structure across files in the batch.
 
 Standard TradingView export columns (BOM-prefixed on first column, strip with `encoding='utf-8-sig'`):
 
@@ -180,9 +197,9 @@ Failure modes that have actually happened, ranked by frequency:
 
 ## When NOT to use this skill
 
-- **No CSV in scope.** Pure methodology questions, framework discussions, brief authoring without data — route to `inqhiori`.
+- **No CSV in scope.** Pure methodology questions, framework discussions, brief authoring without data — not this skill.
 - **Pine code authoring/audit.** Hand off to `pinescript-v6`. This skill consumes CSV outputs of Pine; it doesn't write Pine.
-- **MC simulation, dd_protection decisions, allocation locks, c1 arming.** Hand off to `prop-firm-challenge` / `c1-rail`. This skill produces verified metrics; those skills own the decisions.
+- **MC simulation, dd_protection decisions, allocation locks, c1 arming.** Hand off to `prop-firm-challenge` (MC, dd_protection); arming follows the AGENTS.md money controls. This skill produces verified metrics; it does not make those decisions.
 - **Bar data rather than trade data.** 15-min OHLCV / tick exports use a different parser. This skill is trade-CSV-specific.
 - **Ceremony on research glances.** Do not run the full lock/MC reconcile pipeline solely because a CSV was mentioned — match depth to whether a lock or MC claim is at stake.
 
@@ -199,4 +216,4 @@ Failure modes that have actually happened, ranked by frequency:
 Related skills:
 - `prop-firm-challenge` — MC simulation, dd_protection, live ops, broker position sizing (downstream consumer of this skill's output)
 - `pinescript-v6` — Pine source authoring/auditing (upstream producer of CSVs this skill parses)
-- `inqhiori` — methodology framing for any reconciliation that opens a structural question (e.g., DRIFT detected → INQHIORI loop, not silent re-baseline)
+- `strategy-validation` — when a reconciliation opens a structural question (e.g., DRIFT detected: investigate, don't silently re-baseline)

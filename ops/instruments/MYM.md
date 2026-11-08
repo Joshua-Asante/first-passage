@@ -26,19 +26,19 @@ cells:
   - mechanism: trend-following
     verdict: LIVE
     date: 2026-07-23
-    source: "../../docs/briefs/programs/2026-07-23-tradeify-book-composition.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/programs/2026-07-23-tradeify-book-composition.md"
   - mechanism: opening-range-continuation
     verdict: DEAD
     date: 2026-07-16
-    source: "../../docs/briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/2026-07-16-striker-mym-reconstruction-candidate-2-falsified.md"
   - mechanism: event-window-reversal
     verdict: DEAD
     date: 2026-07-21
-    source: "../../docs/briefs/closures/MYM-3FPS-1-closure-falsified.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/MYM-3FPS-1-closure-falsified.md"
   - mechanism: opening-pressure
     verdict: DEAD
     date: 2026-07-21
-    source: "../../docs/briefs/closures/OPENPRESS-1-closure-falsified.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/OPENPRESS-1-closure-falsified.md"
   - mechanism: venue-transfer
     verdict: DEAD
     date: 2026-07-09
@@ -46,11 +46,11 @@ cells:
   - mechanism: ict-liquidity
     verdict: DEAD
     date: 2026-07-29
-    source: "../../docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/SLR-MYM-1-closure-falsified-stage0.md"
   - mechanism: pdh-pdl-failed-break-reclaim
     verdict: DEAD
     date: 2026-08-13
-    source: "../../docs/briefs/closures/MSL-C1-closure-falsified.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/MSL-C1-closure-falsified.md"
   - mechanism: daily-range-state-persistence
     verdict: AMBIGUOUS-PARKED
     date: 2026-08-29
@@ -58,7 +58,7 @@ cells:
   - mechanism: overnight-range-day-session-transfer
     verdict: AMBIGUOUS-PARKED
     date: 2026-08-30
-    source: "../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md"
   - mechanism: intraday-bar-volume-regime
     verdict: AMBIGUOUS-PARKED
     date: 2026-08-30
@@ -66,11 +66,11 @@ cells:
   - mechanism: overnight-gap-magnitude-range-conditioning
     verdict: AMBIGUOUS-PARKED
     date: 2026-08-30
-    source: "../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md"
   - mechanism: overnight-gap-magnitude-range-conditioning-overnight-calm
     verdict: DEAD
     date: 2026-08-30
-    source: "../../docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/Q-RANGEXFER-1-closure-ambiguous-design.md"
   - mechanism: bar-closing-location-autocorrelation
     verdict: DEAD
     date: 2026-08-30

@@ -19,11 +19,11 @@ cells:
   - mechanism: overnight-range-failed-extension-fade
     verdict: DEAD
     date: 2026-08-13
-    source: "../../docs/briefs/closures/MSL-C3-K2-closure-falsified.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/MSL-C3-K2-closure-falsified.md"
   - mechanism: pdh-pdl-failed-break-reclaim
     verdict: DEAD
     date: 2026-08-13
-    source: "../../docs/briefs/closures/MSL-C3-K2-closure-falsified.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/briefs/closures/MSL-C3-K2-closure-falsified.md"
 cost_hurdle:
   value: 11.89
   units: "bp/round-trip"

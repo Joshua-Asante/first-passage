@@ -25,8 +25,8 @@ Rules implemented (card §0.5, frozen):
   fall on different NY dates raises, and so does any exit after 16:45 ET.
 * **Quantities** — book quantities enter as data (``lab`` may not import ``ops``):
   Aegis is rescaled per contract to 8 (normal) / 3 (protected), Striker and ORB
-  are used as exported, Vanguard protected is ``zero`` (no trades). A parity test
-  under ``tests/`` asserts the spec against ``ops/c1_rail/book_policy.py``.
+  are used as exported, Vanguard protected is ``zero`` (no trades). A test under
+  ``tests/`` asserts the spec against a frozen copy of the book's quantity law.
 * **Window** — latest first session to the earliest last session across the six
   inputs; trades outside it are dropped.
 * **Per day** — ``gross = Net PnL USD + Commission USD`` and ``sides = 2 x qty``
@@ -114,9 +114,9 @@ DERIVED_TABLES: tuple[tuple[str, str], ...] = tuple(
 AS_EXPORTED = "as_exported"
 ZERO = "zero"
 
-#: Book quantities as data (card §0.5 item 1). Parity with
-#: ``ops/c1_rail/book_policy.entry_quantities`` is asserted by
-#: ``tests/test_remc_series_quantity_parity.py``; do not edit one without the other.
+#: Book quantities as data (card §0.5 item 1). Parity with the frozen quantity law
+#: is asserted by ``tests/test_remc_series_quantity_parity.py``; do not edit one
+#: without the other.
 DEFAULT_QUANTITY_SPEC: dict[str, dict[str, object]] = {
     "aegis_6j": {"normal": 8, "protected": 3},
     "dj30_mym_p250": {"normal": AS_EXPORTED, "protected": AS_EXPORTED},

@@ -13,8 +13,6 @@ governance_prefixes:
   - docs/
   - .claude/
   - .github/
-  # Explicit since 2026-09-20, matching the prior default.
-  - deploy/
   - tools/
 
 # scripts/ is root-resident but mixed-layer: module stem -> layer. Unlisted
@@ -23,7 +21,6 @@ scripts_layer:
   # governance — discipline / gates
   # (check_brief_evidence_coverage retired 2026-06-08 — ADR 2026-05-16-fixture-test-requirement Amendment)
   check_brief: governance
-  archive_lab_analysis: governance
   check_boundaries: governance
   check_data_manifests: governance
   check_pine_manifest: governance
@@ -53,6 +50,5 @@ flat_import_roots:
   - core
   - lab
   - ops
-  - ops/c1_rail
   - ops/c1_signal_daemon
   - scripts

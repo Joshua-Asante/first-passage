@@ -26,7 +26,7 @@ cells:
   - mechanism: mean-reversion-fade
     verdict: DEAD
     date: 2026-06-14
-    source: "../../docs/adr/2026-06-14-reject-usoil-rdm-spike-fader.md"
+    source: "https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/adr/2026-06-14-reject-usoil-rdm-spike-fader.md"
   - mechanism: commodity-carry-term-structure
     verdict: DEAD
     date: 2026-06-06
