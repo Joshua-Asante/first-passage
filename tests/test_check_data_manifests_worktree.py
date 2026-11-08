@@ -1,8 +1,10 @@
 """Worktree / public-clone soft-degrade coverage for check_data_manifests.
 
 Pins Algorithm brief #3 Step 2.3: per-directory absent-tree WARN+skip when
-SHA256SUMS lists files but ZERO exist on disk; partial presence and hash
-mismatch keep hard-fail; --regenerate is unaffected.
+SHA256SUMS lists files but no CSV (listed or unlisted) exists on disk;
+unlisted CSVs always fail with EXTRA, even when no listed file is present
+(#1146); partial presence and hash mismatch keep hard-fail; --regenerate is
+unaffected.
 """
 from __future__ import annotations
 
@@ -33,6 +35,24 @@ def test_all_absent_dir_warns_and_exits_0(tmp_path, monkeypatch, capsys):
     err = capsys.readouterr().err
     assert "WARN absent-tree skip" in err
     assert "pepperstone" in err
+
+
+def test_unlisted_only_dir_fails_with_extra(tmp_path, monkeypatch, capsys):
+    d = tmp_path / "core/data/tv_exports/cme"
+    d.mkdir(parents=True)
+    digest = _sha(b"ABSENT-PLACEHOLDER-old.csv")
+    (d / "SHA256SUMS").write_text(f"{digest} *old.csv\n", encoding="utf-8")
+    (d / "new.csv").write_bytes(b"synthetic-unlisted")
+    monkeypatch.setattr(cdm, "MANIFEST_DIRS", [d])
+    monkeypatch.setattr(cdm, "REPO_ROOT", tmp_path)
+
+    rc = cdm.check_all()
+    assert rc == 1
+    err = capsys.readouterr().err
+    assert "EXTRA core/data/tv_exports/cme/new.csv" in err
+    assert "WARN absent-tree skip" not in err
+    # Listed-file checks stay suppressed when zero listed files are present.
+    assert "MISSING" not in err
 
 
 def test_partial_presence_hard_fails(tmp_path, monkeypatch, capsys):

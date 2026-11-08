@@ -12,13 +12,17 @@ Usage:
 
 Exit codes:
     0 — check passed or regenerate completed (incl. public-clone / bare-worktree
-        soft-degrade: a manifest dir whose SHA256SUMS lists files but ZERO of
-        those files exist on disk is WARN-skipped — mirrors check_pine_manifest)
+        soft-degrade: a manifest dir whose SHA256SUMS lists files but has NO
+        CSV on disk at all, listed or unlisted, is WARN-skipped — mirrors
+        check_pine_manifest)
     1 — check failed (drift, missing, extra, parse error) or invalid CLI
 
-Soft-degrade is per-directory and never applies to --regenerate. Partial
-presence (≥1 listed file on disk) keeps full hard-fail semantics — that is
-exactly the M-9 drift case the gate exists for.
+Soft-degrade is per-directory and never applies to --regenerate. EXTRA
+(unlisted CSVs on disk) is always reported, so a dir holding only unlisted
+CSVs fails rather than WARN-skipping. MISSING/MISMATCH are suppressed only
+when zero listed files are on disk; partial presence (≥1 listed file on disk)
+keeps full hard-fail semantics — that is exactly the M-9 drift case the gate
+exists for.
 """
 
 from __future__ import annotations
@@ -149,20 +153,26 @@ def check_all() -> int:
         on_disk = _list_csv_basenames(d)
         manifest_names = set(entries)
 
-        # Public-clone / bare-worktree soft-degrade: SHA256SUMS lists one or
-        # more files but ZERO of those listed files exist on disk → WARN and
-        # skip this dir. Partial presence keeps full hard-fail below.
-        if manifest_names and not (manifest_names & set(on_disk)):
-            print(
-                f"WARN absent-tree skip {_rel_posix(d)} "
-                f"(SHA256SUMS lists {len(manifest_names)} file(s); none on disk)",
-                file=sys.stderr,
-            )
-            continue
-
-        for name in sorted(on_disk.keys() - manifest_names):
+        # EXTRA is checked before the absent-tree skip so unlisted CSVs are
+        # never hidden by it: a dir holding only unlisted CSVs must fail.
+        extra = sorted(on_disk.keys() - manifest_names)
+        for name in extra:
             print(f"EXTRA {_rel_posix(on_disk[name])}", file=sys.stderr)
             failed = True
+
+        # Public-clone / bare-worktree soft-degrade: SHA256SUMS lists one or
+        # more files but ZERO of those listed files exist on disk → skip the
+        # MISSING/MISMATCH checks for this dir. WARN only when no unlisted CSV
+        # is present either (EXTRA above already failed otherwise). Partial
+        # presence keeps full hard-fail below.
+        if manifest_names and not (manifest_names & set(on_disk)):
+            if not extra:
+                print(
+                    f"WARN absent-tree skip {_rel_posix(d)} "
+                    f"(SHA256SUMS lists {len(manifest_names)} file(s); none on disk)",
+                    file=sys.stderr,
+                )
+            continue
 
         for name in sorted(manifest_names):
             path = d / name
