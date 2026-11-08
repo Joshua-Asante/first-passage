@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Updated:** 2026-11-07. Keep this to one page: the goal, live obligations, open
+**Updated:** 2026-11-08. Keep this to one page: the goal, live obligations, open
 decisions. Replace stale lines instead of appending history.
 
 ## Goal
@@ -17,7 +17,7 @@ then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
   - **Design (Claude):** keep the spec and procedure current. Next: any change that
     the readback's B10 answer or the evidence read forces.
   - **Engineering (Claude Code, primary checkout):** the S-PAIR readback, including
-    B10, before the rehearsal; the c1 untangle, `.gitignore` guard first.
+    B10, before the rehearsal.
   - **Verification (Codex):** review every head; audit the evidence read; review the
     rehearsal and Sim101 records.
   - **Measure (Claude Code, for Joshua's sign-off):** ready to score session 1 under the
@@ -27,7 +27,8 @@ then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
   Stages: 1 Ideation, 2 Validation, 3 Definition, 4 Creation, 5 Verification, then
   measure. A private build (S-PAIR) exists, and the source went to Tradeify on 11-05.
   The [design spec](docs/spec/2026-11-06-orb-aegis-eval-build-design.md) is accepted
-  (11-06) and amended: tested source plus two ORB fixes. The
+  (11-06) and amended: the frozen set is S-PAIR's tested source plus four ORB changes
+  (D7). The
   [attended-session procedure](docs/spec/2026-11-07-orb-aegis-attended-session-procedure.md)
   is accepted (11-07). **Next: the F rehearsal** (procedure §10): Joshua runs it in this
   week's preservation trade (MNQ, about 16:15 ET, not 11-11) plus a Sim101 disable
@@ -57,7 +58,8 @@ then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
 - **Known risk:** no configuration has an evidence case for this evaluation yet, and
   no strategy-signal fill has ever occurred on the account.
 - **Ruled out:** the multi-firm program is research-only (its falsifier fired). The
-  external Python rail and the personal account lane are closed.
+  external Python rail (decommissioned; code removed in #1140 and #1152) and the
+  personal account lane are closed.
 
 ## Live obligations
 
@@ -65,7 +67,6 @@ then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
 |---|---|---|
 | Weekly account-preservation trade | Week of 11-09 → 11-13 | One round trip per Mon–Fri week, placed natively. A missed week risks account deletion. Agents may place it under the standing GO. Done for 11-02 → 11-06 (11-04). This week it is the F rehearsal: Joshua places it himself, with the resting stop and flatten-and-cancel exit (procedure §10, within the standing GO). |
 | Subscription reconfirm | 11-21 | Joshua reconfirms the [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md) rows. |
-| c1 rail decommission | After the 11-08 sitting | Stages 1–2 done (hosts disarmed 11-03, both Fly apps destroyed 11-05). Rail code removed by PR; The sizing reference is removed; S3-4 leaves `book_policy` as the offline replay law. |
 
 ## Open decisions (Joshua)
 
