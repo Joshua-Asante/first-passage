@@ -362,8 +362,8 @@ def _fields(tmp_path, text="log kv:Note\n"):
 UNCLEAR_IN_WINDOW = ("note: fields withheld from the first record with unclear quoting "
                      "(or an omitted line) to the end of the file")
 UNCLEAR_BEFORE_WINDOW = ("note: all fields withheld: the file before these lines could not be "
-                         "scanned within the read budget, or holds an omitted line or a record "
-                         "with unclear quoting")
+                         "scanned within the read budget, changed while it was read, or holds "
+                         "an omitted line or a record with unclear quoting")
 
 
 def test_startup_refused_without_masking_choice(tmp_path, capsys):
@@ -865,6 +865,11 @@ def test_approved_kv_and_fixed_fields(approved):
     ]
 
 
+# The fixture journal's last line is not JSON, so its fields stop there (and it says so).
+NOT_JSON_LINES = ("fields withheld from the first record that is not one complete JSON object "
+                  "(or an omitted line) to the end of the file")
+
+
 def test_journal_body_is_decoded_and_paths_select(approved):
     text, error = call(approved, "nt_tail", source="journal")
     assert not error
@@ -872,11 +877,119 @@ def test_journal_body_is_decoded_and_paths_select(approved):
         "a.jsonl: last 3 line(s); 1 without an approved field omitted",
         '{"json:kind":"request","json:body.code":"REJECTED"}',
         '{"json:kind":"fill"}',
+        f"note: {NOT_JSON_LINES}",
     ]
     text, _ = call(approved, "nt_search", source="journal", pattern="rejected")
     assert text.splitlines() == [
         "1 match(es); 1 line(s) without an approved field skipped",
-        'journal/a.jsonl:1: {"json:kind":"request","json:body.code":"REJECTED"}']
+        'journal/a.jsonl:1: {"json:kind":"request","json:body.code":"REJECTED"}',
+        f"note: journal/a.jsonl: {NOT_JSON_LINES}"]
+
+
+def _journal_config(tmp_path, text, rules="journal json:code\n"):
+    root = tmp_path / "NinjaTrader 8"
+    (root / "log").mkdir(parents=True)
+    (root / "trace").mkdir()
+    journal = tmp_path / "journal"
+    journal.mkdir()
+    (journal / "j.jsonl").write_text(text, encoding="utf-8")
+    return server.Config.build(root, journal_dir=journal,
+                               fields_file=_fields(tmp_path, rules))
+
+
+PRETTY_JOURNAL = '{"fills": [\n  {"code": "MARKER"}\n]}\n'
+
+
+@pytest.mark.parametrize("lines", [1, 2, 3, 4, 200])
+def test_pretty_printed_journal_gives_no_inner_record_in_tail(tmp_path, lines):
+    # An inner line of a multi-line object is a complete object on its own; it must
+    # not pass as a top-level record, whether the window starts before or inside it.
+    config = _journal_config(tmp_path, PRETTY_JOURNAL)
+    text, error = call(config, "nt_tail", source="journal", lines=lines)
+    assert not error and "MARKER" not in text
+    assert "without an approved field omitted" in text and "note: " in text
+
+
+@pytest.mark.parametrize("name, arguments", [
+    ("nt_search", {"source": "journal", "pattern": ""}),
+    ("nt_search", {"source": "journal", "pattern": "MARKER"}),
+    ("nt_errors", {}),
+])
+def test_pretty_printed_journal_gives_no_inner_record_in_search(tmp_path, name, arguments):
+    config = _journal_config(tmp_path, PRETTY_JOURNAL)
+    text, error = call(config, name, **arguments)
+    assert not error and "MARKER" not in text
+    if name == "nt_search":
+        assert text.splitlines()[0] == "0 match(es); 3 line(s) without an approved field skipped"
+        assert f"note: journal/j.jsonl: {NOT_JSON_LINES}" in text
+
+
+def test_journal_lines_before_a_non_json_line_still_give_fields(tmp_path):
+    config = _journal_config(tmp_path, '{"code": "OK1"}\n{"code": "OK2"}\n'
+                             + PRETTY_JOURNAL + '{"code": "AFTER"}\n')
+    text, _ = call(config, "nt_search", source="journal", pattern="")
+    assert text.splitlines()[:3] == ["2 match(es); 4 line(s) without an approved field skipped",
+                                     'journal/j.jsonl:1: {"json:code":"OK1"}',
+                                     'journal/j.jsonl:2: {"json:code":"OK2"}']
+    assert "MARKER" not in text and "AFTER" not in text
+    text, _ = call(config, "nt_tail", source="journal", lines=1)
+    assert "AFTER" not in text and "note: all fields withheld" in text
+    text, _ = call(config, "nt_tail", source="journal", lines=200)
+    assert text.splitlines()[1:3] == ['{"json:code":"OK1"}', '{"json:code":"OK2"}']
+    assert "MARKER" not in text and "AFTER" not in text
+
+
+# --- nt_tail: the scan before the window reads the same file as the window ---------
+
+TOCTOU_STAMP = "2026-11-08 10:00:00:000"
+
+
+@pytest.mark.parametrize("when", ["after_window_read", "at_prefix_scan"])
+@pytest.mark.parametrize("swap", ["rewrite_in_place", "rename_over"])
+def test_tail_prefix_scan_is_not_fooled_by_a_file_swap(tmp_path, monkeypatch, swap, when):
+    # The window's record sits inside a quoted span opened before the window. If the
+    # file is swapped for one with a clear prefix after the window is read (before
+    # or as the prefix is scanned), the record must still not pass as clear.
+    root = tmp_path / "NinjaTrader 8"
+    (root / "log").mkdir(parents=True)
+    (root / "trace").mkdir()
+    path = root / "log" / "a.txt"
+    path.write_text(f"{TOCTOU_STAMP}|I|C|Note='open\n{TOCTOU_STAMP}|I|C|Price=MARKER\n"
+                    f"{TOCTOU_STAMP}|I|C|end'\n", encoding="utf-8")
+    config = server.Config.build(root, fields_file=_fields(tmp_path, "log kv:Price\n"))
+    swapped = []
+
+    def swap_file():
+        swapped.append(True)
+        clean = f"{TOCTOU_STAMP}|I|C|plain lineXX\n"
+        if swap == "rewrite_in_place":
+            path.write_text(clean, encoding="utf-8")
+        else:
+            other = path.with_name("b.txt")
+            other.write_text(clean, encoding="utf-8")
+            os.replace(other, path)
+
+    if when == "after_window_read":
+        original_tail = server._tail_lines
+
+        def tail_lines(*args, **kwargs):
+            result = original_tail(*args, **kwargs)
+            swap_file()
+            return result
+
+        monkeypatch.setattr(server, "_tail_lines", tail_lines)
+    else:
+        original_blocks = server._blocks
+
+        def blocks(handle, budget, limit=None):
+            if limit is not None and not swapped:  # the prefix scan: swap the file first
+                swap_file()
+            return original_blocks(handle, budget, limit)
+
+        monkeypatch.setattr(server, "_blocks", blocks)
+    text, error = call(config, "nt_tail", source="log", lines=2)
+    assert swapped and not error
+    assert "MARKER" not in text and "note: all fields withheld" in text
 
 
 def test_refusal_file_is_one_record(approved):

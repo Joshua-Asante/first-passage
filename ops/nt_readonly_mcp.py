@@ -50,15 +50,27 @@ that text, and fails closed on any doubt about quoting:
   record with any quotation-like character whose quoting is unclear, or an
   omitted record, gives no field at all (timestamp, level and category too), and
   nor does any later record of that file. ``nt_tail`` scans the file before its
-  window for this; if the scan does not fit in the read budget, the whole window
-  gives no field;
+  window for this, through the handle it read the window from; if the scan does
+  not fit in the read budget, or the file shrank under that handle (truncated or
+  rewritten in place), the whole window gives no field;
 * a value (the span's whole content, or a plain token of letters, digits and
   ``_.:+-`` that must end at whitespace, ``,``, ``;``, ``|``, ``&`` or the line
   end) is emitted only under the limits for JSON strings below.
 
 A key must start the text or follow whitespace or one of those delimiters, and be
-directly followed by ``=``. Journal lines are JSON records; a refusal file is one
-JSON object.
+directly followed by ``=``.
+
+Residual limit of ``kv:``: a value that itself holds a closing quote followed by
+`` Key='...'``, or unquoted free text holding `` Key=value``, cannot be told apart
+from real pairs, so it can surface as an approved field. Approve only keys whose
+writers never put quotes or ``Key=`` text inside other values.
+
+Journals must be JSON Lines: one complete JSON object per line. A journal record
+that is not one (a line of a pretty-printed object, a blank line), or an omitted
+record, gives no field, and nor does any later record of that file, since its
+lines may be the inside of a multi-line record; ``nt_tail`` scans the file before
+its window for this as for log and trace quoting. A refusal file is one JSON
+object, read whole.
 ``json:a.b`` walks objects, decoding a string that holds a JSON object on the way
 (``json:body.code``), and emits scalars only: numbers (finite), booleans, null, and
 strings of at most 128 characters drawn from letters, digits, space and ``_.:+-/@``.
@@ -327,6 +339,37 @@ class QuoteState:
         return self.known
 
 
+class JsonLinesState:
+    """Whether a journal is still JSON Lines, read in order: every record so far is
+    one complete JSON object. A record that is not (a line of a pretty-printed
+    object, a blank line), or an omitted record, gives no field, and nor does any
+    later record of the file: its lines may be the inside of a multi-line record."""
+
+    def __init__(self, known: bool = True) -> None:
+        self.known = known
+
+    def feed(self, record: str) -> bool:
+        if not self.known or isinstance(record, _Omitted) or _json_object(record) is None:
+            self.known = False
+        return self.known
+
+
+# Sources whose records are gated by a per-file state read from the file's start.
+_GATED_SOURCES = (*_KV_SOURCES, "journal")
+
+
+def _record_state(source: str) -> QuoteState | JsonLinesState:
+    return JsonLinesState() if source == "journal" else QuoteState()
+
+
+def _withheld_note(source: str) -> str:
+    if source == "journal":
+        return ("fields withheld from the first record that is not one complete JSON "
+                "object (or an omitted line) to the end of the file")
+    return ("fields withheld from the first record with unclear quoting "
+            "(or an omitted line) to the end of the file")
+
+
 def _plain_string(value: str) -> bool:
     """Whether a string a json: path ends on is short plain text that may be emitted."""
     return (len(value) <= MAX_JSON_STRING and not value.lstrip().startswith(("{", "["))
@@ -382,10 +425,11 @@ class Fields:
         """The approved fields of one line (record), unmasked; nothing else is read out.
 
         ``clear`` False (for log and trace: the record's quoting, or the quote state
-        before it, is unclear; see QuoteState) gives no field at all.
+        before it, is unclear, see QuoteState; for journal: the file is not JSON
+        Lines up to this record, see JsonLinesState) gives no field at all.
         """
         names = self.rules.get(source)
-        if not names or (source in _KV_SOURCES and not clear):
+        if not names or (source in _GATED_SOURCES and not clear):
             return {}
         fixed: dict[str, str] = {}
         free: str | None = None
@@ -676,40 +720,51 @@ def _iter_lines(path: Path, budget: Budget, records: bool = False,
     matching or output.
     """
     with open(path, "rb") as handle:
-        kept = bytearray()
-        oversized = False
-        first = True
-        for block in _blocks(handle, budget, limit):
-            start = 0
-            while True:
-                newline = block.find(b"\n", start)
-                stop = len(block) if newline < 0 else newline
-                room = MAX_LINE_BYTES - len(kept)
-                if stop - start > room:
-                    oversized = True
-                elif not oversized:
-                    kept += block[start:stop]
-                if newline < 0:
-                    break
-                if oversized:
-                    yield OMITTED_LINE
-                else:
-                    yield from _split_piece(bytes(kept), first, False, records)
-                kept.clear()
-                oversized = False
-                first = False
-                start = newline + 1
-        if oversized:
-            yield OMITTED_LINE
-        elif kept:
-            yield from _split_piece(bytes(kept), first, True, records)
+        yield from _iter_handle(handle, budget, records, limit)
 
 
-def _tail_lines(path: Path, count: int, budget: Budget,
-                records: bool = False) -> tuple[list[str], int]:
+def _iter_handle(handle: Any, budget: Budget, records: bool = False,
+                 limit: int | None = None) -> Iterator[str]:
+    """``_iter_lines`` on an open binary handle, from its start."""
+    kept = bytearray()
+    oversized = False
+    first = True
+    for block in _blocks(handle, budget, limit):
+        start = 0
+        while True:
+            newline = block.find(b"\n", start)
+            stop = len(block) if newline < 0 else newline
+            room = MAX_LINE_BYTES - len(kept)
+            if stop - start > room:
+                oversized = True
+            elif not oversized:
+                kept += block[start:stop]
+            if newline < 0:
+                break
+            if oversized:
+                yield OMITTED_LINE
+            else:
+                yield from _split_piece(bytes(kept), first, False, records)
+            kept.clear()
+            oversized = False
+            first = False
+            start = newline + 1
+    if oversized:
+        yield OMITTED_LINE
+    elif kept:
+        yield from _split_piece(bytes(kept), first, True, records)
+
+
+def _tail_lines(path: Path, count: int, budget: Budget, records: bool = False,
+                state: QuoteState | JsonLinesState | None = None) -> tuple[list[str], int]:
     """The last ``count`` raw lines, found by reading backwards from the end in blocks,
     and the byte offset where the first piece read starts (with ``records``, where
-    the first returned record starts)."""
+    the first returned record starts).
+
+    With ``state``, the records before that offset are then fed to it, read through
+    the same handle (see ``_scan_prefix``), so the state is that of the file the
+    window came from.
+    """
     with open(path, "rb") as handle:
         end = handle.seek(0, 2)
         if end == 0:
@@ -749,19 +804,34 @@ def _tail_lines(path: Path, count: int, budget: Budget,
             piece = handle.read(stop - start)
             budget.charge(len(piece))
             lines.extend(_split_piece(piece, start == 0, stop == end, records))
+        if state is not None:
+            _scan_prefix(handle, end, starts[0], budget, state)
     return lines[-count:], starts[0]
 
 
-def _quote_state_at(path: Path, offset: int, budget: Budget) -> QuoteState:
-    """The quote state at byte ``offset`` (a record start), scanned from the start of
-    the file; unknown if the scan does not fit in the read budget or fails."""
-    state = QuoteState()
+def _scan_prefix(handle: Any, end: int, offset: int, budget: Budget,
+                 state: QuoteState | JsonLinesState) -> None:
+    """Feed ``state`` the records before byte ``offset`` (a record start), read from
+    the start of the file through ``handle``, the one the window was read from.
+
+    One handle means one file: a file renamed over the path, or a rotation, between
+    the window read and this scan is never mixed in. The state becomes unknown
+    (fail closed) if the scan does not fit in the read budget or fails, or if the
+    file shrank under the handle (truncated or rewritten in place, so the bytes
+    before ``offset`` may not be the ones the window followed): it is now shorter
+    than ``end``, its size when the window was read, or the scan read short.
+    Appends alone are fine: they only add bytes after the window.
+    """
     try:
-        for record in _iter_lines(path, budget, records=True, limit=offset):
+        for record in _iter_handle(handle, budget, records=True, limit=offset):
             state.feed(record)
+        scanned = handle.tell()
+        size = handle.seek(0, 2)
     except (BudgetExceeded, FileRefused, OSError):
-        return QuoteState(known=False)
-    return state
+        state.known = False
+        return
+    if size < end or scanned != offset:
+        state.known = False
 
 
 _REQUIRED: Any = object()
@@ -844,20 +914,24 @@ def tool_tail(config: Config, arguments: dict) -> str:
         raw, unit = _whole_file(entry.path, budget), "record"
         clear = [True] * len(raw)
     else:
-        raw, start = _tail_lines(entry.path, count, budget, records=config.fields is not None)
+        gated = config.fields is not None and source in _GATED_SOURCES
+        # Fields need the record state where the window starts: the file before the
+        # window is scanned for it, through the handle the window was read from.
+        state = _record_state(source) if gated else None
+        raw, _ = _tail_lines(entry.path, count, budget, records=config.fields is not None,
+                             state=state)
         unit = "line"
         clear = [True] * len(raw)
-        if config.fields is not None and source in _KV_SOURCES:
-            # Fields need the quote state where the window starts: scan the file up to it.
-            state = _quote_state_at(entry.path, start, budget)
+        if state is not None:
             if not state.known:
+                what = ("a record that is not one complete JSON object"
+                        if source == "journal" else "a record with unclear quoting")
                 notes.append("all fields withheld: the file before these lines could not be "
-                             "scanned within the read budget, or holds an omitted line or a "
-                             "record with unclear quoting")
+                             "scanned within the read budget, changed while it was read, or "
+                             f"holds an omitted line or {what}")
             clear = [state.feed(line) for line in raw]
             if not state.known and not notes:
-                notes.append("fields withheld from the first record with unclear quoting "
-                             "(or an omitted line) to the end of the file")
+                notes.append(_withheld_note(source))
     shown = [_present(config, source, line, ok) for line, ok in zip(raw, clear)]
     tail = [item[0] for item in shown if item is not None]
     header = f"{entry.name}: last {len(raw)} {unit}(s)"
@@ -880,8 +954,8 @@ def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: 
             pending_after = 0
             last_printed = -1
             name = f"{source}/{entry.name}"
-            quotes = QuoteState()  # records are read in order from the file's start
-            gated = config.fields is not None and source in _KV_SOURCES
+            quotes = _record_state(source)  # records are read in order from the file's start
+            gated = config.fields is not None and source in _GATED_SOURCES
             try:
                 # Match on the masked approved values, the same text that is output,
                 # so a match count cannot reveal what the mask or the allow-list hides.
@@ -916,8 +990,7 @@ def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: 
             except OSError as exc:
                 notes.append(f"skipped {name}: {_reason(exc)}")
             if gated and not quotes.known:
-                notes.append(f"{name}: fields withheld from the first record with unclear "
-                             "quoting (or an omitted line) to the end of the file")
+                notes.append(f"{name}: {_withheld_note(source)}")
             if stopped:
                 break
         if stopped:

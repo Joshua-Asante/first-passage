@@ -88,8 +88,10 @@ and fails closed whenever quoting is in doubt:
   character (not only `'` and `"`) whose quoting is not clear in the sense above,
   and any omitted line, gives no field at all (timestamp, level and category
   included), and neither does any later record of the file. `nt_tail` scans the
-  file before its window to learn this; if that scan doesn't fit in the read
-  budget, every record in the window is withheld. A `note:` line says when
+  file before its window to learn this, through the same open handle it read the
+  window from; if that scan doesn't fit in the read budget, or the file shrank
+  under the handle (truncated or rewritten in place), every record in the window
+  is withheld. A `note:` line says when
   fields were withheld this way. A log whose messages quote names in prose
   (`strategy 'X'`) therefore gives no fields after the first such message.
 - A quoted value is the span's whole content. An unquoted value is a plain token
@@ -103,9 +105,21 @@ A key must start the text or follow whitespace or one of those delimiters, and b
 directly followed by `=`, so keys with spaces (NinjaTrader's `New state=…`, for
 example) are not recognised. Check real NinjaTrader log and trace lines locally
 against these rules before relying on a `kv:` field: a line that doesn't fit them
-just yields fewer kv fields (or none), never extra text. Journal lines are
-JSON records (`seq`, `prev`, `kind`, `body`, `hash`); a refusal file is one JSON
-object (`code`, `utc`, `fields`) and is read as one record. `json:a.b` walks
+just yields fewer kv fields (or none), never extra text.
+
+One limit remains: a value that itself holds a closing quote followed by
+` Key='...'`, or unquoted free text holding ` Key=value`, can't be told apart from
+real pairs, so it can surface as an approved field. When Joshua signs off the
+allow-list, approve only `kv:` keys whose writers never put quotes or `Key=` text
+inside other values.
+
+Journals must be JSON Lines: one complete JSON object per line (`seq`, `prev`,
+`kind`, `body`, `hash`). A journal line that is not one (a line of a
+pretty-printed object, a blank line), or an omitted line, gives no field, and
+neither does any later line of that file, since it may be the inside of a
+multi-line record; `nt_tail` scans the file before its window for this, as for
+quoting above, and a `note:` line says when fields were withheld. A refusal file
+is one JSON object (`code`, `utc`, `fields`) and is read as one record. `json:a.b` walks
 objects, decoding a string that holds a JSON object on the way, so `json:body.code`
 reads `code` inside the `body` string. Only scalars are emitted: finite numbers,
 booleans, null, and plain strings of at most 128 characters drawn from letters,
