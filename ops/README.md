@@ -63,20 +63,43 @@ fields; anything not on the list is dropped, never shown. Format: UTF-8 text
 | `refusal` | `json:<dotted.path>` |
 | `export` | none: the source is refused (below) |
 
-Log lines are `timestamp|level|category|text`; trace lines are a timestamp, then
-text. A timestamp must look like `YYYY-MM-DD hh:mm:ss` (optional fraction) and a
-level or category code like a short word or number, or that field is dropped.
-`kv:<Key>` takes `Key='value'`, `Key="value"` or `Key=value` pairs from the text.
-A `'` or `"` opens a quoted span only directly after `Key=`; the span runs to
-the next same quote, and keys are read only outside spans, so text inside any
-quoted value (whoever's key it follows) is never taken as a pair. If the text has
-any other quote (a prose apostrophe such as `don't`, a quote after `Note:` or
-`(Note=`), an unclosed span, or a backslash or a doubled quote (`''` or `""`)
-inside a span, the line gives no kv field at all. A quoted value is the span's whole content. An unquoted value is a
-plain token (letters, digits, `_.:+-`) that must end at whitespace, `,`, `;`,
-`|`, `&` or the line end; otherwise the pair is dropped, so one value never carries
-another pair out with it. A key must start the text or follow whitespace or one of
-those delimiters, and be directly followed by `=`. Journal lines are
+With `--fields-file`, a record is the text between two `\n` newlines, with one
+trailing `\r` stripped; CR, VT, FF, `\x1c`–`\x1e`, U+0085, U+2028 and U+2029
+stay inside the record. Log lines are `timestamp|level|category|text`; trace
+lines are a timestamp, then text. A timestamp must look like
+`YYYY-MM-DD hh:mm:ss` (optional fraction), or the record gives no field at all;
+a level or category must be a short word or number, or that field is dropped.
+`kv:<Key>` takes `Key='value'`, `Key="value"` or `Key=value` pairs from the text,
+and fails closed whenever quoting is in doubt:
+
+- The text must be printable ASCII (tab allowed) with no backtick. A control
+  character, a Unicode line break or any non-ASCII quotation mark (curly quotes,
+  `«»`, fullwidth quotes and the like) gives no kv field for the line.
+- A `'` or `"` opens a quoted span only directly after `Key=`; the span runs to
+  the next same quote, and keys are read only outside spans, so text inside any
+  quoted value (whoever's key it follows) is never taken as a pair. Any other
+  quote (a prose apostrophe such as `don't`, a quote after `Note:` or `(Note=`),
+  an unclosed span, or a backslash or a doubled quote (`''` or `""`) inside a
+  span gives no kv field for the line.
+- Quoting is followed across records from the start of the file, so a quoted
+  message that runs over several lines can't hide a pair: the record that opens
+  the span, every record inside it and the record that closes it give no kv
+  field. Every quotation-like character counts here, not only `'` and `"`.
+  `nt_tail` scans the file before its window to learn this; if that scan doesn't
+  fit in the read budget, or an omitted line is passed, the state is unknown and
+  no later record of that call gives kv (a `note:` line says so).
+- A quoted value is the span's whole content. An unquoted value is a plain token
+  (letters, digits, `_.:+-`) that must end at whitespace, `,`, `;`, `|`, `&` or
+  the line end; otherwise the pair is dropped, so one value never carries another
+  pair out with it. Either way a value is emitted only if it is at most 128
+  characters of letters, digits, space and `_.:+-/@`, the same limit as JSON
+  strings below.
+
+A key must start the text or follow whitespace or one of those delimiters, and be
+directly followed by `=`, so keys with spaces (NinjaTrader's `New state=…`, for
+example) are not recognised. Check real NinjaTrader log and trace lines locally
+against these rules before relying on a `kv:` field: a line that doesn't fit them
+just yields fewer kv fields (or none), never extra text. Journal lines are
 JSON records (`seq`, `prev`, `kind`, `body`, `hash`); a refusal file is one JSON
 object (`code`, `utc`, `fields`) and is read as one record. `json:a.b` walks
 objects, decoding a string that holds a JSON object on the way, so `json:body.code`
@@ -94,8 +117,9 @@ out and counted in the header (`nt_tail`) or summary (`nt_search`, `nt_errors`),
 "last N lines" still means the last N lines of the file. Searches, including
 `nt_errors`' built-in pattern, match only within approved values.
 
-With `--fields-file`, the `export` source is refused outright by `nt_list_files`,
-`nt_tail` and `nt_search` (`nt_errors` reads only `log` and `trace`), and
+With `--fields-file`, the `export` source is refused outright by every tool:
+`nt_list_files`, `nt_tail` and `nt_search` return an error naming the refusal
+(`nt_errors` reads only `log` and `trace`), and
 `nt_list_sources` shows it as refused: no export field can be approved, so not even
 its file names, sizes or line counts are served. File names in the other sources
 are shown as they are, masked only by `--redact-file`.

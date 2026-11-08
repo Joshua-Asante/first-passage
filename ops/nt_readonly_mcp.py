@@ -30,18 +30,32 @@ comment line. A rule is ``<source> <field>``:
     refusal  json:<dotted.path>
     export   (no field can be approved; the source is refused, see below)
 
+In approved-field mode a record is the text between two ``\\n`` (one trailing
+``\\r`` stripped); CR, VT, FF and the Unicode line breaks stay inside the record.
 Log lines are ``timestamp|level|category|text``; trace lines are a timestamp, then
-text. ``kv:<Key>`` takes ``Key='value'``, ``Key="value"`` or ``Key=value`` pairs
-from that text. A ``'`` or ``"`` opens a quoted span only directly after
-``Key=``; the span runs to the next same quote, and keys are read only outside
-spans, so text inside any quoted value is never read as a pair. If the text has
-any other quote (a prose apostrophe such as ``don't``, a quote after ``Note:``),
-an unclosed span, or a backslash or a doubled quote (``''`` or ``""``) inside a
-span, the line gives no kv field at all (fail closed). A quoted value is the span's whole content; an unquoted value is a
-plain token (letters, digits, ``_.:+-``) that must end at whitespace, ``,``,
-``;``, ``|``, ``&`` or the line end, or the pair is dropped. A key must start the
-text or follow whitespace or one of those delimiters, and be directly followed by
-``=``. Journal lines are JSON records; a refusal file is one JSON object.
+text. A record that does not start with a timestamp gives no field at all.
+``kv:<Key>`` takes ``Key='value'``, ``Key="value"`` or ``Key=value`` pairs from
+that text, and fails closed on any doubt about quoting:
+
+* the text must be printable ASCII (tab allowed) with no backtick, so a control
+  character, a Unicode line break or any non-ASCII quotation mark gives no kv;
+* a ``'`` or ``"`` opens a quoted span only directly after ``Key=``; the span runs
+  to the next same quote, and keys are read only outside spans. Any other quote
+  (a prose apostrophe such as ``don't``, a quote after ``Note:``), an unclosed
+  span, or a backslash or a doubled quote (``''`` or ``""``) inside a span gives
+  no kv for the line;
+* quoting is tracked across records from the start of the file: a record that
+  opens a span it does not close, every record inside the span and the record
+  that closes it give no kv. Where that state is unknown (``nt_tail`` could not
+  scan the file before its window within the read budget, or an omitted line was
+  passed), no later record of that read gives kv;
+* a value (the span's whole content, or a plain token of letters, digits and
+  ``_.:+-`` that must end at whitespace, ``,``, ``;``, ``|``, ``&`` or the line
+  end) is emitted only under the limits for JSON strings below.
+
+A key must start the text or follow whitespace or one of those delimiters, and be
+directly followed by ``=``. Journal lines are JSON records; a refusal file is one
+JSON object.
 ``json:a.b`` walks objects, decoding a string that holds a JSON object on the way
 (``json:body.code``), and emits scalars only: numbers (finite), booleans, null, and
 strings of at most 128 characters drawn from letters, digits, space and ``_.:+-/@``.
@@ -52,7 +66,8 @@ one compact JSON object of approved field -> value; a line with no approved fiel
 is left out and counted. Order IDs and names are not approved fields.
 
 With ``--fields-file`` the ``export`` source is refused outright by every tool
-(``nt_list_files``, ``nt_tail``, ``nt_search``; ``nt_errors`` never reads it): no
+(``nt_list_files``, ``nt_tail``, ``nt_search``; ``nt_list_sources`` shows it as
+refused and ``nt_errors`` reads only ``log`` and ``trace``): no
 export field can be approved, so not even file names, sizes or line counts are
 served. File names in the other sources are masked only by ``--redact-file``.
 
@@ -78,6 +93,7 @@ from __future__ import annotations
 import argparse
 import codecs
 import fnmatch
+import functools
 import json
 import math
 import re
@@ -175,9 +191,12 @@ _KV_RULE = re.compile(r"kv:([A-Za-z_][A-Za-z0-9_]*)")
 _JSON_RULE = re.compile(r"json:([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)")
 # A fixed field whose value has the wrong shape is dropped, so a line that only
 # looks like a log line cannot carry free text out through a fixed field.
-_TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:[.:,]\d{1,7})?")
+_TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:[.:,]\d{1,7})?", re.ASCII)
 _CODE = re.compile(r"[A-Za-z0-9_]{1,32}")
-# kv text is read in two steps. First every quoted value is cut out. A ' or " opens
+# kv text that is not printable ASCII (tab allowed), or holds a backtick, gives no
+# kv at all: control characters, Unicode line breaks and non-ASCII quotation marks
+# all make it unclear where a value ends. Other kv text is read in two steps.
+# First every quoted value is cut out. A ' or " opens
 # a span only directly after Key= (a key as defined below); the span runs to the
 # next same quote, so nothing inside it is ever read as a key. Any other quote in
 # the free text (a prose apostrophe, a quote after "Note: " or "(Note=" ...), an
@@ -189,6 +208,7 @@ _CODE = re.compile(r"[A-Za-z0-9_]{1,32}")
 # the = (the span's whole content) or a plain token that must end at one of those
 # delimiters or the line end; any other ending (=, /, a span ...) drops the pair.
 _SPAN = "\x00"
+_KV_TEXT = re.compile(r"[\t\x20-\x5f\x61-\x7e]*")  # printable ASCII and tab, no backtick
 _QUOTE = re.compile("['\"]")
 _SPAN_KEY = re.compile(r"(?<![^\s,;|&])[A-Za-z_][A-Za-z0-9_]*=\Z")
 _PAIR = re.compile(r"(?<![^\s,;|&])([A-Za-z_][A-Za-z0-9_]*)="
@@ -213,9 +233,12 @@ def _json_object(text: str) -> dict | None:
 
 
 def _kv_pairs(free: str) -> dict[str, list[str]]:
-    """Key -> values of the pairs in a line's free text; {} when its quoting is unclear."""
-    if _SPAN in free:
-        return {}
+    """Key -> values of the pairs in a line's free text; {} when its quoting is unclear.
+
+    Only values that pass ``_plain_string`` are kept.
+    """
+    if _KV_TEXT.fullmatch(free) is None:
+        return {}  # also rules out _SPAN
     outside: list[str] = []
     spans: list[str] = []
     start = 0
@@ -240,8 +263,56 @@ def _kv_pairs(free: str) -> dict[str, list[str]]:
             value = spans[text.count(_SPAN, 0, match.start(2))]
         else:
             value = match.group(3)
-        pairs.setdefault(match.group(1), []).append(value)
+        if _plain_string(value):
+            pairs.setdefault(match.group(1), []).append(value)
     return pairs
+
+
+# Quote state across records. ' and " are quotes, and so is every other
+# quotation-like character (backtick, Pi/Pf, and characters named QUOTATION,
+# APOSTROPHE, PRIME or CORNER BRACKET), all of which count as one third kind.
+# Scanning left to right, a quote opens a span when none is open and closes the
+# open span when it is of the same kind. A record may give kv only if no span is
+# open where it starts and where it ends. An omitted record makes the state
+# unknown, and unknown stays unknown for the rest of the read (fail closed).
+_QUOTE_CANDIDATE = re.compile(r"[^\x00-\x21\x23-\x26\x28-\x5f\x61-\x7f]")
+_QUOTE_NAMES = ("QUOTATION", "APOSTROPHE", "PRIME", "CORNER BRACKET")
+_UNKNOWN = "?"
+
+
+@functools.lru_cache(maxsize=4096)
+def _quote_kind(char: str) -> str | None:
+    if char in "'\"":
+        return char
+    if char == "`" or unicodedata.category(char) in ("Pi", "Pf"):
+        return "`"
+    name = unicodedata.name(char, "")
+    return "`" if any(word in name for word in _QUOTE_NAMES) else None
+
+
+class QuoteState:
+    """Where quoted spans stand between the records of one file, read in order."""
+
+    def __init__(self, known: bool = True) -> None:
+        self.open: str | None = None if known else _UNKNOWN
+
+    def feed(self, record: str) -> bool:
+        """Move past one record; whether that record's kv fields may be read."""
+        if self.open == _UNKNOWN:
+            return False
+        if isinstance(record, _Omitted):
+            self.open = _UNKNOWN
+            return False
+        start = self.open
+        for match in _QUOTE_CANDIDATE.finditer(record):
+            kind = _quote_kind(match.group())
+            if kind is None:
+                continue
+            if self.open is None:
+                self.open = kind
+            elif self.open == kind:
+                self.open = None
+        return start is None and self.open is None
 
 
 def _plain_string(value: str) -> bool:
@@ -295,8 +366,12 @@ class Fields:
             raise ValueError("no rules")
         return cls({source: tuple(names) for source, names in rules.items()})
 
-    def extract(self, source: str, text: str) -> dict[str, Any]:
-        """The approved fields of one line (record), unmasked; nothing else is read out."""
+    def extract(self, source: str, text: str, kv: bool = True) -> dict[str, Any]:
+        """The approved fields of one line (record), unmasked; nothing else is read out.
+
+        ``kv`` False (the record is in or at the edge of a quoted span that crosses
+        records, or the quote state is unknown) gives no kv field.
+        """
         names = self.rules.get(source)
         if not names:
             return {}
@@ -305,14 +380,14 @@ class Fields:
         record: dict | None = None
         if source == "log":
             parts = text.split("|", 3)
-            if len(parts) == 4:
-                stamp, level, category, free = (*(part.strip() for part in parts[:3]), parts[3])
-                if _TIMESTAMP.fullmatch(stamp):
-                    fixed["timestamp"] = stamp
-                if _CODE.fullmatch(level):
-                    fixed["level"] = level
-                if _CODE.fullmatch(category):
-                    fixed["category"] = category
+            if len(parts) != 4 or not _TIMESTAMP.fullmatch(parts[0].strip()):
+                return {}  # not a log line: no field at all
+            stamp, level, category, free = (*(part.strip() for part in parts[:3]), parts[3])
+            fixed["timestamp"] = stamp
+            if _CODE.fullmatch(level):
+                fixed["level"] = level
+            if _CODE.fullmatch(category):
+                fixed["category"] = category
         elif source == "trace":
             stamp = _TIMESTAMP.match(text)
             if stamp and (stamp.end() == len(text) or text[stamp.end()].isspace()):
@@ -320,7 +395,7 @@ class Fields:
                 free = text[stamp.end():]
         elif source in _JSON_SOURCES:
             record = _json_object(text)
-        pairs = _kv_pairs(free) if free is not None else {}
+        pairs = _kv_pairs(free) if kv and free is not None else {}
         out: dict[str, Any] = {}
         for name in names:
             if name in fixed:
@@ -485,9 +560,12 @@ def _check_text(head: bytes) -> None:
         raise FileRefused("not UTF-8 text (UTF-16/32 byte-order mark or NUL bytes); refused")
 
 
-def _blocks(handle: Any, budget: Budget) -> Iterator[bytes]:
-    """The file's blocks up to its size at open; the first block is checked as text."""
+def _blocks(handle: Any, budget: Budget, limit: int | None = None) -> Iterator[bytes]:
+    """The file's blocks up to its size at open (at most ``limit`` bytes); the first
+    block is checked as text."""
     remaining = handle.seek(0, 2)
+    if limit is not None:
+        remaining = min(remaining, limit)
     handle.seek(0)
     first = True
     while remaining > 0:
@@ -502,16 +580,20 @@ def _blocks(handle: Any, budget: Budget) -> Iterator[bytes]:
         yield block
 
 
-def _split_piece(raw: bytes, first: bool, last: bool) -> list[str]:
+def _split_piece(raw: bytes, first: bool, last: bool, records: bool = False) -> list[str]:
     """Raw lines of one piece between newlines.
 
     Gives the same lines ``str.splitlines`` gives for the whole file (CRLF, lone CR and
     the other Unicode breaks included). ``last`` marks a final piece with no newline.
+    With ``records`` (approved-field mode) the piece is one record: one trailing CR
+    is stripped and every other break character stays inside the record.
     A piece holding a NUL byte comes back as OMITTED_NUL_LINE.
     """
     if b"\x00" in raw:
         return [OMITTED_NUL_LINE]
     text = raw.decode("utf-8-sig" if first else "utf-8", errors="replace")
+    if records:
+        return [text.removesuffix("\r")]
     return text.splitlines() if last else (text + "\n").splitlines()
 
 
@@ -532,16 +614,18 @@ def _match_texts(value: Any) -> list[str]:
     return [value if isinstance(value, str) else json.dumps(value)]
 
 
-def _present(config: Config, source: str, line: str) -> tuple[str, list[str]] | None:
+def _present(config: Config, source: str, line: str,
+             kv: bool = True) -> tuple[str, list[str]] | None:
     """What may leave the server for one raw line (record), and the texts a search
-    may match: the same masked text that is output. None: no approved field."""
+    may match: the same masked text that is output. None: no approved field.
+    ``kv`` False withholds kv fields (see QuoteState)."""
     if isinstance(line, _Omitted):
         return line, []
     if config.fields is None:
         shown = config.redact(line)[:MAX_LINE_CHARS]
         return shown, [shown]
     picked = {name: _mask_value(value, config.redact)
-              for name, value in config.fields.extract(source, line).items()}
+              for name, value in config.fields.extract(source, line, kv).items()}
     if not picked:
         return None
     texts = [text for value in picked.values() for text in _match_texts(value)]
@@ -568,19 +652,22 @@ def _records(config: Config, source: str, path: Path, budget: Budget) -> Iterato
     if config.fields is not None and source == "refusal":
         yield from _whole_file(path, budget)
     else:
-        yield from _iter_lines(path, budget)
+        yield from _iter_lines(path, budget, records=config.fields is not None)
 
 
-def _iter_lines(path: Path, budget: Budget) -> Iterator[str]:
+def _iter_lines(path: Path, budget: Budget, records: bool = False,
+                limit: int | None = None) -> Iterator[str]:
     """Stream a file's raw lines; a line over MAX_LINE_BYTES comes as OMITTED_LINE.
 
-    Callers pass every line through ``_present`` before matching or output.
+    ``records`` splits on newlines only (see ``_split_piece``); ``limit`` stops the
+    read after that many bytes. Callers pass every line through ``_present`` before
+    matching or output.
     """
     with open(path, "rb") as handle:
         kept = bytearray()
         oversized = False
         first = True
-        for block in _blocks(handle, budget):
+        for block in _blocks(handle, budget, limit):
             start = 0
             while True:
                 newline = block.find(b"\n", start)
@@ -595,7 +682,7 @@ def _iter_lines(path: Path, budget: Budget) -> Iterator[str]:
                 if oversized:
                     yield OMITTED_LINE
                 else:
-                    yield from _split_piece(bytes(kept), first, False)
+                    yield from _split_piece(bytes(kept), first, False, records)
                 kept.clear()
                 oversized = False
                 first = False
@@ -603,15 +690,18 @@ def _iter_lines(path: Path, budget: Budget) -> Iterator[str]:
         if oversized:
             yield OMITTED_LINE
         elif kept:
-            yield from _split_piece(bytes(kept), first, True)
+            yield from _split_piece(bytes(kept), first, True, records)
 
 
-def _tail_lines(path: Path, count: int, budget: Budget) -> list[str]:
-    """The last ``count`` raw lines, found by reading backwards from the end in blocks."""
+def _tail_lines(path: Path, count: int, budget: Budget,
+                records: bool = False) -> tuple[list[str], int]:
+    """The last ``count`` raw lines, found by reading backwards from the end in blocks,
+    and the byte offset where the first piece read starts (with ``records``, where
+    the first returned record starts)."""
     with open(path, "rb") as handle:
         end = handle.seek(0, 2)
         if end == 0:
-            return []
+            return [], 0
         handle.seek(0)
         head = handle.read(min(READ_BLOCK, end))
         budget.charge(len(head))
@@ -646,8 +736,20 @@ def _tail_lines(path: Path, count: int, budget: Budget) -> list[str]:
             handle.seek(start)
             piece = handle.read(stop - start)
             budget.charge(len(piece))
-            lines.extend(_split_piece(piece, start == 0, stop == end))
-    return lines[-count:]
+            lines.extend(_split_piece(piece, start == 0, stop == end, records))
+    return lines[-count:], starts[0]
+
+
+def _quote_state_at(path: Path, offset: int, budget: Budget) -> QuoteState:
+    """The quote state at byte ``offset`` (a record start), scanned from the start of
+    the file; unknown if the scan does not fit in the read budget or fails."""
+    state = QuoteState()
+    try:
+        for record in _iter_lines(path, budget, records=True, limit=offset):
+            state.feed(record)
+    except (BudgetExceeded, FileRefused, OSError):
+        return QuoteState(known=False)
+    return state
 
 
 _REQUIRED: Any = object()
@@ -724,16 +826,28 @@ def tool_tail(config: Config, arguments: dict) -> str:
     notes: list[str] = []
     entry = _resolve_file(config, source, _str(arguments, "file", None), notes)
     count = _int(arguments, "lines", 200, 1, MAX_LINES)
+    budget = Budget()
+    notes: list[str] = []
     if config.fields is not None and source == "refusal":
-        raw, unit = _whole_file(entry.path, Budget()), "record"
+        raw, unit = _whole_file(entry.path, budget), "record"
+        kv_allowed = [True] * len(raw)
     else:
-        raw, unit = _tail_lines(entry.path, count, Budget()), "line"
-    shown = [_present(config, source, line) for line in raw]
+        raw, start = _tail_lines(entry.path, count, budget, records=config.fields is not None)
+        unit = "line"
+        kv_allowed = [True] * len(raw)
+        if config.fields is not None and source in _KV_SOURCES:
+            # kv needs the quote state where the window starts: scan the file up to it.
+            state = _quote_state_at(entry.path, start, budget)
+            if state.open == _UNKNOWN:
+                notes.append("kv fields withheld: the file before these lines could not "
+                             "be scanned for open quotes within the read budget")
+            kv_allowed = [state.feed(line) for line in raw]
+    shown = [_present(config, source, line, kv) for line, kv in zip(raw, kv_allowed)]
     tail = [item[0] for item in shown if item is not None]
     header = f"{entry.name}: last {len(raw)} {unit}(s)"
     if len(tail) < len(raw):
         header += f"; {len(raw) - len(tail)} without an approved field omitted"
-    return "\n".join([header, *tail])
+    return _with_notes([header, *tail], notes)
 
 
 def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: str,
@@ -750,11 +864,12 @@ def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: 
             pending_after = 0
             last_printed = -1
             name = f"{source}/{entry.name}"
+            quotes = QuoteState()  # records are read in order from the file's start
             try:
                 # Match on the masked approved values, the same text that is output,
                 # so a match count cannot reveal what the mask or the allow-list hides.
                 for number, raw in enumerate(_records(config, source, entry.path, budget), 1):
-                    shown = _present(config, source, raw)
+                    shown = _present(config, source, raw, quotes.feed(raw))
                     if shown is None:
                         unapproved += 1
                         continue

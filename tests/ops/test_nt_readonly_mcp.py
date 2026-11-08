@@ -844,10 +844,10 @@ def test_approved_kv_and_fixed_fields(approved):
     text, error = call(approved, "nt_tail", source="log")
     assert not error
     assert text.splitlines() == [
-        "log.txt: last 4 line(s); 1 without an approved field omitted",
+        "log.txt: last 4 line(s); 2 without an approved field omitted",
         '{"timestamp":"2026-01-02 03:04:05:678","level":"1","kv:Status":"Filled"}',
         '{"timestamp":"2026-01-02 03:04:05:678","level":"2"}',
-        '{"kv:Status":"Working"}',
+        # Line 4 does not start with a timestamp, so it gives no field at all.
     ]
     text, _ = call(approved, "nt_tail", source="trace")
     assert text.splitlines() == [
@@ -909,7 +909,7 @@ def test_search_matches_only_approved_values(approved):
     assert call(approved, "nt_search", source="log", pattern="Secret")[0].startswith("0 match")
     text, _ = call(approved, "nt_search", source="log", pattern="filled", context=1)
     assert text.splitlines() == [
-        "1 match(es); 1 line(s) without an approved field skipped",
+        "1 match(es); 2 line(s) without an approved field skipped",
         'log/log.txt:1: {"timestamp":"2026-01-02 03:04:05:678","level":"1","kv:Status":"Filled"}',
         'log/log.txt:2- {"timestamp":"2026-01-02 03:04:05:678","level":"2"}',
     ]
@@ -1127,7 +1127,9 @@ def test_text_inside_any_quoted_value_is_never_a_pair(tmp_path, source, line):
 @pytest.mark.parametrize("free, expected", [
     # Balanced quoting: quoted values of approved keys still come out whole.
     ("Note=\"ok here\" Price=1", {"kv:Note": "ok here", "kv:Price": "1"}),
-    ("Note='a \"b\" c', Price='2'", {"kv:Note": 'a "b" c', "kv:Price": "2"}),
+    # A value outside the plain-string charset (here its inner quotes) is dropped.
+    ("Note='a \"b\" c', Price='2'", {"kv:Price": "2"}),
+    ("Note='a b/c@d:1.5+x-y_z' Price=2", {"kv:Note": "a b/c@d:1.5+x-y_z", "kv:Price": "2"}),
     ("Note='' Price=3", {"kv:Note": "", "kv:Price": "3"}),
     # Unclear quoting anywhere on the line: no kv field at all.
     ("Price=4 Note='it\\'s'", {}),
@@ -1171,3 +1173,159 @@ def test_json_path_never_emits_near_json_strings(tmp_path, message):
         assert not error and MARKER not in text and "json:msg" not in text, (name, text)
     text, _ = call(config, "nt_tail", source="journal")
     assert text.splitlines() == ["j.jsonl: last 1 line(s); 1 without an approved field omitted"]
+
+
+# --- #1136 root-cause pass: records, cross-line quotes, quote-like characters ----------
+
+ROOT_FIELDS = ("log timestamp\nlog level\nlog category\nlog kv:Price\nlog kv:Note\n"
+               "trace timestamp\ntrace kv:Price\ntrace kv:msg\n")
+# Break characters that stay inside a record in approved-field mode.
+IN_RECORD_BREAKS = ["\r", "\x0b", "\x0c", "\x1c", "\x1d", "\x1e", "\x85", " ", " "]
+QUOTE_LIKE = [("`", "`"), ("“", "”"), ("‘", "’"), ("«", "»"),
+              ("＂", "＂"), ("＇", "＇"), ("‚", "‘"),
+              ("„", "“"), ("‹", "›"), ("「", "」")]
+ROOT_CAUSE_LEAKS = [
+    # Not a log line: no level or category may carry free text out.
+    ("log", "Account|SIM_MARKER_ID|NetLiq_MARKER_failed|whatever failed"),
+    ("log", f"Account|SIM_MARKER_ID|NetLiq_MARKER|Price={LEAK}"),
+    # A quoted value running over several records (\n) or holding another break.
+    *(("log", f'{LOG_PREFIX}Note="free{sep}x|y|z|Price={LEAK}{sep}end" failed')
+      for sep in ["\n", *IN_RECORD_BREAKS]),
+    *(("trace", f'{TRACE_PREFIX}Strategy msg="multi{sep}{TRACE_PREFIX}Price={LEAK}{sep}end"')
+      for sep in ["\n", *IN_RECORD_BREAKS]),
+    ("log", f"{LOG_PREFIX}Note='free\n{LOG_PREFIX}Price={LEAK} \nmore' failed"),
+    ("trace", f"{TRACE_PREFIX}msg=\"a\n{TRACE_PREFIX}x\n{TRACE_PREFIX}Price={LEAK}\nb\" c"),
+    # Quote-like characters other than ' and ".
+    *(("log", f"{LOG_PREFIX}Note={left}free Price={LEAK} more{right} failed")
+      for left, right in QUOTE_LIKE),
+    *(("trace", f"{TRACE_PREFIX}msg={left}free Price={LEAK} more{right} failed")
+      for left, right in QUOTE_LIKE),
+    # Values outside the plain-string limits.
+    ("log", f"{LOG_PREFIX}Price='{LEAK}#x' failed"),
+    ("log", f'{LOG_PREFIX}Price="{LEAK}<x>" failed'),
+    ("log", f"{LOG_PREFIX}Price='{LEAK}" + "a" * 120 + "' failed"),
+    ("log", f"{LOG_PREFIX}Price={LEAK}" + "a" * 120 + " failed"),
+    ("trace", f"{TRACE_PREFIX}Price='{LEAK}%' failed"),
+]
+
+
+def _root_outputs(config, source):
+    outputs = [("nt_errors", *call(config, "nt_errors"))]
+    outputs.append(("nt_tail", *call(config, "nt_tail", source=source)))
+    for pattern in ("", "MARKER", "Price", "failed", "SIM", "NetLiq", "free"):
+        outputs.append(("nt_search", *call(config, "nt_search", source=source,
+                                           pattern=pattern, context=2)))
+    return outputs
+
+
+@pytest.mark.parametrize("source, content", ROOT_CAUSE_LEAKS)
+def test_free_text_fails_closed_structurally(tmp_path, source, content):
+    root = _write_log(tmp_path, "")
+    (root / source / f"{source}.txt").write_bytes((content + "\n").encode("utf-8"))
+    config = server.Config.build(root, fields_file=_fields(tmp_path, ROOT_FIELDS))
+    outputs = _root_outputs(config, source)
+    for name, text, error in outputs:
+        assert not error, (name, text)
+        assert "MARKER" not in text and "kv:Price" not in text, (name, text)
+        assert "NetLiq" not in text and "SIM_" not in text, (name, text)
+    assert outputs[0][1].splitlines()[0].startswith("0 match(es)")
+
+
+def test_record_breaks_stay_inside_records(tmp_path):
+    root = _write_log(tmp_path, "")
+    text = f"{STAMP}|1|4|Price=1\r\n{STAMP}|1|4|Price=2 {STAMP}|1|4|Price=3\r\r\n"
+    (root / "log" / "log.txt").write_bytes(text.encode("utf-8"))
+    config = server.Config.build(root, fields_file=_fields(tmp_path, "log kv:Price\n"))
+    tail, _ = call(config, "nt_tail", source="log")
+    # Line 1 loses its one trailing CR; line 2 keeps U+2028 (and so line "3" inside
+    # it) and one CR, and a record holding either gives no kv.
+    assert tail.splitlines() == ["log.txt: last 2 line(s); 1 without an approved field omitted",
+                                 '{"kv:Price":"1"}']
+    assert call(config, "nt_search", source="log", pattern="")[0].splitlines()[0] == (
+        "1 match(es); 1 line(s) without an approved field skipped")
+
+
+QUOTE_WINDOW_TRACE = (f"{STAMP} state=up Price=1\n"
+                      f"{STAMP} msg=\"opens here\n"
+                      f"{STAMP} Price={LEAK}\n"
+                      f"{STAMP} still inside Price={LEAK}\n"
+                      f"closes\" here Price={LEAK}\n"
+                      f"{STAMP} Price=2\n")
+QUOTE_WINDOW_ROWS = ['{"timestamp":"2026-01-02 03:04:05:678","kv:Price":"1"}',
+                     '{"timestamp":"2026-01-02 03:04:05:678"}',
+                     '{"timestamp":"2026-01-02 03:04:05:678"}',
+                     '{"timestamp":"2026-01-02 03:04:05:678"}',
+                     '{"timestamp":"2026-01-02 03:04:05:678","kv:Price":"2"}']
+
+
+@pytest.mark.parametrize("lines, rows", [(1, 1), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5)])
+def test_tail_window_inside_open_quote_gives_no_kv(tmp_path, lines, rows):
+    root = _write_log(tmp_path, "")
+    (root / "trace" / "trace.txt").write_text(QUOTE_WINDOW_TRACE, encoding="utf-8")
+    config = server.Config.build(root, fields_file=_fields(
+        tmp_path, "trace timestamp\ntrace kv:Price\n"))
+    text, error = call(config, "nt_tail", source="trace", lines=lines)
+    assert not error and "MARKER" not in text, text
+    assert text.splitlines()[1:] == QUOTE_WINDOW_ROWS[-rows:]
+    found, _ = call(config, "nt_search", source="trace", pattern="")
+    assert found.splitlines()[1:] == [f"trace/trace.txt:{number}: {row}" for number, row
+                                      in zip((1, 2, 3, 4, 6), QUOTE_WINDOW_ROWS)]
+
+
+def test_tail_with_unknown_quote_state_gives_no_kv(tmp_path, monkeypatch):
+    root = _write_log(tmp_path, "")
+    prefix = f"{STAMP} state=up\n" * 8000  # about 240 KB to scan before the window
+    (root / "trace" / "trace.txt").write_text(prefix + f"{STAMP} Price=7\n", encoding="utf-8")
+    config = server.Config.build(root, fields_file=_fields(
+        tmp_path, "trace timestamp\ntrace kv:Price\n"))
+    text, _ = call(config, "nt_tail", source="trace", lines=1)
+    assert text.splitlines()[1:] == ['{"timestamp":"2026-01-02 03:04:05:678","kv:Price":"7"}']
+    # The tail itself reads about 128 KiB; the scan before the window no longer fits.
+    monkeypatch.setattr(server, "MAX_CALL_BYTES", 200_000)
+    text, error = call(config, "nt_tail", source="trace", lines=1)
+    assert not error
+    assert text.splitlines()[1:] == [
+        '{"timestamp":"2026-01-02 03:04:05:678"}',
+        "note: kv fields withheld: the file before these lines could not be scanned for "
+        "open quotes within the read budget"]
+
+
+def test_omitted_line_makes_quote_state_unknown(tmp_path):
+    root = _write_log(tmp_path, "")
+    big = f"{STAMP} msg='" + "p" * (server.MAX_LINE_BYTES + 10)
+    (root / "trace" / "trace.txt").write_text(
+        f"{STAMP} Price=1\n{big}\n{STAMP} Price={LEAK}\n", encoding="utf-8")
+    config = server.Config.build(root, fields_file=_fields(tmp_path, "trace kv:Price\n"))
+    for lines in (1, 2, 3):
+        text, _ = call(config, "nt_tail", source="trace", lines=lines)
+        assert "MARKER" not in text, text
+    text, _ = call(config, "nt_search", source="trace", pattern="")
+    assert "MARKER" not in text and '{"kv:Price":"1"}' in text, text
+
+
+@pytest.mark.parametrize("record", [
+    {"msg": f'{{"code":"X","account":"{MARKER}","pnl":NaN}}'},
+    {"msg": f'{{"account":"{MARKER}"}} trailing'},
+    {"msg": f'{{"account":"{MARKER}","x":1e999}}'},
+    {"msg": f"{{'account': '{MARKER}'}}"},
+    {"msg": "[" * 5000 + f'"{MARKER}"' + "]" * 5000},
+    {"msg": f"{MARKER} x"},
+    {"msg": "a" * 129},
+])
+def test_reviewer_json_bodies_emit_nothing(tmp_path, record):
+    root = _write_log(tmp_path, "x\n")
+    journal = tmp_path / "journal"
+    journal.mkdir()
+    (journal / "j.jsonl").write_text(json.dumps(record) + "\n", encoding="utf-8")
+    config = server.Config.build(root, journal_dir=journal, fields_file=_fields(
+        tmp_path, "journal json:msg\njournal json:msg.code\njournal json:msg.account\n"))
+    for name, text, error in _leak_outputs(config, ["journal"]):
+        assert not error and MARKER not in text and "json:msg" not in text, (name, text)
+
+
+def test_quote_kind_covers_non_ascii_quotation_marks():
+    for char in ("`‘’‚‛“”„‟‹›«»"
+                 "＂＇「」『』〝〞′″ʼ"):
+        assert server._quote_kind(char) == "`", hex(ord(char))
+    for char in "abc=|é ":
+        assert server._quote_kind(char) is None, hex(ord(char))
