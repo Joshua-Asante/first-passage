@@ -58,18 +58,26 @@ then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
 - **Known risk:** no configuration has an evidence case for this evaluation yet, and
   no strategy-signal fill has ever occurred on the account.
 - **Ruled out:** the multi-firm program is research-only (its falsifier fired). The
-  external Python rail (decommissioned; code removed in #1140 and #1152) and the
+  external Python rail (decommissioned; code removed in #1122 and #1152) and the
   personal account lane are closed.
 
 ## Live obligations
 
 | Obligation | Next due | Notes |
 |---|---|---|
-| Weekly account-preservation trade | Week of 11-09 → 11-13 | One round trip per Mon–Fri week, placed natively. A missed week risks account deletion. Agents may place it under the standing GO. Done for 11-02 → 11-06 (11-04). This week it is the F rehearsal: Joshua places it himself, with the resting stop and flatten-and-cancel exit (procedure §10, within the standing GO). |
+| Weekly account-preservation trade | Week of 11-09 → 11-13 | One trade per Mon–Fri week, placed natively by Joshua by hand; agents place no eval order (D8, 11-08). A missed week risks deletion after an email warning. Done for 11-02 → 11-06 (11-04). This week it is the F rehearsal (procedure §10): resting stop, flatten-and-cancel exit. From the week of 11-16: one genuine minimal trade (D9: 1 micro, protective stop, held minutes, before the 16:45 ET flat-by, no instance enabled). |
 | Subscription reconfirm | 11-21 | Joshua reconfirms the [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md) rows. |
 
 ## Open decisions (Joshua)
 
-1. **11-08 sitting:** the remaining decisions before the first eval session.
-2. **Data source:** Databento is retired and has no replacement. Research uses
-   TradingView CME exports only.
+1. **11-08 sitting:** ruled; see the [rulings](docs/notes/2026-11-08-sitting-rulings.md).
+   Still open: **T1** (whether Tradeify accepts the weekly trade's shape) and **T2**
+   (whether an agent may operate the account). Joshua asks Tradeify in writing after
+   the F rehearsal (D10); its Q5 answer governs the D8 suspension.
+2. **The 11-07 pair-evidence verdict** ("prior stands"): Codex verification, then
+   Joshua's ruling on the file. D1 already accepts it as risk for the first attempt.
+3. **Local confirmations:** the subscriber agreement (D7), the spend ceiling's scope
+   (D11) and the c1 archive contents (D19).
+
+Data source is settled: TradingView CME exports only, with the terms-of-service risk
+accepted (D16).

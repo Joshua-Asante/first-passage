@@ -6,6 +6,24 @@ independently in #1120. Joshua accepted the eleven rulings where they agreed. Cl
 disputed ones at his direction, and he accepted them, with D14 = A and the D16 risk accepted ("D14 A,
 accept D16 risk, record all rulings").
 
+**Reconciled with the 11-06 and 11-07 rulings.** The packet was cut from the record as of 11-05/06
+and missed rulings Joshua made in other sessions on 11-06 and 11-07: the
+[design spec](../spec/2026-11-06-orb-aegis-eval-build-design.md), the
+[attended-session procedure](../spec/2026-11-07-orb-aegis-attended-session-procedure.md) with its F
+rehearsal, the candidate-bar overturn and the 11-07 priority rule (STATE). Six rulings conflicted or
+were overtaken. Joshua accepted Claude's reconciliation for all six ("accept all recommendations"),
+and the text below already reflects it:
+
+1. **D6:** the first session does not wait for Tradeify's source-review reply (11-06 spec).
+2. **D9:** the F rehearsal is this week's trade; the D9 shape starts the week of 11-16.
+3. **D12:** one GO per session (STATE, 11-06), within AGENTS.md's 7-day window.
+4. **D17, D18:** new candidates and builder rounds are allowed under the 11-07 priority rule.
+5. **D1:** the 11-07 pair-evidence verdict ("prior stands") is named as accepted risk.
+6. **D8:** stands as ruled.
+
+Overtaken: **D19** (the c1 code and Fly guards were already removed) and part of **D5** (S-PAIR was
+accepted on 11-06, and the 11-06 GO covered the eval build).
+
 Citations: "CK" is `docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md` at `f96a657`.
 Other deleted docs are cited at `b7eaff7`. Private facts are named, never recorded: "confirm locally".
 
@@ -22,12 +40,19 @@ warning" (`b7eaff7:docs/notes/2026-11-01-prop-firm-venue-fact-register-DRAFT.md:
 week is not immediately fatal. AGENTS.md money control 1 and STATE are updated in the same PR as this
 record.
 
-**D9. Its shape (T1).** From the week of 11-09, the trade is one genuine minimal trade per Mon–Fri week:
+**D9. Its shape (T1).** **Week of 11-09:** the trade is the F rehearsal under the 11-07 procedure
+(§10): MNQ at about 16:15 ET, with a resting stop and a flatten-and-cancel exit, placed by Joshua.
+Joshua's own hand placement needs no agent GO: this ruling meets procedure §10 step 0, and §10's
+standing-GO references read as Joshua's own placement while D8 holds.
+
+**From the week of 11-16**, the trade is one genuine minimal trade per Mon–Fri week. So that each one
+adds an F sample (procedure §10), it uses MNQ and exits by flatten-and-cancel in Tradovate web, then
+verify:
 
 - 1 micro, with a normal market or limit entry;
 - a protective stop placed with the entry and cancelled with the exit, as default practice (not a compliance condition);
 - held for minutes, not seconds;
-- entered and exited in RTH, away from scheduled high-impact releases, and well before the 16:45 ET flat-by;
+- entered and exited before the 16:45 ET flat-by, away from scheduled high-impact releases;
 - ending flat with no working orders, which Joshua confirms.
 
 It is placed only while no Aegis or ORB instance is enabled. It is never placed while the account, or
@@ -43,7 +68,7 @@ because a manual MNQ or 6J fill is a §6.8 incident for the instance that owns t
 This ruling settles the trade's shape. It does not settle T1: whether Tradeify accepts the shape stays
 open (CK:1103).
 
-**D10. Ask Tradeify.** After the first minimal trade, Joshua sends one message himself. It goes on a
+**D10. Ask Tradeify.** After the F rehearsal, Joshua sends one message himself. It goes on a
 separate compliance ticket, never on the CME-copied thread #04738415, and asks for a written answer
 from a human:
 
@@ -64,7 +89,11 @@ the pair "needs its own evidence case" (CK:1023). Accepted as risk on the signed
 - the 10-19 prior;
 - the exploratory composition-grid signal;
 - the workshop finding that no out-of-sample edge is established;
-- that no O-N or model evidence transfers to O-0.
+- that no O-N or model evidence transfers to O-0;
+- the 11-07 pair-evidence verdict: the current pair fails the 2026-08-26 combined-book gate at the
+  eval's sizing, "prior stands"
+  (`lab/analysis/c1/pair_evidence_case_2026-11/RESULTS.md`). That file's own status (Codex
+  verification, then Joshua's ruling on it) is separate from this acceptance.
 
 A bust ends the attempt, and any reset is a fresh spend decision. This sets no precedent for scaling
 or new purchases. The funded stage needs a new binding.
@@ -78,7 +107,7 @@ it is a gate document. Repair or retirement of the framework waits until a scali
 decision needs a gate.
 
 **D3. Account binding.** Bind both strategies to the owned Select 100K, eval stage only, with every
-limit the build implements set before the S-PAIR rerun. The binding states:
+limit the build implements set as in the frozen set (spec D7). The binding states:
 
 - an edition-swap clause tied to Addendum 1;
 - that only Aegis and ORB are bound;
@@ -101,41 +130,39 @@ after a human compliance answer. A different-logic strategy elsewhere is permitt
 to Tradeify's "similar orders" scan and ESA §6.7 (T3). Any question about this goes on a compliance
 ticket, not on #04738415.
 
-**D5. Native build authority.** Joshua records the private ruling that authorised the native build and
-the Sim101 canaries, by date and words (A). If he cannot name it, native builds, canaries and S-PAIR
-runs before 11-08 are ratified as of today (B). From 11-08 the authority is enumerated:
+**D5. Native build authority.** Joshua accepted S-PAIR on 11-06, and his 11-06 GO covers the eval
+build only: no order, session or spend (STATE). From 11-08 the enumerated authority is:
 
-1. the S-PAIR bare rerun on Sim101;
-2. the eval build, compiled from the accepted S-PAIR source set and installed disabled under the step-3 GO;
-3. the horizon v2 build and its Sim101 canary.
+1. any S-PAIR rerun on Sim101;
+2. the eval build, compiled from the frozen set in the 11-06 design spec and installed disabled under
+   its GO;
+3. the horizon edition build and its Sim101 canary.
 
-No canary runs during an armed session. The substitute for Codex review of the private eval build is
-done before install. It is (a) a fresh-context Claude review in place in Joshua's primary checkout,
-and (b) hash identity: the installed build equals the S-PAIR source set, which equals the source sent
-to Tradeify. If those don't match, the source is re-sent with a fresh notice (D6). Which option
-applies, A or B, depends on a private fact: confirm locally.
+No canary runs during an armed session. Verification of the private eval build follows AGENTS.md
+Roles: Codex reads the frozen build read-only, in place, against its checksums (Joshua, 11-06).
+Hash identity is also checked before install: the installed build equals the frozen set, which equals
+the source sent to Tradeify; otherwise the source is re-sent. Earlier native builds and canaries not
+covered by a recorded ruling are ratified as of 11-08.
 
-**D6. Tradeify source review.** Joshua sends Tradeify a notice of intent, without copying CME:
+**D6. Tradeify source review.** The first session does **not** wait for Tradeify's source-review
+reply (11-06 spec; STATE). Starting without it stays an accepted risk on the signed page (CK:1103).
 
-> "Unless Tradeify objects by <date>, I will enable the strategy whose source I sent on <send date>.
-> I will record the enable on video and keep platform logs."
-
-- **Deadline:** 2026-11-19 17:00 ET if the notice goes out by 11-10. Otherwise 7 business days after
-  sending, never inside Thanksgiving week.
-- **Session 1:** waits for the deadline or a reply.
-- **Objections:** the notice invites objection on any ground, eligibility included. An objection stops
-  the attempt. Silence by the deadline lets Joshua set aside the candidate-specific ownership
-  prerequisite (native plan :57) on the signed page, with the risk named.
-- **Re-sends:** a re-send before session 1 needs a fresh notice and restarts the window.
-- **Export:** settle the export question (D7) before sending.
+- **Notice:** optional. Joshua may send Tradeify a notice of intent ("I will enable the strategy whose
+  source I sent on <date>; I will record the enable on video and keep platform logs"), without copying
+  CME. It sets no waiting period.
+- **Objection:** a Tradeify objection received at any time stops the attempt until Joshua re-rules.
+- **Eligibility:** the candidate-specific ownership prerequisite (native plan :57) is set aside on the
+  signed page, with the risk named.
+- **Re-send:** any eval-build change is re-sent to Tradeify by Joshua before it runs on the eval.
+- **Export:** settle the export question (D7) before the eval files go out.
 - **After session 1:** a change to signal logic, entries, exits, stops, sizing, caps, DD behaviour,
   instrument or session, pair composition, the outcome window, or a stop-rule assumption needs a new
   registration before the next eval session. A fidelity fix that leaves all of those unchanged needs
-  an S-PAIR rerun, a re-send and a fresh notice. Documentation, diagnostics and UI-only changes need
-  ordinary verification. Addendum 1 stays the only registered horizon-edition substitution.
+  an S-PAIR rerun and a re-send. Documentation, diagnostics and UI-only changes need ordinary
+  verification. Addendum 1 stays the only registered horizon-edition substitution.
 
-**D7. Data rights and CME licence.** Four things happen. None of them gates session 1, except that
-the build checks must pass first.
+**D7. Data rights and CME licence.** Four things happen. None of them gates session 1, except items
+2 and 3, which must be done before session 1.
 
 1. Joshua follows up on CME ticket #04738415, citing Tradeify's CQG confirmation, and re-asks
    NinjaTrader/CQG for the legal distributor, the subscriber agreement and the Managed User route.
@@ -157,18 +184,20 @@ plans no incremental spend. Any licence, reset, second account or paid data need
 under money control 6, checked against the ceiling. Joshua confirms locally the ceiling's scope for
 the native lane and what happens on breach.
 
-**D12. Sequencing and GO cadence.** Weekly GO cadence governs, per Joshua's 11-05 ruling
-(`a16270d`), which is later than CK:1101. Build and session GOs stay separate acts. Session 2 runs
-only after the session-1 review is recorded, and an adverse review suspends the rest of that week's
-GO automatically. Joshua confirms that the 11-05 cadence ruling covers eval sessions.
+**D12. Sequencing and GO cadence.** One GO per session (STATE, 11-06), each within AGENTS.md's
+7-day window. Build and session GOs stay separate acts. Session 2 runs only after the session-1 review
+is recorded.
 
-Order of steps:
+Order of steps (main's 11-06 spec and 11-07 procedure):
 
 1. paper rulings;
-2. S-PAIR rerun and acceptance;
-3. step 3: name readback, then the build GO, with the build installed disabled;
-4. step 4: the signed, hash-registered page and the attended pre-session check;
-5. step 5: the session GO, after the D6 deadline or a reply. Joshua enables the strategy himself.
+2. S-PAIR: run and accepted on 11-06, with no rerun (spec §7);
+3. name readback, then the build installed disabled under the 11-06 build GO;
+4. the F rehearsal (procedure §10);
+5. a short Sim101 check of ORB on the frozen set;
+6. the eval files to Tradeify;
+7. the signed, hash-registered page and the attended pre-session check;
+8. the session GO; Joshua enables the strategy himself.
 
 The signed page lists:
 
@@ -177,7 +206,8 @@ The signed page lists:
 - the exclusivity statement (D4);
 - what S-PAIR showed;
 - the CK:1103 acceptances: no reply, CME licence, T1, T2;
-- candidate-specific eligibility (D6);
+- candidate-specific eligibility (D6) and starting without Tradeify's reply;
+- the 11-07 pair-evidence verdict (D1);
 - the unproved native-control risks (protection across a disconnect, and the U tests Sim cannot
   prove), with the automatic incident close not relied on (CK:1090);
 - the attending operator's account-wide duties (CK:1095);
@@ -230,49 +260,41 @@ Offline backtests on exported bars sit on the wrong side of that text. The plaus
 loss of the TradingView account. MNQFLOW stays parked: it wakes only on a historical MBP-10 source for
 its registered window.
 
-**D17. Third-leg Experiment 1.** Deferred until after the first eval sessions and their review. The
-10-29 card is withdrawn, not repaired. Fix the native plan's :129 link. A plain local inventory ($0,
-K=0, no card) runs only if Joshua directs it. A third leg needs its own authority beyond the CK:1091
-pair exception.
+**D17. Third-leg Experiment 1.** The 10-29 card is withdrawn, not repaired. Fix the native plan's
+:129 link. New third-leg research may run under Joshua's 11-07 priority rule for new candidates
+(STATE). A third leg on the eval needs its own authority beyond the CK:1091 pair exception.
 
-**D18. Builder.** No per-instrument look budget as the liveness ceiling. `lab/builder/README.md`
-records the channel as dormant. No round opens until a registration declares an audited,
-channel-level ceiling that does not grow with new instruments or calendar extensions, plus the owed
-contract fields. MGC is parked, following "Park MCL", with results unread. R1 validity is not
-adjudicated; it is moot while MCL is parked, and its cards count toward MCL K. The 2009 calendar
-enlarges no ceiling.
+**D18. Builder.** Builder rounds are allowed under Joshua's 11-06/07 candidate-bar overturn and the
+11-07 priority rule (STATE). A per-instrument look budget is not the liveness ceiling: each round's
+registration declares an audited, channel-level ceiling that does not grow with new instruments or
+calendar extensions, plus the owed contract fields, before it freezes. MGC is parked (Joshua, 11-06),
+results unread, and its 8 ledgered cards are disclosed as K. MCL is parked (11-05); R1 validity is
+not adjudicated, and its 8 cards count toward MCL K. The 2009 calendar enlarges no ceiling.
 
-**D19. c1 Stage 3.** The surface-ADR "own GO and quiet window" clause lapses. Removing
-`LIVE_FLY_APPS` and `rail.deploy` needs a Codex-reviewed clean head and green CI. The Stage 3
-conditions hold:
-
-- both `deploy/*/fly.toml` files, `LIVE_FLY_APPS` and `rail.deploy` leave together in the last S3-2 PR;
-- each PR's executed consumer scan gives every outside consumer a disposition (ADR :506, :512);
-- S3-4's destination returns with the consumer table.
-
-Joshua checks the c1 volume archives locally, and agents neither open nor copy them. If they contain
-Pine, runtime ports or `effective_inputs.json`, he accepts the single copy or grants an explicit backup
-exception. If they hold account data only, he may make a private backup.
+**D19. c1 Stage 3.** Overtaken: the c1 rail code, both `fly.toml` files, `LIVE_FLY_APPS` and
+`rail.deploy` were already removed (#1122 / f901f726, #1152). Remaining: Joshua checks the c1 volume
+archives locally, and agents neither open nor copy them. If they contain Pine, runtime ports or
+`effective_inputs.json`, he accepts the single copy or grants an explicit backup exception. If they
+hold account data only, he may make a private backup.
 
 **D20. Subscriptions.** Keep the monthly reconfirm, by 11-21. If time allows, close the stale rows
 (Tradeify carrying cost, Fly.io final bill, final charges) and fix links to deleted records.
 
 ## Follow-up work
 
-| Item | Route |
+Every PR, doc-only included, merges only at a head the other agent has reviewed clean, with CI green,
+and Joshua merges (AGENTS.md).
+
+| Item | PR |
 |---|---|
-| AGENTS.md money control 1 and STATE (D8) | This PR, at a Codex-clean head with green CI |
-| D14 re-bank, verdicts, `register_search` and tests | Code PR, at a Codex-clean head with green CI |
-| D2 framework status pointer | Gate document, at a Codex-clean head |
-| D18 builder README, MGC.md, MCL K disclosures | Doc-only |
-| D17 plan link, D20 ledger links | Doc-only |
-| D19 last S3-2 PR | Code PR, at a Codex-clean head with green CI |
+| AGENTS.md money control 1 and Roles, and STATE (D8, D9, D12) | This PR |
+| D14 re-bank, verdicts, `register_search` and tests | #1163 |
+| D2 framework status pointer | #1164 |
+| D18 builder README, MGC/MCL K disclosures; D17 plan link; D20 ledger links | #1165 |
 
 ## Joshua, locally
 
-- **D5:** the date and words of the private build ruling.
 - **D7:** which subscriber agreement the eval login accepted.
-- **D11:** the ceiling's scope and what happens on breach.
-- **D12:** confirm the 11-05 cadence ruling covers eval sessions.
+- **D11:** the spend ceiling's scope and what happens on breach.
 - **D19:** the contents of the c1 archives.
-- **Generally:** what the signed cards contain, S-PAIR status, and any Tradeify, CME or NinjaTrader replies.
+- **Generally:** what the signed cards contain, and any Tradeify, CME or NinjaTrader replies.
