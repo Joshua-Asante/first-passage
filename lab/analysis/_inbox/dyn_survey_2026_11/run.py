@@ -156,6 +156,10 @@ def survey_instrument(symbol: str, entry: dict, calendar, book: dict, log: Path)
     log_read(log, symbol, entry)
     try:
         bars, summary = data.load_bars(Path(entry["path"]), symbol, entry["sha256"])
+        last_bar = bars.index.max().strftime("%Y-%m-%d") if len(bars) else None
+        if "h_start" in boundary and last_bar is not None and last_bar >= boundary["h_start"]:
+            raise Refused(f"{symbol}: the export holds a bar dated {last_bar} (ET), on or after h_start "
+                          f"{boundary['h_start']}")
         sessions = data.session_dates(bars, symbol)
         dev = [d for d in sessions if d >= S.DEV_START]
         if "h_start" in boundary and (dev[-1] if dev else None) != boundary["dev_last_session"]:

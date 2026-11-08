@@ -49,9 +49,11 @@ this PR is the frozen SHA. The parity, holdout and 5h stages are separate, conti
   validates every entry before `claim_run` and before it reads the calendar, book or any export:
   neither form, both forms, a non-ISO date, an empty reason or `dev_last_session` on or after
   `h_start` is refused and creates no marker. A missing `h_start` no longer skips the check.
-  After loading an instrument's bars, the driver refuses unless the actual last development
-  session equals the pinned `dev_last_session`. That read comes after the marker, so this
-  refusal uses up the run like any failure after the start.
+  After loading an instrument's bars, the driver refuses if any bar's ET date is on or after
+  `h_start` (a session counts only with a bar at the session open, so overnight bars or a cut
+  before the open on `h_start` would not show in the session check), and refuses unless the
+  actual last development session equals the pinned `dev_last_session`. Both checks come after
+  the marker, so either refusal uses up the run like any failure after the start.
 - **All-UNRESOLVED survey.** Labelling it NULL matches protocol v5; unchanged.
 - **Re-freeze.** This amendment changes `run.py`, so the frozen SHA moves to the merge of the
   PR that carries it, and the private freeze record gains `dev_last_session` per instrument

@@ -274,10 +274,25 @@ def loaded(tmp_path, monkeypatch, n=3):
 def test_export_past_its_pinned_last_development_session_refuses_the_run(tmp_path, monkeypatch):
     dates, log = loaded(tmp_path, monkeypatch)
     cal = type("Cal", (), {"check_covers": lambda *a: pytest.fail("calendar used"), "closed": frozenset()})()
-    entry = {"path": "p", "sha256": "abcdefgh", "dev_last_session": dates[-2], "h_start": dates[-1]}
+    entry = {"path": "p", "sha256": "abcdefgh", "dev_last_session": dates[-2], "h_start": "2030-01-02"}
     with pytest.raises(R.Refused, match="not the pinned dev_last_session"):
         R.survey_instrument("MNQ", entry, cal, {}, log)
     assert "MNQ" in log.read_text()                     # logged before the read
+
+
+@pytest.mark.parametrize("when", ["00:15", "08:00", "18:00"])
+def test_export_with_any_bar_on_or_after_h_start_refuses_the_run(tmp_path, monkeypatch, when):
+    """A bar dated h_start (ET) with no session-open bar still forfeits the holdout."""
+    dates, log = loaded(tmp_path, monkeypatch)
+    bars, _ = R.data.load_bars()
+    h_start = "2030-01-02"
+    extra = pd.DataFrame({"open": 1.0, "high": 1.0, "low": 1.0, "close": 1.0},
+                         index=pd.DatetimeIndex([f"{h_start} {when}"], tz="America/New_York"))
+    monkeypatch.setattr(R.data, "load_bars", lambda *a: (pd.concat([bars, extra]), {}))
+    cal = type("Cal", (), {"check_covers": lambda *a: pytest.fail("calendar used"), "closed": frozenset()})()
+    entry = {"path": "p", "sha256": "abcdefgh", "dev_last_session": dates[-1], "h_start": h_start}
+    with pytest.raises(R.Refused, match="on or after h_start"):
+        R.survey_instrument("MNQ", entry, cal, {}, log)
 
 
 @pytest.mark.parametrize("pin", ["match", "none"])
