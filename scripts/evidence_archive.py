@@ -182,9 +182,12 @@ def is_archive_clone(archive: Path) -> bool:
 def _origin_upstream(archive: Path) -> tuple[str, str] | None:
     """(current branch, origin branch ref it tracks), or None when HEAD is
     detached or the branch's upstream is not on origin."""
-    branch = _git(archive, "symbolic-ref", "-q", "--short", "HEAD").stdout.strip()
-    if not branch:
+    # Full ref, then strip the exact prefix: --short is ambiguity-dependent and
+    # gives "heads/main" when a tag "main" also exists.
+    ref = _git(archive, "symbolic-ref", "-q", "HEAD").stdout.strip()
+    if not ref.startswith("refs/heads/"):
         return None
+    branch = ref[len("refs/heads/"):]
     remote = _git(archive, "config", "--get", f"branch.{branch}.remote").stdout.strip()
     merge = _git(archive, "config", "--get", f"branch.{branch}.merge").stdout.strip()
     if remote != "origin" or not merge.startswith("refs/heads/"):

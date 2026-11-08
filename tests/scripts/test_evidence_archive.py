@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import io
+import shlex
 import os
 import shutil
 import subprocess
@@ -340,26 +341,43 @@ def test_put_prints_a_push_naming_origin_and_the_upstream(public, tmp_path, monk
 
 def test_printed_commands_quote_paths_and_refs_as_data(public, tmp_path, monkeypatch):
     # Codex security review on #1160: a path or ref holding shell syntax must
-    # come back from the shell as the same single argument, never run.
+    # come back from the shell as the same single argument, never run. The
+    # names avoid characters Windows filenames forbid (git stores loose refs
+    # as files), so the suite runs there too.
     base = tmp_path / "odd dir $(touch pwned); `id`"
     base.mkdir()
     archive = make_archive(base, monkeypatch)
-    branch = "x$(id);y&z|w"
+    branch = "x$(touch${IFS}pwned);y&z"
     git(archive, "checkout", "-q", "-b", branch)
     git(archive, "push", "-q", "-u", "origin", branch)
     out = io.StringIO()
     assert ea.put([public / "data" / "a.csv"], archive, public, out=out) == 0
-    lines = out.getvalue().split("Not safe until pushed:\n", 1)[1].strip().splitlines()
-    argvs = []
-    for line in lines:  # what a real POSIX shell would pass to git, run in tmp_path
-        assert line.strip().startswith("git ")
-        res = subprocess.run(["sh", "-c", "printf '%s\\0' " + line.strip()[len("git "):]],
+    lines = [line.strip() for line in
+             out.getvalue().split("Not safe until pushed:\n", 1)[1].strip().splitlines()]
+    expected = [["git", "-C", str(archive), "-c", "core.autocrlf=false", "add", "evidence"],
+                ["git", "-C", str(archive), "-c", "core.autocrlf=false", "commit", "-m",
+                 "evidence: archive 1 file(s)"],
+                ["git", "-C", str(archive), "push", "origin",
+                 f"refs/heads/{branch}:refs/heads/{branch}"]]
+    # POSIX tokenization of each printed line gives back exactly the argv.
+    assert [shlex.split(line) for line in lines] == expected
+    sh = shutil.which("sh")
+    if sh is None:  # e.g. Windows without Git Bash on PATH: tokenization check only
+        return
+    for line, argv in zip(lines, expected):  # what a real POSIX shell passes to git
+        res = subprocess.run([sh, "-c", "printf '%s\\0' " + line[len("git "):]],
                              cwd=tmp_path, capture_output=True, text=True, check=True)
-        argvs.append(["git"] + res.stdout.split("\0")[:-1])
+        assert ["git"] + res.stdout.split("\0")[:-1] == argv
     assert not (tmp_path / "pwned").exists()
-    assert [a[:3] for a in argvs] == [["git", "-C", str(archive)]] * 3
-    assert argvs[1][-2:] == ["-m", "evidence: archive 1 file(s)"]
-    assert argvs[2][-3:] == ["push", "origin", f"refs/heads/{branch}:refs/heads/{branch}"]
+
+
+def test_upstream_is_found_when_a_tag_shares_the_branch_name(public, tmp_path, monkeypatch):
+    # Codex review on #1160: `symbolic-ref --short` gives "heads/main" here.
+    archive = make_archive(tmp_path, monkeypatch)
+    git(archive, "tag", "main")
+    out = io.StringIO()
+    assert ea.put([public / "data" / "a.csv"], archive, public, out=out) == 0
+    assert out.getvalue().rstrip().endswith("push origin refs/heads/main:refs/heads/main")
 
 
 def test_put_refuses_without_an_upstream_on_origin(public, tmp_path, monkeypatch):
