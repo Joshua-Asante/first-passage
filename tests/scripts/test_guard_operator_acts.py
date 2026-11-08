@@ -178,6 +178,18 @@ def test_merge_context_matches_agents_md_review_and_merge():
         assert retired not in context
 
 
+def test_agents_md_security_review_trigger_is_bare_and_joshuas():
+    # Fails if AGENTS.md drops the security-review trigger rule. Codex runs a security
+    # review only for a comment holding just "@codex security review"; any other text,
+    # including the footer the server adds to every agent comment, gets a code review
+    # instead (#1153, #1154, #1156, #1160, #1162 on 2026-11-08). So Joshua posts it.
+    agents = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+    review = " ".join(agents.split("## Review and merge", 1)[1].split("\n## ", 1)[0].split())
+    for phrase in ("`@codex security review`. Joshua posts it",
+                   "holding only that text", "gets a code review instead"):
+        assert phrase in review, phrase
+
+
 def test_settings_wire_the_hook():
     # Fails if the hook is not registered for the Bash and PowerShell tools and the MCP
     # merge tools (a Windows session reaches `gh` through either shell tool).
