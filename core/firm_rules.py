@@ -229,8 +229,9 @@ _BULENOX_OPTION1 = {
 #   must stay within your account's contract limit, counted at [10 micros =
 #   1 mini]." A multi-leg book on ONE account shares this single cap -- it is
 #   NOT a per-instrument allowance. The c1 sizing host therefore allocates
-#   this cap across its legs (ops/c1_rail/c1_sizing_host_reference.py LEG_MAP
-#   `cap_alloc`); it must never hand the full cap to each leg.
+#   this cap across its legs (LEG_MAP `cap_alloc` in
+#   ops/c1_rail/c1_sizing_host_reference.py, removed with the rail; last at
+#   b7eaff7); it must never hand the full cap to each leg.
 # Source: Tradeify Help Center (help.tradeify.co) + Funded Trader Agreement,
 #   verified 2026-07-10 (§1 ADDENDUM). Prop rules change frequently — re-verify
 #   the drawdown and target columns before any lock-grade use.
@@ -258,8 +259,9 @@ _BULENOX_OPTION1 = {
 #     accounts. The Equity Index group is ES/MES/NQ/MNQ/YM/MYM/RTY/M2K/EMD/
 #     NKD + EUREX index -- so the c1 book's MYM and MNQ legs share a group.
 #     c1 is compliant BY CONSTRUCTION (both venue editions are structurally
-#     long-only: zero `strategy.short`; ops/c1_rail/c1_rail_listener.py `_leg_action`
-#     hard-codes "buy"; exits use closeposition). Long+long is explicitly
+#     long-only: zero `strategy.short`; `_leg_action` in
+#     ops/c1_rail/c1_rail_listener.py, removed with the rail and last at b7eaff7,
+#     hard-coded "buy"; exits use closeposition). Long+long is explicitly
 #     ALLOWED. Consequences of a breach are severe (all involved accounts to
 #     violation status, profit forfeiture, possible permanent ban), so never
 #     add a short-capable Equity Index leg to this account or any account
