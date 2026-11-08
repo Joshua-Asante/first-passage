@@ -12,13 +12,17 @@ Usage:
 
 Exit codes:
     0 — check passed or regenerate completed (incl. public-clone / bare-worktree
-        soft-degrade: a manifest dir whose SHA256SUMS lists files but ZERO of
-        those files exist on disk is WARN-skipped — mirrors check_pine_manifest)
+        soft-degrade: a manifest dir whose SHA256SUMS lists files but has NO
+        CSV on disk at all, listed or unlisted, is WARN-skipped — mirrors
+        check_pine_manifest)
     1 — check failed (drift, missing, extra, parse error) or invalid CLI
 
-Soft-degrade is per-directory and never applies to --regenerate. Partial
-presence (≥1 listed file on disk) keeps full hard-fail semantics — that is
-exactly the M-9 drift case the gate exists for.
+Soft-degrade is per-directory and never applies to --regenerate. It applies
+only when the dir has no CSV on disk at all. If any CSV is present, listed or
+not, the full EXTRA / MISSING / MISMATCH checks run: a dir whose listed files
+were all replaced by unlisted ones (e.g. a fresh export with new hashed names
+and no regenerated manifest) fails, and partial presence keeps full hard-fail
+semantics — that is exactly the M-9 drift case the gate exists for.
 """
 
 from __future__ import annotations
@@ -150,9 +154,9 @@ def check_all() -> int:
         manifest_names = set(entries)
 
         # Public-clone / bare-worktree soft-degrade: SHA256SUMS lists one or
-        # more files but ZERO of those listed files exist on disk → WARN and
-        # skip this dir. Partial presence keeps full hard-fail below.
-        if manifest_names and not (manifest_names & set(on_disk)):
+        # more files but NO CSV of any name is on disk → WARN and skip this
+        # dir. Any CSV on disk, listed or not, gets the full checks below.
+        if manifest_names and not on_disk:
             print(
                 f"WARN absent-tree skip {_rel_posix(d)} "
                 f"(SHA256SUMS lists {len(manifest_names)} file(s); none on disk)",
