@@ -357,6 +357,15 @@ def _fields(tmp_path, text="log kv:Note\n"):
     return path
 
 
+# nt_tail notes when a record with unclear quoting (or an omitted line) stops all
+# fields to the end of the file, in the window or before it.
+UNCLEAR_IN_WINDOW = ("note: fields withheld from the first record with unclear quoting "
+                     "(or an omitted line) to the end of the file")
+UNCLEAR_BEFORE_WINDOW = ("note: all fields withheld: the file before these lines could not be "
+                         "scanned within the read budget, or holds an omitted line or a record "
+                         "with unclear quoting")
+
+
 def test_startup_refused_without_masking_choice(tmp_path, capsys):
     root = _write_log(tmp_path, f"fill {SYNTHETIC_ID}\n")
     with pytest.raises(SystemExit) as exc:
@@ -932,7 +941,8 @@ def test_oversized_line_is_omitted_in_approved_mode(tmp_path):
     root = _write_log(tmp_path, f"{line}\n")
     config = server.Config.build(root, fields_file=_fields(tmp_path))
     text, _ = call(config, "nt_tail", source="log")
-    assert text.splitlines()[1:] == [server.OMITTED_LINE] and SYNTHETIC_ID not in text
+    assert text.splitlines()[1:] == [server.OMITTED_LINE, UNCLEAR_IN_WINDOW]
+    assert SYNTHETIC_ID not in text
 
 
 def test_json_paths_emit_scalars_only(tmp_path):
@@ -1016,11 +1026,12 @@ def test_unquoted_value_cannot_carry_joined_pairs(tmp_path, join, status, state)
         assert MARKER not in text, (name, text)
         assert "Account" not in text and "acct" not in text and "Price" not in text, (name, text)
     text, _ = call(config, "nt_tail", source="log")
+    # A quote that does not open a Key= value makes the quoting unclear: no field.
     assert text.splitlines()[1:] == ([json.dumps({"kv:Status": status}, separators=(",", ":"))]
-                                     if status else [])
+                                     if status else [UNCLEAR_IN_WINDOW] if join == "'" else [])
     text, _ = call(config, "nt_tail", source="trace")
     assert text.splitlines()[1:] == ([json.dumps({"kv:state": state}, separators=(",", ":"))]
-                                     if state else [])
+                                     if state else [UNCLEAR_IN_WINDOW] if join == "'" else [])
 
 
 def test_unquoted_values_end_at_delimiters(tmp_path):
@@ -1143,15 +1154,20 @@ def test_text_inside_any_quoted_value_is_never_a_pair(tmp_path, source, line):
     ("Price=7 it's", {}),
     ('He said "hi" Price=7', {}),
     ("(Note='x') Price=7", {}),
-    ("Note='x'Price=6", {"kv:Note": "x"}),
+    # A closing quote must be followed by whitespace, a delimiter or the line end.
+    ("Note='x'Price=6", {}),
+    ("Note='it's Price=6 end'", {}),
+    ('Note="a"b Price=6', {}),
+    ('Price="6"tail', {}),
 ])
 def test_kv_quoting_rules(tmp_path, free, expected):
     root = _write_log(tmp_path, f"{STAMP}|1|4|{free}\n")
     config = server.Config.build(root, fields_file=_fields(tmp_path, "log kv:Note\nlog kv:Price\n"))
     text, error = call(config, "nt_tail", source="log")
     assert not error
+    # Unclear quoting withholds every field of the record (and of the rest of the file).
     assert text.splitlines()[1:] == ([json.dumps(expected, separators=(",", ":"))]
-                                     if expected else [])
+                                     if expected else [UNCLEAR_IN_WINDOW])
 
 
 @pytest.mark.parametrize("message", [
@@ -1251,28 +1267,33 @@ QUOTE_WINDOW_TRACE = (f"{STAMP} state=up Price=1\n"
                       f"{STAMP} still inside Price={LEAK}\n"
                       f"closes\" here Price={LEAK}\n"
                       f"{STAMP} Price=2\n")
-QUOTE_WINDOW_ROWS = ['{"timestamp":"2026-01-02 03:04:05:678","kv:Price":"1"}',
-                     '{"timestamp":"2026-01-02 03:04:05:678"}',
-                     '{"timestamp":"2026-01-02 03:04:05:678"}',
-                     '{"timestamp":"2026-01-02 03:04:05:678"}',
-                     '{"timestamp":"2026-01-02 03:04:05:678","kv:Price":"2"}']
+QUOTE_WINDOW_ROWS = ['{"timestamp":"2026-01-02 03:04:05:678","kv:Price":"1"}']
 
 
-@pytest.mark.parametrize("lines, rows", [(1, 1), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5)])
-def test_tail_window_inside_open_quote_gives_no_kv(tmp_path, lines, rows):
+@pytest.mark.parametrize("lines", [1, 2, 3, 4, 5, 6])
+def test_tail_window_after_open_quote_gives_no_field(tmp_path, lines):
+    # Record 2 opens a quote it does not close: it and every later record give no
+    # field at all, even record 6 where parity says the span has closed.
     root = _write_log(tmp_path, "")
     (root / "trace" / "trace.txt").write_text(QUOTE_WINDOW_TRACE, encoding="utf-8")
     config = server.Config.build(root, fields_file=_fields(
         tmp_path, "trace timestamp\ntrace kv:Price\n"))
     text, error = call(config, "nt_tail", source="trace", lines=lines)
     assert not error and "MARKER" not in text, text
-    assert text.splitlines()[1:] == QUOTE_WINDOW_ROWS[-rows:]
+    if lines == 6:
+        assert text.splitlines()[1:] == [*QUOTE_WINDOW_ROWS, UNCLEAR_IN_WINDOW]
+    elif lines == 5:
+        assert text.splitlines()[1:] == [UNCLEAR_IN_WINDOW]
+    else:
+        assert text.splitlines()[1:] == [UNCLEAR_BEFORE_WINDOW]
     found, _ = call(config, "nt_search", source="trace", pattern="")
-    assert found.splitlines()[1:] == [f"trace/trace.txt:{number}: {row}" for number, row
-                                      in zip((1, 2, 3, 4, 6), QUOTE_WINDOW_ROWS)]
+    assert found.splitlines()[1:] == [
+        f"trace/trace.txt:1: {QUOTE_WINDOW_ROWS[0]}",
+        "note: trace/trace.txt: fields withheld from the first record with unclear quoting "
+        "(or an omitted line) to the end of the file"]
 
 
-def test_tail_with_unknown_quote_state_gives_no_kv(tmp_path, monkeypatch):
+def test_tail_with_unknown_quote_state_gives_no_field(tmp_path, monkeypatch):
     root = _write_log(tmp_path, "")
     prefix = f"{STAMP} state=up\n" * 8000  # about 240 KB to scan before the window
     (root / "trace" / "trace.txt").write_text(prefix + f"{STAMP} Price=7\n", encoding="utf-8")
@@ -1284,10 +1305,8 @@ def test_tail_with_unknown_quote_state_gives_no_kv(tmp_path, monkeypatch):
     monkeypatch.setattr(server, "MAX_CALL_BYTES", 200_000)
     text, error = call(config, "nt_tail", source="trace", lines=1)
     assert not error
-    assert text.splitlines()[1:] == [
-        '{"timestamp":"2026-01-02 03:04:05:678"}',
-        "note: kv fields withheld: the file before these lines could not be scanned for "
-        "open quotes within the read budget"]
+    assert text.splitlines() == ["trace.txt: last 1 line(s); 1 without an approved field omitted",
+                                 UNCLEAR_BEFORE_WINDOW]
 
 
 def test_omitted_line_makes_quote_state_unknown(tmp_path):
@@ -1329,3 +1348,73 @@ def test_quote_kind_covers_non_ascii_quotation_marks():
         assert server._quote_kind(char) == "`", hex(ord(char))
     for char in "abc=|é ":
         assert server._quote_kind(char) is None, hex(ord(char))
+
+
+# --- #1136 review of 4c6e5596: fixed fields inside spans, early-closing quotes ---------
+
+SPAN_FIELDS = "log timestamp\nlog level\nlog category\nlog kv:Price\ntrace timestamp\ntrace kv:Price\n"
+R_TS = "2026-01-01 00:00:00"
+R_TS2 = "2026-01-01 00:00:01"
+SPAN_LEAKS = [
+    # Record 2 sits inside Note's open " span: no field at all, level and category
+    # included (they could carry 32 characters of free text each).
+    ("log", f'{R_TS}|Info|Cat|Note="start\n{R_TS2}|SIM_MARKER_ID|NetLiqMARKER|x failed\nend" failed\n'),
+    ("log", f"{R_TS}|Info|Cat|Note='start\n{R_TS2}|SIM_MARKER_ID|NetLiqMARKER|x failed\n"
+            f"{R_TS2}|Info|Cat|end' failed\n{R_TS2}|SIM_MARKER_ID|NetLiqMARKER|y failed\n"),
+    ("trace", f"{R_TS} msg=\"start\n{R_TS2} SIM_MARKER_ID failed\nend\" failed\n"),
+    # A quote inside a value closes the span early by parity; the next record is
+    # still part of Note's value.
+    ("log", f"{R_TS}|Info|Cat|Note='it's\n{R_TS2}|Info|Cat|Price=MARKER4 failed\nend'\n"),
+    ("log", f'{R_TS}|Info|Cat|Note="a"b\n{R_TS2}|Info|Cat|Price=MARKER1 failed\nzz" failed\n'),
+    ("trace", f"{R_TS} Note='it's\n{R_TS2} Price=MARKER4 failed\nend'\n"),
+    ("trace", f'{R_TS} Note="a"b\n{R_TS2} Price=MARKER1 failed\nzz" failed\n'),
+    # The same content on one line, and a value running into text after its quote.
+    ("log", f"{R_TS}|Info|Cat|Note='it's Price=MARKER5 end' failed\n"),
+    ("log", f'{R_TS}|Info|Cat|Price="MARKER2"tail failed\n'),
+    ("trace", f'{R_TS} Price="MARKER2"tail failed\n'),
+]
+
+
+@pytest.mark.parametrize("source, content", SPAN_LEAKS)
+def test_no_field_inside_or_after_unclear_quoting(tmp_path, source, content):
+    root = _write_log(tmp_path, "")
+    (root / source / f"{source}.txt").write_bytes(content.encode("utf-8"))
+    config = server.Config.build(root, fields_file=_fields(tmp_path, SPAN_FIELDS))
+    outputs = [("nt_errors", *call(config, "nt_errors", context=2))]
+    for lines in range(1, content.count("\n") + 1):
+        outputs.append(("nt_tail", *call(config, "nt_tail", source=source, lines=lines)))
+    for pattern in ("", "M", "MARKER", "SIM", "NetLiq", "Price", "failed", "Info"):
+        outputs.append(("nt_search", *call(config, "nt_search", source=source,
+                                           pattern=pattern, context=2)))
+    for name, text, error in outputs:
+        assert not error, (name, text)
+        assert "MARKER" not in text and "SIM_" not in text and "NetLiq" not in text, (name, text)
+        assert "kv:Price" not in text, (name, text)
+    assert outputs[0][1].splitlines()[0].startswith("0 match(es)")
+
+
+@pytest.mark.parametrize("source, line", [
+    ("log", f"{R_TS2}|SIM_MARKER_ID|NetLiqMARKER|x failed"),
+    ("trace", f"{R_TS2} Price=MARKER7 failed"),
+])
+def test_unknown_quote_state_withholds_every_field(tmp_path, monkeypatch, source, line):
+    root = _write_log(tmp_path, "")
+    prefix = f"{R_TS} x\n" if source == "trace" else f"{R_TS}|Info|Cat|x\n"
+    (root / source / f"{source}.txt").write_text(prefix * 12000 + line + "\n", encoding="utf-8")
+    config = server.Config.build(root, fields_file=_fields(tmp_path, SPAN_FIELDS))
+    monkeypatch.setattr(server, "MAX_CALL_BYTES", 200_000)
+    text, error = call(config, "nt_tail", source=source, lines=1)
+    assert not error
+    assert text.splitlines() == [f"{source}.txt: last 1 line(s); 1 without an approved field "
+                                 "omitted", UNCLEAR_BEFORE_WINDOW]
+
+
+def test_clear_quoting_still_gives_fields_across_records(tmp_path):
+    root = _write_log(tmp_path, f"{R_TS}|Info|Cat|Note='a b' Price=1\n"
+                                f"{R_TS2}|Warn|Cat2|Price=\"2\", Note=x\n")
+    config = server.Config.build(root, fields_file=_fields(tmp_path, SPAN_FIELDS))
+    text, _ = call(config, "nt_tail", source="log")
+    assert text.splitlines() == [
+        "log.txt: last 2 line(s)",
+        '{"timestamp":"2026-01-01 00:00:00","level":"Info","category":"Cat","kv:Price":"1"}',
+        '{"timestamp":"2026-01-01 00:00:01","level":"Warn","category":"Cat2","kv:Price":"2"}']

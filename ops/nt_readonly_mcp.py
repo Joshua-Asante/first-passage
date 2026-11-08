@@ -42,13 +42,16 @@ that text, and fails closed on any doubt about quoting:
 * a ``'`` or ``"`` opens a quoted span only directly after ``Key=``; the span runs
   to the next same quote, and keys are read only outside spans. Any other quote
   (a prose apostrophe such as ``don't``, a quote after ``Note:``), an unclosed
-  span, or a backslash or a doubled quote (``''`` or ``""``) inside a span gives
-  no kv for the line;
-* quoting is tracked across records from the start of the file: a record that
-  opens a span it does not close, every record inside the span and the record
-  that closes it give no kv. Where that state is unknown (``nt_tail`` could not
-  scan the file before its window within the read budget, or an omitted line was
-  passed), no later record of that read gives kv;
+  span, a backslash inside a span, or a closing quote followed by anything but
+  whitespace, ``,``, ``;``, ``|``, ``&`` or the line end (a doubled quote,
+  ``Note='it's``) makes the line's quoting unclear, and it gives no kv;
+* a quoted value may run over several records, and parity cannot tell where it
+  ends, so every log and trace record is checked from the start of the file: a
+  record with any quotation-like character whose quoting is unclear, or an
+  omitted record, gives no field at all (timestamp, level and category too), and
+  nor does any later record of that file. ``nt_tail`` scans the file before its
+  window for this; if the scan does not fit in the read budget, the whole window
+  gives no field;
 * a value (the span's whole content, or a plain token of letters, digits and
   ``_.:+-`` that must end at whitespace, ``,``, ``;``, ``|``, ``&`` or the line
   end) is emitted only under the limits for JSON strings below.
@@ -198,10 +201,12 @@ _CODE = re.compile(r"[A-Za-z0-9_]{1,32}")
 # all make it unclear where a value ends. Other kv text is read in two steps.
 # First every quoted value is cut out. A ' or " opens
 # a span only directly after Key= (a key as defined below); the span runs to the
-# next same quote, so nothing inside it is ever read as a key. Any other quote in
-# the free text (a prose apostrophe, a quote after "Note: " or "(Note=" ...), an
-# unclosed span, or a backslash or doubled quote ('' or "") inside a span gives no
-# kv field at all for that line (fail closed): where a span ends is then unclear.
+# next same quote, so nothing inside it is ever read as a key, and that closing
+# quote must be followed by whitespace, a delimiter or the line end. Any other quote
+# in the free text (a prose apostrophe, a quote after "Note: " or "(Note=" ...), an
+# unclosed span, a backslash inside a span, or a closing quote followed by anything
+# else (a doubled quote, "Note='it's") gives no kv field at all for that line (fail
+# closed): where a span ends is then unclear.
 # Then keys are read only in the text outside spans, where each span stands as one
 # _SPAN character: a key starts the text or follows whitespace or a delimiter
 # (, ; | &) and is directly followed by =. Its value is either a span right after
@@ -212,7 +217,8 @@ _KV_TEXT = re.compile(r"[\t\x20-\x5f\x61-\x7e]*")  # printable ASCII and tab, no
 _QUOTE = re.compile("['\"]")
 _SPAN_KEY = re.compile(r"(?<![^\s,;|&])[A-Za-z_][A-Za-z0-9_]*=\Z")
 _PAIR = re.compile(r"(?<![^\s,;|&])([A-Za-z_][A-Za-z0-9_]*)="
-                   r"(?:(\x00)|([A-Za-z0-9_.:+-]*)(?=[\s,;|&]|$))")
+                   r"(?:(\x00)|([A-Za-z0-9_.:+-]*))(?=[\s,;|&]|$)")
+_AFTER_SPAN = " \t,;|&"  # what may follow a closing quote (or the line end)
 # A json: path may end on a string only if it is short plain text: no JSON, no
 # quotes or braces, nothing that could hold another record.
 MAX_JSON_STRING = 128
@@ -232,31 +238,42 @@ def _json_object(text: str) -> dict | None:
     return value if isinstance(value, dict) else None
 
 
+def _spans(text: str) -> tuple[str, list[str]] | None:
+    """``text`` with each quoted span replaced by _SPAN, and the spans' contents;
+    None when its quoting is unclear (see above)."""
+    if _KV_TEXT.fullmatch(text) is None:
+        return None  # also rules out _SPAN
+    outside: list[str] = []
+    spans: list[str] = []
+    start = 0
+    while (opened := _QUOTE.search(text, start)) is not None:
+        quote = opened.group()
+        if _SPAN_KEY.search(text, start, opened.start()) is None:
+            return None  # a quote that does not open a value: an apostrophe, prose ...
+        close = text.find(quote, opened.end())
+        if close < 0:
+            return None  # unbalanced quote
+        content = text[opened.end():close]
+        if "\\" in content:
+            return None  # escaped quote: where the span ends is unclear
+        if close + 1 < len(text) and text[close + 1] not in _AFTER_SPAN:
+            return None  # doubled quote, or a quote inside the value ('it's)
+        outside.append(text[start:opened.start()] + _SPAN)
+        spans.append(content)
+        start = close + 1
+    outside.append(text[start:])
+    return "".join(outside), spans
+
+
 def _kv_pairs(free: str) -> dict[str, list[str]]:
     """Key -> values of the pairs in a line's free text; {} when its quoting is unclear.
 
     Only values that pass ``_plain_string`` are kept.
     """
-    if _KV_TEXT.fullmatch(free) is None:
-        return {}  # also rules out _SPAN
-    outside: list[str] = []
-    spans: list[str] = []
-    start = 0
-    while (opened := _QUOTE.search(free, start)) is not None:
-        quote = opened.group()
-        if _SPAN_KEY.search(free, start, opened.start()) is None:
-            return {}  # a quote that does not open a value: an apostrophe, prose ...
-        close = free.find(quote, opened.end())
-        if close < 0:
-            return {}  # unbalanced quote
-        content = free[opened.end():close]
-        if "\\" in content or free.startswith(quote, close + 1):
-            return {}  # escaped or doubled quote: where the span ends is unclear
-        outside.append(free[start:opened.start()] + _SPAN)
-        spans.append(content)
-        start = close + 1
-    outside.append(free[start:])
-    text = "".join(outside)
+    parsed = _spans(free)
+    if parsed is None:
+        return {}
+    text, spans = parsed
     pairs: dict[str, list[str]] = {}
     for match in _PAIR.finditer(text):
         if match.group(2) is not None:
@@ -268,16 +285,18 @@ def _kv_pairs(free: str) -> dict[str, list[str]]:
     return pairs
 
 
-# Quote state across records. ' and " are quotes, and so is every other
+# Quote state across records. A quoted value may run over several records, and
+# then the records after its opening line hold its text, not log fields. That is
+# not decidable from parity (a prose apostrophe in a value flips it), so the state
+# is only "clear" or "unknown". ' and " are quotes, and so is every other
 # quotation-like character (backtick, Pi/Pf, and characters named QUOTATION,
-# APOSTROPHE, PRIME or CORNER BRACKET), all of which count as one third kind.
-# Scanning left to right, a quote opens a span when none is open and closes the
-# open span when it is of the same kind. A record may give kv only if no span is
-# open where it starts and where it ends. An omitted record makes the state
-# unknown, and unknown stays unknown for the rest of the read (fail closed).
+# APOSTROPHE, PRIME or CORNER BRACKET). A record with no quote keeps the state; a
+# record whose quotes all form clear Key='value' spans (``_spans``, applied to the
+# whole record) keeps it too. Any other quote, and any omitted record, makes the
+# state unknown for the rest of the read (fail closed); a record read while the
+# state is unknown, or that makes it unknown, gives no field at all.
 _QUOTE_CANDIDATE = re.compile(r"[^\x00-\x21\x23-\x26\x28-\x5f\x61-\x7f]")
 _QUOTE_NAMES = ("QUOTATION", "APOSTROPHE", "PRIME", "CORNER BRACKET")
-_UNKNOWN = "?"
 
 
 @functools.lru_cache(maxsize=4096)
@@ -291,28 +310,21 @@ def _quote_kind(char: str) -> str | None:
 
 
 class QuoteState:
-    """Where quoted spans stand between the records of one file, read in order."""
+    """Whether quoting is still clear between the records of one file, read in order."""
 
     def __init__(self, known: bool = True) -> None:
-        self.open: str | None = None if known else _UNKNOWN
+        self.known = known
 
     def feed(self, record: str) -> bool:
-        """Move past one record; whether that record's kv fields may be read."""
-        if self.open == _UNKNOWN:
+        """Move past one record; whether that record may give any field."""
+        if not self.known or isinstance(record, _Omitted):
+            self.known = False
             return False
-        if isinstance(record, _Omitted):
-            self.open = _UNKNOWN
-            return False
-        start = self.open
-        for match in _QUOTE_CANDIDATE.finditer(record):
-            kind = _quote_kind(match.group())
-            if kind is None:
-                continue
-            if self.open is None:
-                self.open = kind
-            elif self.open == kind:
-                self.open = None
-        return start is None and self.open is None
+        quoted = any(_quote_kind(match.group()) is not None
+                     for match in _QUOTE_CANDIDATE.finditer(record))
+        if quoted and _spans(record) is None:
+            self.known = False
+        return self.known
 
 
 def _plain_string(value: str) -> bool:
@@ -366,14 +378,14 @@ class Fields:
             raise ValueError("no rules")
         return cls({source: tuple(names) for source, names in rules.items()})
 
-    def extract(self, source: str, text: str, kv: bool = True) -> dict[str, Any]:
+    def extract(self, source: str, text: str, clear: bool = True) -> dict[str, Any]:
         """The approved fields of one line (record), unmasked; nothing else is read out.
 
-        ``kv`` False (the record is in or at the edge of a quoted span that crosses
-        records, or the quote state is unknown) gives no kv field.
+        ``clear`` False (for log and trace: the record's quoting, or the quote state
+        before it, is unclear; see QuoteState) gives no field at all.
         """
         names = self.rules.get(source)
-        if not names:
+        if not names or (source in _KV_SOURCES and not clear):
             return {}
         fixed: dict[str, str] = {}
         free: str | None = None
@@ -395,7 +407,7 @@ class Fields:
                 free = text[stamp.end():]
         elif source in _JSON_SOURCES:
             record = _json_object(text)
-        pairs = _kv_pairs(free) if kv and free is not None else {}
+        pairs = _kv_pairs(free) if free is not None else {}
         out: dict[str, Any] = {}
         for name in names:
             if name in fixed:
@@ -615,17 +627,17 @@ def _match_texts(value: Any) -> list[str]:
 
 
 def _present(config: Config, source: str, line: str,
-             kv: bool = True) -> tuple[str, list[str]] | None:
+             clear: bool = True) -> tuple[str, list[str]] | None:
     """What may leave the server for one raw line (record), and the texts a search
     may match: the same masked text that is output. None: no approved field.
-    ``kv`` False withholds kv fields (see QuoteState)."""
+    ``clear`` False withholds every field of a log or trace record (see QuoteState)."""
     if isinstance(line, _Omitted):
         return line, []
     if config.fields is None:
         shown = config.redact(line)[:MAX_LINE_CHARS]
         return shown, [shown]
     picked = {name: _mask_value(value, config.redact)
-              for name, value in config.fields.extract(source, line, kv).items()}
+              for name, value in config.fields.extract(source, line, clear).items()}
     if not picked:
         return None
     texts = [text for value in picked.values() for text in _match_texts(value)]
@@ -830,19 +842,23 @@ def tool_tail(config: Config, arguments: dict) -> str:
     notes: list[str] = []
     if config.fields is not None and source == "refusal":
         raw, unit = _whole_file(entry.path, budget), "record"
-        kv_allowed = [True] * len(raw)
+        clear = [True] * len(raw)
     else:
         raw, start = _tail_lines(entry.path, count, budget, records=config.fields is not None)
         unit = "line"
-        kv_allowed = [True] * len(raw)
+        clear = [True] * len(raw)
         if config.fields is not None and source in _KV_SOURCES:
-            # kv needs the quote state where the window starts: scan the file up to it.
+            # Fields need the quote state where the window starts: scan the file up to it.
             state = _quote_state_at(entry.path, start, budget)
-            if state.open == _UNKNOWN:
-                notes.append("kv fields withheld: the file before these lines could not "
-                             "be scanned for open quotes within the read budget")
-            kv_allowed = [state.feed(line) for line in raw]
-    shown = [_present(config, source, line, kv) for line, kv in zip(raw, kv_allowed)]
+            if not state.known:
+                notes.append("all fields withheld: the file before these lines could not be "
+                             "scanned within the read budget, or holds an omitted line or a "
+                             "record with unclear quoting")
+            clear = [state.feed(line) for line in raw]
+            if not state.known and not notes:
+                notes.append("fields withheld from the first record with unclear quoting "
+                             "(or an omitted line) to the end of the file")
+    shown = [_present(config, source, line, ok) for line, ok in zip(raw, clear)]
     tail = [item[0] for item in shown if item is not None]
     header = f"{entry.name}: last {len(raw)} {unit}(s)"
     if len(tail) < len(raw):
@@ -865,11 +881,12 @@ def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: 
             last_printed = -1
             name = f"{source}/{entry.name}"
             quotes = QuoteState()  # records are read in order from the file's start
+            gated = config.fields is not None and source in _KV_SOURCES
             try:
                 # Match on the masked approved values, the same text that is output,
                 # so a match count cannot reveal what the mask or the allow-list hides.
                 for number, raw in enumerate(_records(config, source, entry.path, budget), 1):
-                    shown = _present(config, source, raw, quotes.feed(raw))
+                    shown = _present(config, source, raw, quotes.feed(raw) if gated else True)
                     if shown is None:
                         unapproved += 1
                         continue
@@ -898,6 +915,9 @@ def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: 
                 notes.append(f"skipped {name}: {exc}")
             except OSError as exc:
                 notes.append(f"skipped {name}: {_reason(exc)}")
+            if gated and not quotes.known:
+                notes.append(f"{name}: fields withheld from the first record with unclear "
+                             "quoting (or an omitted line) to the end of the file")
             if stopped:
                 break
         if stopped:

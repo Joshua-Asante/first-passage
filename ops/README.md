@@ -79,15 +79,19 @@ and fails closed whenever quoting is in doubt:
   the next same quote, and keys are read only outside spans, so text inside any
   quoted value (whoever's key it follows) is never taken as a pair. Any other
   quote (a prose apostrophe such as `don't`, a quote after `Note:` or `(Note=`),
-  an unclosed span, or a backslash or a doubled quote (`''` or `""`) inside a
-  span gives no kv field for the line.
-- Quoting is followed across records from the start of the file, so a quoted
-  message that runs over several lines can't hide a pair: the record that opens
-  the span, every record inside it and the record that closes it give no kv
-  field. Every quotation-like character counts here, not only `'` and `"`.
-  `nt_tail` scans the file before its window to learn this; if that scan doesn't
-  fit in the read budget, or an omitted line is passed, the state is unknown and
-  no later record of that call gives kv (a `note:` line says so).
+  an unclosed span, a backslash inside a span, or a closing quote followed by
+  anything but whitespace, `,`, `;`, `|`, `&` or the line end (a doubled quote,
+  `Note='it's`, `Price="1"tail`) makes the line's quoting unclear.
+- A quoted message may run over several lines, and parity can't tell where it
+  ends (an apostrophe in the value flips it). So quoting is checked on every log
+  and trace record from the start of the file: a record with any quotation-like
+  character (not only `'` and `"`) whose quoting is not clear in the sense above,
+  and any omitted line, gives no field at all (timestamp, level and category
+  included), and neither does any later record of the file. `nt_tail` scans the
+  file before its window to learn this; if that scan doesn't fit in the read
+  budget, every record in the window is withheld. A `note:` line says when
+  fields were withheld this way. A log whose messages quote names in prose
+  (`strategy 'X'`) therefore gives no fields after the first such message.
 - A quoted value is the span's whole content. An unquoted value is a plain token
   (letters, digits, `_.:+-`) that must end at whitespace, `,`, `;`, `|`, `&` or
   the line end; otherwise the pair is dropped, so one value never carries another
