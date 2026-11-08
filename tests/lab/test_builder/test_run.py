@@ -376,12 +376,55 @@ def test_holdout_refuses_an_edited_marker_binding(spec):
     refused(path, s, "no longer describes")
 
 
+def test_holdout_refuses_a_marker_written_before_the_ledger_head_existed(spec):
+    path, s, _ = spec
+    go(path, s)
+    p = path.parent / "out" / "verdict.json"
+    m = json.loads(p.read_text())
+    del m["ledger_head"]
+    p.write_text(json.dumps(m))
+    refused(path, s, "predates the recorded ledger head; rerun builder.run")
+    assert looks(s) == []
+
+
 def test_holdout_look_is_taken_once(spec):
     path, s, _ = spec
     go(path, s)
     go(path, s, holdout)
+    with pytest.raises(holdout.HoldoutError, match="already have a holdout result"):
+        go(path, s, holdout)
+    (path.parent / "out" / "g-001.holdout.json").unlink()  # the file is only defence in depth
     with pytest.raises(ledger.LedgerError, match="already"):
         go(path, s, holdout)
+    assert len(looks(s)) == 1
+
+
+def test_holdout_refuses_an_existing_result_before_any_look(spec):
+    path, s, _ = spec
+    two_cards(path, s)
+    go(path, s)
+    (path.parent / "out" / "g-001.holdout.json").write_text("{}")  # sorts after a-002, still refused first
+    refused(path, s, re.escape("['g-001'] already have a holdout result"))
+
+
+def test_marker_records_the_post_append_ledger_head_outside_the_binding(spec):
+    path, s, _ = spec
+    go(path, s)
+    m = json.loads((path.parent / "out" / "verdict.json").read_text())
+    assert m["ledger_head"] == ledger.head(Path(s["ledger"])) and m["ledger_head"]["seq"] == 1
+    assert "ledger_head" not in m["binding"]
+    (path.parent / "b.yaml").write_text(CARD_B)  # a later round banks another card: still a prefix
+    go(path.parent / "r2.yaml", {**s, "run_id": "r2", "cards": [str(path.parent / "b.yaml")],
+                                 "out": str(path.parent / "out2")})
+    assert go(path, s, holdout) == 0 and len(looks(s)) == 1
+
+
+def test_holdout_refuses_a_ledger_that_no_longer_holds_the_recorded_head(spec):
+    path, s, _ = spec
+    go(path, s)
+    lp = Path(s["ledger"])
+    lp.unlink(); ledger.head_path(lp).unlink()  # ledger and anchor rolled back together
+    refused(path, s, "no longer holds the recorded head")
 
 
 @pytest.mark.parametrize("k_scope", ["instrument", "ledger"])
