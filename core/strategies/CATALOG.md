@@ -26,8 +26,8 @@ withdrawn futures editions, not a live book. Live sizing authority is
 `dd_protection.BASE_RISK` / `firm_rules._BASE_RISK` (both derived from
 [`historical_challenge.py`](../historical_challenge.py)`.HISTORICAL_CHALLENGE_BASE_RISK`) — never
 this table. The two Striker futures editions (MYM/MNQ) *were* the c1 book until 2026-08-04; that
-code path is deliberately untouched (`ops/c1_rail/c1_sizing_host_reference.py` still consumes
-`BASE_RISK["Striker"]` / `["Striker NAS100"]` via `LEG_MAP`).
+code path was removed with the rail (last at [`ops/c1_rail/c1_sizing_host_reference.py`](https://github.com/Joshua-Asante/first-passage/blob/b7eaff71abee6d7047765683170e4ad08a3d56b1/ops/c1_rail/c1_sizing_host_reference.py),
+which consumed `BASE_RISK["Striker"]` / `["Striker NAS100"]` via `LEG_MAP`).
 
 | Strategy | Instrument / TF | Risk/trade | Version | DXTrade contractValue |
 |---|---|---|---|---|

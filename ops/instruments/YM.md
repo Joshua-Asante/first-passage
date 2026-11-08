@@ -58,7 +58,7 @@ bars:
 - **2026-08-26** — **`LEG_MAP` cap_alloc RELEASED (0/0, was 69/11)** — operator ruling,
   [`2026-08-26-striker-legmap-cap-release.md`](../../docs/adr/2026-08-26-striker-legmap-cap-release.md).
   Separate, narrower dimension than the 2026-08-12 occupancy release below: this one is the
-  code-level `cap_alloc` in `ops/c1_rail/c1_sizing_host_reference.py`, not research-symbol
+  code-level `cap_alloc` in [`ops/c1_rail/c1_sizing_host_reference.py`](https://github.com/Joshua-Asante/first-passage/blob/b7eaff71abee6d7047765683170e4ad08a3d56b1/ops/c1_rail/c1_sizing_host_reference.py) (removed with the rail), not research-symbol
   permission. Full 80-micro account cap now unclaimed for a future leg's own allocation; Y4's
   "retained-not-released (headroom not freed)" line below is now historical on **both** dimensions.
 - **2026-08-12** — **Occupancy posture updated (pointer):** MSL Board B8 released MYM/MNQ headroom for new non-Striker research ([`ADR`](../../docs/adr/2026-08-12-msl-mym-occupancy-release.md)). Canonical detail on [`MYM.md`](MYM.md). The 2026-08-06 “retained-not-released / headroom not freed” line is historical for that claim-alignment pass.
