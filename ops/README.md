@@ -38,26 +38,62 @@ in NinjaTrader's or Tradovate's grids, still go through computer use.
 | `nt_errors` | Errors, rejections, disconnects and exceptions in the newest log and trace files (fixed built-in pattern) |
 
 Sources: `log` and `trace` under `--nt-root` (default `~/Documents/NinjaTrader 8`),
-and optionally `journal` (`--journal-dir`) and `export` (`--export-dir`), both kept
-in private custody outside the repo. Files are read as UTF-8 text; no NinjaTrader
-line format is assumed. A file that starts with a UTF-16/32 byte-order mark or has
+and optionally `journal` (`--journal-dir`), `refusal` (`--refusal-dir`) and
+`export` (`--export-dir`), all kept in private custody outside the repo. Files are
+read as UTF-8 text. A file that starts with a UTF-16/32 byte-order mark or has
 NUL bytes in its first 64 KiB is refused (NULs between characters would defeat
 every mask), and a later line with a NUL byte is omitted. Directory walks never
 follow symlinks or junctions. Hard links are not detected: a hard link inside a
 source to a file elsewhere is read like any other file.
 
-**Account data.** Output can carry fills, account names and balances. It enters
-the agent's context and never goes into this repo (data rules; spec B15).
-`--redact-file` masks regexes in all output; keep that file private too. One
+**Approved fields.** The files carry account data and can carry strategy
+parameters, and agents read private logs only through tools that return approved
+fields (AGENTS.md data rules). `--fields-file` names those fields. The file is
+private: it lives outside the repo, and Joshua signs it off. Every tool that
+returns file content (`nt_tail`, `nt_search`, `nt_errors`) emits only those
+fields; anything not on the list is dropped, never shown. Format: UTF-8 text
+(a BOM is fine), one rule per line, `#` starts a comment line, and each rule is
+`<source> <field>`:
+
+| Source | Fields that can be approved |
+|---|---|
+| `log` | `timestamp`, `level`, `category`, `kv:<Key>` |
+| `trace` | `timestamp`, `kv:<Key>` |
+| `journal` | `json:<dotted.path>` |
+| `refusal` | `json:<dotted.path>` |
+| `export` | none |
+
+Log lines are `timestamp|level|category|text`; trace lines are a timestamp, then
+text. A timestamp must look like `YYYY-MM-DD hh:mm:ss` (optional fraction) and a
+level or category code like a short word or number, or that field is dropped.
+`kv:<Key>` takes `Key='value'` or `key=value` pairs from the text; a quoted value
+is read whole, so text inside it is never taken as another pair. Journal lines are
+JSON records (`seq`, `prev`, `kind`, `body`, `hash`); a refusal file is one JSON
+object (`code`, `utc`, `fields`) and is read as one record. `json:a.b` walks
+objects, decoding a string that holds JSON on the way, so `json:body.code` reads
+`code` inside the `body` string; only scalars are emitted, never a whole object or
+array. A malformed line, an unknown source or field, or a file with no rules stops
+the server from starting. Order IDs and names, hashed or not, are not approved
+fields: don't list them.
+
+Each line comes back as one compact JSON object of approved field to value, for
+example `{"timestamp":"…","kv:Status":"…"}`. A line with no approved field is left
+out and counted in the header (`nt_tail`) or summary (`nt_search`, `nt_errors`), so
+"last N lines" still means the last N lines of the file. Searches, including
+`nt_errors`' built-in pattern, match only within approved values.
+
+**Masking, as a backup.** `--redact-file` masks regexes in every emitted value;
+keep that file private too. One
 pattern per line, leading and trailing spaces stripped; a line starting with `#`
 is a comment, so a pattern can't start with `#` (write `[#]`). The file may be
 saved with or without a UTF-8 BOM; a pattern holding an invisible format
 character (zero-width space, BOM and the like) stops the server from starting.
-Patterns run in file order, each on one line at a time, so a later pattern sees
-the earlier ones' `[redacted]`, and no pattern can span two lines. Every line is
+Patterns run in file order, each on one value at a time, so a later pattern sees
+the earlier ones' `[redacted]`, and no pattern can span two lines. Every value is
 masked, searched or not, so patterns must be linear-time: no nested quantifiers.
 
-Each full line is masked before it is cut to 2,000 characters, so a match that
+Each value (or, with `--allow-unredacted`, each full line) is masked before it is
+cut to 2,000 characters, so a match that
 crosses the cut is still masked. A line over 64 KiB is never shown, even in part:
 it comes back as `[line over 65536 bytes omitted]`, because a mask pattern might
 depend on the part that isn't held in memory. Searches, globs and the `file`
@@ -65,12 +101,14 @@ argument all match the masked text, the same text that is returned: a masked
 value can't be found by searching for it, so match counts can't rebuild it. A
 file whose name holds a masked value is listed and opened by its masked name.
 
-The server fails closed: it refuses to start unless it gets `--redact-file` (a
-regular file, given once) with at least one pattern, or `--allow-unredacted`.
-Options must be spelled in full. The two are mutually exclusive.
-With `--allow-unredacted` the agent may see account data unmasked; that data must
-never enter this repository. No default patterns ship for balances or P&L: write
-ones that fit the account's formats.
+The server fails closed: it refuses to start unless it gets `--fields-file` (a
+regular file, given once, with at least one rule), or `--allow-unredacted`. The
+two are mutually exclusive, and so are `--redact-file` and `--allow-unredacted`;
+`--redact-file` alone is refused. Options must be spelled in full. An empty
+`--redact-file` is refused. `--allow-unredacted` serves whole lines unmasked: it
+is for debugging that Joshua directs, and its output is never persisted. No
+default patterns ship for balances or P&L: write ones that fit the account's
+formats.
 
 **Search and memory.** Callers search with literal substrings only. Python's `re`
 has no time limit and the server runs no subprocesses, so a caller regex could
@@ -84,14 +122,11 @@ characters, a request line at 1 MiB, and unknown argument names are refused. A
 file that is locked, vanishes or can't be read is skipped with a `note:` line;
 the rest of the call goes on.
 
-Don't register the server for Codex: journals and logs can carry strategy
-parameters.
-
 Register it in Claude Code on the NinjaTrader machine, local scope (the paths are
 machine-specific, so no `.mcp.json` is committed):
 
 ```powershell
-claude mcp add nt-readonly --scope local -- python -I ops/nt_readonly_mcp.py --nt-root "$HOME\Documents\NinjaTrader 8" --journal-dir <private journal dir> --redact-file <private redact file>
+claude mcp add nt-readonly --scope local -- python -I ops/nt_readonly_mcp.py --nt-root "$HOME\Documents\NinjaTrader 8" --journal-dir <private journal dir> --fields-file <private fields file> --redact-file <private redact file>
 ```
 
 Run that from the checkout root, or give the script's absolute path. Local scope

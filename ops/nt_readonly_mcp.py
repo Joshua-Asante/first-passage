@@ -11,14 +11,33 @@ NinjaTrader and never talks to it:
 * it places, changes and cancels nothing, so AGENTS.md money controls 1 and 3 and
   spec check B1 (no network calls, ATI, add-ons) are untouched.
 
-Its output can carry account data (fills, account names, balances). That data
-reaches the agent's context and must never be written into this repository
-(AGENTS.md data rules, spec B15). ``--redact-file`` masks patterns, one regex per
-line, before anything leaves the server. Searches, globs and file names match on
-the masked text only, so match counts cannot reveal a masked value. The server
-refuses to start unless it gets ``--redact-file`` (with at least one pattern) or
-``--allow-unredacted``. Do not give this server to Codex: the journal and logs can
-carry strategy parameters.
+The files can carry account data and strategy parameters, and AGENTS.md lets agents
+read private logs only through tools that return approved fields. So the server
+emits only the fields named in ``--fields-file``, a private allow-list Joshua signs
+off, kept outside the repository; anything not on it is dropped, never shown.
+``--redact-file`` (one regex per line) also masks every emitted value, as a backup.
+Searches, globs and file names match on the masked text only, so match counts
+cannot reveal a masked value. The server refuses to start without ``--fields-file``
+unless it gets ``--allow-unredacted``, which serves whole lines unmasked: for
+debugging that Joshua directs, and its output is never persisted.
+
+Allow-list (``--fields-file``): UTF-8 text, one rule per line, ``#`` starts a
+comment line. A rule is ``<source> <field>``:
+
+    log      timestamp | level | category | kv:<Key>
+    trace    timestamp | kv:<Key>
+    journal  json:<dotted.path>
+    refusal  json:<dotted.path>
+    export   (no field can be approved)
+
+Log lines are ``timestamp|level|category|text``; trace lines are a timestamp, then
+text. ``kv:<Key>`` takes ``Key='value'`` or ``key=value`` pairs from that text.
+Journal lines are JSON records; a refusal file is one JSON object. ``json:a.b``
+walks objects, decoding a string that holds JSON on the way (``json:body.code``),
+and emits scalars only. A malformed file, an unknown source or field syntax, or a
+file with no rules stops the server from starting. Each line (record) comes back as
+one compact JSON object of approved field -> value; a line with no approved field
+is left out and counted. Order IDs and names are not approved fields.
 
 Callers search with literal substrings only: Python's ``re`` has no time limit, so a
 caller regex could stall the server. ``nt_errors`` uses one fixed built-in pattern.
@@ -28,14 +47,14 @@ Sources (each optional except ``log`` and ``trace``, which derive from ``--nt-ro
     log      <nt-root>/log      NinjaTrader log files
     trace    <nt-root>/trace    NinjaTrader trace files
     journal  --journal-dir      the strategy instances' own journals (spec B2)
+    refusal  --refusal-dir      the instances' refusal files
     export   --export-dir       exports kept in private custody (spec B11)
 
-The files are read as UTF-8 text; UTF-16/32 and binary files are refused. No
-NinjaTrader line format is assumed.
+The files are read as UTF-8 text; UTF-16/32 and binary files are refused.
 
 Run::
 
-    python ops/nt_readonly_mcp.py --nt-root "C:\\Users\\<you>\\Documents\\NinjaTrader 8" --redact-file <private file>
+    python ops/nt_readonly_mcp.py --nt-root "C:\\Users\\<you>\\Documents\\NinjaTrader 8" --fields-file <private file> --redact-file <private file>
 """
 from __future__ import annotations
 
@@ -56,7 +75,7 @@ from pathlib import Path
 from typing import Any, Callable, Iterator
 
 SERVER_NAME = "nt-readonly"
-SERVER_VERSION = "0.2.0"
+SERVER_VERSION = "0.3.0"
 SUPPORTED_PROTOCOLS = ("2025-06-18", "2025-03-26", "2024-11-05")
 
 MAX_LINES = 2000
@@ -116,31 +135,151 @@ class Budget:
                                  f"{MAX_CALL_SECONDS:g} s per call)")
 
 
+def _rule_lines(path: Path) -> Iterator[tuple[int, str]]:
+    """Numbered rule lines of a private config file: comments and blanks skipped."""
+    # utf-8-sig: a BOM left by an editor must not become part of the first rule.
+    text = path.read_text(encoding="utf-8-sig")
+    for number, raw in enumerate(text.splitlines(), 1):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if any(unicodedata.category(ch) == "Cf" for ch in line):
+            raise ValueError(f"line {number} contains an invisible format character")
+        yield number, line
+
+
+# --- approved fields -------------------------------------------------------------
+
+FIELD_SOURCES = ("log", "trace", "journal", "refusal", "export")
+_FIXED_FIELDS = {"log": ("timestamp", "level", "category"), "trace": ("timestamp",)}
+_KV_SOURCES = ("log", "trace")
+_JSON_SOURCES = ("journal", "refusal")
+_KV_RULE = re.compile(r"kv:([A-Za-z_][A-Za-z0-9_]*)")
+_JSON_RULE = re.compile(r"json:([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)")
+# A fixed field whose value has the wrong shape is dropped, so a line that only
+# looks like a log line cannot carry free text out through a fixed field.
+_TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:[.:,]\d{1,7})?")
+_CODE = re.compile(r"[A-Za-z0-9_]{1,32}")
+# One pass left to right: a quoted value is consumed whole, so text inside it is
+# never read as another pair.
+_PAIR = re.compile(r"(?<![A-Za-z0-9_])([A-Za-z_][A-Za-z0-9_]*)=(?:'([^']*)'|([^\s']*))")
+_MISSING: Any = object()
+
+
+def _json_object(text: str) -> dict | None:
+    try:
+        value = json.loads(text, parse_constant=_no_constant, parse_float=_finite_float)
+    except (ValueError, RecursionError):
+        return None
+    return value if isinstance(value, dict) else None
+
+
+def _json_path(record: dict, path: str) -> Any:
+    """The scalar at a dotted path; a string holding a JSON object is decoded on the way."""
+    value: Any = record
+    for key in path.split("."):
+        if isinstance(value, str):
+            value = _json_object(value)
+        if not isinstance(value, dict) or key not in value:
+            return _MISSING
+        value = value[key]
+    return _MISSING if isinstance(value, (dict, list)) else value
+
+
+@dataclass(frozen=True)
+class Fields:
+    """The approved-field allow-list: source -> rules, in file order."""
+
+    rules: dict[str, tuple[str, ...]]
+
+    @classmethod
+    def load(cls, path: Path) -> "Fields":
+        rules: dict[str, list[str]] = {}
+        for number, line in _rule_lines(path):
+            parts = line.split()
+            if len(parts) != 2:
+                raise ValueError(f"line {number}: expected '<source> <field>'")
+            source, name = parts
+            if source not in FIELD_SOURCES:
+                raise ValueError(f"line {number}: unknown source {source!r}; "
+                                 f"expected one of {', '.join(FIELD_SOURCES)}")
+            if not (name in _FIXED_FIELDS.get(source, ())
+                    or (source in _KV_SOURCES and _KV_RULE.fullmatch(name))
+                    or (source in _JSON_SOURCES and _JSON_RULE.fullmatch(name))):
+                raise ValueError(f"line {number}: {name!r} is not a field {source} can approve")
+            if name not in rules.setdefault(source, []):
+                rules[source].append(name)
+        if not rules:
+            raise ValueError("no rules")
+        return cls({source: tuple(names) for source, names in rules.items()})
+
+    def extract(self, source: str, text: str) -> dict[str, Any]:
+        """The approved fields of one line (record), unmasked; nothing else is read out."""
+        names = self.rules.get(source)
+        if not names:
+            return {}
+        fixed: dict[str, str] = {}
+        free: str | None = None
+        record: dict | None = None
+        if source == "log":
+            parts = text.split("|", 3)
+            if len(parts) == 4:
+                stamp, level, category, free = (*(part.strip() for part in parts[:3]), parts[3])
+                if _TIMESTAMP.fullmatch(stamp):
+                    fixed["timestamp"] = stamp
+                if _CODE.fullmatch(level):
+                    fixed["level"] = level
+                if _CODE.fullmatch(category):
+                    fixed["category"] = category
+        elif source == "trace":
+            stamp = _TIMESTAMP.match(text)
+            if stamp and (stamp.end() == len(text) or text[stamp.end()].isspace()):
+                fixed["timestamp"] = stamp.group()
+                free = text[stamp.end():]
+        elif source in _JSON_SOURCES:
+            record = _json_object(text)
+        pairs: dict[str, list[str]] = {}
+        if free is not None:
+            for match in _PAIR.finditer(free):
+                value = match.group(2) if match.group(2) is not None else match.group(3)
+                pairs.setdefault(match.group(1), []).append(value)
+        out: dict[str, Any] = {}
+        for name in names:
+            if name in fixed:
+                out[name] = fixed[name]
+            elif name.startswith("kv:") and name[3:] in pairs:
+                values = pairs[name[3:]]
+                out[name] = values[0] if len(values) == 1 else values
+            elif name.startswith("json:") and record is not None:
+                value = _json_path(record, name[5:])
+                if value is not _MISSING:
+                    out[name] = value
+        return out
+
+
 @dataclass
 class Config:
     sources: dict[str, Path]
     redactions: list[re.Pattern[str]] = field(default_factory=list)
+    # None serves whole lines; main() allows that only with --allow-unredacted.
+    fields: Fields | None = None
 
     @classmethod
     def build(cls, nt_root: Path, journal_dir: Path | None = None,
-              export_dir: Path | None = None, redact_file: Path | None = None) -> "Config":
+              export_dir: Path | None = None, redact_file: Path | None = None,
+              fields_file: Path | None = None, refusal_dir: Path | None = None) -> "Config":
         sources = {"log": nt_root / "log", "trace": nt_root / "trace"}
         if journal_dir is not None:
             sources["journal"] = journal_dir
+        if refusal_dir is not None:
+            sources["refusal"] = refusal_dir
         if export_dir is not None:
             sources["export"] = export_dir
         redactions: list[re.Pattern[str]] = []
         if redact_file is not None:
-            # utf-8-sig: a BOM left by an editor must not become part of the first pattern.
-            text = redact_file.read_text(encoding="utf-8-sig")
-            for number, raw in enumerate(text.splitlines(), 1):
-                line = raw.strip()
-                if not line or line.startswith("#"):
-                    continue
-                if any(unicodedata.category(ch) == "Cf" for ch in line):
-                    raise ValueError(f"line {number} contains an invisible format character")
-                redactions.append(re.compile(line))
-        return cls({name: path.resolve() for name, path in sources.items()}, redactions)
+            redactions = [re.compile(line) for _, line in _rule_lines(redact_file)]
+        fields = Fields.load(fields_file) if fields_file is not None else None
+        return cls({name: path.resolve() for name, path in sources.items()}, redactions, fields)
 
     def redact(self, text: str) -> str:
         for pattern in self.redactions:
@@ -292,11 +431,60 @@ def _split_piece(raw: bytes, first: bool, last: bool) -> list[str]:
     return text.splitlines() if last else (text + "\n").splitlines()
 
 
-def _present(line: str, redact: Callable[[str], str]) -> str:
-    """What may leave the server for one raw line: masked whole, then cut."""
+def _mask_value(value: Any, redact: Callable[[str], str]) -> Any:
+    """One emitted field value, masked; a scalar the mask touches becomes masked text."""
+    if isinstance(value, list):
+        return [_mask_value(item, redact) for item in value]
+    if isinstance(value, str):
+        return redact(value)[:MAX_LINE_CHARS]
+    text = json.dumps(value)
+    masked = redact(text)
+    return value if masked == text else masked[:MAX_LINE_CHARS]
+
+
+def _match_texts(value: Any) -> list[str]:
+    if isinstance(value, list):
+        return [text for item in value for text in _match_texts(item)]
+    return [value if isinstance(value, str) else json.dumps(value)]
+
+
+def _present(config: Config, source: str, line: str) -> tuple[str, list[str]] | None:
+    """What may leave the server for one raw line (record), and the texts a search
+    may match: the same masked text that is output. None: no approved field."""
     if isinstance(line, _Omitted):
-        return line
-    return redact(line)[:MAX_LINE_CHARS]
+        return line, []
+    if config.fields is None:
+        shown = config.redact(line)[:MAX_LINE_CHARS]
+        return shown, [shown]
+    picked = {name: _mask_value(value, config.redact)
+              for name, value in config.fields.extract(source, line).items()}
+    if not picked:
+        return None
+    texts = [text for value in picked.values() for text in _match_texts(value)]
+    return json.dumps(picked, ensure_ascii=False, separators=(",", ":")), texts
+
+
+def _whole_file(path: Path, budget: Budget) -> list[str]:
+    """A file read as one record (a refusal file); over MAX_LINE_BYTES it is omitted."""
+    kept = bytearray()
+    with open(path, "rb") as handle:
+        for block in _blocks(handle, budget):
+            if len(kept) + len(block) > MAX_LINE_BYTES:
+                return [OMITTED_LINE]
+            kept += block
+    if not kept:
+        return []
+    if b"\x00" in kept:
+        return [OMITTED_NUL_LINE]
+    return [bytes(kept).decode("utf-8-sig", errors="replace")]
+
+
+def _records(config: Config, source: str, path: Path, budget: Budget) -> Iterator[str]:
+    """A file's raw units: lines, or the whole file for a refusal in approved-field mode."""
+    if config.fields is not None and source == "refusal":
+        yield from _whole_file(path, budget)
+    else:
+        yield from _iter_lines(path, budget)
 
 
 def _iter_lines(path: Path, budget: Budget) -> Iterator[str]:
@@ -450,8 +638,15 @@ def tool_tail(config: Config, arguments: dict) -> str:
     notes: list[str] = []
     entry = _resolve_file(config, source, _str(arguments, "file", None), notes)
     count = _int(arguments, "lines", 200, 1, MAX_LINES)
-    tail = [_present(line, config.redact) for line in _tail_lines(entry.path, count, Budget())]
-    header = f"{entry.name}: last {len(tail)} line(s)"
+    if config.fields is not None and source == "refusal":
+        raw, unit = _whole_file(entry.path, Budget()), "record"
+    else:
+        raw, unit = _tail_lines(entry.path, count, Budget()), "line"
+    shown = [_present(config, source, line) for line in raw]
+    tail = [item[0] for item in shown if item is not None]
+    header = f"{entry.name}: last {len(raw)} {unit}(s)"
+    if len(tail) < len(raw):
+        header += f"; {len(raw) - len(tail)} without an approved field omitted"
     return "\n".join([header, *tail])
 
 
@@ -460,6 +655,7 @@ def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: 
     out: list[str] = []
     notes: list[str] = []
     matches = 0
+    unapproved = 0
     stopped = ""
     budget = Budget()
     for source in sources:
@@ -469,11 +665,15 @@ def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: 
             last_printed = -1
             name = f"{source}/{entry.name}"
             try:
-                # Match on the masked line, the same text that is output, so a match
-                # count cannot reveal what the mask hides.
-                for number, raw in enumerate(_iter_lines(entry.path, budget), 1):
-                    line = _present(raw, config.redact)
-                    if not isinstance(line, _Omitted) and matcher.search(line):
+                # Match on the masked approved values, the same text that is output,
+                # so a match count cannot reveal what the mask or the allow-list hides.
+                for number, raw in enumerate(_records(config, source, entry.path, budget), 1):
+                    shown = _present(config, source, raw)
+                    if shown is None:
+                        unapproved += 1
+                        continue
+                    line, texts = shown
+                    if any(matcher.search(text) for text in texts):
                         if matches >= max_matches:
                             stopped = f"stopped at max_matches={max_matches}"
                             break
@@ -502,6 +702,8 @@ def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: 
         if stopped:
             break
     summary = f"{matches} match(es)" + (f"; {stopped}" if stopped else "")
+    if unapproved:
+        summary += f"; {unapproved} line(s) without an approved field skipped"
     return _with_notes([summary, *out], notes)
 
 
@@ -524,7 +726,8 @@ def tool_errors(config: Config, arguments: dict) -> str:
                    _int(arguments, "context", 0, 0, 10))
 
 
-_SOURCE = {"type": "string", "description": "log, trace, journal or export (see nt_list_sources)"}
+_SOURCE = {"type": "string",
+           "description": "log, trace, journal, refusal or export (see nt_list_sources)"}
 _FILE = {"type": "string", "description": "Path relative to the source, as nt_list_files shows it; "
                                           "default is the newest file"}
 _GLOB = {"type": "string", "description": "Filename glob, e.g. 'log.*.txt'; default '*'"}
@@ -720,15 +923,26 @@ class _Once(argparse.Action):
 
 
 def _load_config(parser: argparse.ArgumentParser, options: argparse.Namespace) -> Config:
-    """Fail closed: refuse to serve content unless masking was chosen explicitly."""
-    if options.redact_file is None and not options.allow_unredacted:
-        parser.error("refusing to start without masking: pass --redact-file PATH, or "
-                     "--allow-unredacted to let the agent see account data unmasked")
-    if options.redact_file is not None and not options.redact_file.is_file():
-        parser.error(f"--redact-file {options.redact_file} is not a regular file")
+    """Fail closed: refuse to serve content without an approved-field allow-list,
+    unless whole unmasked lines were chosen explicitly for directed debugging."""
+    if options.fields_file is None and not options.allow_unredacted:
+        parser.error("refusing to start without approved fields: pass --fields-file PATH "
+                     "(optionally with --redact-file PATH as a backup mask), or "
+                     "--allow-unredacted for debugging Joshua directs")
+    if options.fields_file is not None and options.allow_unredacted:
+        parser.error("--fields-file and --allow-unredacted are mutually exclusive")
+    for option, path in (("--fields-file", options.fields_file),
+                         ("--redact-file", options.redact_file)):
+        if path is not None and not path.is_file():
+            parser.error(f"{option} {path} is not a regular file")
+    if options.fields_file is not None:
+        try:
+            Fields.load(options.fields_file)
+        except (OSError, ValueError) as exc:
+            parser.error(f"cannot load --fields-file: {exc}; refusing to start")
     try:
         config = Config.build(options.nt_root, options.journal_dir, options.export_dir,
-                              options.redact_file)
+                              options.redact_file, options.fields_file, options.refusal_dir)
     except (OSError, ValueError, re.error) as exc:
         parser.error(f"cannot load --redact-file: {exc}")
     if options.redact_file is not None and not config.redactions:
@@ -743,15 +957,20 @@ def main(argv: list[str] | None = None, stdin=None, stdout=None) -> int:
                         help="NinjaTrader user data folder (default ~/Documents/NinjaTrader 8)")
     parser.add_argument("--journal-dir", type=Path, action=_Once,
                         help="strategy journal directory (private custody)")
+    parser.add_argument("--refusal-dir", type=Path, action=_Once,
+                        help="strategy refusal-file directory (private custody)")
     parser.add_argument("--export-dir", type=Path, action=_Once,
                         help="export directory (private custody)")
+    parser.add_argument("--fields-file", type=Path, action=_Once,
+                        help="private allow-list of approved fields, signed off by Joshua; "
+                             "only these fields are served (required unless --allow-unredacted)")
     masking = parser.add_mutually_exclusive_group()
     masking.add_argument("--redact-file", type=Path, action=_Once,
-                         help="regexes to mask in all output, one per line (required unless "
-                              "--allow-unredacted)")
+                         help="regexes to mask in every emitted value, one per line (backup to "
+                              "--fields-file)")
     masking.add_argument("--allow-unredacted", action="store_true",
-                         help="serve content unmasked; the agent may then see account data, "
-                              "which must never enter the repository")
+                         help="serve whole lines unmasked, for debugging Joshua directs only; "
+                              "never persist the output")
     options = parser.parse_args(argv)
     config = _load_config(parser, options)
     if stdout is None:

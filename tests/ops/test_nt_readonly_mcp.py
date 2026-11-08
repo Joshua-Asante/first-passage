@@ -346,6 +346,15 @@ def _run_main(argv, requests):
 
 TAIL_REQUEST = {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
                 "params": {"name": "nt_tail", "arguments": {"source": "log"}}}
+# Synthetic log-shaped line: timestamp|level|category|text with a Key='value' pair.
+STAMP = "2026-01-02 03:04:05:678"
+NOTE_LINE = f"{STAMP}|1|4|Note='fill {SYNTHETIC_ID}'\n"
+
+
+def _fields(tmp_path, text="log kv:Note\n"):
+    path = tmp_path / "fields.txt"
+    path.write_text(text, encoding="utf-8")
+    return path
 
 
 def test_startup_refused_without_masking_choice(tmp_path, capsys):
@@ -354,7 +363,17 @@ def test_startup_refused_without_masking_choice(tmp_path, capsys):
         _run_main(["--nt-root", str(root)], [TAIL_REQUEST])
     assert exc.value.code != 0
     err = capsys.readouterr().err
-    assert "--redact-file" in err and "--allow-unredacted" in err
+    assert "--fields-file" in err and "--redact-file" in err and "--allow-unredacted" in err
+
+
+def test_startup_refused_with_redact_file_but_no_fields_file(tmp_path, capsys):
+    # Masking alone is a backup: AGENTS.md requires approved-field reads.
+    root = _write_log(tmp_path, NOTE_LINE)
+    rules = tmp_path / "redact.txt"
+    rules.write_text("ACCT-\\d+\n", encoding="utf-8")
+    with pytest.raises(SystemExit) as exc:
+        _run_main(["--nt-root", str(root), "--redact-file", str(rules)], [TAIL_REQUEST])
+    assert exc.value.code != 0 and "--fields-file" in capsys.readouterr().err
 
 
 def test_startup_refused_with_empty_redact_file(tmp_path, capsys):
@@ -362,7 +381,8 @@ def test_startup_refused_with_empty_redact_file(tmp_path, capsys):
     rules = tmp_path / "redact.txt"
     rules.write_text("# no patterns\n\n", encoding="utf-8")
     with pytest.raises(SystemExit) as exc:
-        _run_main(["--nt-root", str(root), "--redact-file", str(rules)], [TAIL_REQUEST])
+        _run_main(["--nt-root", str(root), "--fields-file", str(_fields(tmp_path)),
+                   "--redact-file", str(rules)], [TAIL_REQUEST])
     assert exc.value.code != 0
     assert "no patterns" in capsys.readouterr().err
 
@@ -385,14 +405,14 @@ def test_allow_unredacted_starts_and_serves_raw(tmp_path):
 
 
 def test_redact_file_starts_and_masks(tmp_path):
-    root = _write_log(tmp_path, f"fill {SYNTHETIC_ID}\n")
+    root = _write_log(tmp_path, NOTE_LINE)
     rules = tmp_path / "redact.txt"
     rules.write_text("ACCT-\\d+\n", encoding="utf-8")
-    code, responses = _run_main(["--nt-root", str(root), "--redact-file", str(rules)],
-                                [TAIL_REQUEST])
+    code, responses = _run_main(["--nt-root", str(root), "--fields-file", str(_fields(tmp_path)),
+                                 "--redact-file", str(rules)], [TAIL_REQUEST])
     assert code == 0
     text = responses[0]["result"]["content"][0]["text"]
-    assert SYNTHETIC_ID not in text and text.endswith("fill [redacted]")
+    assert SYNTHETIC_ID not in text and text.endswith('{"kv:Note":"fill [redacted]"}')
 
 
 def test_search_pattern_is_literal(tmp_path):
@@ -522,12 +542,12 @@ def test_nul_bytes_refuse_file_or_omit_line(tmp_path):
 
 
 def test_redact_file_bom_does_not_disable_first_pattern(tmp_path):
-    root = _write_log(tmp_path, f"fill {SYNTHETIC_ID}\n")
+    root = _write_log(tmp_path, NOTE_LINE)
     rules = _rules(tmp_path, "﻿ACCT-\\d+\n")
-    code, responses = _run_main(["--nt-root", str(root), "--redact-file", str(rules)],
-                                [TAIL_REQUEST])
+    code, responses = _run_main(["--nt-root", str(root), "--fields-file", str(_fields(tmp_path)),
+                                 "--redact-file", str(rules)], [TAIL_REQUEST])
     assert code == 0
-    assert responses[0]["result"]["content"][0]["text"].endswith("fill [redacted]")
+    assert responses[0]["result"]["content"][0]["text"].endswith('{"kv:Note":"fill [redacted]"}')
 
 
 @pytest.mark.parametrize("char", ["​", "‍", "﻿", "⁠"])
@@ -535,7 +555,8 @@ def test_redact_pattern_with_format_character_refused(tmp_path, capsys, char):
     root = _write_log(tmp_path, f"fill {SYNTHETIC_ID}\n")
     rules = _rules(tmp_path, f"# ids\nACCT{char}-\\d+\n")
     with pytest.raises(SystemExit) as exc:
-        _run_main(["--nt-root", str(root), "--redact-file", str(rules)], [TAIL_REQUEST])
+        _run_main(["--nt-root", str(root), "--fields-file", str(_fields(tmp_path)),
+                   "--redact-file", str(rules)], [TAIL_REQUEST])
     assert exc.value.code != 0 and "format character" in capsys.readouterr().err
 
 
@@ -625,14 +646,21 @@ def test_serve_caps_request_line(nt, monkeypatch):
 @pytest.mark.parametrize("argv_tail", [
     ["--allow"],
     ["--redact"],
-    ["--redact-file", "{rules}", "--redact-file", "{rules}"],
-    ["--redact-file", "{dir}"],
+    ["--fields"],
+    ["--fields-file", "{fields}", "--redact-file", "{rules}", "--redact-file", "{rules}"],
+    ["--fields-file", "{fields}", "--redact-file", "{dir}"],
     ["--allow-unredacted", "--journal-dir", "{dir}", "--journal-dir", "{dir}"],
+    ["--fields-file", "{fields}", "--fields-file", "{fields}"],
+    ["--fields-file", "{dir}"],
+    ["--fields-file", "{fields}", "--allow-unredacted"],
+    ["--fields-file", "{fields}", "--refusal-dir", "{dir}", "--refusal-dir", "{dir}"],
 ])
 def test_startup_argument_checks(tmp_path, argv_tail):
     root = _write_log(tmp_path, "x\n")
     rules = _rules(tmp_path, "ACCT-\\d+\n")
-    argv = ["--nt-root", str(root)] + [a.format(rules=rules, dir=tmp_path) for a in argv_tail]
+    fields = _fields(tmp_path)
+    argv = ["--nt-root", str(root)] + [a.format(rules=rules, dir=tmp_path, fields=fields)
+                                       for a in argv_tail]
     with pytest.raises(SystemExit) as exc:
         _run_main(argv, [TAIL_REQUEST])
     assert exc.value.code != 0
@@ -746,3 +774,198 @@ def test_masking_is_per_line_not_on_joined_output(tmp_path):
     assert text.splitlines()[1:] == ["keep x", "y keep"]
     text, error = call(config, "nt_tail", source="log", file="x\ny")
     assert error and "[redacted]" in text
+
+
+# --- #1136: approved-field mode --------------------------------------------------------
+
+MARKER = "MARKER-SECRET-7Q"
+FIELDS = """\
+# synthetic allow-list
+log timestamp
+log level
+log kv:Status
+trace timestamp
+trace kv:state
+journal json:kind
+journal json:body.code
+refusal json:code
+refusal json:fields.reason
+"""
+
+
+@pytest.fixture
+def approved(tmp_path):
+    root = tmp_path / "NinjaTrader 8"
+    (root / "log").mkdir(parents=True)
+    (root / "trace").mkdir()
+    (root / "log" / "log.txt").write_text(
+        f"{STAMP}|1|4|Status='Filled' Secret='{MARKER}' error {MARKER}\n"
+        f"{STAMP}|2|4|free text only {MARKER}\n"
+        f"not a log line {MARKER} Status='Spoof'\n"
+        f"{MARKER}|{MARKER}|{MARKER}|Status='Working' Note='x Status=Inner'\n", encoding="utf-8")
+    (root / "trace" / "trace.txt").write_text(
+        f"{STAMP} connect state=up acct={MARKER}\n{MARKER} state=down\n", encoding="utf-8")
+    journal = tmp_path / "journal"
+    journal.mkdir()
+    body = json.dumps({"code": "REJECTED", "detail": MARKER})
+    records = [{"seq": 1, "prev": "0" * 8, "kind": "request", "body": body, "hash": MARKER},
+               {"seq": 2, "prev": MARKER, "kind": "fill", "body": "not json", "hash": "h"}]
+    (journal / "a.jsonl").write_text("".join(json.dumps(r) + "\n" for r in records)
+                                     + f"{MARKER} not json\n", encoding="utf-8")
+    refusal = tmp_path / "refusal"
+    refusal.mkdir()
+    (refusal / "r1.json").write_text(json.dumps(
+        {"code": "NOT_FLAT", "utc": "2026-01-02T03:04:05Z",
+         "fields": {"reason": "position open", "account": MARKER}}, indent=2), encoding="utf-8")
+    export = tmp_path / "export"
+    export.mkdir()
+    (export / "e.csv").write_text(f"Status,Account\nFilled,{MARKER}\n", encoding="utf-8")
+    return server.Config.build(root, journal_dir=journal, export_dir=export,
+                               refusal_dir=refusal, fields_file=_fields(tmp_path, FIELDS))
+
+
+def _all_outputs(config):
+    calls = [("nt_errors", {})]
+    for source in ("log", "trace", "journal", "refusal", "export"):
+        calls.append(("nt_tail", {"source": source}))
+        for pattern in ("", "MARKER", "e", "Status", "Secret"):
+            calls.append(("nt_search", {"source": source, "pattern": pattern, "context": 2}))
+    return [(name, args, *call(config, name, **args)) for name, args in calls]
+
+
+def test_unapproved_fields_never_appear(approved):
+    for name, args, text, error in _all_outputs(approved):
+        assert not error, (name, args, text)
+        assert MARKER not in text and "SECRET" not in text.upper(), (name, args)
+        assert "Spoof" not in text and "Inner" not in text, (name, args)
+
+
+def test_approved_kv_and_fixed_fields(approved):
+    text, error = call(approved, "nt_tail", source="log")
+    assert not error
+    assert text.splitlines() == [
+        "log.txt: last 4 line(s); 1 without an approved field omitted",
+        '{"timestamp":"2026-01-02 03:04:05:678","level":"1","kv:Status":"Filled"}',
+        '{"timestamp":"2026-01-02 03:04:05:678","level":"2"}',
+        '{"kv:Status":"Working"}',
+    ]
+    text, _ = call(approved, "nt_tail", source="trace")
+    assert text.splitlines() == [
+        "trace.txt: last 2 line(s); 1 without an approved field omitted",
+        '{"timestamp":"2026-01-02 03:04:05:678","kv:state":"up"}',
+    ]
+
+
+def test_journal_body_is_decoded_and_paths_select(approved):
+    text, error = call(approved, "nt_tail", source="journal")
+    assert not error
+    assert text.splitlines() == [
+        "a.jsonl: last 3 line(s); 1 without an approved field omitted",
+        '{"json:kind":"request","json:body.code":"REJECTED"}',
+        '{"json:kind":"fill"}',
+    ]
+    text, _ = call(approved, "nt_search", source="journal", pattern="rejected")
+    assert text.splitlines() == [
+        "1 match(es); 1 line(s) without an approved field skipped",
+        'journal/a.jsonl:1: {"json:kind":"request","json:body.code":"REJECTED"}']
+
+
+def test_refusal_file_is_one_record(approved):
+    text, error = call(approved, "nt_tail", source="refusal")
+    assert not error
+    assert text.splitlines() == ["r1.json: last 1 record(s)",
+                                 '{"json:code":"NOT_FLAT","json:fields.reason":"position open"}']
+    text, _ = call(approved, "nt_search", source="refusal", pattern="position")
+    assert text.splitlines()[0] == "1 match(es)"
+
+
+def test_exports_emit_nothing(approved):
+    text, error = call(approved, "nt_tail", source="export")
+    assert not error
+    assert text.splitlines() == ["e.csv: last 2 line(s); 2 without an approved field omitted"]
+    text, _ = call(approved, "nt_search", source="export", pattern="")
+    assert text.splitlines() == ["0 match(es); 2 line(s) without an approved field skipped"]
+
+
+def test_search_matches_only_approved_values(approved):
+    # "error" and the MARKER are in line 1's free text, but in no approved value.
+    text, _ = call(approved, "nt_errors")
+    assert text.splitlines()[0].startswith("0 match(es)")
+    assert call(approved, "nt_search", source="log", pattern=MARKER)[0].startswith("0 match")
+    assert call(approved, "nt_search", source="log", pattern="Secret")[0].startswith("0 match")
+    text, _ = call(approved, "nt_search", source="log", pattern="filled", context=1)
+    assert text.splitlines() == [
+        "1 match(es); 1 line(s) without an approved field skipped",
+        'log/log.txt:1: {"timestamp":"2026-01-02 03:04:05:678","level":"1","kv:Status":"Filled"}',
+        'log/log.txt:2- {"timestamp":"2026-01-02 03:04:05:678","level":"2"}',
+    ]
+
+
+def test_masking_still_runs_on_approved_values(tmp_path):
+    root = _write_log(tmp_path, f"{STAMP}|1|4|Note='fill {SYNTHETIC_ID}' Count=12345\n")
+    rules = _rules(tmp_path, "ACCT-\\d+\n^12345$\n")
+    config = server.Config.build(root, redact_file=rules,
+                                 fields_file=_fields(tmp_path, "log kv:Note\nlog kv:Count\n"))
+    text, _ = call(config, "nt_tail", source="log")
+    assert text.splitlines()[1] == '{"kv:Note":"fill [redacted]","kv:Count":"[redacted]"}'
+    for k in range(1, len(SYNTHETIC_ID) + 1):
+        assert call(config, "nt_search", source="log", pattern=SYNTHETIC_ID[:k],
+                    ignore_case=False)[0] == "0 match(es)", k
+
+
+def test_oversized_line_is_omitted_in_approved_mode(tmp_path):
+    line = f"{STAMP}|1|4|Note='{SYNTHETIC_ID}' " + "p" * (server.MAX_LINE_BYTES + 10)
+    root = _write_log(tmp_path, f"{line}\n")
+    config = server.Config.build(root, fields_file=_fields(tmp_path))
+    text, _ = call(config, "nt_tail", source="log")
+    assert text.splitlines()[1:] == [server.OMITTED_LINE] and SYNTHETIC_ID not in text
+
+
+def test_json_paths_emit_scalars_only(tmp_path):
+    root = _write_log(tmp_path, "x\n")
+    journal = tmp_path / "journal"
+    journal.mkdir()
+    record = {"kind": "k", "body": json.dumps({"inner": {"a": MARKER}, "n": 3, "ok": True}),
+              "list": [MARKER]}
+    (journal / "j.jsonl").write_text(json.dumps(record) + "\n", encoding="utf-8")
+    fields = _fields(tmp_path, "journal json:body.inner\njournal json:list\n"
+                               "journal json:body.n\njournal json:body.ok\n")
+    config = server.Config.build(root, journal_dir=journal, fields_file=fields)
+    text, _ = call(config, "nt_tail", source="journal")
+    assert text.splitlines()[1:] == ['{"json:body.n":3,"json:body.ok":true}']
+
+
+@pytest.mark.parametrize("content, message", [
+    ("log\n", "expected '<source> <field>'"),
+    ("log timestamp extra\n", "expected '<source> <field>'"),
+    ("account timestamp\n", "unknown source"),
+    ("log kv:\n", "not a field log can approve"),
+    ("log kv:Bad-Key\n", "not a field log can approve"),
+    ("log json:kind\n", "not a field log can approve"),
+    ("journal kv:Status\n", "not a field journal can approve"),
+    ("journal json:body..code\n", "not a field journal can approve"),
+    ("trace level\n", "not a field trace can approve"),
+    ("export json:a\n", "not a field export can approve"),
+    ("export kv:Status\n", "not a field export can approve"),
+    ("log regex:.*\n", "not a field log can approve"),
+    ("# only comments\n\n", "no rules"),
+    ("log kv:Sta​tus\n", "format character"),
+])
+def test_malformed_fields_file_refuses_start(tmp_path, capsys, content, message):
+    root = _write_log(tmp_path, NOTE_LINE)
+    with pytest.raises(SystemExit) as exc:
+        _run_main(["--nt-root", str(root), "--fields-file", str(_fields(tmp_path, content))],
+                  [TAIL_REQUEST])
+    assert exc.value.code != 0
+    err = capsys.readouterr().err
+    assert "--fields-file" in err and message in err
+
+
+def test_fields_file_starts_and_serves_approved_only(tmp_path):
+    root = _write_log(tmp_path, f"{STAMP}|1|4|Note='ok' Account='{MARKER}'\n")
+    fields = _fields(tmp_path, "﻿# signed\nlog kv:Note\n")
+    code, responses = _run_main(["--nt-root", str(root), "--fields-file", str(fields)],
+                                [TAIL_REQUEST])
+    assert code == 0
+    text = responses[0]["result"]["content"][0]["text"]
+    assert text.splitlines() == ["log.txt: last 1 line(s)", '{"kv:Note":"ok"}']
