@@ -53,10 +53,9 @@ that text, and fails closed on any doubt about quoting:
   record with any quotation-like character whose quoting is unclear, or an
   omitted record, gives no field at all (timestamp, level and category too), and
   nor does any later record of that file. ``nt_tail`` learns this state and its
-  window from one forward read of the file from its start: every byte is read
-  once, so a record is judged by exactly the bytes read before it, whatever a
-  writer does to the file meanwhile. A file over the read budget gives no field
-  in its window at all;
+  window from one forward read of the file from its start, so a record is judged
+  by the bytes read before it (see "Files that change" below). A file over half
+  the read budget gives no field in its window at all;
 * a value (the span's whole content, or a plain token of letters, digits and
   ``_.:+-`` that must end at whitespace, ``,``, ``;``, ``|``, ``&`` or the line
   end) is emitted only under the limits for JSON strings below.
@@ -83,6 +82,20 @@ malformed file, an unknown source or field syntax, or a file with no rules stops
 the server from starting. Each line (record) comes back as
 one compact JSON object of approved field -> value; a line with no approved field
 is left out and counted. Order IDs and names are not approved fields.
+
+Files that change while they are read (approved-field mode). A last line with no
+newline yet may be unfinished, and part of a line can look clear when the whole is
+not, so it is never judged or shown (OMITTED_UNFINISHED_LINE). A writer that
+rewrites part of a file during one forward read gives a torn view (an old prefix,
+then a new suffix inside a span the unseen new prefix opens), so after each read
+of a log, trace, journal or refusal file the server checks that the path names the
+same file, that it has not shrunk below what was read, that it kept its
+modification time if it kept its size, and that a second read of the same bytes is
+identical (``_Read``). Otherwise nothing from that file is shown: ``nt_tail``
+withholds every field, ``nt_search`` and ``nt_errors`` drop the file's matches,
+each with a note. Growth by appending passes. Residual: a writer that changes the
+read bytes and puts the same bytes back in step with both reads, leaving size and
+modification time as they were, is not detected.
 
 With ``--fields-file`` the ``export`` source is refused outright by every tool
 (``nt_list_files``, ``nt_tail``, ``nt_search``; ``nt_list_sources`` shows it as
@@ -113,6 +126,7 @@ import argparse
 import codecs
 import fnmatch
 import functools
+import hashlib
 import json
 import math
 import re
@@ -121,10 +135,11 @@ import sys
 import time
 import unicodedata
 from collections import deque
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Iterator
+from typing import Any, Callable, Iterable, Iterator
 
 SERVER_NAME = "nt-readonly"
 SERVER_VERSION = "0.3.0"
@@ -159,6 +174,10 @@ class _Omitted(str):
 
 OMITTED_LINE = _Omitted(f"[line over {MAX_LINE_BYTES} bytes omitted]")
 OMITTED_NUL_LINE = _Omitted("[line with NUL bytes omitted]")
+# Approved-field mode: a last line with no newline yet may be one a writer has not
+# finished, and a record judged on part of its text may look clear when the whole
+# is not, so it is never judged or shown (fail closed).
+OMITTED_UNFINISHED_LINE = _Omitted("[unfinished last line (no newline yet) omitted]")
 
 
 class ToolError(Exception):
@@ -428,12 +447,13 @@ class Fields:
     def extract(self, source: str, text: str, clear: bool = True) -> dict[str, Any]:
         """The approved fields of one line (record), unmasked; nothing else is read out.
 
-        ``clear`` False (for log and trace: the record's quoting, or the quote state
-        before it, is unclear, see QuoteState; for journal: the file is not JSON
-        Lines up to this record, see JsonLinesState) gives no field at all.
+        ``clear`` False gives no field at all: for log and trace the record's
+        quoting, or the quote state before it, is unclear (see QuoteState); for
+        journal the file is not JSON Lines up to this record (see JsonLinesState);
+        for any source the file changed while it was read (see ``_Read``).
         """
         names = self.rules.get(source)
-        if not names or (source in _GATED_SOURCES and not clear):
+        if not names or not clear:
             return {}
         fixed: dict[str, str] = {}
         free: str | None = None
@@ -643,15 +663,72 @@ def _blocks(handle: Any, budget: Budget, limit: int | None = None) -> Iterator[b
         yield block
 
 
+class _Read:
+    """One read of a file from its start, up to its size at open, that can tell
+    afterwards whether the file changed while it was read.
+
+    A writer that rewrites part of the file during one forward read gives a torn
+    view: an old prefix followed by a new suffix, whose records may sit inside a
+    quoted span the unseen new prefix opens. So in approved-field mode nothing a
+    read gives is shown unless ``unchanged()`` holds afterwards: the path still
+    names the same file (device and inode or file index), the file has not shrunk
+    below what was read, it kept its modification time if it kept its size, and a
+    second read of the same range is byte-identical (SHA-256). Growth by appending
+    (NinjaTrader's live log) passes. Residual: a writer that changes the read
+    range and puts the same bytes back in step with both reads, leaving size and
+    modification time as they were, is not detected.
+    """
+
+    def __init__(self, path: Path, handle: Any, budget: Budget, before: Any) -> None:
+        self.path, self.handle, self.budget, self.before = path, handle, budget, before
+        self.digest = hashlib.sha256()
+        self.size = 0
+
+    def blocks(self) -> Iterator[bytes]:
+        for block in _blocks(self.handle, self.budget):
+            self.digest.update(block)
+            self.size += len(block)
+            yield block
+
+    def unchanged(self) -> bool:
+        after = self.path.stat()
+        before = self.before
+        if ((after.st_dev, after.st_ino) != (before.st_dev, before.st_ino)
+                or after.st_size < self.size
+                or (after.st_size == before.st_size
+                    and after.st_mtime_ns != before.st_mtime_ns)):
+            return False
+        again = hashlib.sha256()
+        size = 0
+        for block in _blocks(self.handle, self.budget, self.size):
+            again.update(block)
+            size += len(block)
+        return size == self.size and again.digest() == self.digest.digest()
+
+
+@contextmanager
+def _open_read(path: Path, budget: Budget) -> Iterator[_Read]:
+    before = path.stat()  # taken before open, so a file swapped in between is caught
+    with open(path, "rb") as handle:
+        yield _Read(path, handle, budget, before)
+
+
+CHANGED_NOTE = ("all fields withheld: the file changed while it was read "
+                "(only growth by appending is allowed); try again")
+
+
 def _split_piece(raw: bytes, first: bool, last: bool, records: bool = False) -> list[str]:
     """Raw lines of one piece between newlines.
 
     Gives the same lines ``str.splitlines`` gives for the whole file (CRLF, lone CR and
     the other Unicode breaks included). ``last`` marks a final piece with no newline.
     With ``records`` (approved-field mode) the piece is one record: one trailing CR
-    is stripped and every other break character stays inside the record.
+    is stripped and every other break character stays inside the record, and a
+    final piece with no newline comes back as OMITTED_UNFINISHED_LINE.
     A piece holding a NUL byte comes back as OMITTED_NUL_LINE.
     """
+    if records and last:
+        return [OMITTED_UNFINISHED_LINE]
     if b"\x00" in raw:
         return [OMITTED_NUL_LINE]
     text = raw.decode("utf-8-sig" if first else "utf-8", errors="replace")
@@ -695,14 +772,13 @@ def _present(config: Config, source: str, line: str,
     return json.dumps(picked, ensure_ascii=False, separators=(",", ":")), texts
 
 
-def _whole_file(path: Path, budget: Budget) -> list[str]:
+def _whole_file(blocks: Iterable[bytes]) -> list[str]:
     """A file read as one record (a refusal file); over MAX_LINE_BYTES it is omitted."""
     kept = bytearray()
-    with open(path, "rb") as handle:
-        for block in _blocks(handle, budget):
-            if len(kept) + len(block) > MAX_LINE_BYTES:
-                return [OMITTED_LINE]
-            kept += block
+    for block in blocks:
+        if len(kept) + len(block) > MAX_LINE_BYTES:
+            return [OMITTED_LINE]
+        kept += block
     if not kept:
         return []
     if b"\x00" in kept:
@@ -710,33 +786,26 @@ def _whole_file(path: Path, budget: Budget) -> list[str]:
     return [bytes(kept).decode("utf-8-sig", errors="replace")]
 
 
-def _records(config: Config, source: str, path: Path, budget: Budget) -> Iterator[str]:
+def _records(config: Config, source: str, reader: _Read) -> Iterator[str]:
     """A file's raw units: lines, or the whole file for a refusal in approved-field mode."""
     if config.fields is not None and source == "refusal":
-        yield from _whole_file(path, budget)
+        yield from _whole_file(reader.blocks())
     else:
-        yield from _iter_lines(path, budget, records=config.fields is not None)
+        yield from _iter_blocks(reader.blocks(), records=config.fields is not None)
 
 
-def _iter_lines(path: Path, budget: Budget, records: bool = False,
-                limit: int | None = None) -> Iterator[str]:
-    """Stream a file's raw lines; a line over MAX_LINE_BYTES comes as OMITTED_LINE.
+def _iter_blocks(blocks: Iterable[bytes], records: bool = False) -> Iterator[str]:
+    """Stream the raw lines of a file's blocks, read from its start; a line over
+    MAX_LINE_BYTES comes as OMITTED_LINE.
 
-    ``records`` splits on newlines only (see ``_split_piece``); ``limit`` stops the
-    read after that many bytes. Callers pass every line through ``_present`` before
-    matching or output.
+    ``records`` splits on newlines only and omits an unfinished last line (see
+    ``_split_piece``). Callers pass every line through ``_present`` before matching
+    or output.
     """
-    with open(path, "rb") as handle:
-        yield from _iter_handle(handle, budget, records, limit)
-
-
-def _iter_handle(handle: Any, budget: Budget, records: bool = False,
-                 limit: int | None = None) -> Iterator[str]:
-    """``_iter_lines`` on an open binary handle, from its start."""
     kept = bytearray()
     oversized = False
     first = True
-    for block in _blocks(handle, budget, limit):
+    for block in blocks:
         start = 0
         while True:
             newline = block.find(b"\n", start)
@@ -802,31 +871,35 @@ def _tail_lines(path: Path, count: int, budget: Budget, records: bool = False) -
             handle.seek(start)
             piece = handle.read(stop - start)
             budget.charge(len(piece))
+            # stop == end: a last line with no newline (unfinished; omitted as a record)
             lines.extend(_split_piece(piece, start == 0, stop == end, records))
     return lines[-count:]
 
 
-def _tail_gated(path: Path, count: int, budget: Budget,
-                state: QuoteState | JsonLinesState) -> tuple[list[tuple[str, bool]], bool] | None:
+def _tail_gated(path: Path, count: int, budget: Budget, state: QuoteState | JsonLinesState
+                ) -> tuple[list[tuple[str, bool]], bool, bool] | None:
     """The last ``count`` records of a gated source, each with whether it may give a
-    field, and whether the state was still known where the window starts.
+    field; whether the state was still known where the window starts; and whether
+    the file stayed unchanged while it was read (``_Read.unchanged``).
 
-    The state and the window come from ONE forward read of the file from its start
-    (up to its size at open): every byte is read once, so the state a record is
-    judged by is that of the very bytes read before it, whatever a writer does to
-    the file meanwhile. No region is read twice. None: the file does not fit in
-    the read budget, so the window cannot be judged.
+    The state and the window come from one forward read of the file from its start
+    (up to its size at open), so a record is judged by the bytes read before it.
+    That read is a consistent view only if the file did not change under it, which
+    is checked afterwards; the caller withholds every field if it did. None: the
+    file does not fit in the read budget (it is read twice), so the window cannot
+    be judged.
     """
     window: deque[tuple[str, bool, bool]] = deque(maxlen=count)
-    with open(path, "rb") as handle:
-        if handle.seek(0, 2) > budget.left:
+    with _open_read(path, budget) as reader:
+        if 2 * reader.handle.seek(0, 2) > budget.left:
             return None
-        for record in _iter_handle(handle, budget, records=True):
+        for record in _iter_blocks(reader.blocks(), records=True):
             known_before = state.known
             window.append((record, state.feed(record), known_before))
+        unchanged = reader.unchanged()
     if not window:
-        return [], True
-    return [(record, clear) for record, clear, _ in window], window[0][2]
+        return [], True, unchanged
+    return [(record, clear) for record, clear, _ in window], window[0][2], unchanged
 
 
 _REQUIRED: Any = object()
@@ -907,11 +980,16 @@ def tool_tail(config: Config, arguments: dict) -> str:
     notes: list[str] = []
     unit = "line"
     if config.fields is not None and source == "refusal":
-        raw, unit = _whole_file(entry.path, budget), "record"
-        clear = [True] * len(raw)
+        with _open_read(entry.path, budget) as reader:
+            raw, unit = _whole_file(reader.blocks()), "record"
+            unchanged = reader.unchanged()
+        clear = [unchanged] * len(raw)
+        if not unchanged:
+            notes.append(CHANGED_NOTE)
     elif config.fields is not None and source in _GATED_SOURCES:
         state = _record_state(source)
         judged = _tail_gated(entry.path, count, budget, state)
+        unchanged = True
         if judged is None:
             # Too big to judge from its start: the window is read, every field withheld.
             raw = _tail_lines(entry.path, count, budget, records=True)
@@ -919,9 +997,12 @@ def tool_tail(config: Config, arguments: dict) -> str:
             known_before = False
         else:
             raw = [record for record, _ in judged[0]]
-            clear = [ok for _, ok in judged[0]]
+            unchanged = judged[2]
+            clear = [ok and unchanged for _, ok in judged[0]]
             known_before = judged[1]
-        if not known_before:
+        if not unchanged:
+            notes.append(CHANGED_NOTE)
+        elif not known_before:
             what = ("a record that is not one complete JSON object"
                     if source == "journal" else "a record with unclear quoting")
             notes.append("all fields withheld: the file does not fit in the read budget, "
@@ -955,41 +1036,63 @@ def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: 
             name = f"{source}/{entry.name}"
             quotes = _record_state(source)  # records are read in order from the file's start
             gated = config.fields is not None and source in _GATED_SOURCES
+            # A file's results are held until its read is known to be a consistent
+            # view (approved-field mode, see _Read), then kept whole or dropped whole.
+            rows: list[str] = []
+            found = 0
+            skipped = 0
+            keep = False
             try:
-                # Match on the masked approved values, the same text that is output,
-                # so a match count cannot reveal what the mask or the allow-list hides.
-                for number, raw in enumerate(_records(config, source, entry.path, budget), 1):
-                    shown = _present(config, source, raw, quotes.feed(raw) if gated else True)
-                    if shown is None:
-                        unapproved += 1
-                        continue
-                    line, texts = shown
-                    if any(matcher.search(text) for text in texts):
-                        if matches >= max_matches:
-                            stopped = f"stopped at max_matches={max_matches}"
-                            break
-                        matches += 1
-                        for ctx_number, ctx_line in before:
-                            if ctx_number > last_printed:
-                                out.append(f"{name}:{ctx_number}- {ctx_line}")
-                        out.append(f"{name}:{number}: {line}")
-                        last_printed = number
-                        pending_after = context
-                        before.clear()
-                    elif pending_after:
-                        out.append(f"{name}:{number}- {line}")
-                        last_printed = number
-                        pending_after -= 1
-                    else:
-                        before.append((number, line))
+                with _open_read(entry.path, budget) as reader:
+                    # Match on the masked approved values, the same text that is output,
+                    # so a match count cannot reveal what the mask or the allow-list hides.
+                    for number, raw in enumerate(_records(config, source, reader), 1):
+                        clear = quotes.feed(raw) if gated else True
+                        shown = _present(config, source, raw, clear)
+                        if shown is None:
+                            skipped += 1
+                            continue
+                        line, texts = shown
+                        if any(matcher.search(text) for text in texts):
+                            if matches + found >= max_matches:
+                                stopped = f"stopped at max_matches={max_matches}"
+                                break
+                            found += 1
+                            for ctx_number, ctx_line in before:
+                                if ctx_number > last_printed:
+                                    rows.append(f"{name}:{ctx_number}- {ctx_line}")
+                            rows.append(f"{name}:{number}: {line}")
+                            last_printed = number
+                            pending_after = context
+                            before.clear()
+                        elif pending_after:
+                            rows.append(f"{name}:{number}- {line}")
+                            last_printed = number
+                            pending_after -= 1
+                        else:
+                            before.append((number, line))
+                    keep = config.fields is None or reader.unchanged()
+                    if not keep:
+                        notes.append(f"nothing shown from {name}: it changed while it was "
+                                     "read (only growth by appending is allowed)")
             except BudgetExceeded as exc:
                 stopped = f"stopped: {exc}"
+                # Without approved fields a partial read is shown as before; with them,
+                # the read cannot be checked, so nothing from the file is shown.
+                keep = config.fields is None
+                if not keep:
+                    notes.append(f"nothing shown from {name}: the read budget ran out "
+                                 "before the file could be checked")
             except FileRefused as exc:
                 notes.append(f"skipped {name}: {exc}")
             except OSError as exc:
                 notes.append(f"skipped {name}: {_reason(exc)}")
-            if gated and not quotes.known:
-                notes.append(f"{name}: {_withheld_note(source)}")
+            if keep:
+                out.extend(rows)
+                matches += found
+                unapproved += skipped
+                if gated and not quotes.known:
+                    notes.append(f"{name}: {_withheld_note(source)}")
             if stopped:
                 break
         if stopped:

@@ -1679,3 +1679,201 @@ def test_log_record_with_a_bad_header_field_gives_no_field(tmp_path, line):
     assert text.splitlines() == [
         "log.txt: last 2 line(s); 1 without an approved field omitted",
         '{"timestamp":"2026-11-08 10:00:00","level":"INFO","category":"Cat","kv:Status":"ok"}']
+
+
+# --- #1136 review of 21e4c447: unfinished last lines and torn reads ------------------
+
+UNFINISHED = "[unfinished last line (no newline yet) omitted]"
+
+
+def _cut(source, line):
+    """The line as a writer may have it on disk mid-write: cut right after the private
+    value (a journal line right after its object closes)."""
+    if source == "journal":
+        return line[:line.index("}") + 1]
+    return line[:line.index(LEAK) + len(LEAK)]
+
+
+# Each full line gives no field (its quoting is unclear, or it is not one JSON object);
+# cut mid-line, the part written so far may look clear (the reviewer's case 1 did).
+UNFINISHED_LEAKS = [
+    ("log", LOG_PREFIX + f"Note='a' b Price={LEAK} c' X=1"),
+    ("log", LOG_PREFIX + f"Note='a' Price={LEAK} it's"),
+    *(("log", LOG_PREFIX + text) for text in QUOTED_KV_LEAKS),
+    ("trace", f"{TRACE_PREFIX}Note='a' b Price={LEAK} c' X=1"),
+    ("trace", f"{TRACE_PREFIX}it's Note=\"x' Price={LEAK} 'y\" it's"),
+    ("journal", f'{{"code":"{LEAK}"}} trailing'),
+]
+
+
+def _unfinished_config(tmp_path, source, content):
+    root = _write_log(tmp_path, "")
+    journal = tmp_path / "journal"
+    journal.mkdir()
+    folder = journal if source == "journal" else root / source
+    (folder / f"{source}.txt").write_text(content, encoding="utf-8")
+    return server.Config.build(root, journal_dir=journal, fields_file=_fields(
+        tmp_path, "log kv:Price\ntrace kv:Price\njournal json:code\n"))
+
+
+@pytest.mark.parametrize("source, line", UNFINISHED_LEAKS)
+def test_unfinished_last_line_is_never_judged(tmp_path, source, line):
+    # The full line is withheld ...
+    config = _unfinished_config(tmp_path, source, line + "\n")
+    for name, text, error in _leak_outputs(config, [source]):
+        assert not error and MARKER not in text, (name, text)
+    # ... and so is the same line while it is being written (no newline yet).
+    config = _unfinished_config(tmp_path / "cut", source, _cut(source, line))
+    outputs = _leak_outputs(config, [source])
+    for lines in (1, 2):
+        outputs.append(("nt_tail", *call(config, "nt_tail", source=source, lines=lines)))
+    for name, text, error in outputs:
+        assert not error, (name, text)
+        assert MARKER not in text and "kv:Price" not in text and "json:code" not in text, (
+            name, text)
+    assert outputs[0][1].splitlines()[0].startswith("0 match(es)")
+    tail, _ = call(config, "nt_tail", source=source, lines=1)
+    assert tail.splitlines()[:2] == [f"{source}.txt: last 1 line(s)", UNFINISHED]
+
+
+@pytest.mark.parametrize("ending", ["", "\r"])
+def test_unfinished_last_line_omitted_until_its_newline(tmp_path, ending):
+    done = f"{LOG_PREFIX}Price=1\n"
+    root = _write_log(tmp_path, done + f"{LOG_PREFIX}Price=2" + ending)
+    config = server.Config.build(root, fields_file=_fields(tmp_path, "log kv:Price\n"))
+    text, error = call(config, "nt_tail", source="log", lines=2)
+    assert not error
+    assert text.splitlines()[:3] == ["log.txt: last 2 line(s)", '{"kv:Price":"1"}', UNFINISHED]
+    found, _ = call(config, "nt_search", source="log", pattern="")
+    assert found.splitlines()[:2] == ["1 match(es)", 'log/log.txt:1: {"kv:Price":"1"}']
+    (root / "log" / "log.txt").write_text(done + f"{LOG_PREFIX}Price=2\n", encoding="utf-8")
+    text, _ = call(config, "nt_tail", source="log", lines=2)
+    assert text.splitlines() == ["log.txt: last 2 line(s)", '{"kv:Price":"1"}',
+                                 '{"kv:Price":"2"}']
+
+
+def test_unfinished_last_line_omitted_in_over_budget_tail(tmp_path, monkeypatch):
+    monkeypatch.setattr(server, "READ_BLOCK", 128)
+    root = _write_log(tmp_path, f"{LOG_PREFIX}Price=1\n" * 50 + _cut(
+        "log", LOG_PREFIX + f"Note='a' b Price={LEAK} c' X=1"))
+    config = server.Config.build(root, fields_file=_fields(tmp_path, "log kv:Price\n"))
+    monkeypatch.setattr(server, "MAX_CALL_BYTES", 600)
+    text, error = call(config, "nt_tail", source="log", lines=1)
+    assert not error and MARKER not in text, text
+    assert text.splitlines()[:2] == ["log.txt: last 1 line(s)", UNFINISHED]
+
+
+# The reviewer's case 2: the file starts clear (Note=xopen) and is rewritten in place,
+# same size, to open a span (Note='open) that covers every later record. A read torn
+# across the rewrite (old clear prefix, new suffix) must not pass the suffix as clear.
+CLEAR_TO_OPEN_OLD = SAME_SIZE_LOG.replace("Note='open", "Note=xopen", 1)
+CLEAR_TO_OPEN_CALLS = [
+    *(("nt_tail", {"source": "log", "lines": lines}) for lines in (1, 2, 4)),
+    ("nt_search", {"source": "log", "pattern": ""}),
+    ("nt_search", {"source": "log", "pattern": "SYNTHETIC"}),
+    ("nt_errors", {}),
+]
+
+
+def _clear_to_open_rewrite(path):
+    def rewrite():
+        with open(path, "r+b") as handle:  # in place, same size
+            handle.write(SAME_SIZE_LOG.encode("utf-8"))
+    return rewrite
+
+
+@pytest.mark.parametrize("after", range(1, 13))
+@pytest.mark.parametrize("name, arguments", CLEAR_TO_OPEN_CALLS)
+def test_clear_to_open_rewrite_during_a_read_shows_nothing(tmp_path, monkeypatch, after,
+                                                           name, arguments):
+    monkeypatch.setattr(server, "READ_BLOCK", 256)
+    root = _write_log(tmp_path, CLEAR_TO_OPEN_OLD)
+    config = server.Config.build(root, fields_file=_fields(
+        tmp_path, "log timestamp\nlog kv:Status\nlog kv:Pad\n"))
+    # What a consistent read of the old (clear) file gives.
+    baseline, _ = call(config, name, **arguments)
+    assert f'"kv:Status":"{SAME_SIZE_PRIVATE}"' in baseline
+    forward_reads = -(-len(CLEAR_TO_OPEN_OLD.encode("utf-8")) // 256)  # one per block
+    assert forward_reads >= 5  # the file spans several blocks, so a read can be torn
+    counter = _change_after_reads(monkeypatch, after,
+                                  _clear_to_open_rewrite(root / "log" / "log.txt"))
+    text, error = call(config, name, **arguments)
+    assert not error, text
+    assert counter["done"]
+    withheld = "SYNTHETIC_PRIVATE" not in text and "kv:Status" not in text
+    if after < forward_reads:
+        # The rewrite landed inside the forward read, whose view is torn: nothing
+        # may come out of the file.
+        assert withheld and "changed while it was read" in text, text
+    else:
+        # It landed after the forward read, which saw the whole old file: its result,
+        # or nothing if the check notices the change.
+        assert text == baseline or (withheld and "changed while it was read" in text), text
+
+
+def test_torn_rewrite_reproduction_rows(tmp_path, monkeypatch):
+    # The reviewer's script, case 2: _blocks rewrites the file after its first block.
+    monkeypatch.setattr(server, "READ_BLOCK", 256)
+    root = _write_log(tmp_path, CLEAR_TO_OPEN_OLD)
+    path = root / "log" / "log.txt"
+    config = server.Config.build(root, fields_file=_fields(tmp_path, "log kv:Status\n"))
+    real_blocks = server._blocks
+    rewrite = _clear_to_open_rewrite(path)
+
+    def blocks(handle, budget, limit=None):
+        for index, block in enumerate(real_blocks(handle, budget, limit)):
+            yield block
+            if index == 0:
+                rewrite()
+
+    monkeypatch.setattr(server, "_blocks", blocks)
+    for name, arguments in CLEAR_TO_OPEN_CALLS:
+        path.write_text(CLEAR_TO_OPEN_OLD, encoding="utf-8")
+        text, error = call(config, name, **arguments)
+        assert not error and "SYNTHETIC_PRIVATE" not in text and "kv:Status" not in text, (
+            name, text)
+
+
+@pytest.mark.parametrize("name, arguments", [
+    ("nt_tail", {"source": "log", "lines": 2}),
+    ("nt_search", {"source": "log", "pattern": "SYNTHETIC"}),
+])
+def test_appending_writer_still_gives_fields(tmp_path, monkeypatch, name, arguments):
+    # NinjaTrader appends to today's log while it is read: growth is not a change.
+    monkeypatch.setattr(server, "READ_BLOCK", 256)
+    root = _write_log(tmp_path, CLEAR_TO_OPEN_OLD)
+    path = root / "log" / "log.txt"
+    config = server.Config.build(root, fields_file=_fields(tmp_path, "log kv:Status\n"))
+
+    def append():
+        with open(path, "ab") as handle:
+            handle.write(f"{TOCTOU_STAMP}|I|C|Status=later\n".encode("utf-8"))
+
+    _change_after_reads(monkeypatch, 1, append)
+    text, error = call(config, name, **arguments)
+    assert not error and "changed while it was read" not in text, text
+    assert text.count(f'"kv:Status":"{SAME_SIZE_PRIVATE}"') >= 2 and "later" not in text, text
+
+
+@pytest.mark.parametrize("name, arguments", [
+    ("nt_tail", {"source": "refusal"}),
+    ("nt_search", {"source": "refusal", "pattern": ""}),
+])
+def test_refusal_rewritten_during_read_shows_nothing(tmp_path, monkeypatch, name, arguments):
+    root = _write_log(tmp_path, "")
+    refusal = tmp_path / "refusal"
+    refusal.mkdir()
+    path = refusal / "r.json"
+    path.write_text('{"code":"AAAA"}', encoding="utf-8")
+    config = server.Config.build(root, refusal_dir=refusal, fields_file=_fields(
+        tmp_path, "refusal json:code\n"))
+    text, _ = call(config, name, **arguments)
+    assert '"json:code":"AAAA"' in text, text
+
+    def rewrite():
+        with open(path, "r+b") as handle:
+            handle.write(b'{"code":"BBBB"}')
+
+    _change_after_reads(monkeypatch, 1, rewrite)
+    text, error = call(config, name, **arguments)
+    assert not error and "json:code" not in text and "changed while it was read" in text, text

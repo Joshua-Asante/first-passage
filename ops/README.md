@@ -91,11 +91,10 @@ and fails closed whenever quoting is in doubt:
   character (not only `'` and `"`) whose quoting is not clear in the sense above,
   and any omitted line, gives no field at all (timestamp, level and category
   included), and neither does any later record of the file. `nt_tail` learns
-  this and its window from one forward read of the file from its start: each
-  byte is read once, so a record is judged by exactly the bytes read before it,
-  even if a writer rewrites the file during the read. A file larger than the
-  read budget gives no field in its window. A `note:` line says when
-  fields were withheld this way. A log whose messages quote names in prose
+  this and its window from one forward read of the file from its start, so a
+  record is judged by the bytes read before it (see **Files that change while
+  they are read** below). A file larger than half the read budget gives no
+  field in its window. A `note:` line says when fields were withheld this way. A log whose messages quote names in prose
   (`strategy 'X'`) therefore gives no fields after the first such message.
 - A quoted value is the span's whole content. An unquoted value is a plain token
   (letters, digits, `_.:+-`) that must end at whitespace, `,`, `;`, `|`, `&` or
@@ -137,6 +136,33 @@ example `{"timestamp":"…","kv:Status":"…"}`. A line with no approved field i
 out and counted in the header (`nt_tail`) or summary (`nt_search`, `nt_errors`), so
 "last N lines" still means the last N lines of the file. Searches, including
 `nt_errors`' built-in pattern, match only within approved values.
+
+**Files that change while they are read** (approved-field mode). NinjaTrader
+writes today's log while it is read, so two things are never trusted:
+
+- A last line with no newline yet may be one the writer has not finished, and
+  part of a line can look clear when the whole line is not. It is never judged or
+  shown: `nt_tail` returns `[unfinished last line (no newline yet) omitted]` in
+  its place and `nt_search` and `nt_errors` skip it. A journal's last object
+  counts only once its newline is written.
+- A writer that rewrites part of a file during one forward read gives a torn
+  view: an old prefix, then a new suffix whose records may sit inside a quoted
+  span the unseen new prefix opens. So after reading a log, trace, journal or
+  refusal file, the server checks that the path still names the same file
+  (device and inode or file index), that the file has not shrunk below what was
+  read, that it kept its modification time if it kept its size, and that a
+  second read of the same bytes is identical (SHA-256). If any check fails,
+  nothing from that file is shown: `nt_tail` withholds every field and says the
+  file changed (try again), and `nt_search` and `nt_errors` drop that file's
+  matches with a `note:` line. A search whose read budget runs out mid-file
+  shows nothing from that file, since the read cannot be checked. Growth by
+  appending passes, since only the bytes up to the size at open are read.
+
+  Residual: a writer that changes the bytes being read and puts the same bytes
+  back in step with both reads, leaving the size and modification time as they
+  were, is not detected; logs and journals are expected to grow only by
+  appending. The server does not lock files: opening without write sharing on
+  Windows would fail on NinjaTrader's open log.
 
 With `--fields-file`, the `export` source is refused outright by every tool:
 `nt_list_files`, `nt_tail` and `nt_search` return an error naming the refusal
@@ -181,7 +207,8 @@ blocks (searches, and tails in approved-field mode, line by line from the
 start; other tails from the end), so memory stays bounded whatever the file
 size. A read stops at the size the file had when it was opened,
 so a writer that keeps appending can't make it endless, and each call stops after
-256 MiB or 20 seconds of reading. String arguments are capped at 1,024
+256 MiB or 20 seconds of reading (in approved-field mode the check above reads
+each file twice, and both reads count). String arguments are capped at 1,024
 characters, a request line at 1 MiB, and unknown argument names are refused. A
 file that is locked, vanishes or can't be read is skipped with a `note:` line;
 the rest of the call goes on.
