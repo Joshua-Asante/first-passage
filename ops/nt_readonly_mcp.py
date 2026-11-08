@@ -11,14 +11,100 @@ NinjaTrader and never talks to it:
 * it places, changes and cancels nothing, so AGENTS.md money controls 1 and 3 and
   spec check B1 (no network calls, ATI, add-ons) are untouched.
 
-Its output can carry account data (fills, account names, balances). That data
-reaches the agent's context and must never be written into this repository
-(AGENTS.md data rules, spec B15). ``--redact-file`` masks patterns, one regex per
-line, before anything leaves the server. Searches, globs and file names match on
-the masked text only, so match counts cannot reveal a masked value. The server
-refuses to start unless it gets ``--redact-file`` (with at least one pattern) or
-``--allow-unredacted``. Do not give this server to Codex: the journal and logs can
-carry strategy parameters.
+The files can carry account data and strategy parameters, and AGENTS.md lets agents
+read private logs only through tools that return approved fields. So the server
+emits only the fields named in ``--fields-file``, a private allow-list Joshua signs
+off, kept outside the repository; anything not on it is dropped, never shown.
+``--redact-file`` (one regex per line) is required with it: it masks every emitted
+value as a backup, and it is the only filter on metadata the allow-list does not
+cover (file names, configured paths, tail and search headers).
+Searches, globs and file names match on the masked text only, so match counts
+cannot reveal a masked value. The server refuses to start without ``--fields-file``
+unless it gets ``--allow-unredacted``, which serves whole lines unmasked: for
+debugging that Joshua directs, and its output is never persisted.
+
+Allow-list (``--fields-file``): UTF-8 text, one rule per line, ``#`` starts a
+comment line. A rule is ``<source> <field>``:
+
+    log      timestamp | level | category | kv:<Key>
+    trace    timestamp | kv:<Key>
+    journal  json:<dotted.path>
+    refusal  json:<dotted.path>
+    export   (no field can be approved; the source is refused, see below)
+
+In approved-field mode a record is the text between two ``\\n`` (one trailing
+``\\r`` stripped); CR, VT, FF and the Unicode line breaks stay inside the record.
+Log lines are ``timestamp|level|category|text``; trace lines are a timestamp, then
+text. A log record gives no field at all (no fixed field, no kv) unless its
+timestamp, level and category all have their shape (a level or category is 1-32
+letters, digits or ``_``), so no quote can sit in the header; a trace record gives
+none unless it starts with a whole timestamp followed by whitespace or its end.
+``kv:<Key>`` takes ``Key='value'``, ``Key="value"`` or ``Key=value`` pairs from
+that text, and fails closed on any doubt about quoting:
+
+* the text must be printable ASCII (tab allowed) with no backtick, so a control
+  character, a Unicode line break or any non-ASCII quotation mark gives no kv;
+* a ``'`` or ``"`` opens a quoted span only directly after ``Key=``; the span runs
+  to the next same quote, and keys are read only outside spans. Any other quote
+  (a prose apostrophe such as ``don't``, a quote after ``Note:``), an unclosed
+  span, a backslash inside a span, or a closing quote followed by anything but
+  whitespace, ``,``, ``;``, ``|``, ``&`` or the line end (a doubled quote,
+  ``Note='it's``) makes the line's quoting unclear, and it gives no kv;
+* a quoted value may run over several records, and parity cannot tell where it
+  ends, so every log and trace record is checked from the start of the file: a
+  record with any quotation-like character whose quoting is unclear, or an
+  omitted record, gives no field at all (timestamp, level and category too), and
+  nor does any later record of that file. ``nt_tail`` learns this state and its
+  window from one forward read of the file from its start, so a record is judged
+  by the bytes read before it (see "Files that change" below). A file over half
+  the read budget gives no field in its window at all;
+* a value (the span's whole content, or a plain token of letters, digits and
+  ``_.:+-`` that must end at whitespace, ``,``, ``;``, ``|``, ``&`` or the line
+  end) is emitted only under the limits for JSON strings below.
+
+A key must start the text or follow whitespace or one of those delimiters, and be
+directly followed by ``=``.
+
+Residual limit of ``kv:``: a value that itself holds a closing quote followed by
+`` Key='...'``, or unquoted free text holding `` Key=value``, cannot be told apart
+from real pairs, so it can surface as an approved field. Approve only keys whose
+writers never put quotes or ``Key=`` text inside other values.
+
+Journals must be JSON Lines: one complete JSON object per line. A journal record
+that is not one (a line of a pretty-printed object, a blank line), or an omitted
+record, gives no field, and nor does any later record of that file, since its
+lines may be the inside of a multi-line record; ``nt_tail`` reads the file from
+its start for this, as for log and trace quoting. A refusal file is one JSON
+object, read whole.
+``json:a.b`` walks objects, decoding a string that holds a JSON object on the way
+(``json:body.code``), and emits scalars only: numbers (finite), booleans, null, and
+strings of at most 128 characters drawn from letters, digits, space and ``_.:+-/@``.
+A path ending on an object, an array or any other string gives nothing. A
+malformed file, an unknown source or field syntax, or a file with no rules stops
+the server from starting. Each line (record) comes back as
+one compact JSON object of approved field -> value; a line with no approved field
+is left out and counted. Order IDs and names are not approved fields.
+
+Files that change while they are read (approved-field mode). A last line with no
+newline yet may be unfinished, and part of a line can look clear when the whole is
+not, so it is never judged or shown (OMITTED_UNFINISHED_LINE). A writer that
+rewrites part of a file during one forward read gives a torn view (an old prefix,
+then a new suffix inside a span the unseen new prefix opens), so after each read
+of a log, trace, journal or refusal file the server checks that the path names the
+same file, that it has not shrunk below what was read, that it kept its
+modification time if it kept its size, and that a second read of the same bytes is
+identical (``_Read``). Otherwise nothing from that file is shown: ``nt_tail``
+withholds every field, ``nt_search`` and ``nt_errors`` drop the file's matches,
+each with a note. Growth by appending passes. Residual: a writer that changes the
+read bytes and puts the same bytes back in step with both reads, leaving size and
+modification time as they were, is not detected.
+
+With ``--fields-file`` the ``export`` source is refused outright by every tool
+(``nt_list_files``, ``nt_tail``, ``nt_search``; ``nt_list_sources`` shows it as
+refused and ``nt_errors`` reads only ``log`` and ``trace``): no
+export field can be approved, so not even file names, sizes or line counts are
+served. File names, paths and headers in the other sources are masked only by
+``--redact-file``, which is why ``--fields-file`` refuses to start without it.
 
 Callers search with literal substrings only: Python's ``re`` has no time limit, so a
 caller regex could stall the server. ``nt_errors`` uses one fixed built-in pattern.
@@ -28,20 +114,22 @@ Sources (each optional except ``log`` and ``trace``, which derive from ``--nt-ro
     log      <nt-root>/log      NinjaTrader log files
     trace    <nt-root>/trace    NinjaTrader trace files
     journal  --journal-dir      the strategy instances' own journals (spec B2)
+    refusal  --refusal-dir      the instances' refusal files
     export   --export-dir       exports kept in private custody (spec B11)
 
-The files are read as UTF-8 text; UTF-16/32 and binary files are refused. No
-NinjaTrader line format is assumed.
+The files are read as UTF-8 text; UTF-16/32 and binary files are refused.
 
 Run::
 
-    python ops/nt_readonly_mcp.py --nt-root "C:\\Users\\<you>\\Documents\\NinjaTrader 8" --redact-file <private file>
+    python ops/nt_readonly_mcp.py --nt-root "C:\\Users\\<you>\\Documents\\NinjaTrader 8" --fields-file <private file> --redact-file <private file>
 """
 from __future__ import annotations
 
 import argparse
 import codecs
 import fnmatch
+import functools
+import hashlib
 import json
 import math
 import re
@@ -50,13 +138,14 @@ import sys
 import time
 import unicodedata
 from collections import deque
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Iterator
+from typing import Any, Callable, Iterable, Iterator
 
 SERVER_NAME = "nt-readonly"
-SERVER_VERSION = "0.2.0"
+SERVER_VERSION = "0.3.0"
 SUPPORTED_PROTOCOLS = ("2025-06-18", "2025-03-26", "2024-11-05")
 
 MAX_LINES = 2000
@@ -88,6 +177,10 @@ class _Omitted(str):
 
 OMITTED_LINE = _Omitted(f"[line over {MAX_LINE_BYTES} bytes omitted]")
 OMITTED_NUL_LINE = _Omitted("[line with NUL bytes omitted]")
+# Approved-field mode: a last line with no newline yet may be one a writer has not
+# finished, and a record judged on part of its text may look clear when the whole
+# is not, so it is never judged or shown (fail closed).
+OMITTED_UNFINISHED_LINE = _Omitted("[unfinished last line (no newline yet) omitted]")
 
 
 class ToolError(Exception):
@@ -116,31 +209,316 @@ class Budget:
                                  f"{MAX_CALL_SECONDS:g} s per call)")
 
 
+def _rule_lines(path: Path) -> Iterator[tuple[int, str]]:
+    """Numbered rule lines of a private config file: comments and blanks skipped."""
+    # utf-8-sig: a BOM left by an editor must not become part of the first rule.
+    text = path.read_text(encoding="utf-8-sig")
+    for number, raw in enumerate(text.splitlines(), 1):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if any(unicodedata.category(ch) == "Cf" for ch in line):
+            raise ValueError(f"line {number} contains an invisible format character")
+        yield number, line
+
+
+# --- approved fields -------------------------------------------------------------
+
+FIELD_SOURCES = ("log", "trace", "journal", "refusal", "export")
+_FIXED_FIELDS = {"log": ("timestamp", "level", "category"), "trace": ("timestamp",)}
+_KV_SOURCES = ("log", "trace")
+_JSON_SOURCES = ("journal", "refusal")
+_KV_RULE = re.compile(r"kv:([A-Za-z_][A-Za-z0-9_]*)")
+_JSON_RULE = re.compile(r"json:([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)")
+# A fixed field whose value has the wrong shape is dropped, so a line that only
+# looks like a log line cannot carry free text out through a fixed field.
+_TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:[.:,]\d{1,7})?", re.ASCII)
+_CODE = re.compile(r"[A-Za-z0-9_]{1,32}")
+# kv text that is not printable ASCII (tab allowed), or holds a backtick, gives no
+# kv at all: control characters, Unicode line breaks and non-ASCII quotation marks
+# all make it unclear where a value ends. Other kv text is read in two steps.
+# First every quoted value is cut out. A ' or " opens
+# a span only directly after Key= (a key as defined below); the span runs to the
+# next same quote, so nothing inside it is ever read as a key, and that closing
+# quote must be followed by whitespace, a delimiter or the line end. Any other quote
+# in the free text (a prose apostrophe, a quote after "Note: " or "(Note=" ...), an
+# unclosed span, a backslash inside a span, or a closing quote followed by anything
+# else (a doubled quote, "Note='it's") gives no kv field at all for that line (fail
+# closed): where a span ends is then unclear.
+# Then keys are read only in the text outside spans, where each span stands as one
+# _SPAN character: a key starts the text or follows whitespace or a delimiter
+# (, ; | &) and is directly followed by =. Its value is either a span right after
+# the = (the span's whole content) or a plain token that must end at one of those
+# delimiters or the line end; any other ending (=, /, a span ...) drops the pair.
+_SPAN = "\x00"
+_KV_TEXT = re.compile(r"[\t\x20-\x5f\x61-\x7e]*")  # printable ASCII and tab, no backtick
+_QUOTE = re.compile("['\"]")
+_SPAN_KEY = re.compile(r"(?<![^\s,;|&])[A-Za-z_][A-Za-z0-9_]*=\Z")
+_PAIR = re.compile(r"(?<![^\s,;|&])([A-Za-z_][A-Za-z0-9_]*)="
+                   r"(?:(\x00)|([A-Za-z0-9_.:+-]*))(?=[\s,;|&]|$)")
+_AFTER_SPAN = " \t,;|&"  # what may follow a closing quote (or the line end)
+# A json: path may end on a string only if it is short plain text: no JSON, no
+# quotes or braces, nothing that could hold another record.
+MAX_JSON_STRING = 128
+_JSON_STRING = re.compile(r"[A-Za-z0-9 _.:+\-/@]*")
+_MISSING: Any = object()
+
+
+def _json_value(text: str) -> Any:
+    try:
+        return json.loads(text, parse_constant=_no_constant, parse_float=_finite_float)
+    except (ValueError, RecursionError):
+        return _MISSING
+
+
+def _json_object(text: str) -> dict | None:
+    value = _json_value(text)
+    return value if isinstance(value, dict) else None
+
+
+def _spans(text: str) -> tuple[str, list[str]] | None:
+    """``text`` with each quoted span replaced by _SPAN, and the spans' contents;
+    None when its quoting is unclear (see above)."""
+    if _KV_TEXT.fullmatch(text) is None:
+        return None  # also rules out _SPAN
+    outside: list[str] = []
+    spans: list[str] = []
+    start = 0
+    while (opened := _QUOTE.search(text, start)) is not None:
+        quote = opened.group()
+        if _SPAN_KEY.search(text, start, opened.start()) is None:
+            return None  # a quote that does not open a value: an apostrophe, prose ...
+        close = text.find(quote, opened.end())
+        if close < 0:
+            return None  # unbalanced quote
+        content = text[opened.end():close]
+        if "\\" in content:
+            return None  # escaped quote: where the span ends is unclear
+        if close + 1 < len(text) and text[close + 1] not in _AFTER_SPAN:
+            return None  # doubled quote, or a quote inside the value ('it's)
+        outside.append(text[start:opened.start()] + _SPAN)
+        spans.append(content)
+        start = close + 1
+    outside.append(text[start:])
+    return "".join(outside), spans
+
+
+def _kv_pairs(free: str) -> dict[str, list[str]]:
+    """Key -> values of the pairs in a line's free text; {} when its quoting is unclear.
+
+    Only values that pass ``_plain_string`` are kept.
+    """
+    parsed = _spans(free)
+    if parsed is None:
+        return {}
+    text, spans = parsed
+    pairs: dict[str, list[str]] = {}
+    for match in _PAIR.finditer(text):
+        if match.group(2) is not None:
+            value = spans[text.count(_SPAN, 0, match.start(2))]
+        else:
+            value = match.group(3)
+        if _plain_string(value):
+            pairs.setdefault(match.group(1), []).append(value)
+    return pairs
+
+
+# Quote state across records. A quoted value may run over several records, and
+# then the records after its opening line hold its text, not log fields. That is
+# not decidable from parity (a prose apostrophe in a value flips it), so the state
+# is only "clear" or "unknown". ' and " are quotes, and so is every other
+# quotation-like character (backtick, Pi/Pf, and characters named QUOTATION,
+# APOSTROPHE, PRIME or CORNER BRACKET). A record with no quote keeps the state; a
+# record whose quotes all form clear Key='value' spans (``_spans``, applied to the
+# whole record) keeps it too. Any other quote, and any omitted record, makes the
+# state unknown for the rest of the read (fail closed); a record read while the
+# state is unknown, or that makes it unknown, gives no field at all.
+_QUOTE_CANDIDATE = re.compile(r"[^\x00-\x21\x23-\x26\x28-\x5f\x61-\x7f]")
+_QUOTE_NAMES = ("QUOTATION", "APOSTROPHE", "PRIME", "CORNER BRACKET")
+
+
+@functools.lru_cache(maxsize=4096)
+def _quote_kind(char: str) -> str | None:
+    if char in "'\"":
+        return char
+    if char == "`" or unicodedata.category(char) in ("Pi", "Pf"):
+        return "`"
+    name = unicodedata.name(char, "")
+    return "`" if any(word in name for word in _QUOTE_NAMES) else None
+
+
+class QuoteState:
+    """Whether quoting is still clear between the records of one file, read in order."""
+
+    def __init__(self, known: bool = True) -> None:
+        self.known = known
+
+    def feed(self, record: str) -> bool:
+        """Move past one record; whether that record may give any field."""
+        if not self.known or isinstance(record, _Omitted):
+            self.known = False
+            return False
+        quoted = any(_quote_kind(match.group()) is not None
+                     for match in _QUOTE_CANDIDATE.finditer(record))
+        if quoted and _spans(record) is None:
+            self.known = False
+        return self.known
+
+
+class JsonLinesState:
+    """Whether a journal is still JSON Lines, read in order: every record so far is
+    one complete JSON object. A record that is not (a line of a pretty-printed
+    object, a blank line), or an omitted record, gives no field, and nor does any
+    later record of the file: its lines may be the inside of a multi-line record."""
+
+    def __init__(self, known: bool = True) -> None:
+        self.known = known
+
+    def feed(self, record: str) -> bool:
+        if not self.known or isinstance(record, _Omitted) or _json_object(record) is None:
+            self.known = False
+        return self.known
+
+
+# Sources whose records are gated by a per-file state read from the file's start.
+_GATED_SOURCES = (*_KV_SOURCES, "journal")
+
+
+def _record_state(source: str) -> QuoteState | JsonLinesState:
+    return JsonLinesState() if source == "journal" else QuoteState()
+
+
+def _withheld_note(source: str) -> str:
+    if source == "journal":
+        return ("fields withheld from the first record that is not one complete JSON "
+                "object (or an omitted line) to the end of the file")
+    return ("fields withheld from the first record with unclear quoting "
+            "(or an omitted line) to the end of the file")
+
+
+def _plain_string(value: str) -> bool:
+    """Whether a string a json: path ends on is short plain text that may be emitted."""
+    return (len(value) <= MAX_JSON_STRING and not value.lstrip().startswith(("{", "["))
+            and _JSON_STRING.fullmatch(value) is not None)
+
+
+def _json_path(record: dict, path: str) -> Any:
+    """The scalar at a dotted path; a string holding a JSON object is decoded on the way.
+
+    A path that ends on an object or array, or on a string that is not short plain
+    text (``_plain_string``), gives nothing.
+    """
+    value: Any = record
+    for key in path.split("."):
+        if isinstance(value, str):
+            value = _json_object(value)
+        if not isinstance(value, dict) or key not in value:
+            return _MISSING
+        value = value[key]
+    if isinstance(value, (dict, list)) or (isinstance(value, str) and not _plain_string(value)):
+        return _MISSING
+    return value
+
+
+@dataclass(frozen=True)
+class Fields:
+    """The approved-field allow-list: source -> rules, in file order."""
+
+    rules: dict[str, tuple[str, ...]]
+
+    @classmethod
+    def load(cls, path: Path) -> "Fields":
+        rules: dict[str, list[str]] = {}
+        for number, line in _rule_lines(path):
+            parts = line.split()
+            if len(parts) != 2:
+                raise ValueError(f"line {number}: expected '<source> <field>'")
+            source, name = parts
+            if source not in FIELD_SOURCES:
+                raise ValueError(f"line {number}: unknown source {source!r}; "
+                                 f"expected one of {', '.join(FIELD_SOURCES)}")
+            if not (name in _FIXED_FIELDS.get(source, ())
+                    or (source in _KV_SOURCES and _KV_RULE.fullmatch(name))
+                    or (source in _JSON_SOURCES and _JSON_RULE.fullmatch(name))):
+                raise ValueError(f"line {number}: {name!r} is not a field {source} can approve")
+            if name not in rules.setdefault(source, []):
+                rules[source].append(name)
+        if not rules:
+            raise ValueError("no rules")
+        return cls({source: tuple(names) for source, names in rules.items()})
+
+    def extract(self, source: str, text: str, clear: bool = True) -> dict[str, Any]:
+        """The approved fields of one line (record), unmasked; nothing else is read out.
+
+        ``clear`` False gives no field at all: for log and trace the record's
+        quoting, or the quote state before it, is unclear (see QuoteState); for
+        journal the file is not JSON Lines up to this record (see JsonLinesState);
+        for any source the file changed while it was read (see ``_Read``).
+        """
+        names = self.rules.get(source)
+        if not names or not clear:
+            return {}
+        fixed: dict[str, str] = {}
+        free: str | None = None
+        record: dict | None = None
+        if source == "log":
+            # All three header fields must have their shape, or the record gives no
+            # field at all: a quote or a pipe inside a quoted value could otherwise
+            # shift free text into the level or category position.
+            parts = text.split("|", 3)
+            if len(parts) != 4:
+                return {}  # not a log line
+            stamp, level, category, free = (*(part.strip() for part in parts[:3]), parts[3])
+            if not (_TIMESTAMP.fullmatch(stamp) and _CODE.fullmatch(level)
+                    and _CODE.fullmatch(category)):
+                return {}
+            fixed.update(timestamp=stamp, level=level, category=category)
+        elif source == "trace":
+            stamp = _TIMESTAMP.match(text)
+            if stamp is None or not (stamp.end() == len(text) or text[stamp.end()].isspace()):
+                return {}  # no whole timestamp first: no field at all
+            fixed["timestamp"] = stamp.group()
+            free = text[stamp.end():]
+        elif source in _JSON_SOURCES:
+            record = _json_object(text)
+        pairs = _kv_pairs(free) if free is not None else {}
+        out: dict[str, Any] = {}
+        for name in names:
+            if name in fixed:
+                out[name] = fixed[name]
+            elif name.startswith("kv:") and name[3:] in pairs:
+                values = pairs[name[3:]]
+                out[name] = values[0] if len(values) == 1 else values
+            elif name.startswith("json:") and record is not None:
+                value = _json_path(record, name[5:])
+                if value is not _MISSING:
+                    out[name] = value
+        return out
+
+
 @dataclass
 class Config:
     sources: dict[str, Path]
     redactions: list[re.Pattern[str]] = field(default_factory=list)
+    # None serves whole lines; main() allows that only with --allow-unredacted.
+    fields: Fields | None = None
 
     @classmethod
     def build(cls, nt_root: Path, journal_dir: Path | None = None,
-              export_dir: Path | None = None, redact_file: Path | None = None) -> "Config":
+              export_dir: Path | None = None, redact_file: Path | None = None,
+              fields_file: Path | None = None, refusal_dir: Path | None = None) -> "Config":
         sources = {"log": nt_root / "log", "trace": nt_root / "trace"}
         if journal_dir is not None:
             sources["journal"] = journal_dir
+        if refusal_dir is not None:
+            sources["refusal"] = refusal_dir
         if export_dir is not None:
             sources["export"] = export_dir
         redactions: list[re.Pattern[str]] = []
         if redact_file is not None:
-            # utf-8-sig: a BOM left by an editor must not become part of the first pattern.
-            text = redact_file.read_text(encoding="utf-8-sig")
-            for number, raw in enumerate(text.splitlines(), 1):
-                line = raw.strip()
-                if not line or line.startswith("#"):
-                    continue
-                if any(unicodedata.category(ch) == "Cf" for ch in line):
-                    raise ValueError(f"line {number} contains an invisible format character")
-                redactions.append(re.compile(line))
-        return cls({name: path.resolve() for name, path in sources.items()}, redactions)
+            redactions = [re.compile(line) for _, line in _rule_lines(redact_file)]
+        fields = Fields.load(fields_file) if fields_file is not None else None
+        return cls({name: path.resolve() for name, path in sources.items()}, redactions, fields)
 
     def redact(self, text: str) -> str:
         for pattern in self.redactions:
@@ -158,9 +536,15 @@ class Entry:
     size: int
 
 
+EXPORT_REFUSED = ("source 'export' is refused in approved-field mode: no export field can be "
+                  "approved, so not even its file names, sizes or line counts are served")
+
+
 def _source_dir(config: Config, source: str) -> Path:
     if source not in config.sources:
         raise ToolError(f"unknown or unconfigured source {source!r}; configured: {sorted(config.sources)}")
+    if config.fields is not None and source == "export":
+        raise ToolError(EXPORT_REFUSED)
     directory = config.sources[source]
     if not directory.is_dir():
         raise ToolError(f"source {source!r} directory does not exist: {directory}")
@@ -262,9 +646,12 @@ def _check_text(head: bytes) -> None:
         raise FileRefused("not UTF-8 text (UTF-16/32 byte-order mark or NUL bytes); refused")
 
 
-def _blocks(handle: Any, budget: Budget) -> Iterator[bytes]:
-    """The file's blocks up to its size at open; the first block is checked as text."""
+def _blocks(handle: Any, budget: Budget, limit: int | None = None) -> Iterator[bytes]:
+    """The file's blocks up to its size at open (at most ``limit`` bytes); the first
+    block is checked as text."""
     remaining = handle.seek(0, 2)
+    if limit is not None:
+        remaining = min(remaining, limit)
     handle.seek(0)
     first = True
     while remaining > 0:
@@ -279,62 +666,175 @@ def _blocks(handle: Any, budget: Budget) -> Iterator[bytes]:
         yield block
 
 
-def _split_piece(raw: bytes, first: bool, last: bool) -> list[str]:
+class _Read:
+    """One read of a file from its start, up to its size at open, that can tell
+    afterwards whether the file changed while it was read.
+
+    A writer that rewrites part of the file during one forward read gives a torn
+    view: an old prefix followed by a new suffix, whose records may sit inside a
+    quoted span the unseen new prefix opens. So in approved-field mode nothing a
+    read gives is shown unless ``unchanged()`` holds afterwards: the path still
+    names the same file (device and inode or file index), the file has not shrunk
+    below what was read, it kept its modification time if it kept its size, and a
+    second read of the same range is byte-identical (SHA-256). Growth by appending
+    (NinjaTrader's live log) passes. Residual: a writer that changes the read
+    range and puts the same bytes back in step with both reads, leaving size and
+    modification time as they were, is not detected.
+    """
+
+    def __init__(self, path: Path, handle: Any, budget: Budget, before: Any) -> None:
+        self.path, self.handle, self.budget, self.before = path, handle, budget, before
+        self.digest = hashlib.sha256()
+        self.size = 0
+
+    def blocks(self) -> Iterator[bytes]:
+        for block in _blocks(self.handle, self.budget):
+            self.digest.update(block)
+            self.size += len(block)
+            yield block
+
+    def unchanged(self) -> bool:
+        after = self.path.stat()
+        before = self.before
+        if ((after.st_dev, after.st_ino) != (before.st_dev, before.st_ino)
+                or after.st_size < self.size
+                or (after.st_size == before.st_size
+                    and after.st_mtime_ns != before.st_mtime_ns)):
+            return False
+        again = hashlib.sha256()
+        size = 0
+        for block in _blocks(self.handle, self.budget, self.size):
+            again.update(block)
+            size += len(block)
+        return size == self.size and again.digest() == self.digest.digest()
+
+
+@contextmanager
+def _open_read(path: Path, budget: Budget) -> Iterator[_Read]:
+    before = path.stat()  # taken before open, so a file swapped in between is caught
+    with open(path, "rb") as handle:
+        yield _Read(path, handle, budget, before)
+
+
+CHANGED_NOTE = ("all fields withheld: the file changed while it was read "
+                "(only growth by appending is allowed); try again")
+
+
+def _split_piece(raw: bytes, first: bool, last: bool, records: bool = False) -> list[str]:
     """Raw lines of one piece between newlines.
 
     Gives the same lines ``str.splitlines`` gives for the whole file (CRLF, lone CR and
     the other Unicode breaks included). ``last`` marks a final piece with no newline.
+    With ``records`` (approved-field mode) the piece is one record: one trailing CR
+    is stripped and every other break character stays inside the record, and a
+    final piece with no newline comes back as OMITTED_UNFINISHED_LINE.
     A piece holding a NUL byte comes back as OMITTED_NUL_LINE.
     """
+    if records and last:
+        return [OMITTED_UNFINISHED_LINE]
     if b"\x00" in raw:
         return [OMITTED_NUL_LINE]
     text = raw.decode("utf-8-sig" if first else "utf-8", errors="replace")
+    if records:
+        return [text.removesuffix("\r")]
     return text.splitlines() if last else (text + "\n").splitlines()
 
 
-def _present(line: str, redact: Callable[[str], str]) -> str:
-    """What may leave the server for one raw line: masked whole, then cut."""
+def _mask_value(value: Any, redact: Callable[[str], str]) -> Any:
+    """One emitted field value, masked; a scalar the mask touches becomes masked text."""
+    if isinstance(value, list):
+        return [_mask_value(item, redact) for item in value]
+    if isinstance(value, str):
+        return redact(value)[:MAX_LINE_CHARS]
+    text = json.dumps(value)
+    masked = redact(text)
+    return value if masked == text else masked[:MAX_LINE_CHARS]
+
+
+def _match_texts(value: Any) -> list[str]:
+    if isinstance(value, list):
+        return [text for item in value for text in _match_texts(item)]
+    return [value if isinstance(value, str) else json.dumps(value)]
+
+
+def _present(config: Config, source: str, line: str,
+             clear: bool = True) -> tuple[str, list[str]] | None:
+    """What may leave the server for one raw line (record), and the texts a search
+    may match: the same masked text that is output. None: no approved field.
+    ``clear`` False withholds every field of a log or trace record (see QuoteState)."""
     if isinstance(line, _Omitted):
-        return line
-    return redact(line)[:MAX_LINE_CHARS]
+        return line, []
+    if config.fields is None:
+        shown = config.redact(line)[:MAX_LINE_CHARS]
+        return shown, [shown]
+    picked = {name: _mask_value(value, config.redact)
+              for name, value in config.fields.extract(source, line, clear).items()}
+    if not picked:
+        return None
+    texts = [text for value in picked.values() for text in _match_texts(value)]
+    return json.dumps(picked, ensure_ascii=False, separators=(",", ":")), texts
 
 
-def _iter_lines(path: Path, budget: Budget) -> Iterator[str]:
-    """Stream a file's raw lines; a line over MAX_LINE_BYTES comes as OMITTED_LINE.
+def _whole_file(blocks: Iterable[bytes]) -> list[str]:
+    """A file read as one record (a refusal file); over MAX_LINE_BYTES it is omitted."""
+    kept = bytearray()
+    for block in blocks:
+        if len(kept) + len(block) > MAX_LINE_BYTES:
+            return [OMITTED_LINE]
+        kept += block
+    if not kept:
+        return []
+    if b"\x00" in kept:
+        return [OMITTED_NUL_LINE]
+    return [bytes(kept).decode("utf-8-sig", errors="replace")]
 
-    Callers pass every line through ``_present`` before matching or output.
+
+def _records(config: Config, source: str, reader: _Read) -> Iterator[str]:
+    """A file's raw units: lines, or the whole file for a refusal in approved-field mode."""
+    if config.fields is not None and source == "refusal":
+        yield from _whole_file(reader.blocks())
+    else:
+        yield from _iter_blocks(reader.blocks(), records=config.fields is not None)
+
+
+def _iter_blocks(blocks: Iterable[bytes], records: bool = False) -> Iterator[str]:
+    """Stream the raw lines of a file's blocks, read from its start; a line over
+    MAX_LINE_BYTES comes as OMITTED_LINE.
+
+    ``records`` splits on newlines only and omits an unfinished last line (see
+    ``_split_piece``). Callers pass every line through ``_present`` before matching
+    or output.
     """
-    with open(path, "rb") as handle:
-        kept = bytearray()
-        oversized = False
-        first = True
-        for block in _blocks(handle, budget):
-            start = 0
-            while True:
-                newline = block.find(b"\n", start)
-                stop = len(block) if newline < 0 else newline
-                room = MAX_LINE_BYTES - len(kept)
-                if stop - start > room:
-                    oversized = True
-                elif not oversized:
-                    kept += block[start:stop]
-                if newline < 0:
-                    break
-                if oversized:
-                    yield OMITTED_LINE
-                else:
-                    yield from _split_piece(bytes(kept), first, False)
-                kept.clear()
-                oversized = False
-                first = False
-                start = newline + 1
-        if oversized:
-            yield OMITTED_LINE
-        elif kept:
-            yield from _split_piece(bytes(kept), first, True)
+    kept = bytearray()
+    oversized = False
+    first = True
+    for block in blocks:
+        start = 0
+        while True:
+            newline = block.find(b"\n", start)
+            stop = len(block) if newline < 0 else newline
+            room = MAX_LINE_BYTES - len(kept)
+            if stop - start > room:
+                oversized = True
+            elif not oversized:
+                kept += block[start:stop]
+            if newline < 0:
+                break
+            if oversized:
+                yield OMITTED_LINE
+            else:
+                yield from _split_piece(bytes(kept), first, False, records)
+            kept.clear()
+            oversized = False
+            first = False
+            start = newline + 1
+    if oversized:
+        yield OMITTED_LINE
+    elif kept:
+        yield from _split_piece(bytes(kept), first, True, records)
 
 
-def _tail_lines(path: Path, count: int, budget: Budget) -> list[str]:
+def _tail_lines(path: Path, count: int, budget: Budget, records: bool = False) -> list[str]:
     """The last ``count`` raw lines, found by reading backwards from the end in blocks."""
     with open(path, "rb") as handle:
         end = handle.seek(0, 2)
@@ -374,8 +874,35 @@ def _tail_lines(path: Path, count: int, budget: Budget) -> list[str]:
             handle.seek(start)
             piece = handle.read(stop - start)
             budget.charge(len(piece))
-            lines.extend(_split_piece(piece, start == 0, stop == end))
+            # stop == end: a last line with no newline (unfinished; omitted as a record)
+            lines.extend(_split_piece(piece, start == 0, stop == end, records))
     return lines[-count:]
+
+
+def _tail_gated(path: Path, count: int, budget: Budget, state: QuoteState | JsonLinesState
+                ) -> tuple[list[tuple[str, bool]], bool, bool] | None:
+    """The last ``count`` records of a gated source, each with whether it may give a
+    field; whether the state was still known where the window starts; and whether
+    the file stayed unchanged while it was read (``_Read.unchanged``).
+
+    The state and the window come from one forward read of the file from its start
+    (up to its size at open), so a record is judged by the bytes read before it.
+    That read is a consistent view only if the file did not change under it, which
+    is checked afterwards; the caller withholds every field if it did. None: the
+    file does not fit in the read budget (it is read twice), so the window cannot
+    be judged.
+    """
+    window: deque[tuple[str, bool, bool]] = deque(maxlen=count)
+    with _open_read(path, budget) as reader:
+        if 2 * reader.handle.seek(0, 2) > budget.left:
+            return None
+        for record in _iter_blocks(reader.blocks(), records=True):
+            known_before = state.known
+            window.append((record, state.feed(record), known_before))
+        unchanged = reader.unchanged()
+    if not window:
+        return [], True, unchanged
+    return [(record, clear) for record, clear, _ in window], window[0][2], unchanged
 
 
 _REQUIRED: Any = object()
@@ -426,6 +953,8 @@ def tool_list_sources(config: Config, arguments: dict) -> str:
     rows = []
     for name, directory in sorted(config.sources.items()):
         state = "ok" if directory.is_dir() else "missing"
+        if config.fields is not None and name == "export":
+            state = "refused in approved-field mode"
         rows.append(config.redact(f"{name}\t{state}\t{directory}"))
     return "\n".join(rows)
 
@@ -450,9 +979,51 @@ def tool_tail(config: Config, arguments: dict) -> str:
     notes: list[str] = []
     entry = _resolve_file(config, source, _str(arguments, "file", None), notes)
     count = _int(arguments, "lines", 200, 1, MAX_LINES)
-    tail = [_present(line, config.redact) for line in _tail_lines(entry.path, count, Budget())]
-    header = f"{entry.name}: last {len(tail)} line(s)"
-    return "\n".join([header, *tail])
+    budget = Budget()
+    notes: list[str] = []
+    unit = "line"
+    if config.fields is not None and source == "refusal":
+        with _open_read(entry.path, budget) as reader:
+            raw, unit = _whole_file(reader.blocks()), "record"
+            unchanged = reader.unchanged()
+        if not unchanged:
+            raw = []  # not even the torn view's record count is shown
+            notes.append(CHANGED_NOTE)
+        clear = [True] * len(raw)
+    elif config.fields is not None and source in _GATED_SOURCES:
+        state = _record_state(source)
+        judged = _tail_gated(entry.path, count, budget, state)
+        unchanged = True
+        if judged is None:
+            # Too big to judge from its start: the window is read, every field withheld.
+            raw = _tail_lines(entry.path, count, budget, records=True)
+            clear = [False] * len(raw)
+            known_before = False
+        else:
+            unchanged = judged[2]
+            # A torn view gives nothing, not even its record count.
+            kept = judged[0] if unchanged else []
+            raw = [record for record, _ in kept]
+            clear = [ok for _, ok in kept]
+            known_before = judged[1]
+        if not unchanged:
+            notes.append(CHANGED_NOTE)
+        elif not known_before:
+            what = ("a record that is not one complete JSON object"
+                    if source == "journal" else "a record with unclear quoting")
+            notes.append("all fields withheld: the file does not fit in the read budget, "
+                         f"or the part before these lines holds an omitted line or {what}")
+        elif not state.known:
+            notes.append(_withheld_note(source))
+    else:
+        raw = _tail_lines(entry.path, count, budget, records=config.fields is not None)
+        clear = [True] * len(raw)
+    shown = [_present(config, source, line, ok) for line, ok in zip(raw, clear)]
+    tail = [item[0] for item in shown if item is not None]
+    header = f"{entry.name}: last {len(raw)} {unit}(s)"
+    if len(tail) < len(raw):
+        header += f"; {len(raw) - len(tail)} without an approved field omitted"
+    return _with_notes([header, *tail], notes)
 
 
 def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: str,
@@ -460,6 +1031,7 @@ def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: 
     out: list[str] = []
     notes: list[str] = []
     matches = 0
+    unapproved = 0
     stopped = ""
     budget = Budget()
     for source in sources:
@@ -468,40 +1040,83 @@ def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: 
             pending_after = 0
             last_printed = -1
             name = f"{source}/{entry.name}"
+            quotes = _record_state(source)  # records are read in order from the file's start
+            gated = config.fields is not None and source in _GATED_SOURCES
+            # A file's results are held until its read is known to be a consistent
+            # view (approved-field mode, see _Read), then kept whole or dropped whole.
+            # Everything a read gives (rows, counts, the max_matches stop) is per
+            # file until the read is kept: a dropped torn read must leave no trace, not
+            # even whether it held max_matches matches of the caller's literal.
+            rows: list[str] = []
+            found = 0
+            skipped = 0
+            file_stopped = ""
+            keep = False
             try:
-                # Match on the masked line, the same text that is output, so a match
-                # count cannot reveal what the mask hides.
-                for number, raw in enumerate(_iter_lines(entry.path, budget), 1):
-                    line = _present(raw, config.redact)
-                    if not isinstance(line, _Omitted) and matcher.search(line):
-                        if matches >= max_matches:
-                            stopped = f"stopped at max_matches={max_matches}"
-                            break
-                        matches += 1
-                        for ctx_number, ctx_line in before:
-                            if ctx_number > last_printed:
-                                out.append(f"{name}:{ctx_number}- {ctx_line}")
-                        out.append(f"{name}:{number}: {line}")
-                        last_printed = number
-                        pending_after = context
-                        before.clear()
-                    elif pending_after:
-                        out.append(f"{name}:{number}- {line}")
-                        last_printed = number
-                        pending_after -= 1
-                    else:
-                        before.append((number, line))
+                with _open_read(entry.path, budget) as reader:
+                    # Match on the masked approved values, the same text that is output,
+                    # so a match count cannot reveal what the mask or the allow-list hides.
+                    for number, raw in enumerate(_records(config, source, reader), 1):
+                        if file_stopped:
+                            # Approved-field mode reads the file to its end anyway, so
+                            # how much of the budget it uses does not depend on matches.
+                            continue
+                        clear = quotes.feed(raw) if gated else True
+                        shown = _present(config, source, raw, clear)
+                        if shown is None:
+                            skipped += 1
+                            continue
+                        line, texts = shown
+                        if any(matcher.search(text) for text in texts):
+                            if matches + found >= max_matches:
+                                file_stopped = f"stopped at max_matches={max_matches}"
+                                if config.fields is None:
+                                    break
+                                continue
+                            found += 1
+                            for ctx_number, ctx_line in before:
+                                if ctx_number > last_printed:
+                                    rows.append(f"{name}:{ctx_number}- {ctx_line}")
+                            rows.append(f"{name}:{number}: {line}")
+                            last_printed = number
+                            pending_after = context
+                            before.clear()
+                        elif pending_after:
+                            rows.append(f"{name}:{number}- {line}")
+                            last_printed = number
+                            pending_after -= 1
+                        else:
+                            before.append((number, line))
+                    keep = config.fields is None or reader.unchanged()
+                    if not keep:
+                        notes.append(f"nothing shown from {name}: it changed while it was "
+                                     "read (only growth by appending is allowed)")
             except BudgetExceeded as exc:
                 stopped = f"stopped: {exc}"
+                # Without approved fields a partial read is shown as before; with them,
+                # the read cannot be checked, so nothing from the file is shown.
+                keep = config.fields is None
+                if not keep:
+                    notes.append(f"nothing shown from {name}: the read budget ran out "
+                                 "before the file could be checked")
             except FileRefused as exc:
                 notes.append(f"skipped {name}: {exc}")
             except OSError as exc:
                 notes.append(f"skipped {name}: {_reason(exc)}")
+            if keep:
+                stopped = stopped or file_stopped
+                out.extend(rows)
+                matches += found
+                unapproved += skipped
+                if gated and not quotes.known:
+                    notes.append(f"{name}: {_withheld_note(source)}")
             if stopped:
                 break
         if stopped:
             break
     summary = f"{matches} match(es)" + (f"; {stopped}" if stopped else "")
+    if unapproved:
+        summary += f"; {unapproved} line(s) without an approved field skipped"
     return _with_notes([summary, *out], notes)
 
 
@@ -524,7 +1139,8 @@ def tool_errors(config: Config, arguments: dict) -> str:
                    _int(arguments, "context", 0, 0, 10))
 
 
-_SOURCE = {"type": "string", "description": "log, trace, journal or export (see nt_list_sources)"}
+_SOURCE = {"type": "string",
+           "description": "log, trace, journal, refusal or export (see nt_list_sources)"}
 _FILE = {"type": "string", "description": "Path relative to the source, as nt_list_files shows it; "
                                           "default is the newest file"}
 _GLOB = {"type": "string", "description": "Filename glob, e.g. 'log.*.txt'; default '*'"}
@@ -720,15 +1336,32 @@ class _Once(argparse.Action):
 
 
 def _load_config(parser: argparse.ArgumentParser, options: argparse.Namespace) -> Config:
-    """Fail closed: refuse to serve content unless masking was chosen explicitly."""
-    if options.redact_file is None and not options.allow_unredacted:
-        parser.error("refusing to start without masking: pass --redact-file PATH, or "
-                     "--allow-unredacted to let the agent see account data unmasked")
-    if options.redact_file is not None and not options.redact_file.is_file():
-        parser.error(f"--redact-file {options.redact_file} is not a regular file")
+    """Fail closed: refuse to serve content without an approved-field allow-list,
+    unless whole unmasked lines were chosen explicitly for directed debugging."""
+    if options.fields_file is None and not options.allow_unredacted:
+        parser.error("refusing to start without approved fields: pass --fields-file PATH "
+                     "with --redact-file PATH, or "
+                     "--allow-unredacted for debugging Joshua directs")
+    if options.fields_file is not None and options.allow_unredacted:
+        parser.error("--fields-file and --allow-unredacted are mutually exclusive")
+    for option, path in (("--fields-file", options.fields_file),
+                         ("--redact-file", options.redact_file)):
+        if path is not None and not path.is_file():
+            parser.error(f"{option} {path} is not a regular file")
+    if options.fields_file is not None:
+        try:
+            Fields.load(options.fields_file)
+        except (OSError, ValueError) as exc:
+            parser.error(f"cannot load --fields-file: {exc}; refusing to start")
+        if options.redact_file is None:
+            # The allow-list filters content only; file names, configured paths and
+            # tail/search headers are metadata that only --redact-file masks.
+            parser.error("--fields-file needs --redact-file: file names, paths and headers "
+                         "are not covered by the allow-list and are masked only by "
+                         "--redact-file; refusing to start")
     try:
         config = Config.build(options.nt_root, options.journal_dir, options.export_dir,
-                              options.redact_file)
+                              options.redact_file, options.fields_file, options.refusal_dir)
     except (OSError, ValueError, re.error) as exc:
         parser.error(f"cannot load --redact-file: {exc}")
     if options.redact_file is not None and not config.redactions:
@@ -743,15 +1376,20 @@ def main(argv: list[str] | None = None, stdin=None, stdout=None) -> int:
                         help="NinjaTrader user data folder (default ~/Documents/NinjaTrader 8)")
     parser.add_argument("--journal-dir", type=Path, action=_Once,
                         help="strategy journal directory (private custody)")
+    parser.add_argument("--refusal-dir", type=Path, action=_Once,
+                        help="strategy refusal-file directory (private custody)")
     parser.add_argument("--export-dir", type=Path, action=_Once,
                         help="export directory (private custody)")
+    parser.add_argument("--fields-file", type=Path, action=_Once,
+                        help="private allow-list of approved fields, signed off by Joshua; "
+                             "only these fields are served (required unless --allow-unredacted)")
     masking = parser.add_mutually_exclusive_group()
     masking.add_argument("--redact-file", type=Path, action=_Once,
-                         help="regexes to mask in all output, one per line (required unless "
-                              "--allow-unredacted)")
+                         help="regexes to mask in every emitted value and in file names, "
+                              "paths and headers, one per line (required with --fields-file)")
     masking.add_argument("--allow-unredacted", action="store_true",
-                         help="serve content unmasked; the agent may then see account data, "
-                              "which must never enter the repository")
+                         help="serve whole lines unmasked, for debugging Joshua directs only; "
+                              "never persist the output")
     options = parser.parse_args(argv)
     config = _load_config(parser, options)
     if stdout is None:
