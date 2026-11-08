@@ -66,9 +66,12 @@ fields; anything not on the list is dropped, never shown. Format: UTF-8 text
 With `--fields-file`, a record is the text between two `\n` newlines, with one
 trailing `\r` stripped; CR, VT, FF, `\x1c`–`\x1e`, U+0085, U+2028 and U+2029
 stay inside the record. Log lines are `timestamp|level|category|text`; trace
-lines are a timestamp, then text. A timestamp must look like
-`YYYY-MM-DD hh:mm:ss` (optional fraction), or the record gives no field at all;
-a level or category must be a short word or number, or that field is dropped.
+lines are a timestamp, then text. A log record gives no field at all (no
+fixed field and no kv) unless its timestamp looks like `YYYY-MM-DD hh:mm:ss`
+(optional fraction) and its level and category are each 1–32 letters, digits or
+`_`, so a quote or a pipe inside a quoted value can never move free text into
+the header. A trace record gives no field unless it starts with such a timestamp
+followed by whitespace or the line end.
 `kv:<Key>` takes `Key='value'`, `Key="value"` or `Key=value` pairs from the text,
 and fails closed whenever quoting is in doubt:
 
@@ -87,11 +90,11 @@ and fails closed whenever quoting is in doubt:
   and trace record from the start of the file: a record with any quotation-like
   character (not only `'` and `"`) whose quoting is not clear in the sense above,
   and any omitted line, gives no field at all (timestamp, level and category
-  included), and neither does any later record of the file. `nt_tail` scans the
-  file before its window to learn this, through the same open handle it read the
-  window from; if that scan doesn't fit in the read budget, or the file shrank
-  under the handle (truncated or rewritten in place), every record in the window
-  is withheld. A `note:` line says when
+  included), and neither does any later record of the file. `nt_tail` learns
+  this and its window from one forward read of the file from its start: each
+  byte is read once, so a record is judged by exactly the bytes read before it,
+  even if a writer rewrites the file during the read. A file larger than the
+  read budget gives no field in its window. A `note:` line says when
   fields were withheld this way. A log whose messages quote names in prose
   (`strategy 'X'`) therefore gives no fields after the first such message.
 - A quoted value is the span's whole content. An unquoted value is a plain token
@@ -117,7 +120,7 @@ Journals must be JSON Lines: one complete JSON object per line (`seq`, `prev`,
 `kind`, `body`, `hash`). A journal line that is not one (a line of a
 pretty-printed object, a blank line), or an omitted line, gives no field, and
 neither does any later line of that file, since it may be the inside of a
-multi-line record; `nt_tail` scans the file before its window for this, as for
+multi-line record; `nt_tail` reads the file from its start for this, as for
 quoting above, and a `note:` line says when fields were withheld. A refusal file
 is one JSON object (`code`, `utc`, `fields`) and is read as one record. `json:a.b` walks
 objects, decoding a string that holds a JSON object on the way, so `json:body.code`
@@ -174,8 +177,9 @@ formats.
 has no time limit and the server runs no subprocesses, so a caller regex could
 stall every tool. `nt_search` rejects a `regex` argument, and `nt_errors` uses only
 its built-in pattern and rejects a caller `pattern`. Files are read in bounded
-blocks (tails from the end, searches line by line), so memory stays bounded
-whatever the file size. A read stops at the size the file had when it was opened,
+blocks (searches, and tails in approved-field mode, line by line from the
+start; other tails from the end), so memory stays bounded whatever the file
+size. A read stops at the size the file had when it was opened,
 so a writer that keeps appending can't make it endless, and each call stops after
 256 MiB or 20 seconds of reading. String arguments are capped at 1,024
 characters, a request line at 1 MiB, and unknown argument names are refused. A

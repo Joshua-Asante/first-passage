@@ -33,7 +33,10 @@ comment line. A rule is ``<source> <field>``:
 In approved-field mode a record is the text between two ``\\n`` (one trailing
 ``\\r`` stripped); CR, VT, FF and the Unicode line breaks stay inside the record.
 Log lines are ``timestamp|level|category|text``; trace lines are a timestamp, then
-text. A record that does not start with a timestamp gives no field at all.
+text. A log record gives no field at all (no fixed field, no kv) unless its
+timestamp, level and category all have their shape (a level or category is 1-32
+letters, digits or ``_``), so no quote can sit in the header; a trace record gives
+none unless it starts with a whole timestamp followed by whitespace or its end.
 ``kv:<Key>`` takes ``Key='value'``, ``Key="value"`` or ``Key=value`` pairs from
 that text, and fails closed on any doubt about quoting:
 
@@ -49,10 +52,11 @@ that text, and fails closed on any doubt about quoting:
   ends, so every log and trace record is checked from the start of the file: a
   record with any quotation-like character whose quoting is unclear, or an
   omitted record, gives no field at all (timestamp, level and category too), and
-  nor does any later record of that file. ``nt_tail`` scans the file before its
-  window for this, through the handle it read the window from; if the scan does
-  not fit in the read budget, or the file shrank under that handle (truncated or
-  rewritten in place), the whole window gives no field;
+  nor does any later record of that file. ``nt_tail`` learns this state and its
+  window from one forward read of the file from its start: every byte is read
+  once, so a record is judged by exactly the bytes read before it, whatever a
+  writer does to the file meanwhile. A file over the read budget gives no field
+  in its window at all;
 * a value (the span's whole content, or a plain token of letters, digits and
   ``_.:+-`` that must end at whitespace, ``,``, ``;``, ``|``, ``&`` or the line
   end) is emitted only under the limits for JSON strings below.
@@ -68,8 +72,8 @@ writers never put quotes or ``Key=`` text inside other values.
 Journals must be JSON Lines: one complete JSON object per line. A journal record
 that is not one (a line of a pretty-printed object, a blank line), or an omitted
 record, gives no field, and nor does any later record of that file, since its
-lines may be the inside of a multi-line record; ``nt_tail`` scans the file before
-its window for this as for log and trace quoting. A refusal file is one JSON
+lines may be the inside of a multi-line record; ``nt_tail`` reads the file from
+its start for this, as for log and trace quoting. A refusal file is one JSON
 object, read whole.
 ``json:a.b`` walks objects, decoding a string that holds a JSON object on the way
 (``json:body.code``), and emits scalars only: numbers (finite), booleans, null, and
@@ -435,20 +439,23 @@ class Fields:
         free: str | None = None
         record: dict | None = None
         if source == "log":
+            # All three header fields must have their shape, or the record gives no
+            # field at all: a quote or a pipe inside a quoted value could otherwise
+            # shift free text into the level or category position.
             parts = text.split("|", 3)
-            if len(parts) != 4 or not _TIMESTAMP.fullmatch(parts[0].strip()):
-                return {}  # not a log line: no field at all
+            if len(parts) != 4:
+                return {}  # not a log line
             stamp, level, category, free = (*(part.strip() for part in parts[:3]), parts[3])
-            fixed["timestamp"] = stamp
-            if _CODE.fullmatch(level):
-                fixed["level"] = level
-            if _CODE.fullmatch(category):
-                fixed["category"] = category
+            if not (_TIMESTAMP.fullmatch(stamp) and _CODE.fullmatch(level)
+                    and _CODE.fullmatch(category)):
+                return {}
+            fixed.update(timestamp=stamp, level=level, category=category)
         elif source == "trace":
             stamp = _TIMESTAMP.match(text)
-            if stamp and (stamp.end() == len(text) or text[stamp.end()].isspace()):
-                fixed["timestamp"] = stamp.group()
-                free = text[stamp.end():]
+            if stamp is None or not (stamp.end() == len(text) or text[stamp.end()].isspace()):
+                return {}  # no whole timestamp first: no field at all
+            fixed["timestamp"] = stamp.group()
+            free = text[stamp.end():]
         elif source in _JSON_SOURCES:
             record = _json_object(text)
         pairs = _kv_pairs(free) if free is not None else {}
@@ -755,20 +762,12 @@ def _iter_handle(handle: Any, budget: Budget, records: bool = False,
         yield from _split_piece(bytes(kept), first, True, records)
 
 
-def _tail_lines(path: Path, count: int, budget: Budget, records: bool = False,
-                state: QuoteState | JsonLinesState | None = None) -> tuple[list[str], int]:
-    """The last ``count`` raw lines, found by reading backwards from the end in blocks,
-    and the byte offset where the first piece read starts (with ``records``, where
-    the first returned record starts).
-
-    With ``state``, the records before that offset are then fed to it, read through
-    the same handle (see ``_scan_prefix``), so the state is that of the file the
-    window came from.
-    """
+def _tail_lines(path: Path, count: int, budget: Budget, records: bool = False) -> list[str]:
+    """The last ``count`` raw lines, found by reading backwards from the end in blocks."""
     with open(path, "rb") as handle:
         end = handle.seek(0, 2)
         if end == 0:
-            return [], 0
+            return []
         handle.seek(0)
         head = handle.read(min(READ_BLOCK, end))
         budget.charge(len(head))
@@ -804,34 +803,30 @@ def _tail_lines(path: Path, count: int, budget: Budget, records: bool = False,
             piece = handle.read(stop - start)
             budget.charge(len(piece))
             lines.extend(_split_piece(piece, start == 0, stop == end, records))
-        if state is not None:
-            _scan_prefix(handle, end, starts[0], budget, state)
-    return lines[-count:], starts[0]
+    return lines[-count:]
 
 
-def _scan_prefix(handle: Any, end: int, offset: int, budget: Budget,
-                 state: QuoteState | JsonLinesState) -> None:
-    """Feed ``state`` the records before byte ``offset`` (a record start), read from
-    the start of the file through ``handle``, the one the window was read from.
+def _tail_gated(path: Path, count: int, budget: Budget,
+                state: QuoteState | JsonLinesState) -> tuple[list[tuple[str, bool]], bool] | None:
+    """The last ``count`` records of a gated source, each with whether it may give a
+    field, and whether the state was still known where the window starts.
 
-    One handle means one file: a file renamed over the path, or a rotation, between
-    the window read and this scan is never mixed in. The state becomes unknown
-    (fail closed) if the scan does not fit in the read budget or fails, or if the
-    file shrank under the handle (truncated or rewritten in place, so the bytes
-    before ``offset`` may not be the ones the window followed): it is now shorter
-    than ``end``, its size when the window was read, or the scan read short.
-    Appends alone are fine: they only add bytes after the window.
+    The state and the window come from ONE forward read of the file from its start
+    (up to its size at open): every byte is read once, so the state a record is
+    judged by is that of the very bytes read before it, whatever a writer does to
+    the file meanwhile. No region is read twice. None: the file does not fit in
+    the read budget, so the window cannot be judged.
     """
-    try:
-        for record in _iter_handle(handle, budget, records=True, limit=offset):
-            state.feed(record)
-        scanned = handle.tell()
-        size = handle.seek(0, 2)
-    except (BudgetExceeded, FileRefused, OSError):
-        state.known = False
-        return
-    if size < end or scanned != offset:
-        state.known = False
+    window: deque[tuple[str, bool, bool]] = deque(maxlen=count)
+    with open(path, "rb") as handle:
+        if handle.seek(0, 2) > budget.left:
+            return None
+        for record in _iter_handle(handle, budget, records=True):
+            known_before = state.known
+            window.append((record, state.feed(record), known_before))
+    if not window:
+        return [], True
+    return [(record, clear) for record, clear, _ in window], window[0][2]
 
 
 _REQUIRED: Any = object()
@@ -910,28 +905,32 @@ def tool_tail(config: Config, arguments: dict) -> str:
     count = _int(arguments, "lines", 200, 1, MAX_LINES)
     budget = Budget()
     notes: list[str] = []
+    unit = "line"
     if config.fields is not None and source == "refusal":
         raw, unit = _whole_file(entry.path, budget), "record"
         clear = [True] * len(raw)
+    elif config.fields is not None and source in _GATED_SOURCES:
+        state = _record_state(source)
+        judged = _tail_gated(entry.path, count, budget, state)
+        if judged is None:
+            # Too big to judge from its start: the window is read, every field withheld.
+            raw = _tail_lines(entry.path, count, budget, records=True)
+            clear = [False] * len(raw)
+            known_before = False
+        else:
+            raw = [record for record, _ in judged[0]]
+            clear = [ok for _, ok in judged[0]]
+            known_before = judged[1]
+        if not known_before:
+            what = ("a record that is not one complete JSON object"
+                    if source == "journal" else "a record with unclear quoting")
+            notes.append("all fields withheld: the file does not fit in the read budget, "
+                         f"or the part before these lines holds an omitted line or {what}")
+        elif not state.known:
+            notes.append(_withheld_note(source))
     else:
-        gated = config.fields is not None and source in _GATED_SOURCES
-        # Fields need the record state where the window starts: the file before the
-        # window is scanned for it, through the handle the window was read from.
-        state = _record_state(source) if gated else None
-        raw, _ = _tail_lines(entry.path, count, budget, records=config.fields is not None,
-                             state=state)
-        unit = "line"
+        raw = _tail_lines(entry.path, count, budget, records=config.fields is not None)
         clear = [True] * len(raw)
-        if state is not None:
-            if not state.known:
-                what = ("a record that is not one complete JSON object"
-                        if source == "journal" else "a record with unclear quoting")
-                notes.append("all fields withheld: the file before these lines could not be "
-                             "scanned within the read budget, changed while it was read, or "
-                             f"holds an omitted line or {what}")
-            clear = [state.feed(line) for line in raw]
-            if not state.known and not notes:
-                notes.append(_withheld_note(source))
     shown = [_present(config, source, line, ok) for line, ok in zip(raw, clear)]
     tail = [item[0] for item in shown if item is not None]
     header = f"{entry.name}: last {len(raw)} {unit}(s)"

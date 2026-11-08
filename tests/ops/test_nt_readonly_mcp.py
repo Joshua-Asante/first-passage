@@ -361,9 +361,9 @@ def _fields(tmp_path, text="log kv:Note\n"):
 # fields to the end of the file, in the window or before it.
 UNCLEAR_IN_WINDOW = ("note: fields withheld from the first record with unclear quoting "
                      "(or an omitted line) to the end of the file")
-UNCLEAR_BEFORE_WINDOW = ("note: all fields withheld: the file before these lines could not be "
-                         "scanned within the read budget, changed while it was read, or holds "
-                         "an omitted line or a record with unclear quoting")
+UNCLEAR_BEFORE_WINDOW = ("note: all fields withheld: the file does not fit in the read budget, "
+                         "or the part before these lines holds an omitted line or a record "
+                         "with unclear quoting")
 
 
 def test_startup_refused_without_masking_choice(tmp_path, capsys):
@@ -939,17 +939,52 @@ def test_journal_lines_before_a_non_json_line_still_give_fields(tmp_path):
     assert "MARKER" not in text and "AFTER" not in text
 
 
-# --- nt_tail: the scan before the window reads the same file as the window ---------
+# --- nt_tail: the record state and the window come from one forward read -----------
 
 TOCTOU_STAMP = "2026-11-08 10:00:00:000"
 
 
-@pytest.mark.parametrize("when", ["after_window_read", "at_prefix_scan"])
+class _ChangeAfterReads:
+    """A file handle that runs ``change`` once, right after the module's Nth read()
+    on any handle (counted across handles)."""
+
+    def __init__(self, handle, counter):
+        self._handle = handle
+        self._counter = counter
+
+    def read(self, size=-1):
+        data = self._handle.read(size)
+        self._counter["reads"] += 1
+        if self._counter["reads"] == self._counter["after"]:
+            self._counter["change"]()
+            self._counter["done"] = True
+        return data
+
+    def __getattr__(self, name):
+        return getattr(self._handle, name)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self._handle.close()
+
+
+def _change_after_reads(monkeypatch, after, change):
+    counter = {"reads": 0, "after": after, "change": change, "done": False}
+    real_open = open
+    monkeypatch.setattr(server, "open",
+                        lambda *a, **k: _ChangeAfterReads(real_open(*a, **k), counter),
+                        raising=False)
+    return counter
+
+
+@pytest.mark.parametrize("after", range(1, 9))
 @pytest.mark.parametrize("swap", ["rewrite_in_place", "rename_over"])
-def test_tail_prefix_scan_is_not_fooled_by_a_file_swap(tmp_path, monkeypatch, swap, when):
-    # The window's record sits inside a quoted span opened before the window. If the
-    # file is swapped for one with a clear prefix after the window is read (before
-    # or as the prefix is scanned), the record must still not pass as clear.
+def test_tail_is_not_fooled_by_a_file_swap(tmp_path, monkeypatch, swap, after):
+    # The window's record sits inside a quoted span opened at the file's start. If
+    # the file is swapped for one with a clear prefix after any read, the record
+    # must still not pass as clear.
     root = tmp_path / "NinjaTrader 8"
     (root / "log").mkdir(parents=True)
     (root / "trace").mkdir()
@@ -957,10 +992,8 @@ def test_tail_prefix_scan_is_not_fooled_by_a_file_swap(tmp_path, monkeypatch, sw
     path.write_text(f"{TOCTOU_STAMP}|I|C|Note='open\n{TOCTOU_STAMP}|I|C|Price=MARKER\n"
                     f"{TOCTOU_STAMP}|I|C|end'\n", encoding="utf-8")
     config = server.Config.build(root, fields_file=_fields(tmp_path, "log kv:Price\n"))
-    swapped = []
 
     def swap_file():
-        swapped.append(True)
         clean = f"{TOCTOU_STAMP}|I|C|plain lineXX\n"
         if swap == "rewrite_in_place":
             path.write_text(clean, encoding="utf-8")
@@ -969,27 +1002,69 @@ def test_tail_prefix_scan_is_not_fooled_by_a_file_swap(tmp_path, monkeypatch, sw
             other.write_text(clean, encoding="utf-8")
             os.replace(other, path)
 
-    if when == "after_window_read":
-        original_tail = server._tail_lines
-
-        def tail_lines(*args, **kwargs):
-            result = original_tail(*args, **kwargs)
-            swap_file()
-            return result
-
-        monkeypatch.setattr(server, "_tail_lines", tail_lines)
-    else:
-        original_blocks = server._blocks
-
-        def blocks(handle, budget, limit=None):
-            if limit is not None and not swapped:  # the prefix scan: swap the file first
-                swap_file()
-            return original_blocks(handle, budget, limit)
-
-        monkeypatch.setattr(server, "_blocks", blocks)
+    _change_after_reads(monkeypatch, after, swap_file)
     text, error = call(config, "nt_tail", source="log", lines=2)
-    assert swapped and not error
-    assert "MARKER" not in text and "note: all fields withheld" in text
+    assert not error
+    assert "MARKER" not in text and "kv:Price" not in text, text
+
+
+# Codex review of fd55d3da, P1: a same-size in-place rewrite of the prefix (Note='open
+# becomes Note=xopen) between the window read and a second read of the prefix made a
+# record inside the open Note span pass as clear. The file is over one read block, so
+# the rewrite can land between any two reads.
+SAME_SIZE_PRIVATE = "SYNTHETIC_PRIVATE_failed"  # "failed": nt_errors would match it
+SAME_SIZE_LOG = (f"{TOCTOU_STAMP}|I|C|Note='open\n"
+                 + f"{TOCTOU_STAMP}|I|C|Pad=x\n" * 40
+                 + f"{TOCTOU_STAMP}|I|C|Status={SAME_SIZE_PRIVATE}\n" * 4)
+
+
+def _same_size_rewrite_call(tmp_path, monkeypatch, after, name, arguments):
+    monkeypatch.setattr(server, "READ_BLOCK", 256)
+    root = tmp_path / "NinjaTrader 8"
+    (root / "log").mkdir(parents=True, exist_ok=True)
+    (root / "trace").mkdir(exist_ok=True)
+    path = root / "log" / "a.txt"
+    path.write_text(SAME_SIZE_LOG, encoding="utf-8")
+    config = server.Config.build(root, fields_file=_fields(
+        tmp_path, "log timestamp\nlog kv:Status\nlog kv:Pad\n"))
+
+    def rewrite():
+        raw = path.read_bytes()
+        changed = raw.replace(b"Note='open", b"Note=xopen", 1)
+        assert len(changed) == len(raw) and changed != raw
+        with open(path, "r+b") as handle:  # in place, same size
+            handle.write(changed)
+
+    counter = _change_after_reads(monkeypatch, after, rewrite)
+    text, error = call(config, name, **arguments)
+    return text, error, counter["done"]
+
+
+@pytest.mark.parametrize("after", range(1, 13))
+@pytest.mark.parametrize("name, arguments", [
+    *(("nt_tail", {"source": "log", "lines": lines}) for lines in (1, 2, 3, 4)),
+    ("nt_search", {"source": "log", "pattern": ""}),
+    ("nt_search", {"source": "log", "pattern": "SYNTHETIC"}),
+    ("nt_errors", {}),
+])
+def test_same_size_rewrite_never_reveals_a_record_inside_a_span(tmp_path, monkeypatch, after,
+                                                                name, arguments):
+    text, error, rewritten = _same_size_rewrite_call(tmp_path, monkeypatch, after, name,
+                                                     arguments)
+    assert not error, text
+    assert "SYNTHETIC_PRIVATE" not in text and "kv:Status" not in text, text
+    if name == "nt_tail" and after <= 2:
+        assert rewritten  # the read reaches past the rewrite
+
+
+def test_one_forward_read_still_gives_fields_on_a_clear_file(tmp_path, monkeypatch):
+    monkeypatch.setattr(server, "READ_BLOCK", 256)
+    root = _write_log(tmp_path, SAME_SIZE_LOG.replace("Note='open", "Note=xopen", 1))
+    config = server.Config.build(root, fields_file=_fields(tmp_path, "log kv:Status\n"))
+    text, error = call(config, "nt_tail", source="log", lines=2)
+    assert not error
+    row = json.dumps({"kv:Status": SAME_SIZE_PRIVATE}, separators=(",", ":"))
+    assert text.splitlines() == ["log.txt: last 2 line(s)", row, row]
 
 
 def test_refusal_file_is_one_record(approved):
@@ -1531,3 +1606,76 @@ def test_clear_quoting_still_gives_fields_across_records(tmp_path):
         "log.txt: last 2 line(s)",
         '{"timestamp":"2026-01-01 00:00:00","level":"Info","category":"Cat","kv:Price":"1"}',
         '{"timestamp":"2026-01-01 00:00:01","level":"Warn","category":"Cat2","kv:Price":"2"}']
+
+
+# --- Codex review of fd55d3da, P1: header delimiters inside quoted values ------------
+
+H_TS = "2026-11-08 10:00:00"
+HEADER_LEAKS = [
+    # The reviewer's row: with only `log category` approved, the invalid level was
+    # dropped and the quoted value's middle came out as the category.
+    ("log", f"{H_TS}|Note='ignored|PRIVATE_FAILED|end'"),
+    # A quote in the level or category position.
+    ("log", f"{H_TS}|'x|PRIVATE_FAILED|y'"),
+    ("log", f"{H_TS}|PRIVATE_FAILED|'x|y'"),
+    ("log", f"{H_TS}|INFO|Cat'|PRIVATE_FAILED'"),
+    ("log", f"{H_TS}|PRIVATE_FAILED|Cat x|y"),
+    # A quote in the timestamp position.
+    ("log", f"'{H_TS}|PRIVATE_FAILED|PRIVATE_FAILED|x'"),
+    ("log", f"{H_TS}'|PRIVATE_FAILED|PRIVATE_FAILED|x'"),
+    ("log", f"Note='{H_TS}|PRIVATE_FAILED|PRIVATE_FAILED|x'"),
+    # Extra pipes inside a quoted kv value.
+    ("log", f"{H_TS}|INFO|Cat|Note='a|Status=PRIVATE_FAILED|b'"),
+    ("log", f"{H_TS}|INFO|Cat|Note=\"x|y|z\" Other='Status=PRIVATE_FAILED|q'"),
+    ("log", f"{H_TS}|INFO|Cat|Note='|PRIVATE_FAILED|PRIVATE_FAILED|' Status=ok"),
+    # Trace: the timestamp must come whole, first.
+    ("trace", f"'{H_TS}' Status=PRIVATE_FAILED"),
+    ("trace", f"{H_TS}'x Status=PRIVATE_FAILED'"),
+    ("trace", f"{H_TS}|Status=PRIVATE_FAILED"),
+    ("trace", f"Note='{H_TS} Status=PRIVATE_FAILED'"),
+]
+HEADER_FIELD_SETS = [
+    "log category\n",
+    "log level\n",
+    "log timestamp\nlog level\nlog category\nlog kv:Status\nlog kv:Note\n"
+    "trace timestamp\ntrace kv:Status\ntrace kv:Note\n",
+]
+
+
+@pytest.mark.parametrize("fields", HEADER_FIELD_SETS)
+@pytest.mark.parametrize("source, line", HEADER_LEAKS)
+def test_header_delimiters_inside_quotes_never_leak(tmp_path, source, line, fields):
+    root = _write_log(tmp_path, "")
+    (root / source / f"{source}.txt").write_text(line + "\n", encoding="utf-8")
+    if "trace" not in fields and source == "trace":
+        fields += "trace timestamp\n"
+    config = server.Config.build(root, fields_file=_fields(tmp_path, fields))
+    outputs = [("nt_errors", *call(config, "nt_errors"))]
+    for lines in (1, 2):
+        outputs.append(("nt_tail", *call(config, "nt_tail", source=source, lines=lines)))
+    for pattern in ("", "PRIVATE", "FAILED", "Status"):
+        outputs.append(("nt_search", *call(config, "nt_search", source=source,
+                                           pattern=pattern, context=2)))
+    for name, text, error in outputs:
+        assert not error, (name, text)
+        assert "PRIVATE" not in text, (name, text)
+    assert outputs[0][1].splitlines()[0].startswith("0 match(es)")
+
+
+@pytest.mark.parametrize("line", [
+    f"{H_TS}|Bad Level|Cat|Status=ok",
+    f"{H_TS}|INFO|Bad Cat|Status=ok",
+    f"{H_TS}||Cat|Status=ok",
+    f"{H_TS}|INFO||Status=ok",
+    f"{H_TS} x|INFO|Cat|Status=ok",
+])
+def test_log_record_with_a_bad_header_field_gives_no_field(tmp_path, line):
+    # No fixed field and no kv: the record is not a log line.
+    root = _write_log(tmp_path, f"{H_TS}|INFO|Cat|Status=ok\n{line}\n")
+    config = server.Config.build(root, fields_file=_fields(
+        tmp_path, "log timestamp\nlog level\nlog category\nlog kv:Status\n"))
+    text, error = call(config, "nt_tail", source="log")
+    assert not error
+    assert text.splitlines() == [
+        "log.txt: last 2 line(s); 1 without an approved field omitted",
+        '{"timestamp":"2026-11-08 10:00:00","level":"INFO","category":"Cat","kv:Status":"ok"}']
