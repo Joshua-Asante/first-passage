@@ -96,5 +96,5 @@ claude mcp add nt-readonly --scope local -- python -I ops/nt_readonly_mcp.py --n
 
 Run that from the checkout root, or give the script's absolute path. Local scope
 also reaches this repo's worktrees under `.claude/worktrees/`, so sessions there
-get the server too. Any Python 3.12+ works; the server needs no packages. Tests:
+get the server too. Any Python 3.11+ works; the server needs no packages. Tests:
 `tests/ops/test_nt_readonly_mcp.py`.

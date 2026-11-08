@@ -5,7 +5,8 @@ disk, instead of screenshotting the Log tab or the Output window. It runs outsid
 NinjaTrader and never talks to it:
 
 * no sockets, HTTP, ATI, AddOn or subprocess; it only opens files for reading;
-* every path is confined to a configured source directory; symlinks, junctions and
+* every path is confined to a configured source directory; the walk lists entries
+  with lstat, and symlinks, junctions and
   other name-surrogate reparse points are never followed;
 * it places, changes and cancels nothing, so AGENTS.md money controls 1 and 3 and
   spec check B1 (no network calls, ATI, add-ons) are untouched.
@@ -186,25 +187,27 @@ def _walk(config: Config, source: str, notes: list[str]) -> list[Entry]:
     entries: list[Entry] = []
     seen: set[Path] = set()
     visited = 0
-    for root, dirs, names in directory.walk(follow_symlinks=False):
-        kept = []
-        for name in sorted(dirs):
-            try:
-                if not _is_link((root / name).lstat()):
-                    kept.append(name)
-            except OSError:
-                pass
-        dirs[:] = kept
-        for name in sorted(names):
+    pending = [directory]
+    while pending:
+        try:
+            children = sorted(pending.pop().iterdir())
+        except OSError:
+            continue
+        subdirs = []
+        for path in children:
             visited += 1
             if visited > MAX_WALK_ENTRIES:
                 notes.append(f"listing stopped after {MAX_WALK_ENTRIES} entries in {source}")
                 return entries
-            path = root / name
             shown = config.redact(path.relative_to(directory).as_posix())
             try:
-                info = path.lstat()
-                if _is_link(info) or not stat.S_ISREG(info.st_mode):
+                info = path.lstat()  # never follows a link
+                if _is_link(info):
+                    continue
+                if stat.S_ISDIR(info.st_mode):
+                    subdirs.append(path)
+                    continue
+                if not stat.S_ISREG(info.st_mode):
                     continue
                 resolved = path.resolve(strict=True)
             except OSError as exc:
@@ -214,6 +217,7 @@ def _walk(config: Config, source: str, notes: list[str]) -> list[Entry]:
                 continue
             seen.add(resolved)
             entries.append(Entry(resolved, shown, info.st_mtime, info.st_size))
+        pending.extend(reversed(subdirs))
     return entries
 
 
