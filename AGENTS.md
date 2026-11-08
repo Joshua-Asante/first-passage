@@ -18,13 +18,19 @@ authorization.
 **Order of work (Q → D → S → A).** Every build, rule and procedure goes through these
 steps in order. Skip none and reverse none.
 
-1. **Question the requirement.** Name its owner, and get the answer in writing from the
-   party that can refuse it (venue, data vendor or Joshua). It must be a dated human
-   answer for the exact account and route. Our own docs, a mirror or an AI support agent
-   don't count. Nothing route-, venue- or account-specific is built on an assumed or
-   unanswered requirement. Our own rules count too: each rule names who asked for it and
-   what fails without it.
-2. **Delete** what fails that test: parts, rules, gates and documents.
+1. **Question the requirement.** Name its owner.
+   - **External requirements** (venue or data vendor): get a dated, written answer
+     from a human at the party that can refuse it, for the exact account and route.
+     Our own docs, a mirror or an AI support agent don't count.
+   - **Internal requirements:** Joshua's recorded acceptance (a ruling, the signed
+     page or an accepted spec) is the answer.
+
+   Nothing route-, venue- or account-specific is built on an assumed or unanswered
+   requirement. Each rule names who asked for it and what fails without it.
+2. **Delete** what fails that test: parts, rules, gates and documents. Deletions go
+   through the normal review and merge rules. The money controls, frozen parameters,
+   the forward stop rule and the review and CI requirements stay in force until Joshua
+   rules explicitly.
 3. **Simplify** what survives.
 4. **Accelerate, then automate,** only the simplified version.
 
