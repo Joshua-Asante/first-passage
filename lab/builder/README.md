@@ -2,6 +2,10 @@
 
 Build steps 1–3 of Joshua's "Strategy builder v1 spec" (2026-10-30): the trial ledger, the ORB block library and compiler (backtest side), and gates 5a–5h with a traceable report, run locally (5a–5f and the post-holdout 5g placement check in `gates.py`; the gate 5h venue MC is a standalone module, not yet wired into `gates.py` or `run.py`). Azure wiring, the Pine/NinjaScript compilers and the decay monitor are later build steps.
 
+**Channel status: DORMANT** (ruling D18 in the 2026-11-08 sitting rulings, PR #1120). A per-instrument look budget is not the channel's liveness ceiling. No builder round opens until a registration declares an audited, channel-level ceiling that does not grow with new instruments or calendar extensions, together with the contract fields still owed (see the ten-step mapping below). Extending the frozen calendar back to 2009 enlarges no ceiling. Banked cards, disclosed as K in each instrument's ledger:
+- **MCL:** parked 2026-11-05. Its 8 ledgered builder cards count as MCL K. Whether R1 was valid is not adjudicated; the question is moot while MCL is parked. Record: [`ops/instruments/MCL.md`](../../ops/instruments/MCL.md).
+- **MGC:** parked 2026-11-08, following "Park MCL". Its 8 ledgered builder cards are disclosed as K. Results unread. Record: [`ops/instruments/MGC.md`](../../ops/instruments/MGC.md).
+
 | Module | Job |
 |---|---|
 | `cards.py` | YAML card schema; library blocks only; timing checked against the instrument's session; canonical card hash; grid neighbours for the plateau gate |
