@@ -2,8 +2,9 @@
 
 Pins Algorithm brief #3 Step 2.3: per-directory absent-tree WARN+skip when
 SHA256SUMS lists files but no CSV (listed or unlisted) exists on disk;
-unlisted CSVs always fail with EXTRA, even when no listed file is present
-(#1146); partial presence and hash mismatch keep hard-fail; --regenerate is
+any CSV on disk, listed or not, gets the full EXTRA / MISSING / MISMATCH
+checks, so a dir whose listed files were all replaced fails (#1146); partial
+presence and hash mismatch keep hard-fail; --regenerate is
 unaffected.
 """
 from __future__ import annotations
@@ -37,7 +38,7 @@ def test_all_absent_dir_warns_and_exits_0(tmp_path, monkeypatch, capsys):
     assert "pepperstone" in err
 
 
-def test_unlisted_only_dir_fails_with_extra(tmp_path, monkeypatch, capsys):
+def test_all_listed_replaced_by_unlisted_fails_with_extra_and_missing(tmp_path, monkeypatch, capsys):
     d = tmp_path / "core/data/tv_exports/cme"
     d.mkdir(parents=True)
     digest = _sha(b"ABSENT-PLACEHOLDER-old.csv")
@@ -51,8 +52,7 @@ def test_unlisted_only_dir_fails_with_extra(tmp_path, monkeypatch, capsys):
     err = capsys.readouterr().err
     assert "EXTRA core/data/tv_exports/cme/new.csv" in err
     assert "WARN absent-tree skip" not in err
-    # Listed-file checks stay suppressed when zero listed files are present.
-    assert "MISSING" not in err
+    assert "MISSING core/data/tv_exports/cme/old.csv" in err
 
 
 def test_partial_presence_hard_fails(tmp_path, monkeypatch, capsys):
