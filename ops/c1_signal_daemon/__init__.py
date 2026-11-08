@@ -1,1 +1,1 @@
-"""c1 Python signal daemon — B1 POST client of the listener (S2b / build ADR)."""
+"""Offline replay library left after the c1 rail retired; nothing here runs live (see README.md)."""

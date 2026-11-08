@@ -478,7 +478,7 @@ def check_no_unrendered_placeholder(src: str) -> CheckResult:
 # ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
-# Alert shadowing (c1 rail) — informational alert() starving the JSON payload
+# Alert shadowing (from the retired c1 rail) — informational alert() starving the JSON payload
 # ---------------------------------------------------------------------------
 
 _ALERT_CALL = re.compile(r"\balert\s*\(")
