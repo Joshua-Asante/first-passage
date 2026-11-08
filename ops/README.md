@@ -13,6 +13,7 @@ restated here.
 | [`sentinel/`](sentinel/) | Hygiene / preregistration scans |
 | [`cli.py`](cli.py) | Tearsheet-only historical CLI |
 | [`nt_readonly_mcp.py`](nt_readonly_mcp.py) | Read-only NinjaTrader 8 MCP server: logs, trace, journals, exports. Places nothing; see below |
+| [`nt_install_check.py`](nt_install_check.py) | Read-only install checks: installed NinjaScript vs a frozen manifest, and NT safety settings. See below |
 | [`prop_envelope_default.md`](prop_envelope_default.md) | Prop-envelope v1 pointer |
 
 See [`REPO_MAP.md`](../REPO_MAP.md) §2.2.
@@ -98,3 +99,31 @@ Run that from the checkout root, or give the script's absolute path. Local scope
 also reaches this repo's worktrees under `.claude/worktrees/`, so sessions there
 get the server too. Any Python 3.11+ works; the server needs no packages. Tests:
 `tests/ops/test_nt_readonly_mcp.py`.
+
+## Read-only NinjaTrader install checks (`nt_install_check.py`)
+
+A standard-library CLI for the pre-session check (spec §5 item 4) and the Monday
+Sim101 check. It opens files for reading only, follows no links and talks to
+nothing. Output is one JSON object of hashes, booleans, counts, file names under
+`bin/Custom` and assembly names; it never prints file contents, XML values,
+connection or account names. Exit 0 pass, 1 fail, 2 error.
+
+```powershell
+python -I ops/nt_install_check.py install --manifest <frozen SHA256SUMS> --manifest-sha256 <its sha256>
+python -I ops/nt_install_check.py config
+```
+
+- `install`: each manifest file in `bin/Custom/Strategies` is `match`, `differ`,
+  `differ-eol-or-bom-only` (still a fail) or `missing`. Any other non-stock `.cs`
+  NT compiles (disk or compile project) is `extra`, a fail. The compiled DLL must
+  be newer than every compiled source. Bytes are compared raw: NT compiles what is
+  on disk.
+- `config`: ATI off, both cancel-on-disable options off (B8), no non-simulated
+  connection set to connect on startup, no strategy saved in a workspace, no
+  add-on sources, no non-stock assemblies or compile references in use. A
+  reference that resolves to nothing is a warning.
+
+Limits: stock `@` files are trusted by name; the DLL is tied to its sources by
+file time only (recompile after every copy); `ati_enabled` false does not prove
+the ATI port is closed; the workspace count recognises saved strategies by type
+name, not yet seen with a strategy saved. Tests: `tests/ops/test_nt_install_check.py`.
