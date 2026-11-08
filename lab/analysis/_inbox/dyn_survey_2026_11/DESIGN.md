@@ -16,8 +16,8 @@ card follows before the 2027-01-31 falsifier.
 Five instruments (MNQ, MYM, M2K, MGC, MCL) × eight cells × two directions: K = 80, fixed. `survey.py`
 holds the fill, cell, statistics, eligibility and selection rules. `run.py` is the one-shot
 driver: it reads a private freeze record, refuses unless HEAD is the record's frozen SHA with
-clean tracked files, refuses an output path git tracks or does not ignore, refuses a second
-run, and writes only to private paths. The merge SHA of
+clean tracked files, refuses an output path git tracks or does not ignore, refuses an instrument
+without a pinned holdout boundary, refuses a second run, and writes only to private paths. The merge SHA of
 this PR is the frozen SHA. The parity, holdout and 5h stages are separate, contingent work.
 
 ## Readings of the protocol
@@ -42,5 +42,21 @@ this PR is the frozen SHA. The parity, holdout and 5h stages are separate, conti
   reading counts a started run as that run. The author's final comment on PR #1110 (2026-11-07)
   records it as confirmed by Joshua; that record is the author's comment, not Joshua's own words.
   `run.py` `claim_run` implements it.
+- **Holdout boundary** (amended by Joshua 2026-11-08 after #1138). Each instrument entry in the
+  freeze record carries either `h_start` with `dev_last_session` (ISO dates; `dev_last_session`
+  is the last development session of the pinned export, recorded at freeze, and must be before
+  `h_start`) or an explicit `holdout: {"none": "<reason>"}` with a non-empty reason. `main`
+  validates every entry before `claim_run` and before it reads the calendar, book or any export:
+  neither form, both forms, a non-ISO date, an empty reason or `dev_last_session` on or after
+  `h_start` is refused and creates no marker. A missing `h_start` no longer skips the check.
+  After loading an instrument's bars, the driver refuses if any bar's ET date is on or after
+  `h_start` (a session counts only with a bar at the session open, so overnight bars or a cut
+  before the open on `h_start` would not show in the session check), and refuses unless the
+  actual last development session equals the pinned `dev_last_session`. Both checks come after
+  the marker, so either refusal uses up the run like any failure after the start.
+- **All-UNRESOLVED survey.** Labelling it NULL matches protocol v5; unchanged.
+- **Re-freeze.** This amendment changes `run.py`, so the frozen SHA moves to the merge of the
+  PR that carries it, and the private freeze record gains `dev_last_session` per instrument
+  (Joshua's re-freeze).
 - **Missing commission row.** Under 7.2 the instrument drops as NOT EVALUATED; the report's
   `commissions` map records that firm and symbol with `commission: null` and the reason.
