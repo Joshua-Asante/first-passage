@@ -11,7 +11,7 @@ One skeptic per stream re-checked every finding. A completeness critic added fou
 and are marked **[unverified]**. Object-layer and meta-layer sections were synthesised separately and
 do not cite each other. The orchestrating session spot-checked the headline counts (DD constants via
 `git log -S`, verdict words in commit subjects, rail line counts at 59912c6c and HEAD, AGENTS.md
-word counts). **Codex challenge: pending** (requested on this PR).
+word counts). **Codex challenge:** first round on 6b29910 raised eight findings, all applied in the next commit.
 
 No backtest dollar figures, parameters, account data or Licensed data appear in this note. The
 gate thresholds it mentions are already public in the registrations.
@@ -20,7 +20,7 @@ gate thresholds it mentions are already public in the registrations.
 
 ## Key findings
 
-1. **Gates moved after adverse results, always toward looser.** Examples: the ceiling raise (53e35eb3), the §5 override (7a7d01c3), G2 removed with "Nothing replaces it", the ceiling scoped off the account (786b6921), Rule 26 made advisory (62c9d93e), and Rules 23-28 deleted (722b920c). By hand count, rule-level changes ran about 9 loosenings to 5 tightenings. Every admission-bar change loosened.
+1. **Gates moved after adverse results, mostly toward looser.** Examples: the ceiling raise (53e35eb3), the §5 override (7a7d01c3), G2 removed with "Nothing replaces it", the ceiling scoped off the account (786b6921), Rule 26 made advisory (62c9d93e), and Rules 23-28 deleted (722b920c). By hand count, rule-level changes ran about 9 loosenings to 5 tightenings. Numerical ceiling and bar changes all loosened; among admission decisions, the 10-02 withdrawal of the 09-03 discharge is a real tightening made on adverse evidence.
 2. **A falsifier's consequence was rewritten after it fired.** The §4 four-firm test came back FALSIFIED on 10-06 (b2d6c934). Its consequence was narrowed on 11-03, while Rule 28 ("falsifiers never move") was still in force. Rule 28 was deleted two days later.
 3. **The cheapest falsifier ran last.** The rail grew from about 5.2k to about 56k lines on a route the venue was never asked about. One question, answered on 10-12, barred it. The native route, dismissed "for convenience" on 07-18, is the one that survived.
 4. **Measurement got more honest even as decisions loosened.** Since 09-12, registrations carry no results in the same commit. Hashes are pinned in public, the K ledger was re-banked strictly (D14) and retractions stay on the record. The 11-05 cut was a real prune: gates went from 42 to 7.
@@ -38,7 +38,7 @@ gate thresholds it mentions are already public in the registrations.
 | Execution: native | Object | Progressive (provisional) | Tested build in about 3.5 weeks; not yet run on the eval |
 | Execution: rail | Object | Falsified | Venue barred it; code deleted (#1002, #1122, #1152) |
 | Risk parameters | Object | Stable, wrong surface | Constants intact; binding controls private |
-| Governance | Meta | Degenerating | AGENTS.md regrew to 1,944 words in about 3 days; authority rules reversed; Claude settled disputed rulings |
+| Governance | Meta | Degenerating | AGENTS.md regrew to 1,944 words in about 3 days; authority rules reversed; disputed rulings reached Joshua as Claude's settlement, not side by side |
 | Methodology: decisions | Meta | Degenerating | One-way loosening; negative heuristic deleted |
 | Methodology: measurement | Meta | Progressive | Freeze-before-run, hash pins, K re-bank |
 | Pre-registration | Meta | Progressive | Result-free registrations since 09-12 (exception: 8107fef8) |
@@ -53,7 +53,7 @@ gate thresholds it mentions are already public in the registrations.
 4. **Disputed rulings.** (a) Claude settles them at your direction. (b) You see Claude's and Codex's positions side by side, verbatim, and rule. *Recommend (b).*
 5. **Keeping the 100K.** (a) Keep it and record that the reason is ownership, not evidence. (b) Also make any reset or new purchase depend on a pre-registered comparison of native-friendly tiers. *Recommend (a) and (b) together.*
 
-Caveats: Codex has not yet challenged either section. The meta layer's gap-stream claims (review-rule counts, Codex positions on the loosenings) are unverified. STATE.md:15-16 still lists the August-gate re-run as Research's next task, though it ran on 11-07.
+Caveats: Codex's first review round (on 6b29910) produced eight corrections, all applied: the one-way-loosening claim is qualified, the lanes and D20 points are withdrawn, the §4 remedy is stated precisely, and the sitting, gap-1, CI and Codex-access points are corrected. The meta layer's remaining gap-stream claims (review-rule counts, Codex positions on the other loosenings) are unverified. STATE.md:15-16 still lists the August-gate re-run as Research's next task, though it ran on 11-07.
 
 ---
 
@@ -103,7 +103,7 @@ Method: dated rule, gate or ruling changes and registry entries per sub-stream, 
 | Live candidate (gating status of the pair) | ~22-40 (granularity) | ~6-8 true gate removals | 3:1 or more | Almost every remove is a loosening (G2, M1, P2, U-tests, ceiling scope) |
 | Execution path | ~35-40 | ~20-22 | ~2:1 | Rail code: ~5.2k lines at 09-10, ~56.2k at 10-12 (59912c6c), ~2.3k at HEAD |
 
-**Direction.** For ceilings and bars, every change loosened. The exceptions are the 10-02 tightening to an intraday-honest clock, the honoured FLOOR-HALF NO-GO and the D14 K re-bank. Across the window, rule-level gate changes come to roughly 9 loosenings against 5 tightenings.
+**Direction.** Every numerical ceiling and bar change loosened. Admission decisions were mixed. The tightenings are the 10-02 tightening to an intraday-honest clock, the honoured FLOOR-HALF NO-GO and the D14 K re-bank. Across the window, rule-level gate changes come to roughly 9 loosenings against 5 tightenings.
 
 **Venue pivot count.** 8 in-window pivots, 4 of them reversals of earlier rulings: F1 ruled 08-23 and reversed 09-01; the 09-03 re-admission withdrawn 10-02; the personal lane reopened 10-09 and closed 10-29; Track B superseded 10-16.
 
@@ -120,7 +120,7 @@ Method: dated rule, gate or ruling changes and registry entries per sub-stream, 
 ### Q4. Degeneration evidence
 
 1. **Gate loosening after adverse results on the incumbent target.**
-   - 08-26: the ceiling was raised (53e35eb3) after a measured combined-book result failed the v1 ceiling. The both-halves corrections that reversed the headline (1d7a1a5f, 08b03365) were already committed before the raise. The raise followed Known Trap #12 procedure (v1 closed, v2 opened) and was disclosed, but it is post hoc in substance. 5% had been declined on 07-13. Mitigation: the 09-04 D20 criterion already used a 5% figure, so the number was not invented after the failure.
+   - 08-26: the ceiling was raised (53e35eb3) after a measured combined-book result failed the v1 ceiling. The both-halves corrections that reversed the headline (1d7a1a5f, 08b03365) were already committed before the raise. The raise followed Known Trap #12 procedure (v1 closed, v2 opened) and was disclosed, but it is post hoc in substance. 5% had been declined on 07-13.
    - 09-03: candidate #1 was re-admitted through the move §5 forbids, with the superseding-ADR requirement waived (discharge-withdrawal ADR:177-186). It was withdrawn 10-02.
    - 10-24: G2 removed, "Nothing replaces it".
    - 10-28: the ceiling scoped so it does not bind the account. The account's objective now sits in a private owner record and cannot be audited.
@@ -129,7 +129,7 @@ Method: dated rule, gate or ruling changes and registry entries per sub-stream, 
    - 11-08: D1 waived the pre-session evidence case.
 2. **The nominated pair re-enters guarded ground and failed its own re-test.** The register's 08-03 rejection of ORB-MNQ-1 on Select 100K (rejected_candidates.md:1352-1400) and the Aegis H-SOLO bar against "composing ... to dilute" (:390-397) both guarded this area. Correction: the ORB entry's literal scope is the frozen ORB-MNQ-1 construct, so O-0 is arguably outside it. The 11-07 exploratory re-test failed in both halves and its verdict was "PRIOR STANDS" (pair_evidence_case RESULTS.md:3-14). D1 accepted that verdict as risk (rulings:85-100). The test carried no pre-committed action mapping, so it worked as disclosure, not as a gate.
 3. **The candidate's own pre-registered test was bypassed.** ORB v7 S4 was ratified on 10-17 and re-ratified on 10-18 (0da31012, 1ee3f07b). Its status still reads "NOT FREEZE READY". It was paused 10-19, marked "overtaken" 10-26 (b2e25b8c) and withdrawn unscored by a ruling on 11-03. The v1→v7 tuning K stays "explicitly unreconciled".
-4. **Lineage lanes expired by name while their constructs continued.** b1 (Aegis→6J) and b3 (ORB-MNQ payability) moved PARK→SUBTRACT on 11-03 (6596640b), while Aegis A-0 and ORB O-0 are the nominated pair.
+4. *(Withdrawn after Codex review.)* An earlier draft claimed the b1/b3 lanes' constructs continued under new names. 6596640b records Aegis-6J1 and ORB O-0 as different expressions outside those lanes (f2c4ae3:docs/pursuits/b1-aegis-6j-transfer-lane.md:8-10, b3-orb-mnq-payability-line.md:9-10), and no expression-level comparison shows otherwise.
 5. **The candidate is not uniquely identified.** STATE.md:9 says "ORB MNQ v7"; the stop rule and evidence case say "O-0"; trial 13 used O-N; the eval build is O-0 plus four D7 changes, with parity described as "limited". D1 states that no O-N or model evidence transfers to O-0.
 6. **SNAG shield.** The ORB-MNQ domain had at least 9 repair or conditioner loops in the window (bcef3e07, d0dcdada, 1e17bcc1, 9d70a64e, 48d55e7e, e7cef29a and others). Domain SNAG escalation requires the incumbent to be retired to 0 (rejected_candidates.md:1469,1496). That shield was inherited from before the window.
 
@@ -157,7 +157,7 @@ On routes, the native route rejected on 07-18 "for convenience" (c1_nt8_sizing_h
 
 | Falsifier | Original threshold | Current | Fired? | Honoured? |
 |---|---|---|---|---|
-| §4 four-firm programme falsifier (07-12) | Candidate clears the pre-registered ceiling on ≥2 friendly tiers by 2026-11-08, else demote "this program" to research-only and revert to R6 | Consequence narrowed by a 11-03 ruling: only the multi-firm claim is demoted; Tradeify scaling continues; R6 declined (its lane was closed 10-29) | Yes (10-06 re-MC; formally 11-08) | **Partly.** Recorded honestly; remedy rewritten after the outcome was known |
+| §4 four-firm programme falsifier (07-12) | H: a candidate clears the ceiling on ≥2 friendly tiers. Binary revert trigger: by 2026-11-08 no candidate clears on **any** tier → demote "this program" to research-only. R6 restored only "if operator confirms" (ADR:80-86); one-tier clears go to Joshua (10-02 ruling) | Consequence narrowed by a 11-03 ruling: only the multi-firm claim is demoted; Tradeify scaling continues; R6 declined (its lane was closed 10-29) | Yes (10-06 re-MC; formally 11-08) | **Partly.** Zero tiers cleared, so the trigger fired. Declining R6 was within the conditional remedy; the demotion's scope was narrowed after the outcome was known |
 | Survivor-scoring ceiling (v1, 07-13) | v1 ceiling, with 5% explicitly declined | Raised (08-26), then scoped off the account (10-28) | Yes (failed 08-26) | **No.** Moved |
 | 10-06 four-firm dated re-MC (frozen 10-05, 575141b2) | Intraday-honest clear | Closed | Yes (FALSIFIED early-fail) | **Yes** |
 | 07-12 secondary eligibility trigger | Remove a family that bans the route | Not run for Tradeify | Contestable (bridge banned, native allowed) | **Not assessed** |
@@ -166,7 +166,7 @@ On routes, the native route rejected on 07-18 "for convenience" (c1_nt8_sizing_h
 | G2 cost hurdle | Universal hurdle | Removed 10-24 | Not tested on the pair | **No.** Removed |
 | August combined-book gate, re-run on the pair 11-07 (exploratory) | v1 ceiling, both halves | Accepted as risk (D1) | Yes ("PRIOR STANDS") | **No.** Informational only by design |
 | ORB v7 S4 prereg (10-17/18) | Freeze by 10-23, re-MC by 10-30 | Withdrawn unscored | Never ran | **No.** Bypassed |
-| b1/b3 PARK lanes | Expire 11-08 → SUBTRACT | SUBTRACT recorded | Yes | **Formally yes**; constructs continue under new names |
+| b1/b3 PARK lanes | Expire 11-08 → SUBTRACT | SUBTRACT recorded | Yes | **Yes** |
 | FLOOR-HALF successor screen (10-11) | Ratified | NO-GO | Yes | **Yes** |
 | Forward stop rule + Addendum 1 (10-30/31) | Private (hash-pinned) | Unchanged; any post-session-1 change ends the record | Not yet (no session) | **Unverifiable.** The only live falsifier |
 
@@ -288,7 +288,7 @@ Partly. Two parts held and two eroded.
 - Frozen files still cite deleted rules. The stop-rule registration cites "Rule 23" at line 3.
 - The strategy-validation skill links to 4 deleted method documents. (M8)
 
-**Eroded: "no agent decides by default".** At the 11-08 sitting, the disputed rulings were "settled" by Claude "at his direction" (sitting-rulings.md:5-7). Claude wrote the options packet. (Governance verifier's missed item; GOV-05 corrected)
+**Strained, not broken: "no agent decides by default".** At the 11-08 sitting Claude settled the disputed items at Joshua's direction and he accepted them, plus the six-ruling reconciliation (sitting-rulings.md:3-15). No decision took effect without his acceptance. The weakness is presentation: Claude wrote the options packet, and the disputed items reached him as Claude's settlement, not as Claude's and Codex's positions side by side. (GOV-05, corrected after Codex review)
 
 **Caveat.** The frozen controls guard surfaces that are largely inert for the live path. The binding loss control on the eval is operator-held and private (spec B6, docs/spec/2026-11-06-orb-aegis-eval-build-design.md:61). The native drawdown tier runs as "an explicit exception, not an admission" (D3). (RF-2, corrected: the literals are still imported by lab scoring code.)
 
@@ -306,7 +306,7 @@ Partly. Two parts held and two eroded.
 
 The pre-cut prunes mostly grew back. The tree went from 1,503 files (09-07) to 2,654 (10-09). The one exception is a late-October notes prune that held (2,645 → 2,328). (GOV-01, corrected)
 
-At the rule level the direction was one-way loosening of admission bars, alongside tightening of measurement (clock, K). The October "rule consolidation" grew the rulebook rather than shrinking it: operational_rules went from 8,513 to 11,077 words in a528bcc0. (GOV-03)
+At the rule level, numerical admission bars only loosened (admission decisions were mixed: the 10-02 discharge withdrawal tightened), alongside tightening of measurement (clock, K). The October "rule consolidation" grew the rulebook rather than shrinking it: operational_rules went from 8,513 to 11,077 words in a528bcc0. (GOV-03)
 
 ### Q3. Progressive evidence
 
@@ -367,7 +367,7 @@ Mostly, with three gaps.
   - No .py file mentions NinjaScript (one README does).
   - No public code scores the forward stop rule.
   - nt_readonly_mcp is not referenced by any spec.
-  - The Pine and data gates WARN and pass in CI because their sources are absent. (ENG-2, ENG-5)
+  - CI cannot rehash the absent private Pine sources or exercise the native runtime; those hash checks WARN in CI. CI does still enforce public invariants: the gates.yml composition, boundaries, card-pin consistency (needs no Pine bytes), cross-manifest conflicts (tests/test_pine_manifest_guard.py) and manifest format and pin provenance (manifest-check.yml). (ENG-2, ENG-5, qualified after Codex review)
 - **The cut left debris.**
   - 376 of 387 docs paths cited from code, tests and config are missing.
   - check_path_liveness was deleted but is still listed in repo_map_layers.yml:28.
@@ -394,7 +394,7 @@ The rejected alternative was native NinjaScript. It was available on 07-18, drop
 **Verifier comparison.**
 - Codex review is substantive at the code and document level. 97 of 559 research-touching commits name Codex, and its findings flipped verdicts and made gates fail closed. (M13)
 - For private-data verdicts, the only re-derivation was "an independent Claude reviewer" (pair RESULTS:111-117), the same model family as the author. (LC-9 nuance)
-- **[unverified, gap-1]** Codex never blocked any of the seven loosenings. Three have no review recorded in git.
+- **Codex did push back on loosenings (corrected after Codex review).** On #291 its findings returned D5 to OPEN over the §5 anti-rescue collision (ae8b1613), and an accepted P1 reverted a post-inspection weakening of G1.4 (198968e7). The operator later overrode D5 explicitly. **[unverified, gap-1]** Codex's position on the remaining loosenings; three have no review recorded in git.
 
 The deleted programme-audit skill defined this audit's own questions. The audit now runs against a framework that no longer exists in the repo. (Methodology verifier's missed item)
 
@@ -404,7 +404,7 @@ The deleted programme-audit skill defined this audit's own questions. The audit 
 |---|---|---|---|---|
 | Rule 28 "falsifiers never move" | Binding rule | Deleted 11-05 (722b920c). No successor in AGENTS.md | Tested by the 11-03 §4 narrowing | **No.** Rescoped, with procedural cover from Rule 28's own "dated verdicts are the operator's" clause |
 | Prereg v1 ceiling plus Known Trap #12 and §5 anti-rescue | v1 ceiling. 5% dial declined 07-13 | Raised ceiling (v2). Later scoped off the eval (786b6921) | Yes, 08-26 and 09-03 | **Partly.** v1 closed and v2 opened as Trap #12 requires. §5 overridden by D5 (7a7d01c3). Discharge withdrawn 10-02 |
-| §4 four-firm programme falsifier (meta handling) | Hard date 11-08, demote "this program" | Fired. Consequence narrowed 11-03 | Yes (10-06 verdict, 11-08 date) | **Rescoped**, not honoured (RF-4) |
+| §4 four-firm programme falsifier (meta handling) | Zero tiers cleared by 11-08 → demote "this program" (R6 conditional on operator) | Fired. Consequence narrowed 11-03 | Yes (10-06 verdict, 11-08 date) | **Rescoped**, not honoured (RF-4) |
 | Rule 26 re-proposal bars | Binding | Advisory priors (62c9d93e) | n/a, loosened pre-emptively | n/a |
 | Size-feasibility automatic stop | Stop on no-clear | Replaced by a decision tree 32 minutes after freeze, before scoring (103c5ea5, d104e139) | No | Borderline (RF-12) |
 | D14 clause 2-C (K accounting) | Executed-K closures must bank declared K | Fired. Remedy A enacted (ae91b388) | Yes | **Yes.** Stricter than Codex's preference |
@@ -425,11 +425,11 @@ Written after §2.
   - But AGENTS.md regrew to 59% of its pre-cut size in three days.
   - Authority rules reversed several times without measured cause.
   - Rulings were cut from stale state across sessions.
-  - Joshua's ruling role was partly exercised by the author (Claude settling disputes).
+  - Disputed rulings reached Joshua pre-settled by the author rather than as competing positions (he accepted them; his authority held).
   - Recovery condition: by 2026-12-08, AGENTS.md is no larger than about 2,500 words, there are no authority reversals without a recorded trigger, and disputed rulings are shown to Joshua side by side.
 - **Research methodology: Degenerating at the decision layer; Progressive at the measurement layer.**
   - Measurement became more honest: freeze-before-run, hash pins, K re-bank, retractions.
-  - But every admission-bar change loosened, the written negative heuristic was deleted, a falsifier consequence was rewritten after its verdict, and the gate result no longer decides deployment (D1).
+  - But every numerical admission-bar change loosened (the 10-02 discharge withdrawal is the one admission-level tightening), the written negative heuristic was deleted, a falsifier consequence was rewritten after its verdict, and the gate result no longer decides deployment (D1).
   - No corroborated novel content in 12 weeks.
 - **Pre-registration practice: Progressive.** Result-free registration commits since 09-12, public hash pins, and an atlas frozen before running. Exception: the pair DECISION-RULE hash was first published together with its results (8107fef8).
 - **Verification (agent review): Ambiguous.**
@@ -438,7 +438,7 @@ Written after §2.
   - Re-test by 2026-11-22: pull the review threads for #176, #291, #894, #895, #949, #1006, #1091 and #1120 at their merged heads. Record Codex's position on each loosening. Score a reviewer-effectiveness metric (findings by class, and the share that changed a verdict or gate).
 - **Engineering: Degenerating over the window; currently Stable.**
   - About 56k production lines were built for a route that a single venue question falsified. Venue legality was checked by watching public text, not by asking.
-  - Post-cut, the code is healthy: boundaries OK, frozen values pinned. But it sits off the live path, and its gates are vacuous in CI.
+  - Post-cut, the code is healthy: boundaries OK, frozen values pinned. But it sits off the live path, and CI cannot check the private sources or the native runtime.
 
 ---
 
@@ -450,7 +450,7 @@ Written after §2.
 | 2 | Publicly list every falsifier and dated check retired by D13 and D15, with its trigger condition | Claude | 2026-11-15 | Q7 untested retirements |
 | 3 | Add a pre-committed action mapping to any future evidence read (verdict → action), or label it disclosure-only | Claude | Next read | LC-4 |
 | 4 | Restore a minimal path-liveness gate (repo paths, including .claude/skills), fix the 4 dead links in strategy-validation, and remove stale entries from repo_map_layers.yml | Claude (Codex reviews) | 2026-11-22 | ENG-3, GOV-11 |
-| 5 | Record publicly which gates are vacuous in CI. Log a private-checkout run of the Pine and data gates before each session GO | Claude, run by Joshua | Before the session-1 GO | ENG-5 |
+| 5 | Record publicly which checks CI cannot run (private-source hashing, native runtime). Log a private-checkout run of the Pine and data gates before each session GO | Claude, run by Joshua | Before the session-1 GO | ENG-5 |
 | 6 | Pull PR review threads at the merged heads for the eight loosening PRs. Record Codex's positions, including on the disputed 11-08 items | Codex | 2026-11-22 | Verification Ambiguous; **[unverified]** gap-1 |
 | 7 | Venue-permission preflight: no route-specific build without a written venue answer for the exact account and route | Claude (design) | 2026-11-15 | EX-2, ENG-1 |
 | 8 | Measure AGENTS.md size, authority changes and docs-only commit share | Claude | 2026-12-08 | Governance re-test |
@@ -471,7 +471,7 @@ Written after §2.
    - (b) **Recommended:** you batch belt-only PRs into one daily window, so your attention goes to critical-path heads first.
 5. **Private-data verification.**
    - (a) Label such verdicts "single-vendor verified".
-   - (b) **Recommended:** give Codex the same read-in-place, hash-checked access for verdict re-derivation that it has for the eval build. Under the current rules Codex is barred from those inputs, so this widens its access and is your call.
+   - (b) **Recommended:** arrange an in-place, hash-checked Codex re-derivation of private-data verdicts in your primary checkout. AGENTS.md already lets Claude and Codex use Private material in place when the task needs it, so this needs no new permission; what is missing is the arranged run (the inputs are not in public clones).
 
 ---
 
