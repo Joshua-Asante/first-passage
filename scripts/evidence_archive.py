@@ -48,6 +48,7 @@ import argparse
 import hashlib
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -371,11 +372,15 @@ def put(files: list[Path], archive: Path, root: Path, *,
         added += result == "added"
     if added:
         branch, merge = upstream
-        print("\nNot safe until pushed:\n"
-              f"  git -C \"{archive}\" -c core.autocrlf=false add evidence\n"
-              f"  git -C \"{archive}\" -c core.autocrlf=false commit "
-              f"-m \"evidence: archive {added} file(s)\"\n"
-              f"  git -C \"{archive}\" push origin refs/heads/{branch}:{merge}", file=out)
+        # Paths and refs are quoted as data so a printed command cannot run
+        # anything a path or ref name smuggles in (Codex security review, #1160).
+        git = ["git", "-C", str(archive)]
+        commands = [git + ["-c", "core.autocrlf=false", "add", "evidence"],
+                    git + ["-c", "core.autocrlf=false", "commit", "-m",
+                           f"evidence: archive {added} file(s)"],
+                    git + ["push", "origin", f"refs/heads/{branch}:{merge}"]]
+        print("\nNot safe until pushed:\n" + "\n".join("  " + shlex.join(c) for c in commands),
+              file=out)
     if mismatched:
         print(f"{mismatched} pinned digest(s) not held by the file at their path; not archived",
               file=sys.stderr)

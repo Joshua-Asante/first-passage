@@ -338,6 +338,30 @@ def test_put_prints_a_push_naming_origin_and_the_upstream(public, tmp_path, monk
     assert out.getvalue().rstrip().endswith("push origin refs/heads/main:refs/heads/main")
 
 
+def test_printed_commands_quote_paths_and_refs_as_data(public, tmp_path, monkeypatch):
+    # Codex security review on #1160: a path or ref holding shell syntax must
+    # come back from the shell as the same single argument, never run.
+    base = tmp_path / "odd dir $(touch pwned); `id`"
+    base.mkdir()
+    archive = make_archive(base, monkeypatch)
+    branch = "x$(id);y&z|w"
+    git(archive, "checkout", "-q", "-b", branch)
+    git(archive, "push", "-q", "-u", "origin", branch)
+    out = io.StringIO()
+    assert ea.put([public / "data" / "a.csv"], archive, public, out=out) == 0
+    lines = out.getvalue().split("Not safe until pushed:\n", 1)[1].strip().splitlines()
+    argvs = []
+    for line in lines:  # what a real POSIX shell would pass to git, run in tmp_path
+        assert line.strip().startswith("git ")
+        res = subprocess.run(["sh", "-c", "printf '%s\\0' " + line.strip()[len("git "):]],
+                             cwd=tmp_path, capture_output=True, text=True, check=True)
+        argvs.append(["git"] + res.stdout.split("\0")[:-1])
+    assert not (tmp_path / "pwned").exists()
+    assert [a[:3] for a in argvs] == [["git", "-C", str(archive)]] * 3
+    assert argvs[1][-2:] == ["-m", "evidence: archive 1 file(s)"]
+    assert argvs[2][-3:] == ["push", "origin", f"refs/heads/{branch}:refs/heads/{branch}"]
+
+
 def test_put_refuses_without_an_upstream_on_origin(public, tmp_path, monkeypatch):
     archive = make_archive(tmp_path, monkeypatch)
     git(archive, "checkout", "-q", "--detach")
