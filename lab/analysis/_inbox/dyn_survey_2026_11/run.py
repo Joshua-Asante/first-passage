@@ -2,8 +2,9 @@
 
     python -I scripts/fp.py python lab/analysis/_inbox/dyn_survey_2026_11/run.py <freeze.json>
 
-Refuses unless HEAD is the frozen SHA, tracked files are clean, both output paths are private and
-no run has started. Writes only to the record's private ``out`` directory and exposure log.
+Refuses unless HEAD is the frozen SHA, tracked files are clean, both output paths are private,
+every instrument pins its holdout boundary and no run has started. Writes only to the record's
+private ``out`` directory and exposure log.
 """
 from __future__ import annotations
 
@@ -69,6 +70,37 @@ def claim_run(out: Path, frozen_sha: str) -> Path:
     return marker
 
 
+def iso_date(value) -> str | None:
+    """The value when it is a YYYY-MM-DD calendar date, else None."""
+    try:
+        return value if isinstance(value, str) and date.fromisoformat(value).isoformat() == value else None
+    except ValueError:
+        return None
+
+
+def holdout_boundary(symbol: str, entry: dict) -> dict:
+    """The instrument's pinned holdout boundary from the freeze record, checked before any read.
+
+    Either ``h_start`` with ``dev_last_session`` (the export's last development session, recorded
+    at freeze, before ``h_start``) or an explicit ``holdout: {"none": reason}``; anything else refuses.
+    """
+    pinned = "h_start" in entry or "dev_last_session" in entry
+    if pinned == ("holdout" in entry):
+        raise Refused(f"{symbol}: the freeze record must give either h_start with dev_last_session "
+                      "or holdout: {\"none\": reason}, not both or neither")
+    if not pinned:
+        h = entry["holdout"]
+        if not (isinstance(h, dict) and set(h) == {"none"} and isinstance(h["none"], str) and h["none"].strip()):
+            raise Refused(f"{symbol}: holdout must be {{\"none\": <non-empty reason>}}")
+        return {"none": h["none"]}
+    h_start, last = iso_date(entry.get("h_start")), iso_date(entry.get("dev_last_session"))
+    if h_start is None or last is None:
+        raise Refused(f"{symbol}: h_start and dev_last_session must both be ISO dates (YYYY-MM-DD)")
+    if last >= h_start:
+        raise Refused(f"{symbol}: dev_last_session {last} is not before h_start {h_start}")
+    return {"h_start": h_start, "dev_last_session": last}
+
+
 def commission_row(firm: str, symbol: str) -> dict:
     """The report's commission entry; a missing row is recorded, not raised."""
     try:
@@ -120,19 +152,20 @@ def survey_instrument(symbol: str, entry: dict, calendar, book: dict, log: Path)
     gap = commission_gap(symbol, entry.get("quoted_commission"))
     if gap:
         return not_evaluated(symbol, gap), {}
+    boundary = holdout_boundary(symbol, entry)
     log_read(log, symbol, entry)
     try:
         bars, summary = data.load_bars(Path(entry["path"]), symbol, entry["sha256"])
         sessions = data.session_dates(bars, symbol)
         dev = [d for d in sessions if d >= S.DEV_START]
+        if "h_start" in boundary and (dev[-1] if dev else None) != boundary["dev_last_session"]:
+            raise Refused(f"{symbol}: last development session {dev[-1] if dev else None} is not the pinned "
+                          f"dev_last_session {boundary['dev_last_session']} (holdout starts {boundary['h_start']})")
         if not dev:
             raise data.DataError("no development sessions")
         calendar.check_covers(dev, symbol)
     except data.DataError as e:
         return not_evaluated(symbol, f"data refused: {e}"), {}
-    h_start = entry.get("h_start")
-    if h_start is not None and dev[-1] >= h_start:
-        raise Refused(f"{symbol}: export reaches its holdout interval ({dev[-1]} >= {h_start})")
     s = minutes(entry["settlement"]) if entry.get("settlement") else None
     commission = resolve_commission(FIRMS[0], symbol)
     days = S.session_days(bars)
@@ -155,6 +188,8 @@ def main(record_path: Path) -> dict:
         raise Refused(f"{report_path} exists: {ONE_RUN}")
     if set(record["instruments"]) != set(SYMBOLS):
         raise Refused(f"the record must list exactly {SYMBOLS}")
+    for symbol in SYMBOLS:
+        holdout_boundary(symbol, record["instruments"][symbol])
     if not log.is_file():
         raise Refused(f"{log}: the exposure log is seeded at freeze")
     out.mkdir(parents=True, exist_ok=True)

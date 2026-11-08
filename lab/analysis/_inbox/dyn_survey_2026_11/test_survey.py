@@ -259,18 +259,39 @@ def test_run_refuses_a_second_run_and_a_wrong_head(tmp_path, monkeypatch):
         R.main(p)
 
 
-def test_export_reaching_the_holdout_refuses_the_run(tmp_path, monkeypatch):
-    dates, _ = trending(3)
+def loaded(tmp_path, monkeypatch, n=3):
+    """n synthetic MNQ sessions served as the loaded export, and a seeded log."""
+    dates, _ = trending(n)
     idx = pd.DatetimeIndex([f"{d} 09:30" for d in dates], tz="America/New_York")
     bars = pd.DataFrame({"open": 1.0, "high": 1.0, "low": 1.0, "close": 1.0}, index=idx)
     monkeypatch.setattr(R, "commission_gap", lambda *a: None)
     monkeypatch.setattr(R.data, "load_bars", lambda *a: (bars, {}))
-    cal = type("Cal", (), {"check_covers": lambda *a: None, "closed": frozenset()})()
     log = tmp_path / "log.md"
     log.write_text("")
-    with pytest.raises(R.Refused, match="holdout"):
-        R.survey_instrument("MNQ", {"path": "p", "sha256": "abcdefgh", "h_start": dates[-1]}, cal, {}, log)
+    return dates, log
+
+
+def test_export_past_its_pinned_last_development_session_refuses_the_run(tmp_path, monkeypatch):
+    dates, log = loaded(tmp_path, monkeypatch)
+    cal = type("Cal", (), {"check_covers": lambda *a: pytest.fail("calendar used"), "closed": frozenset()})()
+    entry = {"path": "p", "sha256": "abcdefgh", "dev_last_session": dates[-2], "h_start": dates[-1]}
+    with pytest.raises(R.Refused, match="not the pinned dev_last_session"):
+        R.survey_instrument("MNQ", entry, cal, {}, log)
     assert "MNQ" in log.read_text()                     # logged before the read
+
+
+@pytest.mark.parametrize("pin", ["match", "none"])
+def test_matching_or_explicitly_absent_holdout_passes_the_guard(tmp_path, monkeypatch, pin):
+    dates, log = loaded(tmp_path, monkeypatch)
+
+    def covers(*a):
+        raise R.data.DataError("past the guard")
+
+    cal = type("Cal", (), {"check_covers": covers, "closed": frozenset()})()
+    holdout = ({"dev_last_session": dates[-1], "h_start": "2030-01-02"} if pin == "match"
+               else {"holdout": {"none": "synthetic: export ends at freeze"}})
+    got, _ = R.survey_instrument("MNQ", {"path": "p", "sha256": "abcdefgh", **holdout}, cal, {}, log)
+    assert {r["reason"] for r in got} == {"data refused: past the guard"}
 
 
 def test_dropped_instrument_keeps_its_16_cells_in_k(tmp_path):
@@ -285,7 +306,8 @@ def record(tmp_path, quotes=None, **over):
     """A synthetic freeze record with every instrument, seeded log and stub input paths."""
     log = tmp_path / "log.md"
     log.write_text("")
-    inst = {s: {"path": f"{s}.csv", "sha256": "abcdefgh", "quoted_commission": quotes} for s in R.SYMBOLS}
+    inst = {s: {"path": f"{s}.csv", "sha256": "abcdefgh", "quoted_commission": quotes,
+                "h_start": "2026-01-02", "dev_last_session": "2025-12-31"} for s in R.SYMBOLS}
     rec = {"frozen_sha": "x", "out": str(tmp_path / "out"), "exposure_log": str(log), "instruments": inst,
            "calendar": {"path": "cal", "sha256": "c"}, "book": {"path": "book", "sha256": "b"}, **over}
     p = tmp_path / "freeze.json"
@@ -365,3 +387,54 @@ def test_output_path_in_the_tracked_tree_is_refused(tmp_path, monkeypatch, field
     with pytest.raises(R.Refused, match="tracked by git"):
         R.main(p)
     assert not (tracked / R.MARKER).exists() and not (tmp_path / "out").exists()
+
+
+BAD_BOUNDARIES = {
+    "neither": {},
+    "both": {"h_start": "2026-01-02", "dev_last_session": "2025-12-31", "holdout": {"none": "r"}},
+    "h_start only": {"h_start": "2026-01-02"},
+    "dev_last_session only": {"dev_last_session": "2025-12-31"},
+    "non-ISO h_start": {"h_start": "02/01/2026", "dev_last_session": "2025-12-31"},
+    "compact ISO": {"h_start": "20260102", "dev_last_session": "2025-12-31"},
+    "not a date": {"h_start": "2026-02-30", "dev_last_session": "2025-12-31"},
+    "non-string": {"h_start": 20260102, "dev_last_session": "2025-12-31"},
+    "last on h_start": {"h_start": "2026-01-02", "dev_last_session": "2026-01-02"},
+    "last after h_start": {"h_start": "2026-01-02", "dev_last_session": "2026-01-05"},
+    "empty reason": {"holdout": {"none": "  "}},
+    "reason not a string": {"holdout": {"none": None}},
+    "not none": {"holdout": {"some": "r"}},
+}
+
+
+@pytest.mark.parametrize("case", list(BAD_BOUNDARIES))
+def test_bad_holdout_boundary_refuses_before_the_marker_and_any_read(tmp_path, monkeypatch, case):
+    for loader in ("load_calendar", "load_book", "load_bars"):
+        monkeypatch.setattr(R.data, loader, lambda *a, _n=loader: pytest.fail(f"{_n} called"))
+    monkeypatch.setattr(R, "check_head", lambda sha: None)
+    p = record(tmp_path)
+    rec = json.loads(p.read_text())
+    entry = rec["instruments"]["MCL"]                     # the last instrument the loop would reach
+    for k in ("h_start", "dev_last_session"):
+        entry.pop(k)
+    entry.update(BAD_BOUNDARIES[case])
+    p.write_text(json.dumps(rec))
+    with pytest.raises(R.Refused, match="MCL"):
+        R.main(p)
+    assert not (tmp_path / "out").exists() and (tmp_path / "log.md").read_text() == ""
+
+
+def test_explicit_no_holdout_passes_the_run_guard(tmp_path, monkeypatch):
+    def boom(*a):
+        raise RuntimeError("reached the inputs")
+
+    monkeypatch.setattr(R, "check_head", lambda sha: None)
+    monkeypatch.setattr(R.data, "load_calendar", boom)
+    p = record(tmp_path)
+    rec = json.loads(p.read_text())
+    for entry in rec["instruments"].values():
+        del entry["h_start"], entry["dev_last_session"]
+        entry["holdout"] = {"none": "synthetic reason"}
+    p.write_text(json.dumps(rec))
+    with pytest.raises(RuntimeError, match="reached the inputs"):
+        R.main(p)
+    assert (tmp_path / "out" / R.MARKER).exists()
