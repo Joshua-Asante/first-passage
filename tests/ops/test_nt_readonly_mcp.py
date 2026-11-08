@@ -1877,3 +1877,52 @@ def test_refusal_rewritten_during_read_shows_nothing(tmp_path, monkeypatch, name
     _change_after_reads(monkeypatch, 1, rewrite)
     text, error = call(config, name, **arguments)
     assert not error and "json:code" not in text and "changed while it was read" in text, text
+
+
+# --- review of c052387a: a dropped torn read must not leak the max_matches stop ------
+
+def _torn_after_first_block(monkeypatch, path, new):
+    """_blocks rewrites ``path`` in place (same size) to ``new`` after its first block."""
+    real_blocks = server._blocks
+
+    def blocks(handle, budget, limit=None):
+        for index, block in enumerate(real_blocks(handle, budget, limit)):
+            yield block
+            if index == 0:
+                with open(path, "r+b") as handle_:
+                    handle_.write(new.encode("utf-8"))
+
+    monkeypatch.setattr(server, "_blocks", blocks)
+
+
+def test_torn_read_does_not_leak_max_matches_stop(tmp_path, monkeypatch):
+    # The torn view (old clear prefix, new suffix) holds several Status records that
+    # match "SYNTHETIC" and, through "failed", the error pattern. The file's results
+    # are dropped, so its output must not depend on whether the caller's literal (or
+    # the torn content) held max_matches matches.
+    monkeypatch.setattr(server, "READ_BLOCK", 256)
+    root = _write_log(tmp_path, CLEAR_TO_OPEN_OLD)
+    path = root / "log" / "log.txt"
+    config = server.Config.build(root, fields_file=_fields(tmp_path, "log kv:Status\n"))
+    no_error = SAME_SIZE_LOG.replace("failed", "passed")
+    assert len(no_error) == len(SAME_SIZE_LOG)
+
+    def run(new, name, **arguments):
+        path.write_text(CLEAR_TO_OPEN_OLD, encoding="utf-8")
+        with monkeypatch.context() as patch:
+            _torn_after_first_block(patch, path, new)
+            text, error = call(config, name, max_matches=1, **arguments)
+        assert not error and "changed while it was read" in text, text
+        assert "SYNTHETIC_PRIVATE" not in text and "kv:Status" not in text, text
+        return text
+
+    hit = run(SAME_SIZE_LOG, "nt_search", source="log", pattern="SYNTHETIC")
+    miss = run(SAME_SIZE_LOG, "nt_search", source="log", pattern="NOT_IN_THE_FILE")
+    assert hit == miss
+    errors_hit = run(SAME_SIZE_LOG, "nt_errors")
+    errors_miss = run(no_error, "nt_errors")
+    assert errors_hit == errors_miss
+    # Untorn, the same calls do stop at max_matches (the torn view is what matters).
+    path.write_text(SAME_SIZE_LOG.replace("Note='open", "Note=xopen", 1), encoding="utf-8")
+    text, _ = call(config, "nt_search", source="log", pattern="SYNTHETIC", max_matches=1)
+    assert text.startswith("1 match(es); stopped at max_matches=1"), text

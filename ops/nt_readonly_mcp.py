@@ -983,9 +983,10 @@ def tool_tail(config: Config, arguments: dict) -> str:
         with _open_read(entry.path, budget) as reader:
             raw, unit = _whole_file(reader.blocks()), "record"
             unchanged = reader.unchanged()
-        clear = [unchanged] * len(raw)
         if not unchanged:
+            raw = []  # not even the torn view's record count is shown
             notes.append(CHANGED_NOTE)
+        clear = [True] * len(raw)
     elif config.fields is not None and source in _GATED_SOURCES:
         state = _record_state(source)
         judged = _tail_gated(entry.path, count, budget, state)
@@ -996,9 +997,11 @@ def tool_tail(config: Config, arguments: dict) -> str:
             clear = [False] * len(raw)
             known_before = False
         else:
-            raw = [record for record, _ in judged[0]]
             unchanged = judged[2]
-            clear = [ok and unchanged for _, ok in judged[0]]
+            # A torn view gives nothing, not even its record count.
+            kept = judged[0] if unchanged else []
+            raw = [record for record, _ in kept]
+            clear = [ok for _, ok in kept]
             known_before = judged[1]
         if not unchanged:
             notes.append(CHANGED_NOTE)
@@ -1038,15 +1041,23 @@ def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: 
             gated = config.fields is not None and source in _GATED_SOURCES
             # A file's results are held until its read is known to be a consistent
             # view (approved-field mode, see _Read), then kept whole or dropped whole.
+            # Everything a read gives (rows, counts, the max_matches stop) is per
+            # file until the read is kept: a dropped torn read must leave no trace, not
+            # even whether it held max_matches matches of the caller's literal.
             rows: list[str] = []
             found = 0
             skipped = 0
+            file_stopped = ""
             keep = False
             try:
                 with _open_read(entry.path, budget) as reader:
                     # Match on the masked approved values, the same text that is output,
                     # so a match count cannot reveal what the mask or the allow-list hides.
                     for number, raw in enumerate(_records(config, source, reader), 1):
+                        if file_stopped:
+                            # Approved-field mode reads the file to its end anyway, so
+                            # how much of the budget it uses does not depend on matches.
+                            continue
                         clear = quotes.feed(raw) if gated else True
                         shown = _present(config, source, raw, clear)
                         if shown is None:
@@ -1055,8 +1066,10 @@ def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: 
                         line, texts = shown
                         if any(matcher.search(text) for text in texts):
                             if matches + found >= max_matches:
-                                stopped = f"stopped at max_matches={max_matches}"
-                                break
+                                file_stopped = f"stopped at max_matches={max_matches}"
+                                if config.fields is None:
+                                    break
+                                continue
                             found += 1
                             for ctx_number, ctx_line in before:
                                 if ctx_number > last_printed:
@@ -1088,6 +1101,7 @@ def _search(config: Config, sources: list[str], matcher: re.Pattern[str], glob: 
             except OSError as exc:
                 notes.append(f"skipped {name}: {_reason(exc)}")
             if keep:
+                stopped = stopped or file_stopped
                 out.extend(rows)
                 matches += found
                 unapproved += skipped
