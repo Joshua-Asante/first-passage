@@ -969,3 +969,85 @@ def test_fields_file_starts_and_serves_approved_only(tmp_path):
     assert code == 0
     text = responses[0]["result"]["content"][0]["text"]
     assert text.splitlines() == ["log.txt: last 1 line(s)", '{"kv:Note":"ok"}']
+
+
+def _kv_config(tmp_path, log_text, trace_text, fields_text):
+    root = _write_log(tmp_path, log_text)
+    (root / "trace" / "trace.txt").write_text(trace_text, encoding="utf-8")
+    return server.Config.build(root, fields_file=_fields(tmp_path, fields_text))
+
+
+def _kv_outputs(config):
+    outputs = [("nt_errors", *call(config, "nt_errors"))]
+    for source in ("log", "trace"):
+        outputs.append(("nt_tail", *call(config, "nt_tail", source=source)))
+        for pattern in ("", "MARKER", "Account", "acct", "Price", "=", ",", ";", "|", "/"):
+            outputs.append(("nt_search", *call(config, "nt_search", source=source,
+                                               pattern=pattern, context=2)))
+    return outputs
+
+
+# Joined with a delimiter, the approved pair keeps its own value; joined with anything
+# else, the approved pair is malformed and dropped. Either way no other pair leaks.
+@pytest.mark.parametrize("join, status, state", [
+    (",", "Filled", "up"), (";", "Filled", "up"), ("|", "Filled", "up"), ("&", "Filled", "up"),
+    ("/", None, None), (":", None, None), ("=", None, None), ("'", None, None)])
+def test_unquoted_value_cannot_carry_joined_pairs(tmp_path, join, status, state):
+    log = (f"{STAMP}|1|4|Status=Filled{join}Account={MARKER}{join}Price={MARKER} error x\n"
+           f"{STAMP}|1|4|Account=Status={MARKER} error x/Status={MARKER} y:Status={MARKER}\n")
+    trace = f"{STAMP} state=up{join}acct={MARKER} error\n"
+    config = _kv_config(tmp_path, log, trace, "log kv:Status\ntrace kv:state\n")
+    for name, text, error in _kv_outputs(config):
+        assert not error, (name, text)
+        assert MARKER not in text, (name, text)
+        assert "Account" not in text and "acct" not in text and "Price" not in text, (name, text)
+    text, _ = call(config, "nt_tail", source="log")
+    assert text.splitlines()[1:] == ([json.dumps({"kv:Status": status}, separators=(",", ":"))]
+                                     if status else [])
+    text, _ = call(config, "nt_tail", source="trace")
+    assert text.splitlines()[1:] == ([json.dumps({"kv:state": state}, separators=(",", ":"))]
+                                     if state else [])
+
+
+def test_unquoted_values_end_at_delimiters(tmp_path):
+    log = f"{STAMP}|1|4|Status=Part-Filled;Qty=+1.5,Side=x Time=03:04:05.6|Note=a\n"
+    config = _kv_config(tmp_path, log, "",
+                        "log kv:Status\nlog kv:Qty\nlog kv:Side\nlog kv:Time\n")
+    text, _ = call(config, "nt_tail", source="log")
+    assert text.splitlines()[1] == ('{"kv:Status":"Part-Filled","kv:Qty":"+1.5",'
+                                    '"kv:Side":"x","kv:Time":"03:04:05.6"}')
+
+
+@pytest.mark.parametrize("body", [
+    json.dumps({"code": "X", "detail": MARKER}),
+    json.dumps([MARKER]),
+    json.dumps(json.dumps({"detail": MARKER})),
+])
+def test_json_path_ending_on_json_string_emits_nothing(tmp_path, body):
+    root = _write_log(tmp_path, "x\n")
+    journal = tmp_path / "journal"
+    journal.mkdir()
+    (journal / "j.jsonl").write_text(json.dumps({"kind": "k", "body": body}) + "\n",
+                                     encoding="utf-8")
+    config = server.Config.build(root, journal_dir=journal,
+                                 fields_file=_fields(tmp_path, "journal json:body\n"))
+    for text, error in [call(config, "nt_tail", source="journal"),
+                        call(config, "nt_search", source="journal", pattern=""),
+                        call(config, "nt_search", source="journal", pattern="MARKER")]:
+        assert not error and MARKER not in text and '"json:body"' not in text, text
+    text, _ = call(config, "nt_tail", source="journal")
+    assert text.splitlines() == ["j.jsonl: last 1 line(s); 1 without an approved field omitted"]
+
+
+def test_json_path_keeps_plain_string_scalars(tmp_path):
+    root = _write_log(tmp_path, "x\n")
+    journal = tmp_path / "journal"
+    journal.mkdir()
+    rows = [{"body": "not json"}, {"body": "42"}, {"body": json.dumps("plain")}]
+    (journal / "j.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows),
+                                     encoding="utf-8")
+    config = server.Config.build(root, journal_dir=journal,
+                                 fields_file=_fields(tmp_path, "journal json:body\n"))
+    text, _ = call(config, "nt_tail", source="journal")
+    assert text.splitlines()[1:] == ['{"json:body":"not json"}', '{"json:body":"42"}',
+                                     '{"json:body":"\\"plain\\""}']

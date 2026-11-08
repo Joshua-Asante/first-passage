@@ -31,10 +31,13 @@ comment line. A rule is ``<source> <field>``:
     export   (no field can be approved)
 
 Log lines are ``timestamp|level|category|text``; trace lines are a timestamp, then
-text. ``kv:<Key>`` takes ``Key='value'`` or ``key=value`` pairs from that text.
+text. ``kv:<Key>`` takes ``Key='value'`` or ``key=value`` pairs from that text; an
+unquoted value is a plain token (letters, digits, ``_.:+-``) that must end at
+whitespace, ``,``, ``;``, ``|``, ``&`` or the line end, or the pair is dropped.
 Journal lines are JSON records; a refusal file is one JSON object. ``json:a.b``
 walks objects, decoding a string that holds JSON on the way (``json:body.code``),
-and emits scalars only. A malformed file, an unknown source or field syntax, or a
+and emits scalars only: a path ending on an object, an array or a string holding
+one gives nothing. A malformed file, an unknown source or field syntax, or a
 file with no rules stops the server from starting. Each line (record) comes back as
 one compact JSON object of approved field -> value; a line with no approved field
 is left out and counted. Order IDs and names are not approved fields.
@@ -161,21 +164,40 @@ _JSON_RULE = re.compile(r"json:([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]
 _TIMESTAMP = re.compile(r"\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:[.:,]\d{1,7})?")
 _CODE = re.compile(r"[A-Za-z0-9_]{1,32}")
 # One pass left to right: a quoted value is consumed whole, so text inside it is
-# never read as another pair.
-_PAIR = re.compile(r"(?<![A-Za-z0-9_])([A-Za-z_][A-Za-z0-9_]*)=(?:'([^']*)'|([^\s']*))")
+# never read as another pair. A key starts the text or follows whitespace or a
+# delimiter (, ; | &). An unquoted value is a plain token that must end at one of
+# those; any other ending (=, /, a quote ...) drops the pair, so one value can
+# never carry another pair out with it.
+_PAIR = re.compile(r"(?<![^\s,;|&])([A-Za-z_][A-Za-z0-9_]*)="
+                   r"(?:'([^']*)'|([A-Za-z0-9_.:+-]*)(?=[\s,;|&]|$))")
 _MISSING: Any = object()
 
 
-def _json_object(text: str) -> dict | None:
+def _json_value(text: str) -> Any:
     try:
-        value = json.loads(text, parse_constant=_no_constant, parse_float=_finite_float)
+        return json.loads(text, parse_constant=_no_constant, parse_float=_finite_float)
     except (ValueError, RecursionError):
-        return None
+        return _MISSING
+
+
+def _json_object(text: str) -> dict | None:
+    value = _json_value(text)
     return value if isinstance(value, dict) else None
 
 
+def _holds_container(text: str) -> bool:
+    """Whether a string decodes, through any layers of JSON strings, to an object or array."""
+    value: Any = text
+    while isinstance(value, str):  # each decode of a JSON string is shorter: this ends
+        value = _json_value(value)
+    return isinstance(value, (dict, list))
+
+
 def _json_path(record: dict, path: str) -> Any:
-    """The scalar at a dotted path; a string holding a JSON object is decoded on the way."""
+    """The scalar at a dotted path; a string holding a JSON object is decoded on the way.
+
+    A path that ends on an object or array, or on a string holding one, gives nothing.
+    """
     value: Any = record
     for key in path.split("."):
         if isinstance(value, str):
@@ -183,7 +205,9 @@ def _json_path(record: dict, path: str) -> Any:
         if not isinstance(value, dict) or key not in value:
             return _MISSING
         value = value[key]
-    return _MISSING if isinstance(value, (dict, list)) else value
+    if isinstance(value, (dict, list)) or (isinstance(value, str) and _holds_container(value)):
+        return _MISSING
+    return value
 
 
 @dataclass(frozen=True)

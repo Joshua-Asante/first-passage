@@ -67,12 +67,16 @@ Log lines are `timestamp|level|category|text`; trace lines are a timestamp, then
 text. A timestamp must look like `YYYY-MM-DD hh:mm:ss` (optional fraction) and a
 level or category code like a short word or number, or that field is dropped.
 `kv:<Key>` takes `Key='value'` or `key=value` pairs from the text; a quoted value
-is read whole, so text inside it is never taken as another pair. Journal lines are
+is read whole, so text inside it is never taken as another pair. An unquoted value
+is a plain token (letters, digits, `_.:+-`) that must end at whitespace, `,`, `;`,
+`|`, `&` or the line end; otherwise the pair is dropped, so one value never carries
+another pair out with it. Journal lines are
 JSON records (`seq`, `prev`, `kind`, `body`, `hash`); a refusal file is one JSON
 object (`code`, `utc`, `fields`) and is read as one record. `json:a.b` walks
 objects, decoding a string that holds JSON on the way, so `json:body.code` reads
 `code` inside the `body` string; only scalars are emitted, never a whole object or
-array. A malformed line, an unknown source or field, or a file with no rules stops
+array, and a path that ends on a string holding JSON (such as `json:body`) gives
+nothing. A malformed line, an unknown source or field, or a file with no rules stops
 the server from starting. Order IDs and names, hashed or not, are not approved
 fields: don't list them.
 
