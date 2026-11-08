@@ -385,6 +385,17 @@ def test_startup_refused_with_redact_file_but_no_fields_file(tmp_path, capsys):
     assert exc.value.code != 0 and "--fields-file" in capsys.readouterr().err
 
 
+def test_startup_refused_with_fields_file_but_no_redact_file(tmp_path, capsys):
+    # Codex security review on #1173: file names, paths and headers are metadata the
+    # allow-list does not filter, so approved-field mode needs --redact-file too.
+    root = _write_log(tmp_path, NOTE_LINE)
+    with pytest.raises(SystemExit) as exc:
+        _run_main(["--nt-root", str(root), "--fields-file", str(_fields(tmp_path))],
+                  [TAIL_REQUEST])
+    assert exc.value.code != 0
+    assert "--fields-file needs --redact-file" in capsys.readouterr().err
+
+
 def test_startup_refused_with_empty_redact_file(tmp_path, capsys):
     root = _write_log(tmp_path, f"fill {SYNTHETIC_ID}\n")
     rules = tmp_path / "redact.txt"
@@ -1176,8 +1187,9 @@ def test_malformed_fields_file_refuses_start(tmp_path, capsys, content, message)
 def test_fields_file_starts_and_serves_approved_only(tmp_path):
     root = _write_log(tmp_path, f"{STAMP}|1|4|Note='ok' Account='{MARKER}'\n")
     fields = _fields(tmp_path, "﻿# signed\nlog kv:Note\n")
-    code, responses = _run_main(["--nt-root", str(root), "--fields-file", str(fields)],
-                                [TAIL_REQUEST])
+    rules = _rules(tmp_path, "ACCT-\\d+\n")
+    code, responses = _run_main(["--nt-root", str(root), "--fields-file", str(fields),
+                                 "--redact-file", str(rules)], [TAIL_REQUEST])
     assert code == 0
     text = responses[0]["result"]["content"][0]["text"]
     assert text.splitlines() == ["log.txt: last 1 line(s)", '{"kv:Note":"ok"}']

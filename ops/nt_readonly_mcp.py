@@ -15,7 +15,9 @@ The files can carry account data and strategy parameters, and AGENTS.md lets age
 read private logs only through tools that return approved fields. So the server
 emits only the fields named in ``--fields-file``, a private allow-list Joshua signs
 off, kept outside the repository; anything not on it is dropped, never shown.
-``--redact-file`` (one regex per line) also masks every emitted value, as a backup.
+``--redact-file`` (one regex per line) is required with it: it masks every emitted
+value as a backup, and it is the only filter on metadata the allow-list does not
+cover (file names, configured paths, tail and search headers).
 Searches, globs and file names match on the masked text only, so match counts
 cannot reveal a masked value. The server refuses to start without ``--fields-file``
 unless it gets ``--allow-unredacted``, which serves whole lines unmasked: for
@@ -101,7 +103,8 @@ With ``--fields-file`` the ``export`` source is refused outright by every tool
 (``nt_list_files``, ``nt_tail``, ``nt_search``; ``nt_list_sources`` shows it as
 refused and ``nt_errors`` reads only ``log`` and ``trace``): no
 export field can be approved, so not even file names, sizes or line counts are
-served. File names in the other sources are masked only by ``--redact-file``.
+served. File names, paths and headers in the other sources are masked only by
+``--redact-file``, which is why ``--fields-file`` refuses to start without it.
 
 Callers search with literal substrings only: Python's ``re`` has no time limit, so a
 caller regex could stall the server. ``nt_errors`` uses one fixed built-in pattern.
@@ -1337,7 +1340,7 @@ def _load_config(parser: argparse.ArgumentParser, options: argparse.Namespace) -
     unless whole unmasked lines were chosen explicitly for directed debugging."""
     if options.fields_file is None and not options.allow_unredacted:
         parser.error("refusing to start without approved fields: pass --fields-file PATH "
-                     "(optionally with --redact-file PATH as a backup mask), or "
+                     "with --redact-file PATH, or "
                      "--allow-unredacted for debugging Joshua directs")
     if options.fields_file is not None and options.allow_unredacted:
         parser.error("--fields-file and --allow-unredacted are mutually exclusive")
@@ -1350,6 +1353,12 @@ def _load_config(parser: argparse.ArgumentParser, options: argparse.Namespace) -
             Fields.load(options.fields_file)
         except (OSError, ValueError) as exc:
             parser.error(f"cannot load --fields-file: {exc}; refusing to start")
+        if options.redact_file is None:
+            # The allow-list filters content only; file names, configured paths and
+            # tail/search headers are metadata that only --redact-file masks.
+            parser.error("--fields-file needs --redact-file: file names, paths and headers "
+                         "are not covered by the allow-list and are masked only by "
+                         "--redact-file; refusing to start")
     try:
         config = Config.build(options.nt_root, options.journal_dir, options.export_dir,
                               options.redact_file, options.fields_file, options.refusal_dir)
@@ -1376,8 +1385,8 @@ def main(argv: list[str] | None = None, stdin=None, stdout=None) -> int:
                              "only these fields are served (required unless --allow-unredacted)")
     masking = parser.add_mutually_exclusive_group()
     masking.add_argument("--redact-file", type=Path, action=_Once,
-                         help="regexes to mask in every emitted value, one per line (backup to "
-                              "--fields-file)")
+                         help="regexes to mask in every emitted value and in file names, "
+                              "paths and headers, one per line (required with --fields-file)")
     masking.add_argument("--allow-unredacted", action="store_true",
                          help="serve whole lines unmasked, for debugging Joshua directs only; "
                               "never persist the output")

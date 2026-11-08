@@ -168,8 +168,9 @@ With `--fields-file`, the `export` source is refused outright by every tool:
 `nt_list_files`, `nt_tail` and `nt_search` return an error naming the refusal
 (`nt_errors` reads only `log` and `trace`), and
 `nt_list_sources` shows it as refused: no export field can be approved, so not even
-its file names, sizes or line counts are served. File names in the other sources
-are shown as they are, masked only by `--redact-file`.
+its file names, sizes or line counts are served. File names, configured paths and
+tail/search headers in the other sources are metadata the allow-list does not cover:
+they are masked only by `--redact-file`, so `--fields-file` refuses to start without it.
 
 **Masking, as a backup.** `--redact-file` masks regexes in every emitted value;
 keep that file private too. One
@@ -191,7 +192,8 @@ value can't be found by searching for it, so match counts can't rebuild it. A
 file whose name holds a masked value is listed and opened by its masked name.
 
 The server fails closed: it refuses to start unless it gets `--fields-file` (a
-regular file, given once, with at least one rule), or `--allow-unredacted`. The
+regular file, given once, with at least one rule) together with `--redact-file`,
+or `--allow-unredacted`. `--fields-file` without `--redact-file` is refused. The
 two are mutually exclusive, and so are `--redact-file` and `--allow-unredacted`;
 `--redact-file` alone is refused. Options must be spelled in full. An empty
 `--redact-file` is refused. `--allow-unredacted` serves whole lines unmasked: it
