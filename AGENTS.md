@@ -120,7 +120,9 @@ Classify by meaning, not field name. Text already public stays.
 - **Before asking for review**, the author runs the checks for what it changed and
   lists the commands and their actual results in the PR description.
 - **PRs that touch credentials, hooks, guards, CI workflows, `core/strategies/` or
-  `core/data/`** also get `@codex security review`.
+  `core/data/`** also get `@codex security review`. Post it as a comment of its own
+  holding only that text: any other text in the comment, a footer included, gets a
+  code review instead (five PRs, 2026-11-08). Put context in a separate comment.
 - **A finding that recurs** on a second PR gets fixed as a class: a test, or a gate
   in `scripts/gates.yml`, not another one-off fix.
 - **One writer per branch.** Each PR branch has one owning session and one writer at a
