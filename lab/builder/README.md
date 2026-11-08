@@ -4,7 +4,7 @@ Build steps 1–3 of Joshua's "Strategy builder v1 spec" (2026-10-30): the trial
 
 **Channel status: DORMANT** (ruling D18 in the 2026-11-08 sitting rulings, PR #1120). A per-instrument look budget is not the channel's liveness ceiling. No builder round opens until a registration declares an audited, channel-level ceiling that does not grow with new instruments or calendar extensions, together with the contract fields still owed (see the ten-step mapping below). Extending the frozen calendar back to 2009 enlarges no ceiling. Banked cards, disclosed as K in each instrument's ledger:
 - **MCL:** parked 2026-11-05. Its 8 ledgered builder cards count as MCL K. Whether R1 was valid is not adjudicated; the question is moot while MCL is parked. Record: [`ops/instruments/MCL.md`](../../ops/instruments/MCL.md).
-- **MGC:** parked 2026-11-08, following "Park MCL". Its 8 ledgered builder cards are disclosed as K. Results unread. Record: [`ops/instruments/MGC.md`](../../ops/instruments/MGC.md).
+- **MGC:** parked 2026-11-06 (Joshua), confirmed by D18 on 2026-11-08, following "Park MCL". Its 8 ledgered builder cards are disclosed as K. Results unread. Record: [`ops/instruments/MGC.md`](../../ops/instruments/MGC.md).
 
 | Module | Job |
 |---|---|

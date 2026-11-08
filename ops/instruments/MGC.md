@@ -104,9 +104,9 @@ structure:
 
 ## SESSION LOG
 
-- **2026-11-08** — **Builder: parked 2026-11-08, 8 ledgered builder cards disclosed as K, results unread.** Ruling D18 in the 2026-11-08 sitting rulings (PR #1120): MGC is parked, following "Park MCL"; the bank of 8 (run `mgc-orb-w1`, 2026-11-02) is disclosed as MGC K. The builder channel is dormant ([`lab/builder/README.md`](../../lab/builder/README.md)).
+- **2026-11-08** — **Builder: parked 2026-11-08, 8 ledgered builder cards disclosed as K, results unread.** First parked 2026-11-06 (entry below). Ruling D18 in the 2026-11-08 sitting rulings (PR #1120): MGC is parked, following "Park MCL"; the bank of 8 (run `mgc-orb-w1`, 2026-11-02) is disclosed as MGC K. The builder channel is dormant ([`lab/builder/README.md`](../../lab/builder/README.md)).
 - **2026-11-06** — **Builder bank parked.** Joshua: "Park it, as with MCL". MGC's bank of 8 (run `mgc-orb-w1`, 2026-11-02) waits for prospectively registered forward evidence. This settles the "Not ruled" in the entry below. K: superseded by the 2026-11-08 entry.
-- **2026-11-05** — **Builder bank correction.** The private ledger holds eight MGC cards (run `mgc-orb-w1`, 2026-11-02), so the public "four looks" is not available as stated ([note §11](../../docs/notes/2026-11-01-generation-phase-strengthening-DRAFT.md#11-updates-2026-11-04)). Results not read. Ruling and K: see the 2026-11-08 entry.
+- **2026-11-05** — **Builder bank correction.** The private ledger holds eight MGC cards (run `mgc-orb-w1`, 2026-11-02), so the public "four looks" is not available as stated ([note §11](../../docs/notes/2026-11-01-generation-phase-strengthening-DRAFT.md#11-updates-2026-11-04)). Not ruled. Results not read. K: see the 2026-11-08 entry.
 - **2026-11-04** — **TV export landed.** `MGC1!` BAR EXPORT v0.2 at 15m: 17 pages, 358,488 unique bars, 2010-10-04T10:00Z → 2026-11-02T21:45Z, `validate_bar_export_v2.py` PASS ([PR #1077](https://github.com/Joshua-Asante/first-passage/pull/1077), [landing record](../../docs/notes/2026-11-01-generation-phase-strengthening-DRAFT.md#11-updates-2026-11-04)). Limitation: the M15 panels were not refreshed, so this coverage exists in the exports only. No K.
 - **2026-08-25** — **`Tradeify_Select_100K` CLOSED (operator-ratified) — granularity wall, not
   a mechanism kill.** Downloads-lane survey (6 families / ~46 disclosed cells, all NULL;
