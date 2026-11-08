@@ -50,7 +50,7 @@ testpaths = ["tests"]
 # ops/accounts.py was retired in substrate Phase 2 (tearsheet CLI remains).
 # No "governance" entry: that layer is root-resident by design and has no
 # directory (REPO_MAP.md §1) — the token was a no-op and was dropped 2026-07-31.
-pythonpath = ["core", "lab", "ops", "ops/c1_rail", "ops/c1_signal_daemon", "."]
+pythonpath = ["core", "lab", "ops", "ops/c1_signal_daemon", "."]
 
 [tool.pylint.main]
 # Match the layer roots used by tests and executable bootstraps. The editable

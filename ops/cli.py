@@ -3,8 +3,8 @@ First Passage historical-analysis CLI.
 
 The continuous-lot account/multiplier surface (add / update / status / lots)
 was retired in substrate Phase 2
-(docs/adr/2026-07-22-challenge-era-substrate-retirement.md). Live sizing is
-the c1 rail (`ops/c1_rail/c1_sizing_host_reference.py`), not this CLI.
+(docs/adr/2026-07-22-challenge-era-substrate-retirement.md). No live sizing
+runs here: this CLI is tearsheet-only.
 
 Usage:
     python ops/cli.py tearsheet <csv_path> [--out PATH] [--starting-equity N]

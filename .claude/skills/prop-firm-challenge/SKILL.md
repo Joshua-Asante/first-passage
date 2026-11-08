@@ -22,10 +22,10 @@ Rail and eval posture: [`AGENTS.md`](../../../AGENTS.md) money controls and [`ST
 
 - Live tier key: explicit `Tradeify_Select_100K`; no `ACTIVE_FIRM` switch.
 - Eval geometry (no drawdown lock in eval for Tradeify/MFFU): [§4 withdrawal ADR](../../../docs/adr/2026-07-22-prop-portfolio-s4-discharge-withdrawal.md).
-- Cap allocation, flat deadline, hedging Product-Group, WATCH-1 / B7 inputs: [GO ADR](../../../docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) Addendum 2026-07-22; per-leg shares in `ops/c1_rail` constants; RESULTS under `lab/analysis/c1/`.
+- Cap allocation, flat deadline, hedging Product-Group, WATCH-1 / B7 inputs: [GO ADR](../../../docs/adr/2026-07-17-c1-rail-build-account-registration-go.md) Addendum 2026-07-22; RESULTS under `lab/analysis/c1/`.
 - ⚠ Bust/DD figures are **EOD-clock lower bounds** pending the [W1 ADR](../../../docs/adr/2026-08-07-w1-intraday-honest-engine-remeasure.md).
 - Self-funded lane [closed 2026-10-29](../../../docs/adr/2026-10-09-self-funded-tradovate-lane-reopen.md); manual CFD and FXIFY closed. FXIFY rules and the historical pin's `HISTORICAL_CHALLENGE_FIRM_KWARGS` live in [`core/historical_challenge.py`](../../../core/historical_challenge.py), not `FIRM_RULES` ([substrate ADR](../../../docs/adr/2026-07-22-challenge-era-substrate-retirement.md) §2-E).
-- Arming and live orders: AGENTS.md money controls (the c1 rail is retired). Live sizing: `BASE_RISK × DD_SCALE × lifecycle`, integer-qty floored in `ops/c1_rail/c1_sizing_host_reference.py`.
+- Arming and live orders: AGENTS.md money controls (the c1 rail is retired). Live sizing: `BASE_RISK × DD_SCALE × lifecycle`, integer-qty floored.
 - Broker CSV work: `trade-csv-reconcile`, kept separate from MC (live P&L looks back on broker exports; MC looks forward on TV backtest CSVs).
 
 ## Audit-first

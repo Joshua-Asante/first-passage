@@ -210,7 +210,6 @@ def test_real_repo_index_matches_git_visible_set():
     ("import ops.runner as run", "ops/runner.py"),
     ("from ops import runner as run", "ops/runner.py"),
     ("def f():\n    from c1_rail import listener", "ops/c1_rail/listener.py"),
-    ("import listener", "ops/c1_rail/listener.py"),
     ("import daemon", "ops/c1_signal_daemon/daemon.py"),
     ("from scripts import lock_event_hook", "scripts/lock_event_hook.py"),
     ("import scripts.lock_event_hook", "scripts/lock_event_hook.py"),
@@ -238,7 +237,7 @@ def test_unresolved_first_party_is_not_third_party(tmp_path, monkeypatch, capsys
 
 
 def test_cross_layer_collision_reports_paths(tmp_path, monkeypatch, capsys):
-    for rel in ("core/shared.py", "ops/c1_rail/shared.py"):
+    for rel in ("core/shared.py", "ops/c1_signal_daemon/shared.py"):
         path = tmp_path / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("", encoding="utf-8")
@@ -247,11 +246,11 @@ def test_cross_layer_collision_reports_paths(tmp_path, monkeypatch, capsys):
     output = capsys.readouterr().out
     assert "NAME COLLISION" in output
     assert "core/shared.py" in output
-    assert "ops/c1_rail/shared.py" in output
+    assert "ops/c1_signal_daemon/shared.py" in output
 
 
 def test_same_layer_duplicate_and_relative_imports_pass(tmp_path, monkeypatch):
-    for rel, source in {"ops/shared.py": "", "ops/c1_rail/shared.py": "", "ops/pkg/source.py": "from . import sibling\nfrom .. import shared", "ops/pkg/sibling.py": ""}.items():
+    for rel, source in {"ops/shared.py": "", "ops/c1_signal_daemon/shared.py": "", "ops/pkg/source.py": "from . import sibling\nfrom .. import shared", "ops/pkg/sibling.py": ""}.items():
         path = tmp_path / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(source, encoding="utf-8")
