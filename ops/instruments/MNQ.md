@@ -69,14 +69,14 @@ structure:
 
 ## K_BANKED DISCLOSURE (not a gate)
 
-**Live figure (updated 2026-08-24 — `Q-ICT-1MEXEC-1` closed, row 9 below; reconciled 2026-08-18 before that, operator-ruled same day):** **`K_banked(MNQ) = 22`**. Disclosure-only per [ADR 2026-08-04](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md) (`Accepted`, [Addendum 2026-08-18](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md)); does **not** enter `K_eff` and cannot fail a seed. Re-read `discovery_manifests/` at admission; this section is the ledger's last-reconciled sum, not a second arithmetic.
+**Live figure (re-summed 2026-11-08 — the 2026-11-08 sitting ruling D14 re-banks rows 2 and 10 at declared K; updated 2026-08-24 before that — `Q-ICT-1MEXEC-1` closed, row 9 below; reconciled 2026-08-18 before that, operator-ruled same day):** **`K_banked(MNQ) = 64`**. Disclosure-only per [ADR 2026-08-04](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md) (`Accepted`, [Addendum 2026-08-18](../../docs/adr/2026-08-04-family-k-bank-disclosure-not-gate.md)); does **not** enter `K_eff` and cannot fail a seed. Re-read `discovery_manifests/` at admission; this section is the ledger's last-reconciled sum, not a second arithmetic.
 
-**Operator ruling 2026-08-18** (*"OK on both"*), read as: (1) Notice-phase closed manifests **bank** — `MNQSR-1` K=14 once (the `b` file is a seed-fixed re-score, not a second campaign); (2) Cap-seat `K_intrinsic=1` **folds into the family tally** — not a separate uncounted reserved seat. Prior unambiguous 6 + 14 + 1 = **21**; row 9 below (`Q-ICT-1MEXEC-1`, closed harvest manifest, `K_intrinsic=1`) brings it to **22**.
+**Operator ruling 2026-08-18** (*"OK on both"*), read as: (1) Notice-phase closed manifests **bank** — `MNQSR-1` K=14 once (the `b` file is a seed-fixed re-score, not a second campaign); (2) Cap-seat `K_intrinsic=1` **folds into the family tally** — not a separate uncounted reserved seat. Prior unambiguous 6 + 14 + 1 = **21**; row 9 below (`Q-ICT-1MEXEC-1`, closed harvest manifest, `K_intrinsic=1`) brought it to **22**. **2026-11-08 sitting ruling D14** (ADR 2026-07-26 clause 2-C FIRED; executed-K closures revert to declared K): row 2 goes 1→42 (+41) and row 10 goes 0→1 (+1), so 22 + 41 + 1 = **64**.
 
 | # | Campaign | Manifest | K to family | Annotation |
 |---|---|---|---|---|
 | 1 | D5 / Baltussen MNQ (`d5_nq_intraday_mom`) | [`d5_nq_intraday_mom.json`](../../discovery_manifests/d5_nq_intraday_mom.json) | 1 | seed of the pre-08-04 bank of 2 |
-| 2 | ST-EH-1 MNQ half | [`st_eh_supertrend_grid.json`](../../discovery_manifests/st_eh_supertrend_grid.json) | 1 | executed-split 1 MNQ + 1 MYM; no campaign verdict |
+| 2 | ST-EH-1 MNQ half | [`st_eh_supertrend_grid.json`](../../discovery_manifests/st_eh_supertrend_grid.json) | 42 | declared-split 42 MNQ + 42 MYM (manifest `K_split`); re-banked 1→42 2026-11-08 (D14; was executed-split 1 + 1); no campaign verdict |
 | 3 | `MNQPOOL-1` | [`mnqpool_shield_probe.json`](../../discovery_manifests/mnqpool_shield_probe.json) | 1 | bank 2→3 (2026-08-04i) |
 | 4 | `MNQFVG-1` | [`mnqfvg_draw_probe.json`](../../discovery_manifests/mnqfvg_draw_probe.json) | 1 | bank 3→4 (2026-08-04j) |
 | 5 | `MNQFLOW-1` | [`mnqflow_depth_imbalance.json`](../../discovery_manifests/mnqflow_depth_imbalance.json) | 1 | bank 4→5 (2026-08-05a) |
@@ -84,8 +84,9 @@ structure:
 | 7 | `MNQSR-1` Notice-phase S/R screen | [`mnqsr1_structure_20260806.json`](../../discovery_manifests/mnqsr1_structure_20260806.json) (RESULTS pin [`…b`](../../discovery_manifests/mnqsr1_structure_20260806b.json)) | 14 | bank **6→20** — operator 2026-08-18; same construct once, not 28 |
 | 8 | `Q-CAPA-1` Cap-seat | none — Cap spend, no harvest manifest | 1 | bank **20→21** — operator 2026-08-18; seat SPENT **and** family increment |
 | 9 | `Q-ICT-1MEXEC-1` | [`ict-1mexec-1.json`](../../discovery_manifests/ict-1mexec-1.json) | 1 | bank **21→22** (2026-08-24) — `register_search open/close --lane mechanism-first`, `K_intrinsic=1`, closed 0 of 1 submitted survivors (`FALSIFIED_F1`) |
+| 10 | `ORB-MNQ-1` (`orb_mnq_intraday_breakout`) | [`orb_mnq_intraday_breakout.json`](../../discovery_manifests/orb_mnq_intraday_breakout.json) | 1 | re-banked 0→1 at declared K 2026-11-08 (D14); `executed_k=0` kept in provenance |
 
-**Already ruled zero (not missing):** [`orb_mnq_intraday_breakout.json`](../../discovery_manifests/orb_mnq_intraday_breakout.json) — `executed_k=0`, [ADR 2026-07-31](../../docs/adr/2026-07-31-orb-mnq-unpark-payability-target.md) Ruling 1.
+**No longer ruled zero:** [`orb_mnq_intraday_breakout.json`](../../discovery_manifests/orb_mnq_intraday_breakout.json) banked 0 (`executed_k=0`) under [ADR 2026-07-31](../../docs/adr/2026-07-31-orb-mnq-unpark-payability-target.md) Ruling 1 and the 2026-08-18 line "ORB Ruling 1 (`executed_k=0`) still banks 0". Joshua expressly superseded that line in the 2026-11-08 sitting ruling D14; it now banks 1 (row 10).
 
 **Still not in the 21 (existing annotation convention, not reopened):** later DEAD-list rows tagged `K=1 (disclosure; Cap not claimed)` — TNEC-CON-*, R2VBUCK, H-DSTRUCT, and siblings — are campaign `K_intrinsic` disclosures. They were never annotated `bank X→Y`, have no closed harvest manifest, and are not Cap-seat spends. The 2026-08-18 ruling does not pull them in.
 

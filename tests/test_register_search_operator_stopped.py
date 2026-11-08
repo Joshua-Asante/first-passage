@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Guards on the operator-stopped closure path (ADR 2026-07-26 clause 2-C).
+"""Guards on the operator-stopped closure path.
 
-This path lets a campaign bank FEWER trials than it declared, so it is precisely the
-code a future session could misuse to launder a search. The tool must enforce 2-C's
-conditions, not assert them: (i) no results artifact names the campaign, (iii) an
-enumerated look/examiner list whose length is the bank, (ii) and (iv) recorded as
-required attestations, and a verdict written from those inputs.
+ADR 2026-07-26 clause 2-C once let this path bank FEWER trials than declared. 2-C
+fired and was reverted (2026-11-08 sitting ruling D14): an operator-stopped close now
+banks the declared K. Its 2-C-shaped inputs are still enforced, as disclosure, not
+asserted: (i) no results artifact names the campaign, (iii) an enumerated
+look/examiner list whose length is executed_k (kept in provenance), (ii) and (iv)
+recorded as required attestations, and a verdict written from those inputs.
 """
 from __future__ import annotations
 
@@ -87,16 +88,21 @@ def _manifest(ledger):
     return json.loads((ledger / "camp.json").read_text())
 
 
-def test_happy_path_banks_enumerated_looks_and_retains_declared(opened, results_root, tmp_path):
+def test_happy_path_banks_declared_k_and_discloses_looks(opened, results_root, tmp_path):
+    """D14 (2026-11-08): operator-stopped closes bank declared K; the enumerated
+    looks and executed_k are disclosure and provenance."""
     r = _run(_close(tmp_path), opened, results_root)
     assert r.returncode == 0, r.stderr
     m = _manifest(opened)
     assert m["status"] == "closed"
-    assert m["K"] == 2                      # what the ledger banks
-    assert m["declared_K"] == 84            # provenance, never lost
+    assert m["K"] == 84                     # what the ledger banks: declared K
+    assert m["declared_K"] == 84
+    assert m["results"]["executed_k"] == 2  # provenance, never lost
+    assert m["results"]["declared_k"] == 84
     assert m["closure_mode"] == "operator-stopped"
     assert m["results"]["n_submitted"] == 0
     assert m["executed_looks"] == TWO_LOOKS
+    assert "banked K = 84" in r.stdout
     assert m["operator_signoff"].startswith("'Supertrend is closed.'")
     assert m["non_execution_evidence"]
     check = m["results_artifact_check"]
@@ -111,7 +117,12 @@ def test_verdict_is_written_from_inputs_not_boilerplate(opened, results_root, tm
     v = _manifest(opened)["verdict"]
     assert "before declared reads executed" not in v
     assert v.startswith("OPERATOR-STOPPED")
+    assert "Banks declared K (84)" in v
+    assert "executed_k (2) is retained in provenance" in v
     assert "2 enumerated executed look(s)" in v
+    # With looks enumerated, non-execution is claimed only for the rest.
+    assert "the remaining declared reads did not execute" in v
+    assert "Banks 2" not in v
     for look in TWO_LOOKS:
         assert look["look"] in v and look["examiner"] in v
     assert "1 scanned" in v
@@ -147,7 +158,7 @@ def test_refuses_when_results_root_is_missing(opened, tmp_path):
 
 
 def test_refuses_when_executed_k_disagrees_with_enumeration(opened, results_root, tmp_path):
-    """The bank is the enumeration's length -- 'none' with K>0, or looks with K=0,
+    """executed_k is the enumeration's length -- 'none' with K>0, or looks with K=0,
     are both incoherent (the q_txg1 / ORB failure shapes)."""
     r = _run(_close(tmp_path, executed_k=0), opened, results_root)
     assert r.returncode != 0
@@ -201,7 +212,7 @@ def test_refuses_without_attestation(opened, results_root, tmp_path, flag, needl
 
 
 def test_refuses_when_pvalues_are_supplied(opened, results_root, tmp_path):
-    """p-values imply reads executed — that campaign looked, so it banks declared K."""
+    """p-values imply reads executed — that campaign closes via the normal path."""
     r = _run(_close(tmp_path) + ["--pvalues", "0.01"], opened, results_root)
     assert r.returncode != 0
     assert "stopped BEFORE results" in r.stderr
@@ -225,14 +236,17 @@ def test_refuses_negative_executed_k(opened, results_root, tmp_path):
     assert r.returncode != 0
 
 
-def test_zero_executed_k_is_allowed(opened, results_root, tmp_path):
-    """A campaign stopped before ANY look banks zero — legitimate and must be expressible."""
+def test_zero_executed_k_is_allowed_and_still_banks_declared(opened, results_root, tmp_path):
+    """A campaign stopped before ANY look must still be closable, and since D14
+    (2026-11-08) it banks declared K, not zero."""
     r = _run(_close(tmp_path, executed_k=0, looks=[]), opened, results_root)
     assert r.returncode == 0, r.stderr
     m = _manifest(opened)
-    assert m["K"] == 0
+    assert m["K"] == 84
+    assert m["results"]["executed_k"] == 0
     assert m["executed_looks"] == []
     assert "0 enumerated executed looks" in m["verdict"]
+    assert "Banks declared K (84)" in m["verdict"]
 
 
 def test_cannot_reclose(opened, results_root, tmp_path):
@@ -256,3 +270,22 @@ def test_normal_pvalue_close_is_unaffected(opened, results_root):
     assert "closure_mode" not in m
     assert "results_artifact_check" not in m
     assert m["results"]["n_submitted"] == 2
+
+
+def test_committed_operator_stopped_manifests_bank_declared_k():
+    """D14 (2026-11-08): 2-C fired, so every executed-K closure in the committed
+    ledger is re-banked at declared K, with executed_k kept in provenance."""
+    stopped = []
+    for p in sorted((REPO / "discovery_manifests").glob("*.json")):
+        m = json.loads(p.read_text(encoding="utf-8"))
+        # Non-manifest ledger files (e.g. burned_segments.json) are JSON lists.
+        if not isinstance(m, dict) or m.get("closure_mode") != "operator-stopped":
+            continue
+        stopped.append(p.name)
+        assert m["K"] == m["declared_K"] == m["results"]["declared_k"], p.name
+        assert "executed_k" in m["results"], p.name
+        assert "before declared reads executed" not in m["verdict"], p.name
+        if m["results"]["executed_k"] != m["declared_K"]:
+            assert m["k_rebank"]["from"] == m["results"]["executed_k"], p.name
+            assert m["k_rebank"]["to"] == m["declared_K"], p.name
+    assert stopped, "no operator-stopped manifests found"
