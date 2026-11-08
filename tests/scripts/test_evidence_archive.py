@@ -257,6 +257,8 @@ FOREIGN_URLS = [
     "/srv/git/first-passage-archive.git",
     "C:\\repos\\first-passage-archive.git",
     "https://github.com/Joshua-Asante/first-passage-archive/extra.git",
+    "github.com/joshua-asante/first-passage-archive",
+    "GitHub.com/Joshua-Asante/first-passage-archive.git/",
 ]
 
 
@@ -292,6 +294,22 @@ def test_other_owner_or_host_is_refused(public, tmp_path, url):
 
 def test_local_remote_with_archive_basename_needs_the_override(public, tmp_path):
     clone = make_clone(tmp_path, "first-passage-archive")
+    assert not ea.is_archive_clone(clone)
+    assert ea.put([public / "data" / "a.csv"], clone, public) == 2
+    assert not (clone / "evidence").exists()
+    counts, out = run_audit(public, clone)
+    assert out.startswith("UNVERIFIED") and sum(counts.values()) == 0
+
+
+def test_relative_local_path_spelling_the_identity_is_refused(public, tmp_path):
+    """A repository at ./github.com/joshua-asante/first-passage-archive is a local
+    path to git, not the GitHub archive."""
+    clone = make_clone(tmp_path, "first-passage-archive")
+    bare = clone / "github.com" / "joshua-asante" / "first-passage-archive"
+    bare.mkdir(parents=True)
+    git(bare, "init", "-q", "--bare", "-b", "main")
+    git(clone, "remote", "set-url", "origin", "github.com/joshua-asante/first-passage-archive")
+    git(clone, "ls-remote", "origin")  # git resolves it as a reachable local repository
     assert not ea.is_archive_clone(clone)
     assert ea.put([public / "data" / "a.csv"], clone, public) == 2
     assert not (clone / "evidence").exists()

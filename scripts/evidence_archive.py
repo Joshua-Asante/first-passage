@@ -144,15 +144,18 @@ def resolve_archive(explicit: str | None) -> Path:
 def remote_identity(url: str) -> str:
     """``host/owner/repo`` for an https, ``ssh://`` or scp-like git URL, lowercased,
     without user, port, ``.git`` or a trailing slash. Anything else (a local path,
-    another scheme) comes back as its own normalized lowercased text, which never
-    equals a ``github.com/...`` identity."""
+    including a relative one spelled ``github.com/owner/repo``, or another scheme)
+    comes back as ``local:`` plus its normalized lowercased text, so it can never
+    equal a ``host/owner/repo`` identity."""
     url = url.strip()
     match = _URL.match(url) or (None if "://" in url else _SCP.match(url))
     if match:
-        url = f"{match.group(1)}/{match.group(2)}"
-    else:
-        # Windows clones record local origin paths with backslashes.
-        url = url.replace("\\", "/")
+        return _normalize_remote(f"{match.group(1)}/{match.group(2)}")
+    # Windows clones record local origin paths with backslashes.
+    return "local:" + _normalize_remote(url.replace("\\", "/"))
+
+
+def _normalize_remote(url: str) -> str:
     return url.rstrip("/").removesuffix(".git").rstrip("/").lower()
 
 

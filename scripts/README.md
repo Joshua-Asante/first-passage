@@ -224,7 +224,8 @@ private receipts); the pin proves which bytes were used but keeps no copy
   `github.com/joshua-asante/first-passage-archive` (https, `git@github.com:` or
   `ssh://` form; case, `.git` and a trailing slash ignored), and refuses one whose
   current branch does not track a branch on `origin`. A same-named repository on
-  another owner, host or local path is not the archive. There is no environment
+  another owner, host or local path (including a relative path spelled
+  `github.com/joshua-asante/first-passage-archive`) is not the archive. There is no environment
   variable or option to widen the accepted identity.
 - `python scripts/evidence_archive.py audit` reports each pinned digest as ARCHIVED, UNPUSHED or MISSING; `--verify` re-hashes.
   A non-archived pin says `bytes present here` only when the local file hashes to
