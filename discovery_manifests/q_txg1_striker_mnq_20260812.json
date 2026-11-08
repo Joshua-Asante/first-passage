@@ -19,5 +19,5 @@
   "closure_mode": "operator-stopped",
   "stop_reason": "DEAD(N-SURV): K=1 panel scored; cost PASS; N-SURV FAIL full/H1/H2 bust>>3.0%",
   "executed_looks": "striker_x_MNQ:native_tv_panel+bar_derived_nsurv",
-  "verdict": "OPERATOR-STOPPED before declared reads executed. NO campaign verdict exists and none may be quoted. Banks executed selection events (1) per ADR 2026-07-26 clause 2-C; declared K (1) retained in provenance."
+  "verdict": "OPERATOR-STOPPED after its declared read executed: the K=1 panel was scored and examined (executed_looks; outcome in stop_reason). This manifest records no campaign verdict beyond stop_reason. Banks declared K (1); executed selection events (1) equal it, so the 2026-11-08 sitting ruling D14 (ADR 2026-07-26 clause 2-C fired; executed-K closures revert to declared K) leaves the bank unchanged."
 }

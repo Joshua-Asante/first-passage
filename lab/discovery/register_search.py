@@ -841,8 +841,8 @@ def _results_artifacts_naming(run_id, roots) -> dict:
     """2-C condition (i): "zero results artifacts exist". Scans every RESULTS*
     file under ``roots`` for the run id as a whole token (the way RESULTS files
     attribute themselves, e.g. "**Campaign:** `<run_id>`"). Fails closed: any
-    mention counts, and the remedy for a false hit is the normal close, which
-    banks declared K. Scope is this checkout only -- results moved to the archive
+    mention counts, and the remedy for a false hit is the normal p-value close.
+    Scope is this checkout only -- results moved to the archive
     are not visible here, which the returned record states."""
     token = re.compile(r"(?<![\w-])" + re.escape(run_id) + r"(?![\w-])")
     scanned, matches = 0, []
@@ -872,21 +872,24 @@ def _results_artifacts_naming(run_id, roots) -> dict:
 
 
 def _validate_operator_stopped(args, manifest):
-    """Enforce ADR 2026-07-26 clause 2-C at close time. Every check runs before
-    any write. Conditions (i) and (iii) are checked mechanically; (ii) and (iv)
-    cannot be verified by this tool, so they are required inputs recorded on the
-    manifest as attestations."""
+    """Check the operator-stopped disclosure at close time. Every check runs
+    before any write. The inputs follow ADR 2026-07-26 clause 2-C's conditions:
+    (i) and (iii) are checked mechanically; (ii) and (iv) cannot be verified by
+    this tool, so they are required inputs recorded on the manifest as
+    attestations. Since 2-C fired (2026-11-08 sitting ruling D14) they no longer
+    lower the bank: the close banks declared K and records these as disclosure."""
     if args.pvalues or args.pvalues_file:
         sys.exit("ABORT: --operator-stopped is for campaigns stopped BEFORE results "
                  "existed. p-values imply reads executed -> close via the normal path.")
     if args.executed_k is None:
         sys.exit("ABORT: --operator-stopped requires --executed-k (the count of "
-                 "selection events actually examined). It is never inferred.")
+                 "selection events actually examined, recorded in provenance). It is "
+                 "never inferred.")
     if args.executed_k < 0:
         sys.exit("ABORT: --executed-k must be >= 0.")
     if args.executed_k > manifest["K"]:
         sys.exit(f"ABORT: --executed-k {args.executed_k} exceeds declared K "
-                 f"{manifest['K']}. This path may only bank the same or fewer.")
+                 f"{manifest['K']}. Executed looks cannot exceed the declared search.")
     if not (args.stop_reason or "").strip():
         sys.exit("ABORT: --operator-stopped requires --stop-reason.")
     if getattr(args, "executed_looks_file", None) is None:
@@ -895,38 +898,46 @@ def _validate_operator_stopped(args, manifest):
     looks = _load_executed_looks(args.executed_looks_file)
     if len(looks) != args.executed_k:
         sys.exit(f"ABORT: --executed-k {args.executed_k} != {len(looks)} enumerated "
-                 "looks. 2-C banks executed selection events (reads whose results "
-                 "were examined), so the bank is the enumeration's length.")
+                 "looks. --executed-k counts the executed selection events (reads "
+                 "whose results were examined), so it must equal the enumeration's "
+                 "length.")
     if not (getattr(args, "non_execution_evidence", None) or "").strip():
         sys.exit("ABORT: --operator-stopped requires --non-execution-evidence: the "
-                 "git-auditable evidence that the declared reads did not execute "
-                 "(ADR 2-C condition ii).")
+                 "git-auditable evidence that the declared reads not enumerated as "
+                 "looks did not execute (ADR 2-C condition ii).")
     if not (getattr(args, "operator_signoff", None) or "").strip():
         sys.exit("ABORT: --operator-stopped requires --operator-signoff: the "
                  "operator's sign-off and where it is recorded (ADR 2-C condition iv).")
     results_check = _results_artifacts_naming(manifest["run_id"], RESULTS_ROOTS)
     if results_check["matches"]:
         sys.exit("ABORT: 2-C condition (i) fails -- results artifacts name this "
-                 f"campaign: {', '.join(results_check['matches'])}. A campaign that "
-                 "examined results banks declared K; close via the normal path.")
+                 f"campaign: {', '.join(results_check['matches'])}. --operator-stopped "
+                 "is for campaigns stopped before results existed; close via the "
+                 "normal path.")
     return looks, results_check
 
 
 def _operator_stopped_verdict(looks, declared, results_check) -> str:
-    """The verdict states only what the validated inputs show."""
+    """The verdict states only what the validated inputs show. When looks are
+    enumerated it says they executed, and claims non-execution only for the
+    remaining declared reads, as the operator attests."""
     if looks:
         listed = "; ".join(f"({i}) {e['look']} -- examiner: {e['examiner']}"
                            for i, e in enumerate(looks, start=1))
-        looked = f"{len(looks)} enumerated executed look(s): {listed}."
+        looked = (f"{len(looks)} enumerated executed look(s), examined before the stop: "
+                  f"{listed}. The operator attests the remaining declared reads did "
+                  "not execute (non_execution_evidence).")
     else:
-        looked = "0 enumerated executed looks."
+        looked = ("0 enumerated executed looks. The operator attests the declared "
+                  "reads did not execute (non_execution_evidence).")
     return (
-        "OPERATOR-STOPPED under ADR 2026-07-26 clause 2-C. Banks "
-        f"{len(looks)} executed selection event(s); declared K ({declared}) retained in "
-        f"provenance. Condition (iii): {looked} Condition (i): no RESULTS* file under "
+        f"OPERATOR-STOPPED. Banks declared K ({declared}): ADR 2026-07-26 clause 2-C "
+        "fired (2026-11-08 sitting ruling D14), so an operator-stopped close no longer "
+        f"banks executed selection events; executed_k ({len(looks)}) is retained in "
+        f"provenance. Disclosure: {looked} No RESULTS* file under "
         f"{', '.join(results_check['roots'])} names this campaign "
-        f"({results_check['files_scanned']} scanned; checkout only). Conditions (ii) and "
-        "(iv): recorded as attested in non_execution_evidence and operator_signoff, not "
+        f"({results_check['files_scanned']} scanned; checkout only). "
+        "non_execution_evidence and operator_signoff are recorded as attested, not "
         "verified by this tool. This manifest records no campaign verdict; do not quote "
         "one from it."
     )
@@ -941,19 +952,20 @@ def close_run(args):
     rule_provenance = _resolve_rule_provenance(args)
     search_log = _resolve_search_log(args)
 
-    # Operator-stopped closure (ADR 2026-07-26 clause 2-C): a campaign halted by
-    # operator direction BEFORE its declared reads executed banks the EXECUTED
-    # selection events, not the declared K. The tool enforces 2-C's conditions
-    # instead of asserting them (see _validate_operator_stopped); the verdict is
-    # written from the validated inputs, never from a fixed string. Campaigns that
-    # fail any condition close through the normal p-value path; the ratified
-    # "abandoned campaigns still bank their K" rule is unchanged for them.
+    # Operator-stopped closure: a campaign halted by operator direction, closed
+    # without p-values. It banks the DECLARED K. ADR 2026-07-26 clause 2-C once let
+    # this path bank only the executed selection events; 2-C fired and was
+    # reverted (2026-11-08 sitting ruling D14), so executed-K banking is gone. The
+    # enumerated looks, executed_k and the 2-C-shaped attestations are still
+    # required and checked (see _validate_operator_stopped), and are recorded as
+    # disclosure. The verdict is written from the validated inputs, never from a
+    # fixed string. Campaigns that fail any check close through the normal p-value
+    # path.
     if getattr(args, "operator_stopped", False):
         looks, results_check = _validate_operator_stopped(args, manifest)
         declared = manifest["K"]
         manifest["status"] = "closed"
         manifest["closed_at"] = _now()
-        manifest["K"] = args.executed_k
         manifest["declared_K"] = declared
         manifest["closure_mode"] = "operator-stopped"
         manifest["stop_reason"] = args.stop_reason
@@ -972,7 +984,8 @@ def close_run(args):
         manifest["verdict"] = _operator_stopped_verdict(looks, declared, results_check)
         _save(manifest)
         print(f"[close]  '{args.run_id}'  OPERATOR-STOPPED")
-        print(f"[close]  banked K = {args.executed_k} (declared {declared:,}, retained in provenance)")
+        print(f"[close]  banked K = {declared:,} (declared; executed_k {args.executed_k} "
+              "retained in provenance)")
         print(f"[close]  enumerated looks: {len(looks)}")
         print(f"[close]  reason: {args.stop_reason}")
         print(f"[close]  this manifest records no campaign verdict; do not quote one from it.")
@@ -1157,14 +1170,18 @@ def build_parser():
     c.add_argument("--run-id", required=True)
     c.add_argument("--pvalues", help="Comma-separated survivor p-values.")
     c.add_argument("--pvalues-file", help="CSV: candidate_id,pvalue (or one p-value per line).")
-    # Operator-stopped path (ADR 2026-07-26 clause 2-C) — stopped BEFORE reads executed.
+    # Operator-stopped path — banks declared K (ADR 2026-07-26 clause 2-C fired;
+    # 2026-11-08 sitting ruling D14). Looks and attestations are disclosure.
     c.add_argument("--operator-stopped", action="store_true",
-                   help="Close a campaign halted by operator direction before its declared "
-                        "reads executed. Banks --executed-k, not declared K. Mutually "
+                   help="Close a campaign halted by operator direction, without "
+                        "p-values. Banks declared K (ADR 2026-07-26 clause 2-C fired, "
+                        "2026-11-08 sitting ruling D14); --executed-k and the "
+                        "enumerated looks are recorded as disclosure. Mutually "
                         "exclusive with p-values.")
     c.add_argument("--executed-k", type=int, default=None,
-                   help="With --operator-stopped: selection events actually examined. "
-                        "Never inferred; may not exceed declared K.")
+                   help="With --operator-stopped: selection events actually examined, "
+                        "recorded in provenance (results.executed_k); it does not set "
+                        "the bank. Never inferred; may not exceed declared K.")
     c.add_argument("--stop-reason", default=None,
                    help="With --operator-stopped: who stopped it and why.")
     c.add_argument("--executed-looks-file", default=None,
@@ -1174,7 +1191,8 @@ def build_parser():
                         "--executed-k; [] for a campaign that looked at nothing.")
     c.add_argument("--non-execution-evidence", default=None,
                    help="With --operator-stopped: git-auditable evidence that the "
-                        "declared reads did not execute (ADR 2-C condition ii).")
+                        "declared reads not enumerated as looks did not execute (ADR 2-C "
+                        "condition ii).")
     c.add_argument("--operator-signoff", default=None,
                    help="With --operator-stopped: the operator's sign-off and where it "
                         "is recorded (ADR 2-C condition iv).")

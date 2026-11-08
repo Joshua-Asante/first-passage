@@ -3,7 +3,7 @@
   "status": "closed",
   "opened_at": "2026-07-16T23:54:50Z",
   "tool": "orb-fixed",
-  "K": 0,
+  "K": 1,
   "alpha": 0.05,
   "data_window": "2019-05-06:2026-07-16",
   "hypothesis": "NAS100 ORB-30 (OR=2x15m, both-sides touch-fill, exit-at-close) ported to native MNQ: mean gross edge >= 4x MNQ cost hurdle (Stage-2); net-of-cost ann Sharpe >= 0.85 at K_eff=2 (Stage-6); within-day placebo significant; temporal battery 2021+ per prereg override",
@@ -21,5 +21,11 @@
   "closure_mode": "operator-stopped",
   "stop_reason": "ORB-MNQ-1 re-PARKED 2026-08-03; payable Tradeify_Select_100K leg target FALSIFIED (ADR docs/adr/2026-08-03-orb-mnq-repark-payability-falsified.md). Open ledger entry left stale after re-park; close as operator-stopped with executed_k=0 so K arithmetic is unchanged (ADR 2026-07-31 Ruling 1: open manifests do not bank K; 08-03 ADR spends no K / K_banked(MNQ)=2 stands).",
   "executed_looks": "none \u2014 this register_search ledger entry never closed with survivor p-values; per ADR 2026-07-31 Addendum b Ruling 1 the open ORB manifest does not count toward K_banked(MNQ). Payability/T2 measurement and stage artefacts live under separate ORB analysis paths, not as multiplicity-corrected close through this manifest. Banks 0 to keep K_banked(MNQ)=2 (D5 1 + ST-EH-1 1).",
-  "verdict": "OPERATOR-STOPPED before declared reads executed. NO campaign verdict exists and none may be quoted. Banks executed selection events (0) per ADR 2026-07-26 clause 2-C; declared K (1) retained in provenance."
+  "verdict": "OPERATOR-STOPPED after declared reads were examined: the 2026-11-08 2-C enumeration check found the Stage-2 and Stage-6/7/8 reads attributed to this campaign, examined by artifact and operator, and none of them enumerated in executed_looks. This manifest records no campaign verdict; do not quote one from it. Banks declared K (1): ADR 2026-07-26 clause 2-C fired (2026-11-08 sitting ruling D14), so this executed-K closure (executed_k 0, retained in provenance) is re-banked at declared K; see k_rebank.",
+  "k_rebank": {
+    "from": 0,
+    "to": 1,
+    "ruling": "2026-11-08 sitting D14: ADR 2026-07-26 clause 2-C fired; executed-K closures revert to declared K",
+    "date": "2026-11-08"
+  }
 }

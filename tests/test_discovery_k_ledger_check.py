@@ -52,12 +52,13 @@ def test_invalid_k_fails(tmp_path):
 
 
 def test_operator_stopped_closure_with_valid_k_passes(tmp_path):
-    """Operator-stopped closures (ADR 2026-07-26 clause 2-C) still close with a
-    banked K and a results block -- this check does not re-litigate that path."""
+    """Operator-stopped closures close with a banked K (declared K since the
+    2026-11-08 sitting ruling D14) and a results block -- this check does not
+    re-litigate that path."""
     _write_manifest(
         tmp_path,
         "run_d",
-        K=2,
+        K=84,
         results={"n_submitted": 0, "executed_k": 2, "declared_k": 84, "candidates": []},
         closure_mode="operator-stopped",
     )
