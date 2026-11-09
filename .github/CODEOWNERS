@@ -2,7 +2,11 @@
 # A change to any of these needs a code-owner review, which the ruleset makes a
 # deliberate, logged admin bypass. Weakening, removing or bypassing a check counts as
 # an amendment of The Order's protected rules.
+# The enforcement boundary is the isolated `order-gates` workflow: it runs only the
+# stdlib checker, before any other repository code, so its dependencies are the first
+# three lines below. The rest are the in-job copy and the session hooks.
 /.github/CODEOWNERS                  @Joshua-Asante
+/.github/workflows/order-gates.yml   @Joshua-Asante
 /scripts/check_order.py              @Joshua-Asante
 /tests/scripts/test_check_order.py   @Joshua-Asante
 /scripts/gates.yml                   @Joshua-Asante
