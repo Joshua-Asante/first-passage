@@ -2,12 +2,12 @@
 
 **Status:** draft. It binds nothing until Joshua approves it, its hash is recorded by scheduled
 self-email, and `order-state.json` names it. In witness mode it cannot be amended after that.
-**It cannot be adopted while either open decision below is unsettled.**
+**It cannot be adopted while the open decision below is unsettled.**
 **Under:** [The Order](../the-order.md) (itself a draft), step 1, Aim.
 **Source:** the [continue-or-stop note](../../notes/audits/programme-audit/2026-11-09-continue-or-stop.md)
 §4 step 2, and Joshua's words to the research coordinator on 2026-11-09: "I'll let you draft it".
 **Scope:** research only. The capped eval run Joshua selected the same day (the note's option B)
-is not covered here (open decision 2).
+is not covered here; Joshua ruled research first (§8).
 
 Terms marked **(note)** are the note's §4 step 2, unchanged. Terms marked **(added)** come from
 The Order or from this draft, and are Joshua's to accept or strike. Items 1 and 2 are his to
@@ -15,7 +15,7 @@ write; their text here is a proposal.
 
 ## 1. Objective and measure (added)
 
-Answer one question by 2026-12-31: is there an edge at all in the landed data? Progress is
+Answer one question by 2026-11-30: is there an edge at all in the landed data? Progress is
 measured in decisive results: registered cards that reach a verdict and whose mapped action
 happens. The round succeeds if it ends in one Codex-verified CONFIRMED card or in a clean stop.
 
@@ -43,31 +43,37 @@ a partial null. The expected result of this round is no confirmed card.
   look. A card that fails the re-read still counts against the four.
 - **(note)** No gate is loosened, and no data is bought. **(added)** No compute or subscription
   is bought either: new spend is $0.
-- **(added)** A slot is spent when its card's registration is marked started in
-  `order-state.json`, or when the card fails its cost re-read.
+- **(added)** A card takes its slot when its registration is marked started in
+  `order-state.json`, or when it fails its cost re-read. Taking the fourth slot does not end
+  the round: the started card runs to its verdict.
 - **(added)** DYN-SURVEY-1 is not part of this round. Joshua dropped its rerun on 2026-11-09
   ("Drop the rerun"); it stays closed at run 1's partial null and advances no card.
-- **(note)** Deadline: 2026-12-31.
+- **(note, tightened)** Deadline: 2026-11-30, not the note's 2026-12-31, so that the eval
+  run can follow (§8, open decision).
 
 ## 4. Outside answers (added)
 
 | Question | Recipient | Asked | Human answer |
 |---|---|---|---|
-| May exported bars be used for offline tests? | TradingView | Not asked | None |
+| May exported bars be used for offline tests? | TradingView | Sent by Joshua (date recorded when sent) | Pending |
 | Q5, T1, T2 (who may operate the account; the weekly trade's shape) | Tradeify | Not sent | None. Not needed for this round; needed before any deployment |
 
-The TradingView row is unsatisfied, and under The Order's step 2 (Ask) that blocks the round:
-Joshua's acceptance of the licence risk (sitting ruling D16) is his acceptance, not an outside
-answer, and spending nothing does not discharge it. See open decision 1.
+The Order's step 2 (Ask) requires a dated human answer before work goes on, and Joshua's
+acceptance of the licence risk (sitting ruling D16) is not one. **OVERRIDE, logged under step
+7:** Joshua ruled on 2026-11-09: "let's not wait for a human response. let's draft the email
+and see what they say". The round therefore proceeds without the answer. **(added)** A written
+refusal from TradingView received before the round ends stops it that day: the card in
+progress is abandoned as NULL and its slot is spent. A yes, or silence, changes nothing.
 
 No route-, venue- or account-specific work is done under this contract.
 
 ## 5. Stop conditions
 
-**(note)** The round ends when the four cards are spent or on 2026-12-31, whichever comes
-first, unless a card has reached CONFIRMED under the frozen gates and Codex has verified it.
-No extension, no replacement batch, no repair round. **Without a Codex-verified CONFIRMED card,
-the programme closes on 2027-01-02.**
+**(note, clarified)** The round ends when the fourth card has its verdict, when a card fails its cost
+re-read and no slot is left, or at the deadline, whichever comes first. A card still running
+at the deadline is recorded as NULL. **(added)** A Codex-verified CONFIRMED card ends the
+round too, since it permits only the separate deployment decision below.
+No extension, no replacement batch, no repair round.
 
 **(added)** A proposal to loosen a gate, add a card or instrument, or reread a verdict also
 ends the round. The note sets this term for the eval run, not for research.
@@ -83,10 +89,14 @@ ends the round. The note sets this term for the eval run, not for research.
 
 **(added)** Who acts. The research coordinator records each spent slot and, on the day the
 round ends, opens a `closure:` PR that sets a 14-day quarantine in `order-state.json`. Joshua
-merges it. From then the `order-gates` check enforces the quarantine. If the round ends on
-12-31, the quarantine runs to 2027-01-14, the closing record is written and the programme
-closed inside it by 2027-01-02, and closure-only limits continue to its end. No second round is
-drafted.
+merges it. From then the `order-gates` check enforces the quarantine. The quarantine covers the
+whole repository: the `order-gates` check blocks new registrations, contract changes and
+non-closure paths until it ends. If the round ends on 11-30, the quarantine runs to 12-14.
+No second round is drafted.
+
+**(note)** Without a Codex-verified CONFIRMED card, the programme closes on 2027-01-02. The
+closing record is written in the quarantine; the eval run (§8) is the programme's only
+remaining activity until that date.
 
 ## 6. Operator hours, rounds, end date
 
@@ -94,22 +104,37 @@ drafted.
   includes this framework's administration.
 - **(added)** At most four registered tests, one active at a time; one build item; two open
   decisions.
-- **(note)** End date: 2026-12-31.
+- **(note, tightened)** End date: 2026-11-30.
 
 ## 7. Holder, stake, review (added)
 
 No holder: witness mode (scheduled self-email plus an OpenTimestamps proof). No stake. Review on
 the later of 2027-01-16 and the quarantine's end.
 
-## Open decisions (Joshua)
+## 8. Rulings and the open decision
 
-1. **TradingView.** Either Joshua asks TradingView in writing whether exported bars may be used
-   for offline tests, and the round waits for a dated human answer (a refusal ends it); or the
-   round runs under the note alone and not under The Order, and this contract is withdrawn.
-   No recommendation: this is a choice about which rule governs.
-2. **Order against the eval run.** The Order allows one active hypothesis, and separate
-   contracts do not lift that limit. Both end on 2026-12-31, so running them in sequence
-   shortens one of them. Joshua rules one of: research first, then the eval run; the eval run
-   first, then research; or side by side as a stated exception, with each contract barring
-   its result from being used to continue the other. Recommended: research first. Four
-   offline cards take days, and the eval run still waits on its own steps.
+**Ruled by Joshua, 2026-11-09:**
+1. **TradingView:** "let's not wait for a human response. let's draft the email and see what
+   they say". Logged as an OVERRIDE of Ask (§4).
+2. **Order against the eval run:** "research first". The Order allows one active hypothesis,
+   so the eval run starts only after this round ends.
+
+**Open decision: the quarantine against the eval run.** The quarantine starts the day the round
+ends and lasts 14 days, and the Order allows only closure work in it. Read strictly, the eval
+run cannot start until it ends. The eval run's own terms (note §4 step 4, option B) end on
+2026-12-31, so every day of research and quarantine is a day of eval sessions lost.
+Joshua rules one of:
+
+- **(a) Strict, research tightened (recommended).** Research ends by 2026-11-30 (this draft).
+  The eval run's contract and registration merge before research ends, so nothing new is
+  registered in the quarantine. Its sessions start after the quarantine ends, at the latest on
+  2026-12-15, leaving about 12 trading sessions before 12-31.
+- **(b) Strict, note's deadline.** Research keeps 2026-12-31. The eval run then cannot run
+  before its own end date, so it effectively does not happen.
+- **(c) Scope exception.** The quarantine covers this round's work only, and the eval run's
+  sessions may run in it. This bends the Order's rule that quarantine holds only closure work,
+  and `order-gates` blocks the eval's non-closure records repo-wide unless `closure_paths`
+  lists them before the quarantine starts.
+
+(a) is recommended because four offline cards take days, not weeks, and it keeps the Order
+intact.
