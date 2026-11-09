@@ -483,3 +483,33 @@ def test_quarantine_commit_pure():
     assert co.check_quarantine_commit(same, state(registrations=[reg()]), [], "closure: x", q, on)
     assert co.check_quarantine_commit(same, same, [], "feat: x", q, on)
     assert co.check_quarantine_commit(same, state(registrations=[reg()]), [], "feat: x", q, D("2026-12-16")) == []
+
+
+# ---------------------------------------------------------------- Codex round 10 regression
+
+def test_quarantine_binds_unstarted_registration_documents(tmp_path, monkeypatch):
+    repo = tmp_path
+    _git(repo, "init", "-q", "-b", "main")
+    (repo / "docs/framework").mkdir(parents=True)
+    (repo / "docs/notes").mkdir(parents=True)
+    (repo / "research").mkdir()
+    (repo / "docs/notes/R1.md").write_bytes(REG_BYTES)
+    _write_state(repo, registrations=[reg(path="docs/notes/R1.md")])
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "base")
+    _git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+    _git(repo, "checkout", "-qb", "pr")
+    monkeypatch.setattr(co, "REPO_ROOT", repo)
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request")
+    monkeypatch.setenv("GITHUB_BASE_REF", "main")
+    monkeypatch.setenv("ORDER_TODAY", "2026-12-05")
+    (repo / "docs/notes/R1.md").write_bytes(b"H: rewritten\n")
+    _git(repo, "commit", "-qam", "closure: rewrite R1")
+    (repo / "docs/notes/R1.md").write_bytes(REG_BYTES)
+    _git(repo, "commit", "-qam", "closure: restore R1")
+    _git(repo, "checkout", "-q", "main")
+    _write_state(repo, quarantine=Q, registrations=[reg(path="docs/notes/R1.md")])
+    _git(repo, "commit", "-qam", "closure: STOP")
+    _git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+    _synthetic_checkout(repo, monkeypatch, tmp_path)
+    assert co.run_gate() == 1
