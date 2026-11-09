@@ -323,3 +323,23 @@ def test_pr_head_freeze_binds_a_merge_with_rewritten_main(tmp_path, monkeypatch)
     _git(repo, "add", "-A")
     _git(repo, "commit", "-qm", "Merge pr into main")
     assert co.run_gate() == 1
+
+
+# ---------------------------------------------------------------- Codex round 4 regression
+
+def test_symlinked_state_file_is_rejected(tmp_path, monkeypatch):
+    repo = _repo(tmp_path, monkeypatch, [])
+    # A target file name that is itself valid empty-state JSON would parse as the link's blob.
+    name = json.dumps(co.EMPTY_STATE, separators=(",", ":"))
+    real = repo / "docs/framework/real-state.json"
+    real.write_text(json.dumps(state(registrations=[reg(started="2026-12-05")])))
+    (repo / co.STATE_PATH).unlink()
+    try:
+        (repo / co.STATE_PATH).symlink_to(name)
+    except OSError:
+        pytest.skip("cannot create a symlink with that name here")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "link the state file")
+    assert co.run_gate() == 1
+    with pytest.raises(co.StateError):
+        co._working_state()

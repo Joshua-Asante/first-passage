@@ -223,8 +223,20 @@ def _load(data: bytes | None) -> dict:
     return json.loads(data) if data is not None else dict(EMPTY_STATE)
 
 
+class StateError(ValueError):
+    """The state file is unreadable as committed: not regular, or not JSON."""
+
+
 def _state_at(prefix: str) -> dict:
-    return _load(_git_bytes(f"{prefix}{STATE_PATH}"))
+    """The state as committed at ``prefix`` (``REV:`` or ``:`` for the index). A symlink's
+    blob is its target path, so the state file must be a regular file to be read at all."""
+    data = _git_bytes(f"{prefix}{STATE_PATH}")
+    if data is not None and not _is_regular(prefix, STATE_PATH):
+        raise StateError(f"{STATE_PATH} must be a regular file, not a symlink or submodule")
+    try:
+        return _load(data)
+    except json.JSONDecodeError as exc:
+        raise StateError(f"{STATE_PATH} is not valid JSON: {exc}") from exc
 
 
 def _target_rev() -> str | None:
@@ -292,8 +304,8 @@ def check_range(base: str, tip: str, on: dt.date) -> list[str]:
                 errors += [f"{short}: {e}" for e in check_transition(parent_state, head, on)]
                 subject = (_git("log", "-1", "--format=%s", commit) or "").strip()
                 errors += [f"{short}: {e}" for e in check_commit_subjects([subject], parent_state, on)]
-        except json.JSONDecodeError as exc:
-            errors.append(f"{short}: {STATE_PATH} is not valid JSON: {exc}")
+        except StateError as exc:
+            errors.append(f"{short}: {exc}")
     return sorted(set(errors), key=errors.index)
 
 
@@ -303,8 +315,8 @@ def run_gate() -> int:
     try:
         head = _state_at(head_prefix)
         base = _state_at(f"{base_rev}:") if base_rev else dict(EMPTY_STATE)
-    except json.JSONDecodeError as exc:
-        print(f"order-gates: {STATE_PATH} is not valid JSON: {exc}", file=sys.stderr)
+    except StateError as exc:
+        print(f"order-gates: {exc}", file=sys.stderr)
         return 1
     errors = validate_schema(head)
     if not errors:
@@ -317,8 +329,9 @@ def run_gate() -> int:
             # branched: the merged state must also respect the target as it is now.
             try:
                 target_state = _state_at(f"{target}:")
-            except json.JSONDecodeError:
-                target_state = dict(EMPTY_STATE)
+            except StateError as exc:  # fail closed: the target's obligations are unknown
+                errors.append(f"target {target[:8]}: {exc}")
+                target_state = {"version": 0}
             if not validate_schema(target_state):
                 errors += check_transition(target_state, head, on)
                 if base_rev and tip and quarantine_active(target_state, on):
@@ -331,8 +344,8 @@ def run_gate() -> int:
                 tip_state = _state_at(f"{tip}:")
                 if not validate_schema(tip_state):
                     errors += check_transition(tip_state, head, on)
-            except json.JSONDecodeError:
-                pass  # check_range reports an unparsable PR head
+            except StateError:
+                pass  # check_range reports an unreadable PR head
         if base_rev and tip:
             errors += check_range(base_rev, tip, on)
             if quarantine_active(base, on):
@@ -345,6 +358,8 @@ def run_gate() -> int:
 
 def _working_state() -> dict:
     p = REPO_ROOT / STATE_PATH
+    if p.is_symlink():
+        raise StateError(f"{STATE_PATH} must be a regular file, not a symlink")
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else dict(EMPTY_STATE)
 
 
