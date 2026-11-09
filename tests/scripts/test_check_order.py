@@ -29,6 +29,13 @@ def reg(started=None, sha=REG_SHA, rid="R1", path="research/R1.md"):
 Q = {"start": "2026-12-01", "until": "2026-12-15"}
 
 
+@pytest.fixture(autouse=True)
+def _clean_ci_env(monkeypatch):
+    """CI sets these for the real PR; a test must not inherit them."""
+    for var in ("GITHUB_EVENT_NAME", "GITHUB_EVENT_PATH", "GITHUB_BASE_REF", "ORDER_TODAY"):
+        monkeypatch.delenv(var, raising=False)
+
+
 # ---------------------------------------------------------------- schema
 
 def test_committed_state_file_is_valid():
@@ -541,4 +548,14 @@ def test_target_registered_document_is_hashed_at_pr_commits(tmp_path, monkeypatc
     _git(repo, "commit", "-qam", "closure: register R1 and STOP")
     _git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
     _synthetic_checkout(repo, monkeypatch, tmp_path)
+    assert co.run_gate() == 1
+
+
+# ---------------------------------------------------------------- fail-closed regression (CI env leak)
+
+def test_unresolvable_pr_head_fails_closed(tmp_path, monkeypatch):
+    _repo(tmp_path, monkeypatch, [])
+    event = tmp_path / "event.json"
+    event.write_text(json.dumps({"pull_request": {"head": {"sha": "a" * 40}}}))
+    monkeypatch.setenv("GITHUB_EVENT_PATH", str(event))
     assert co.run_gate() == 1

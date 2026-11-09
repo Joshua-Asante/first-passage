@@ -377,6 +377,15 @@ def check_range(base: str, tip: str, on: dt.date, also_quarantined: tuple = ()) 
 def run_gate() -> int:
     on = today()
     base_rev, head_prefix, tip = resolve_context()
+    if os.environ.get("GITHUB_EVENT_NAME") == "pull_request":
+        # Fail closed: an unresolvable PR head or fork point would leave the commit
+        # range empty and the per-commit checks vacuous.
+        if not (tip and (_git("rev-parse", "--verify", "-q", f"{tip}^{{commit}}") or "").strip()):
+            print(f"order-gates: PR head {tip!r} is not a commit in this checkout", file=sys.stderr)
+            return 1
+        if not base_rev:
+            print("order-gates: no merge-base with the target branch; fetch it before running the gate", file=sys.stderr)
+            return 1
     try:
         head = _state_at(head_prefix)
         base = _state_at(f"{base_rev}:") if base_rev else dict(EMPTY_STATE)
