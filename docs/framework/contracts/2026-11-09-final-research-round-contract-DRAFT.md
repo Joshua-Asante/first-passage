@@ -48,22 +48,23 @@ a partial null. The expected result of this round is no confirmed card.
   the round: the started card runs to its verdict.
 - **(added)** DYN-SURVEY-1 is not part of this round. Joshua dropped its rerun on 2026-11-09
   ("Drop the rerun"); it stays closed at run 1's partial null and advances no card.
-- **(note, tightened)** Deadline: 2026-11-30, not the note's 2026-12-31, so that the eval
-  run can follow (§8, open decision).
+- **(note, tightened; proposed as option (a) in §8)** Deadline: 2026-11-30, not the note's
+  2026-12-31, so that the eval run can follow.
 
 ## 4. Outside answers (added)
 
 | Question | Recipient | Asked | Human answer |
 |---|---|---|---|
-| May exported bars be used for offline tests? | TradingView | Sent by Joshua (date recorded when sent) | Pending |
+| May exported bars be used for offline tests? | TradingView | Not yet sent; Joshua sends it himself (date recorded when sent) | None |
 | Q5, T1, T2 (who may operate the account; the weekly trade's shape) | Tradeify | Not sent | None. Not needed for this round; needed before any deployment |
 
 The Order's step 2 (Ask) requires a dated human answer before work goes on, and Joshua's
 acceptance of the licence risk (sitting ruling D16) is not one. **OVERRIDE, logged under step
 7:** Joshua ruled on 2026-11-09: "let's not wait for a human response. let's draft the email
-and see what they say". The round therefore proceeds without the answer. **(added)** A written
-refusal from TradingView received before the round ends stops it that day: the card in
-progress is abandoned as NULL and its slot is spent. A yes, or silence, changes nothing.
+and see what they say". The round therefore proceeds without the answer. **(added, proposed; Joshua
+accepts or strikes)** A written refusal from TradingView received before the round ends stops
+it that day: the card in progress is abandoned as NULL and its slot is spent. A yes, or
+silence, changes nothing.
 
 No route-, venue- or account-specific work is done under this contract.
 
@@ -120,21 +121,24 @@ the later of 2027-01-16 and the quarantine's end.
    so the eval run starts only after this round ends.
 
 **Open decision: the quarantine against the eval run.** The quarantine starts the day the round
-ends and lasts 14 days, and the Order allows only closure work in it. Read strictly, the eval
-run cannot start until it ends. The eval run's own terms (note §4 step 4, option B) end on
-2026-12-31, so every day of research and quarantine is a day of eval sessions lost.
-Joshua rules one of:
+ends and lasts 14 days. The Order allows only closure work in it, and `order-gates` refuses to
+start any registration until it ends. So the eval run starts only after the quarantine. Its own
+terms (note §4 step 4, option B) end it on 2026-12-31, and also end it if Tradeify gives no
+human answer on Q5, T1 or T2 by 2026-12-01. Q5 has not been sent. Joshua rules one of:
 
-- **(a) Strict, research tightened (recommended).** Research ends by 2026-11-30 (this draft).
-  The eval run's contract and registration merge before research ends, so nothing new is
-  registered in the quarantine. Its sessions start after the quarantine ends, at the latest on
-  2026-12-15, leaving about 12 trading sessions before 12-31.
-- **(b) Strict, note's deadline.** Research keeps 2026-12-31. The eval run then cannot run
-  before its own end date, so it effectively does not happen.
-- **(c) Scope exception.** The quarantine covers this round's work only, and the eval run's
-  sessions may run in it. This bends the Order's rule that quarantine holds only closure work,
-  and `order-gates` blocks the eval's non-closure records repo-wide unless `closure_paths`
-  lists them before the quarantine starts.
+- **(a) Strict, research to 11-30 (recommended).** If research ends by 11-30, the quarantine
+  clears by 12-14 and eval sessions may start on 12-15, leaving 11 to 12 weekdays to 12-31
+  (12-25 closed, 12-24 shortened). The eval run's contract and registration merge before
+  research ends, so nothing new is registered in the quarantine. Sessions still depend on the
+  eval run's other terms, above all a Tradeify answer by 12-01.
+- **(b) Strict, the note's 12-31.** Research may still end early, on its fourth verdict, but no
+  eval window is guaranteed, and none remains if research runs to its deadline.
+- **(c) Change the framework.** Let eval sessions run in the quarantine. This is not a scope
+  choice: `order-gates` refuses to start a registration in quarantine whatever the paths, the
+  commits must carry `closure:`, and The Order's protected rule E3 (closure-only quarantine)
+  cannot be changed in witness mode. It needs an explicit change to The Order and to
+  `check_order.py`, decided before the outcome it affects.
 
 (a) is recommended because four offline cards take days, not weeks, and it keeps the Order
-intact.
+intact. The 12-01 Tradeify condition binds under every option: unless Joshua sends Q5 and gets
+a human answer by then, the eval run ends before any option lets it start.
