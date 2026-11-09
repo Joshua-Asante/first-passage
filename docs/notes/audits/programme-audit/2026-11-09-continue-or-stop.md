@@ -121,17 +121,25 @@ question from "closed" to "one last bounded round".
 **Ruled now, before any outcome:**
 1. The prop operation ends as an investment. No new tooling, rail, gates, venue work or
    governance documents.
-2. **One final research round, registered now, before any result:**
-   - a small number of cards, chosen by stated rationale before any result and within the remaining
-     lifetime looks, on data already landed;
-   - each card passes a cost re-read at the builder's frozen slip before it spends a look;
-   - K is banked honestly, with no gate loosened;
-   - no new data purchases;
-   - at most about one hour a week of Joshua's time, for acceptance only;
-   - deadline 2026-12-31.
+2. **One final research round, with an aggregate ceiling frozen before any exploration.** This is
+   a channel-level ceiling as D18 requires, not just the per-instrument lifetime looks. Proposed
+   terms, for Joshua to accept or change before anything runs:
+   - **Aggregate ceiling: 4 cards in total**, across all instruments. That covers every development
+     card and every holdout attempt. K = 4 is banked whether or not a card is run to the end. There
+     are no replacement batches and no added instruments.
+   - **Eligible instruments:** only those with landed, hash-registered data and remaining lifetime
+     looks (the index micros, MGC, M6E, 6J).
+   - **Selection:** the 4 cards are named in one registration before any exploration. They are
+     chosen by stated rationale from existing dossiers and parked cards, never by outcome.
+   - Each card must pass a cost re-read at the builder's frozen slip before it spends a look. A card
+     that fails the re-read still counts against the 4.
+   - No gate is loosened, and no data is purchased.
+   - At most about one hour a week of Joshua's time, for acceptance only.
+   - Deadline 2026-12-31.
 
    A card counts only if it reaches CONFIRMED under the frozen gates and Codex verifies it.
-   Otherwise the programme closes on 2027-01-02, with no extension and no repair round.
+   Exhausting the 4 cards or reaching the deadline without that ends the round. The programme then
+   closes on 2027-01-02, with no extension, no replacement batch and no repair round.
 3. Cut recurring spend to the data line or zero by 2026-11-30, unless the AI subscriptions serve
    other work. Close the open ledger rows.
 4. Choose one for the owned eval:
@@ -148,7 +156,12 @@ question from "closed" to "one last bounded round".
      - a pass authorises nothing; a funded stage would be a new decision with a payout model built
        first.
 
-     The coda buys closure and a small lottery chance, not evidence.
+     The coda's information value is **unquantified, not ruled out**. The forward stop rule is a
+     sequential test on strategy trades with keep, drop and fault outcomes. PASS63 does not
+     evaluate this policy, so it neither establishes nor dismisses what the coda could show. What
+     the coda cannot do is prove skill from a pass or justify scaling. The default is still (A)
+     because the coda's cost is Joshua's attended hours and the venue's open questions, not
+     because it carries no evidence.
 5. Close the programme by 2027-01-02 in every case unless step 2 yields a Codex-verified CONFIRMED card. A confirmed card reopens only the question of how to deploy it, as a new decision with a payout model built first.
 
 **Kept:** the negative knowledge (the rejection register, closures and K ledgers), the validation
