@@ -1,6 +1,38 @@
-# The Order: lineage
+# The Order: appendix (history and lineage)
 
-Where each element of [The Order](the-order.md) comes from, Joshua's own frameworks and external ones, and what is new.
+Background for [The Order](the-order.md). Nothing here is an operating rule; it explains why the rules exist and where they come from.
+
+## Why each rule exists
+
+Each rule answers a failure First Passage actually had.
+
+| Rule | Failure it prevents | Instance |
+|---|---|---|
+| Aim: contract before any packet | Objectives rescuing one another | Income, apprenticeship and identity ran as one programme |
+| Ask: dated human answer before spend | Building on a premise nobody had asked the venue about | The venue was asked 82 days after purchase; one support reply ended the route |
+| Subtract: protected controls stay | Governance regrowth, and deletion of controls by agents | Rules 23, 24 and 28 (consequences before outcomes) deleted in `722b920c`; E1 restores them |
+| Choose the test: zero-edge figure first | Buying before testing at zero edge | Purchase preceded any economic-null calculation |
+| Register: frozen when the test starts | Moving the test once the number is visible | `53e35eb3` (ceiling raise), `f977c20f` |
+| Run and verify: separate route, dated oracle | Text checked only against text | Hashes and reviews verified documents, not the market |
+| Rule: five lines first, not the same day | Same-day rulings; the delegated frame | "Packet decides" was an option the maker drafted |
+| Mapping governs continuation | Results reopening as a fresh menu | "Supersedes in part" reopened a lane two days after it was closed |
+| Stop: empty quarantine | Successor in the same breath | `a5de124f` then `0e26a7b6` about 19 hours later |
+
+## Warning signs
+
+| Anti-pattern | What it sounds like |
+|---|---|
+| Moving the test | The threshold feels unreasonable while the number is on screen |
+| Inference for an absent fact | "safely infer", "accepted risk", "option-preserving" |
+| Successor in the same breath | "supersedes in part", "close v1, open v2", "one final round" |
+| Delegated frame | "Packet decides", "accept all recommendations" |
+| Imagined states | "so it's ready" |
+
+First Passage counted about 9 loosenings to 5 tightenings, the baseline the monthly count compares against.
+
+## Lineage
+
+Where each element comes from, in Joshua's own frameworks and external ones, and what is new.
 
 | Element | Joshua's source | External source | Match |
 |---|---|---|---|
