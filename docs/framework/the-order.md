@@ -22,7 +22,7 @@
 - a successor registered inside quarantine;
 - work continuing past a contract's end date.
 
-Otherwise it's returned at the review date. With no stake, the holder is a **witness**, not an enforcer, and is described as one.
+Otherwise it's returned at the review date. Without a stake, the holder is only a **witness**.
 
 **No holder (witness mode).** Joshua emails himself, with a scheduled send and an OpenTimestamps proof. That witnesses *timing*, so E1 remains checkable. It can't supply independent consent. So in witness mode registrations and contracts **can't be amended at all**, only replaced prospectively, and no money is spent beyond the data line.
 
