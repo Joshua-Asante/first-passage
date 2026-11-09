@@ -452,3 +452,34 @@ def test_target_quarantine_binds_each_pr_commit(tmp_path, monkeypatch):
     _git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
     _synthetic_checkout(repo, monkeypatch, tmp_path)
     assert co.run_gate() == 1
+
+
+# ---------------------------------------------------------------- Codex round 9 regression
+
+def test_target_quarantine_binds_intermediate_state_mutations(tmp_path, monkeypatch):
+    repo = _repo(tmp_path, monkeypatch, [])
+    (repo / "docs/notes").mkdir(parents=True)
+    (repo / "docs/notes/R9.md").write_bytes(REG_BYTES)
+    _write_state(repo, registrations=[reg(rid="R9", path="docs/notes/R9.md")])
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "closure: register successor")
+    _git(repo, "rm", "-q", "docs/notes/R9.md")
+    _write_state(repo)
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "closure: remove it again")
+    _git(repo, "checkout", "-q", "main")
+    _write_state(repo, quarantine=Q)
+    _git(repo, "commit", "-qam", "closure: STOP")
+    _git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+    _synthetic_checkout(repo, monkeypatch, tmp_path)
+    assert co.run_gate() == 1
+
+
+def test_quarantine_commit_pure():
+    q = state(quarantine=Q)
+    on = D("2026-12-05")
+    same = state()
+    assert co.check_quarantine_commit(same, same, ["docs/notes/a.md"], "closure: x", q, on) == []
+    assert co.check_quarantine_commit(same, state(registrations=[reg()]), [], "closure: x", q, on)
+    assert co.check_quarantine_commit(same, same, [], "feat: x", q, on)
+    assert co.check_quarantine_commit(same, state(registrations=[reg()]), [], "feat: x", q, D("2026-12-16")) == []

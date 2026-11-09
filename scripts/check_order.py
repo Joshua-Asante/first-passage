@@ -185,6 +185,25 @@ def check_commit_subjects(subjects: list[str], base: dict, on: dt.date) -> list[
             f"Offending: {'; '.join(bad[:5])}"]
 
 
+def check_quarantine_commit(parent: dict, child: dict, paths: list[str], subject: str,
+                            quarantine_state: dict, on: dt.date) -> list[str]:
+    """Every obligation of a quarantine active on ``quarantine_state``, applied to one
+    commit (``parent`` -> ``child``): closure subject, closure paths, and no change to
+    registrations, contract or closure allowlist. Used for quarantines that bind the
+    commit without being on its parent (the target branch's)."""
+    if not quarantine_active(quarantine_state, on):
+        return []
+    until = quarantine_state["quarantine"]["until"]
+    errors = check_commit_subjects([subject], quarantine_state, on)
+    errors += check_quarantine_paths(paths, quarantine_state, on)
+    for field, label in (("registrations", "no registration may be added, changed or started"),
+                         ("contract", "the contract may not change"),
+                         ("closure_paths", "closure_paths may not change")):
+        if parent.get(field) != child.get(field):
+            errors.append(f"quarantine: {label} until {until}")
+    return errors
+
+
 def closure_paths(state: dict) -> tuple[str, ...]:
     return tuple(state.get("closure_paths") or DEFAULT_CLOSURE_PATHS)
 
@@ -332,13 +351,15 @@ def check_range(base: str, tip: str, on: dt.date, also_quarantined: tuple = ()) 
                 errors += [f"{short}: {e}" for e in check_transition(parent_state, head, on)]
                 subject = (_git("log", "-1", "--format=%s", commit) or "").strip()
                 errors += [f"{short}: {e}" for e in check_commit_subjects([subject], parent_state, on)]
-                # Each commit's paths against its parent's quarantine and against any other
-                # quarantine binding the merge (main's, when it started after the fork).
-                binding = [st for st in (parent_state, *also_quarantined) if quarantine_active(st, on)]
-                if binding:
+                # Each commit against its parent's quarantine, and against every obligation of
+                # any other quarantine binding the merge (main's, when it started after the fork).
+                binding_extra = [st for st in also_quarantined if quarantine_active(st, on)]
+                if quarantine_active(parent_state, on) or binding_extra:
                     paths = [x for x in (_git("diff", "--no-renames", "--name-only", parent, commit) or "").splitlines() if x]
-                    for st in binding:
-                        errors += [f"{short}: {e}" for e in check_quarantine_paths(paths, st, on)]
+                    errors += [f"{short}: {e}" for e in check_quarantine_paths(paths, parent_state, on)]
+                    for st in binding_extra:
+                        errors += [f"{short}: {e}" for e in
+                                   check_quarantine_commit(parent_state, head, paths, subject, st, on)]
         except StateError as exc:
             errors.append(f"{short}: {exc}")
     return sorted(set(errors), key=errors.index)
