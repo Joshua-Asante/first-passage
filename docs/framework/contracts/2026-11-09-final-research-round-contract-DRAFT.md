@@ -7,10 +7,9 @@ witness mode it cannot be amended after that.
 **Source:** the research terms in the [2026-11-09 rulings](../../notes/2026-11-09-rulings.md)
 (R2, R7), the [continue-or-stop note](../../notes/audits/programme-audit/2026-11-09-continue-or-stop.md)
 §4 step 2, and Joshua's rulings to the research coordinator listed in §8.
-**Scope:** research only. The capped Tradeify eval run starts Mon 11-16 outside The Order,
-under stop-rule Addendum 2 (#1178), and nothing in it continues, extends or rescues this
-round, or the reverse. It needs a ruling that replaces R3 and money control 1, which the
-Tradeify deployment coordinator owns.
+**Scope:** research only. The coda on the owned Tradeify eval runs from Mon 11-16 outside The
+Order, under R12 (which replaces R3 for that eval), money control 1's R12 exception and
+stop-rule Addendum 2. Nothing in it continues, extends or rescues this round, or the reverse.
 
 Items 1 and 2 are Joshua's: he accepted their text on 2026-11-09 ("items 1 and 2 are acceptable
 as written"). Other terms are marked **(R2)**, **(R7)** or **(note)** by source, or **(added)**
