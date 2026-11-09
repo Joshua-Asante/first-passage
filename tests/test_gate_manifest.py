@@ -27,6 +27,9 @@ EXPECTED_ALWAYS = {
     # Blanket-add rejection for local-only roots and oversize blobs; always,
     # because the violating change is an unrelated add no staged_regex selects.
     "staged-debris",
+    # The Order: frozen registrations and quarantine. Always, because a
+    # quarantine breach can be any commit, not one a staged_regex selects.
+    "order-gates",
 }
 
 EXPECTED_PATH_CONDITIONAL = {

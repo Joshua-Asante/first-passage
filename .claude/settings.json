@@ -55,6 +55,15 @@
             "command": "python \"$CLAUDE_PROJECT_DIR/scripts/guard_operator_acts.py\""
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/scripts/check_order.py\" --pre-tool-use"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -64,6 +73,16 @@
           {
             "type": "command",
             "command": "python \"$CLAUDE_PROJECT_DIR/scripts/lock_event_hook.py\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/scripts/check_order.py\" --session-start"
           }
         ]
       }

@@ -100,6 +100,24 @@ runs, exits 0 once the VM is verified deallocated or has not started within the
 grace period, and exits 2 with `.cache/azure-vm-watch/ALARM.txt` if deallocation
 cannot be verified. Run one watcher per VM; it never prints the subscription ID.
 
+## The Order gates
+
+[`check_order.py`](check_order.py) enforces [The Order](../docs/framework/the-order.md)
+from [`order-state.json`](../docs/framework/order-state.json). As the `order-gates`
+always-tier gate (so inside the required `skills (3.12)` job) it fails when a
+registration's file no longer matches its recorded sha256, when a started
+registration is changed or removed, when an active quarantine is removed, moved or
+shortened, and, during a quarantine active on the base, when a change adds a
+registration, alters the contract or carries a commit not prefixed `closure:`.
+Hashes are of the committed blob: `git show HEAD:<path> | sha256sum`.
+
+To register a test, add `{"id", "path", "sha256", "started": null}`; set `started`
+to the date in the same change that starts the test. To STOP, set `quarantine` to
+`{"start", "until"}` at least 14 days apart, in a `closure:` commit. The same script
+runs as the SessionStart hook (`--session-start`, prints the state into every Claude
+Code session) and as a best-effort PreToolUse hook (`--pre-tool-use`, refuses edits
+to frozen registrations).
+
 ## Gate composition and admission
 
 Composition authority is [`gates.yml`](gates.yml) via

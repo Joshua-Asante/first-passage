@@ -110,7 +110,7 @@ Monthly, count loosenings against tightenings. Quarterly, the checker audits the
 - **E5.** A gate counts only if CI, permissions, money or a date enforces it.
 - **E6.** No ruling means STOP.
 
-Changing one needs the holder's countersignature before the outcome it affects. Changes to CI enforcement count as amendments. In witness mode these rules can't be changed.
+Changing one needs the holder's countersignature before the outcome it affects. Weakening, removing or bypassing a CI check or hook counts as an amendment; adding one that only enforces an existing rule does not. In witness mode these rules can't be changed.
 
 ## Keep it small
 
@@ -118,6 +118,7 @@ Changing one needs the holder's countersignature before the outcome it affects. 
 - AGENTS.md: at most 800 words.
 - Reviews: one pass, one challenge, one correction.
 - No CI check yet enforces these caps or catches dangling links, and AGENTS.md is currently about 2,100 words. Until one exists, E5 means these caps are not gates.
+- Enforced today: the `order-gates` check (frozen registrations, quarantine) and the session-start status hook, both reading [`order-state.json`](order-state.json).
 
 ## Test the framework itself
 
