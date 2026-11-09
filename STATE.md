@@ -11,6 +11,12 @@ after costs. The prop operation is closed. No order, venue, deployment or moneti
 work until a Codex-verified CONFIRMED result exists, and that opens only a separate
 deployment decision under its own contract.
 
+One exception ([R12](docs/notes/2026-11-09-rulings.md)): the coda on the owned Tradeify
+Select 100K eval, outside The Order, from Mon 11-16 under stop-rule
+[Addendum 2](docs/briefs/pre-registration/2026-10-31-tradeify-forward-stop-rule-registration-addendum-2.md):
+at most 20 attended sessions or to 12-31, no resets or purchases, each session with its
+own GO. ORB runs on the frozen build.
+
 ## Method
 
 [The Order](docs/framework/the-order.md), witness mode, adopted 2026-11-09 when the
@@ -31,7 +37,7 @@ makes changing them a deliberate, logged admin bypass.
 
 | Obligation | Next due | Notes |
 |---|---|---|
-| Tradeify eval | — | Lapses (R3). No more preservation trades; agents place nothing. |
+| Tradeify eval (coda) | Session 1 Mon 11-16 | R12 replaces R3 for this eval. Joshua enables and attends; agents place nothing. The weekly preservation trade is open: Joshua to rule. |
 | Subscription reconfirm | 11-21 | Joshua reconfirms the [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md) and cuts spend to the data line (R7). |
 | Witness record | Sent 2026-11-09 | Hashes emailed to Joshua's second account with an OpenTimestamps proof (R10). Joshua runs `ots upgrade` on the proof once Bitcoin confirms it. |
 
