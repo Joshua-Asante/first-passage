@@ -372,3 +372,40 @@ def test_closure_subject_does_not_admit_implementation(tmp_path, monkeypatch):
     _git(repo, "commit", "-qm", "closure: definitely closure work")
     _synthetic_checkout(repo, monkeypatch, tmp_path)
     assert co.run_gate() == 1
+
+
+# ---------------------------------------------------------------- Codex round 6 regressions
+
+def test_quarantine_started_in_pr_binds_later_commits(tmp_path, monkeypatch):
+    repo = _repo(tmp_path, monkeypatch, [])
+    _write_state(repo, quarantine=Q)
+    _git(repo, "commit", "-qam", "closure: STOP")
+    (repo / "research/impl.py").write_text("x = 1\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "closure: more")
+    _synthetic_checkout(repo, monkeypatch, tmp_path)
+    assert co.run_gate() == 1
+
+
+def test_added_then_reverted_implementation_in_quarantine_fails(tmp_path, monkeypatch):
+    repo = _repo(tmp_path, monkeypatch, [], quarantine=Q)
+    (repo / "research/impl.py").write_text("x = 1\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "closure: add")
+    _git(repo, "rm", "-q", "research/impl.py")
+    _git(repo, "commit", "-qm", "closure: remove")
+    _synthetic_checkout(repo, monkeypatch, tmp_path)
+    assert co.run_gate() == 1
+
+
+def test_merge_cannot_import_main_work_into_pr_quarantine(tmp_path, monkeypatch):
+    repo = _repo(tmp_path, monkeypatch, [])
+    _write_state(repo, quarantine=Q)
+    _git(repo, "commit", "-qam", "closure: STOP")
+    _git(repo, "checkout", "-q", "main")
+    (repo / "research/impl.py").write_text("x = 1\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "feat: implementation on main")
+    _git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+    _synthetic_checkout(repo, monkeypatch, tmp_path)
+    assert co.run_gate() == 1

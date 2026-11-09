@@ -332,6 +332,9 @@ def check_range(base: str, tip: str, on: dt.date) -> list[str]:
                 errors += [f"{short}: {e}" for e in check_transition(parent_state, head, on)]
                 subject = (_git("log", "-1", "--format=%s", commit) or "").strip()
                 errors += [f"{short}: {e}" for e in check_commit_subjects([subject], parent_state, on)]
+                if quarantine_active(parent_state, on):
+                    paths = [x for x in (_git("diff", "--no-renames", "--name-only", parent, commit) or "").splitlines() if x]
+                    errors += [f"{short}: {e}" for e in check_quarantine_paths(paths, parent_state, on)]
         except StateError as exc:
             errors.append(f"{short}: {exc}")
     return sorted(set(errors), key=errors.index)
@@ -375,6 +378,9 @@ def run_gate() -> int:
                 tip_state = _state_at(f"{tip}:")
                 if not validate_schema(tip_state):
                     errors += check_transition(tip_state, head, on)
+                    if quarantine_active(tip_state, on):  # what the merge brings into the PR's quarantine
+                        merged = [x for x in (_git("diff", "--no-renames", "--name-only", tip, "HEAD") or "").splitlines() if x]
+                        errors += check_quarantine_paths(merged, tip_state, on)
             except StateError:
                 pass  # check_range reports an unreadable PR head
         if base_rev and tip:
