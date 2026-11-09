@@ -298,3 +298,28 @@ def test_unstarted_registration_cannot_be_repurposed_in_quarantine():
     head = state(quarantine=Q, registrations=[reg(path="research/successor.md", sha="0" * 64, started="2026-12-05")])
     errs = co.check_transition(base, head, D("2026-12-05"))
     assert any("added, changed or started" in e for e in errs)
+
+
+# ---------------------------------------------------------------- Codex round 3 regression
+
+def test_pr_head_freeze_binds_a_merge_with_rewritten_main(tmp_path, monkeypatch):
+    repo = _repo(tmp_path, monkeypatch, [reg()])
+    _write_state(repo, registrations=[reg(started="2026-12-05")])
+    _git(repo, "commit", "-qam", "start R1")
+    _git(repo, "checkout", "-q", "main")
+    new = b"H: moved the threshold\n"
+    (repo / "research/R1.md").write_bytes(new)
+    _write_state(repo, registrations=[reg(sha=hashlib.sha256(new).hexdigest())])
+    _git(repo, "commit", "-qam", "rewrite unstarted R1 on main")
+    _git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+    head_sha = subprocess.run(["git", "rev-parse", "pr"], cwd=repo, capture_output=True, text=True).stdout.strip()
+    event = tmp_path / "event.json"
+    event.write_text(json.dumps({"pull_request": {"head": {"sha": head_sha}}}))
+    monkeypatch.setenv("GITHUB_EVENT_PATH", str(event))
+    _git(repo, "checkout", "-q", "--detach", "main")
+    subprocess.run(["git", "merge", "--no-ff", "--no-commit", head_sha], cwd=repo, capture_output=True)
+    # The merge Codex described: the PR's start date with main's rewritten document and hash.
+    _write_state(repo, registrations=[reg(started="2026-12-05", sha=hashlib.sha256(new).hexdigest())])
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "Merge pr into main")
+    assert co.run_gate() == 1

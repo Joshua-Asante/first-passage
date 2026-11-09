@@ -324,6 +324,15 @@ def run_gate() -> int:
                 if base_rev and tip and quarantine_active(target_state, on):
                     out = _git("log", "--format=%s", f"{base_rev}..{tip}") or ""
                     errors += check_commit_subjects([x for x in out.splitlines() if x.strip()], target_state, on)
+        if tip and tip != "HEAD":
+            # The PR head's own freezes bind the merge too: main may have rewritten a
+            # registration the PR started.
+            try:
+                tip_state = _state_at(f"{tip}:")
+                if not validate_schema(tip_state):
+                    errors += check_transition(tip_state, head, on)
+            except json.JSONDecodeError:
+                pass  # check_range reports an unparsable PR head
         if base_rev and tip:
             errors += check_range(base_rev, tip, on)
             if quarantine_active(base, on):
