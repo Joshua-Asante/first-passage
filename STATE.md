@@ -37,7 +37,8 @@ makes changing them a deliberate, logged admin bypass.
 
 | Obligation | Next due | Notes |
 |---|---|---|
-| Tradeify eval (coda) | Session 1 Mon 11-16 | R12 replaces R3 for this eval. Joshua enables and attends; agents place nothing. The weekly preservation trade is open: Joshua to rule. |
+| Tradeify eval (coda) | Session 1 Mon 11-16 | R12 replaces R3 for this eval. Joshua enables and attends; agents place nothing. |
+| Weekly preservation trade | By Fri 11-13 | Resumed (R12): Joshua places it by hand, per sitting D8/D9; agents place nothing. A missed week risks deletion after an email warning. |
 | Subscription reconfirm | 11-21 | Joshua reconfirms the [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md) and cuts spend to the data line (R7). |
 | Witness record | Sent 2026-11-09 | Hashes emailed to Joshua's second account with an OpenTimestamps proof (R10). Joshua runs `ots upgrade` on the proof once Bitcoin confirms it. |
 
