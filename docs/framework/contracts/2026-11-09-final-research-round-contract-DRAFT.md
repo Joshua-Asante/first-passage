@@ -63,7 +63,8 @@ judgment, not an estimated probability.
   unused.
 - **(R2)** The cost re-read at the frozen slip is a kill test. No loosening, replacement,
   repair, neighbour or direction-flip card.
-- **(R7)** Spend is the data line only. No data, compute or subscription is bought.
+- **(R7)** Spend is the data line only. **(added)** No new data, compute or subscription is
+  bought.
 - **(added)** A card is consumed when its registration is marked started in `order-state.json`,
   or when it fails its cost re-read. R2's "ends at 4 consumed cards" is read as: no fifth card
   is started, and the fourth runs to its verdict.
