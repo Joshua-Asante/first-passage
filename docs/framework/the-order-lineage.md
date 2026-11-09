@@ -11,8 +11,8 @@ Each rule answers a failure First Passage actually had.
 | Aim: contract before any packet | Objectives rescuing one another | Income, apprenticeship and identity ran as one programme |
 | Ask: dated human answer before spend | Building on a premise nobody had asked the venue about | The venue was asked 82 days after purchase; one support reply ended the route |
 | Subtract: protected controls stay | Governance regrowth, and deletion of controls by agents | Rules 23, 24 and 28 (consequences before outcomes) deleted in `722b920c`; E1 restores them |
-| Choose the test: zero-edge figure first | Buying before testing at zero edge | Purchase preceded any economic-null calculation |
-| Register: frozen when the test starts | Moving the test once the number is visible | `53e35eb3` (ceiling raise), `f977c20f` |
+| Choose the test: zero-edge figure first | Buying before testing at zero edge | The evaluation was bought before its pass probability at zero edge was computed |
+| Register: frozen when the test starts | Changing the rule once the result is known | `53e35eb3` reopened the bust ceiling at 5.0% by operator override; `f977c20f` downgraded the 10-19 negative finding to an "advisory prior" under an amended Rule 26 |
 | Run and verify: separate route, dated oracle | Text checked only against text | Hashes and reviews verified documents, not the market |
 | Rule: five lines first, not the same day | Same-day rulings; the delegated frame | "Packet decides" was an option the maker drafted |
 | Mapping governs continuation | Results reopening as a fresh menu | "Supersedes in part" reopened a lane two days after it was closed |
