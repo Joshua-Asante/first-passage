@@ -307,7 +307,7 @@ def _pr_head_sha() -> str | None:
     return sha if isinstance(sha, str) and re.fullmatch(r"[0-9a-f]{40}", sha) else None
 
 
-def check_range(base: str, tip: str, on: dt.date) -> list[str]:
+def check_range(base: str, tip: str, on: dt.date, also_quarantined: tuple = ()) -> list[str]:
     """Every commit in base..tip, against each of its parents: a registration frozen in
     one commit of a PR cannot be rewritten by a later one, and every commit (merges
     included) during an active quarantine carries the closure prefix."""
@@ -332,9 +332,13 @@ def check_range(base: str, tip: str, on: dt.date) -> list[str]:
                 errors += [f"{short}: {e}" for e in check_transition(parent_state, head, on)]
                 subject = (_git("log", "-1", "--format=%s", commit) or "").strip()
                 errors += [f"{short}: {e}" for e in check_commit_subjects([subject], parent_state, on)]
-                if quarantine_active(parent_state, on):
+                # Each commit's paths against its parent's quarantine and against any other
+                # quarantine binding the merge (main's, when it started after the fork).
+                binding = [st for st in (parent_state, *also_quarantined) if quarantine_active(st, on)]
+                if binding:
                     paths = [x for x in (_git("diff", "--no-renames", "--name-only", parent, commit) or "").splitlines() if x]
-                    errors += [f"{short}: {e}" for e in check_quarantine_paths(paths, parent_state, on)]
+                    for st in binding:
+                        errors += [f"{short}: {e}" for e in check_quarantine_paths(paths, st, on)]
         except StateError as exc:
             errors.append(f"{short}: {exc}")
     return sorted(set(errors), key=errors.index)
@@ -384,7 +388,8 @@ def run_gate() -> int:
             except StateError:
                 pass  # check_range reports an unreadable PR head
         if base_rev and tip:
-            errors += check_range(base_rev, tip, on)
+            extra = (target_state,) if target and target != base_rev and not validate_schema(target_state) else ()
+            errors += check_range(base_rev, tip, on, extra)
             changed = [x for x in (_git("diff", "--no-renames", "--name-only", base_rev, tip) or "").splitlines() if x]
             errors += check_quarantine_paths(changed, base, on)
             if target and target != base_rev and not validate_schema(target_state):
