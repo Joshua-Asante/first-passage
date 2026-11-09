@@ -13,9 +13,10 @@ deployment decision under its own contract.
 
 ## Method
 
-[The Order](docs/framework/the-order.md), witness mode (R10). Machine state:
-[`order-state.json`](docs/framework/order-state.json), enforced by the `order-gates`
-check and shown at the start of every session.
+[The Order](docs/framework/the-order.md), witness mode, **adoption pending** (R10): it is
+adopted when Joshua's scheduled self-email records its hash (see obligations). Its
+machine state, [`order-state.json`](docs/framework/order-state.json), is already shown at
+every session start and enforced by the `order-gates` check.
 
 - **Step:** aim. **No contract yet,** so there is no programme work. Stopping and
   shrinking (closure records, deletions) need none.
