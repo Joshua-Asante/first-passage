@@ -1,85 +1,46 @@
 # STATE — First Passage
 
-**Updated:** 2026-11-08. Keep this to one page: the goal, live obligations, open
-decisions. Replace stale lines instead of appending history.
+**Updated:** 2026-11-09. One page: goal, method, obligations, open decisions. Replace
+stale lines instead of appending history.
 
 ## Goal
 
-Get a native NinjaScript strategy trading the **Tradeify Select 100K evaluation**,
-then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
+Strategy research only ([rulings 2026-11-09](docs/notes/2026-11-09-rulings.md), R1):
+find out with honest evidence whether any systematic futures strategy has a real edge
+after costs. The prop operation is closed. No order, venue, deployment or monetisation
+work until a Codex-verified CONFIRMED result exists, and that opens only a separate
+deployment decision under its own contract.
 
-- **By role** (owners per [AGENTS.md Roles](AGENTS.md#roles)). Replace a line when its
-  objective changes.
-  - **Joshua (director, operations):** run the F rehearsal (Tue 11-10), derive the hard
-    latest trigger, send Tradeify the eval files, sign the page, then give the session 1 GO.
-  - **Research (Claude):** the evidence read on the live pair: re-run the August
-    combined-book gate on ORB v7 + Aegis A-0. New candidates only under the priority rule below.
-  - **Design (Claude):** keep the spec and procedure current. Next: any change that
-    the readback's B10 answer or the evidence read forces.
-  - **Engineering (Claude Code, primary checkout):** the S-PAIR readback, including
-    B10, before the rehearsal.
-  - **Verification (Codex):** review every head; audit the evidence read; review the
-    rehearsal and Sim101 records.
-  - **Measure (Claude Code, for Joshua's sign-off):** ready to score session 1 under the
-    forward stop rule.
-- **Stage:** 5 of 5, Verification, on the
-  [11-05 bare-bones eval path](https://github.com/Joshua-Asante/first-passage/blob/b7eaff7/docs/superpowers/plans/2026-09-20-tradeify-deployment-checklist.md#addendum-2026-11-05--bare-bones-eval-path).
-  Stages: 1 Ideation, 2 Validation, 3 Definition, 4 Creation, 5 Verification, then
-  measure. A private build (S-PAIR) exists, and the source went to Tradeify on 11-05.
-  The [design spec](docs/spec/2026-11-06-orb-aegis-eval-build-design.md) is accepted
-  (11-06) and amended: the frozen set is S-PAIR's tested source plus four ORB changes
-  (D7). The
-  [attended-session procedure](docs/spec/2026-11-07-orb-aegis-attended-session-procedure.md)
-  is accepted (11-07). **Next: the F rehearsal** (procedure §10): Joshua runs it in this
-  week's preservation trade (MNQ, about 16:15 ET, not 11-11) plus a Sim101 disable
-  timing, then derives the hard latest trigger on the signed page. Then: a short
-  Sim101 check; Joshua sends Tradeify the eval files; the signed page and pre-session
-  check; then a session GO.
-  The first session does not wait for Tradeify's source-review reply.
-- **New candidates** are allowed again: Joshua overturned the one-candidate bar on
-  2026-11-06, and on 11-07 confirmed that this covers new instruments and builder
-  rounds too. The private port is built and changed by Claude Code in Joshua's
-  primary checkout.
-- **Priority for new candidates** (Joshua, 2026-11-07): new-candidate ideation and
-  research may run only if it uses none of Joshua's attention, no writes or exclusive
-  work in his primary checkout, no spend, and nothing that delays the pair's next
-  steps. Joshua's time covers discussion, decisions, anything only he can do (eval
-  actions, private exports), troubleshooting and private-checkout builds; it excludes
-  public reading, public experiments on separate branches, and deferrable decision
-  notes. This holds until the pair's first attended eval session has completed under
-  the procedure, its evidence is captured, and any incident is dealt with well enough
-  to name the next action, unless Joshua reprioritises.
-- **Status:** Joshua accepted S-PAIR on 11-06; it is not a pass as frozen. His 11-06
-  GO covers the eval build only: no order, session or spend. No sizing or deployment
-  is approved, and every session needs its own GO.
-  The [native plan](docs/superpowers/plans/2026-10-21-tradeify-native-ninjascript-strategy-plan-DRAFT.md)
-  and the [qualification framework](docs/briefs/pre-registration/2026-10-26-tradeify-native-lane-prereg-DRAFT.md)
-  are drafts that the 11-05 path does not wait on.
-- **Known risk:** no configuration has an evidence case for this evaluation yet, and
-  no strategy-signal fill has ever occurred on the account.
-- **Ruled out:** the multi-firm program is research-only (its falsifier fired). The
-  external Python rail (decommissioned; code removed in #1122 and #1152) and the
-  personal account lane are closed.
+## Method
+
+[The Order](docs/framework/the-order.md), witness mode (R10). Machine state:
+[`order-state.json`](docs/framework/order-state.json), enforced by the `order-gates`
+check and shown at the start of every session.
+
+- **Step:** aim. **No contract yet,** so there is no programme work. Stopping and
+  shrinking (closure records, deletions) need none.
+- **Round inputs Joshua has accepted (R2, R7),** for him to put in the contract: one
+  round of at most 4 cards, ending at 4 or on 2026-12-31; 2-3 index-micro cards from
+  different mechanism families, at most 1 MGC, no 6J/M6E breakout cards; banked K still
+  counts; about 1 hour a week of his time; spend limited to the data line.
 
 ## Live obligations
 
 | Obligation | Next due | Notes |
 |---|---|---|
-| Weekly account-preservation trade | Week of 11-09 → 11-13 | One trade per Mon–Fri week, placed natively by Joshua by hand; agents place no eval order (D8, 11-08). A missed week risks deletion after an email warning. Done for 11-02 → 11-06 (11-04). This week it is the F rehearsal (procedure §10): resting stop, flatten-and-cancel exit. From the week of 11-16: one genuine minimal trade (D9: 1 micro, protective stop, held minutes, before the 16:45 ET flat-by, no instance enabled). |
-| Subscription reconfirm | 11-21 | Joshua reconfirms the [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md) rows. |
+| Tradeify eval | — | Lapses (R3). No more preservation trades; agents place nothing. |
+| Subscription reconfirm | 11-21 | Joshua reconfirms the [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md) and cuts spend to the data line (R7). |
+| Witness record | After merging #1176 | Joshua self-emails The Order's hashes with an OpenTimestamps proof (R10). |
 
 ## Open decisions (Joshua)
 
-1. **11-08 sitting:** ruled; see the [rulings](docs/notes/2026-11-08-sitting-rulings.md).
-   Still open: **T1** (whether Tradeify accepts the weekly trade's shape) and **T2**
-   (whether an agent may operate the account). Joshua asks Tradeify in writing after
-   the F rehearsal (D10). The D8 suspension lifts only when Joshua re-rules after
-   the Q5 answer.
-2. **Local confirmations:** the subscriber agreement (D7), the spend ceiling's scope
-   (D11) and the c1 archive contents (D19).
-
-Data source is settled: TradingView CME exports only, with the terms-of-service risk
-accepted (D16).
-
-The 11-07 pair-evidence verdict is settled: "prior stands", Codex-verified and accepted
-by Joshua on 11-08; for the first attempt it is accepted as risk under D1.
+1. **The round's contract** (Order step 1): objective, limiting input, budgets, outside
+   questions, kill rule, caps. Agents may not draft items 1 and 2.
+2. **Protect the enforcement files:** a GitHub ruleset requiring Joshua's approval for
+   `scripts/check_order.py`, `scripts/gates.yml` and `.claude/settings.json`.
+3. **The eight technical recommendations** at the end of the
+   [2026-11-09 rulings](docs/notes/2026-11-09-rulings.md). They gate the later
+   narrowing PRs (tooling, lab, ops and core removals).
+4. **Data rights:** research still rests on TradingView CME exports under accepted
+   terms-of-service risk (D16). A licensed data path is the long-horizon requirement to
+   question.
