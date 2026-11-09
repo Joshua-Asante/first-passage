@@ -15,6 +15,25 @@ away correctness, required confirmations or honest verification reporting.
 Pre-cut documents: `git show f2c4ae3:<path>`; historical rules are not current
 authorization.
 
+**Order of work (Q → D → S → A).** Every build, rule and procedure goes through these
+steps in order. Skip none and reverse none.
+
+1. **Question the requirement.** Name its owner.
+   - **External requirements** (venue or data vendor): get a dated, written answer
+     from a human at the party that can refuse it, for the exact account and route.
+     Our own docs, a mirror or an AI support agent don't count.
+   - **Internal requirements:** Joshua's recorded acceptance (a ruling, the signed
+     page or an accepted spec) is the answer.
+
+   Nothing route-, venue- or account-specific is built on an assumed or unanswered
+   requirement. Each rule names who asked for it and what fails without it.
+2. **Delete** what fails that test: parts, rules, gates and documents. Deletions go
+   through the normal review and merge rules. The money controls, frozen parameters,
+   the forward stop rule and the review and CI requirements stay in force until Joshua
+   rules explicitly.
+3. **Simplify** what survives.
+4. **Accelerate, then automate,** only the simplified version.
+
 ## Roles
 
 Joshua directs; the agents own the work under his direction.

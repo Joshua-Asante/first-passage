@@ -54,3 +54,9 @@ gates:
     cmd:
       - python
       - scripts/check_staged_debris.py
+
+  - id: order-gates
+    tier: always
+    cmd:
+      - python
+      - scripts/check_order.py
