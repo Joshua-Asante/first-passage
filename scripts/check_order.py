@@ -27,6 +27,7 @@ import datetime as dt
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -47,8 +48,14 @@ def today() -> dt.date:
     return dt.date.fromisoformat(override) if override else dt.datetime.now(dt.timezone.utc).date()
 
 
+_ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
 def _date(value, field: str, errors: list[str]) -> dt.date | None:
+    """Only canonical YYYY-MM-DD: fromisoformat also accepts e.g. 20261215."""
     try:
+        if not isinstance(value, str) or not _ISO_DATE.fullmatch(value):
+            raise ValueError
         return dt.date.fromisoformat(value)
     except (TypeError, ValueError):
         errors.append(f"{field}: expected a YYYY-MM-DD date, got {value!r}")
@@ -106,16 +113,21 @@ def quarantine_active(state: dict, on: dt.date) -> bool:
         return False
 
 
-def check_hashes(state: dict, read) -> list[str]:
-    """``read(path) -> bytes | None``. Every registration (and the contract) matches its hash."""
+def check_hashes(state: dict, read, is_regular=lambda path: True, *, started_only: bool = False) -> list[str]:
+    """``read(path) -> bytes | None``; ``is_regular(path)`` is False for a symlink or
+    submodule, whose committed bytes are not the document. Every registration (and the
+    contract) is a regular file matching its hash."""
     errors: list[str] = []
-    items = [(f"registration {r['id']}", r) for r in state.get("registrations", [])]
-    if state.get("contract"):
+    items = [(f"registration {r['id']}", r) for r in state.get("registrations", [])
+             if r.get("started") or not started_only]
+    if state.get("contract") and not started_only:
         items.append(("contract", state["contract"]))
     for label, item in items:
         data = read(item["path"])
         if data is None:
             errors.append(f"{label}: {item['path']} does not exist")
+        elif not is_regular(item["path"]):
+            errors.append(f"{label}: {item['path']} must be a regular file, not a symlink or submodule")
         elif hashlib.sha256(data).hexdigest() != item["sha256"]:
             errors.append(f"{label}: {item['path']} does not match its recorded sha256 "
                           "(a registration that has not started needs its new hash recorded; "
@@ -137,7 +149,9 @@ def check_transition(base: dict, head: dict, on: dt.date) -> list[str]:
                           "its path, sha256 and start date may not change. Replace it with a new registration")
     if quarantine_active(base, on):
         bq, hq = base["quarantine"], head.get("quarantine")
-        if not hq or hq.get("start") != bq["start"] or str(hq.get("until")) < bq["until"]:
+        head_until = _date(hq.get("until"), "quarantine.until", []) if hq else None
+        if not hq or hq.get("start") != bq["start"] or head_until is None \
+                or head_until < dt.date.fromisoformat(bq["until"]):
             errors.append(f"quarantine: active until {bq['until']}; it may not be removed, moved or shortened")
         base_ids = {r["id"] for r in base.get("registrations", [])}
         added = sorted(set(head_regs) - base_ids)
@@ -195,44 +209,103 @@ def _git_bytes(spec: str) -> bytes | None:
     return r.stdout if r.returncode == 0 else None
 
 
+def _is_regular(prefix: str, path: str) -> bool:
+    """Mode 100644/100755 in the tree (``REV:``) or index (``:``) the reader uses."""
+    if prefix == ":":
+        out = _git("ls-files", "-s", "--", path) or ""
+    else:
+        out = _git("ls-tree", prefix.rstrip(":"), "--", path) or ""
+    return out.split(" ", 1)[0] in ("100644", "100755")
+
+
 def _load(data: bytes | None) -> dict:
     return json.loads(data) if data is not None else dict(EMPTY_STATE)
 
 
-def resolve_context() -> tuple[str | None, str, list[str]]:
-    """(base rev or None, head prefix for `git show`, commit subjects in range)."""
+def _state_at(prefix: str) -> dict:
+    return _load(_git_bytes(f"{prefix}{STATE_PATH}"))
+
+
+def resolve_context() -> tuple[str | None, str, str | None]:
+    """(base rev or None, head prefix for `git show`, tip of the commits under review).
+
+    On ``pull_request`` HEAD is GitHub's synthetic merge, so the commits under review
+    end at the PR head named in the event payload; every commit in range is checked,
+    authored merges included.
+    """
     event = os.environ.get("GITHUB_EVENT_NAME")
+    if event not in ("pull_request", "push"):  # local / pre-commit: staged index against HEAD
+        base = (_git("rev-parse", "--verify", "-q", "HEAD") or "").strip() or None
+        return base, ":", None
+    tip = "HEAD"
+    if event == "pull_request":
+        tip = _pr_head_sha() or tip
     if event == "pull_request":
         base_ref = os.environ.get("GITHUB_BASE_REF", "main")
-        base = (_git("merge-base", f"origin/{base_ref}", "HEAD") or "").strip() or None
-    elif event == "push":
+        base = (_git("merge-base", f"origin/{base_ref}", tip) or "").strip() or None
+    else:
         base = (_git("rev-parse", "--verify", "-q", "HEAD^1") or "").strip() or None
-    else:  # local / pre-commit: staged index against HEAD
-        base = (_git("rev-parse", "--verify", "-q", "HEAD") or "").strip() or None
-        return base, ":", []
-    subjects = []
-    if base:
-        out = _git("log", "--no-merges", "--format=%s", f"{base}..HEAD") or ""
-        subjects = [s for s in out.splitlines() if s.strip()]
-    return base, "HEAD:", subjects
+    return base, "HEAD:", tip
+
+
+def _pr_head_sha() -> str | None:
+    """The PR's own head commit, from the event payload GitHub writes for every run."""
+    try:
+        with open(os.environ["GITHUB_EVENT_PATH"], encoding="utf-8") as fh:
+            sha = json.load(fh)["pull_request"]["head"]["sha"]
+    except (KeyError, OSError, TypeError, json.JSONDecodeError):
+        return None
+    return sha if isinstance(sha, str) and re.fullmatch(r"[0-9a-f]{40}", sha) else None
+
+
+def check_range(base: str, tip: str, on: dt.date) -> list[str]:
+    """Every commit in base..tip, against each of its parents: a registration frozen in
+    one commit of a PR cannot be rewritten by a later one, and every commit (merges
+    included) during an active quarantine carries the closure prefix."""
+    errors: list[str] = []
+    out = _git("rev-list", "--reverse", "--topo-order", "--parents", f"{base}..{tip}") or ""
+    for line in out.splitlines():
+        commit, *parents = line.split()
+        short = commit[:8]
+        try:
+            head = _state_at(f"{commit}:")
+            if validate_schema(head):
+                continue  # the final state is schema-checked; an intermediate draft may not be
+            errors += [f"{short}: {e}" for e in check_hashes(
+                head, lambda p, c=commit: _git_bytes(f"{c}:{p}"),
+                lambda p, c=commit: _is_regular(f"{c}:", p), started_only=True)]
+            for parent in parents:
+                parent_state = _state_at(f"{parent}:")
+                if validate_schema(parent_state):
+                    continue
+                errors += [f"{short}: {e}" for e in check_transition(parent_state, head, on)]
+                subject = (_git("log", "-1", "--format=%s", commit) or "").strip()
+                errors += [f"{short}: {e}" for e in check_commit_subjects([subject], parent_state, on)]
+        except json.JSONDecodeError:
+            continue
+    return sorted(set(errors), key=errors.index)
 
 
 def run_gate() -> int:
     on = today()
-    base_rev, head_prefix, subjects = resolve_context()
-    head_raw = _git_bytes(f"{head_prefix}{STATE_PATH}")
+    base_rev, head_prefix, tip = resolve_context()
     try:
-        head = _load(head_raw)
-        base = _load(_git_bytes(f"{base_rev}:{STATE_PATH}")) if base_rev else dict(EMPTY_STATE)
+        head = _state_at(head_prefix)
+        base = _state_at(f"{base_rev}:") if base_rev else dict(EMPTY_STATE)
     except json.JSONDecodeError as exc:
         print(f"order-gates: {STATE_PATH} is not valid JSON: {exc}", file=sys.stderr)
         return 1
     errors = validate_schema(head)
     if not errors:
-        errors += check_hashes(head, lambda p: _git_bytes(f"{head_prefix}{p}"))
+        errors += check_hashes(head, lambda p: _git_bytes(f"{head_prefix}{p}"),
+                               lambda p: _is_regular(head_prefix, p))
         errors += check_transition(base, head, on)
-        errors += check_commit_subjects(subjects, base, on)
-    for e in errors:
+        if base_rev and tip:
+            errors += check_range(base_rev, tip, on)
+            if quarantine_active(base, on):
+                out = _git("log", "--format=%s", f"{base_rev}..{tip}") or ""
+                errors += check_commit_subjects([x for x in out.splitlines() if x.strip()], base, on)
+    for e in sorted(set(errors), key=errors.index):
         print(f"order-gates: {e}", file=sys.stderr)
     return 1 if errors else 0
 

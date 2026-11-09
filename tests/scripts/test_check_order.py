@@ -164,3 +164,91 @@ def test_gate_on_pull_request_range(tmp_path, monkeypatch):
     (repo / "research/R1.md").write_bytes(b"H: moved the threshold\n")
     _git(repo, "commit", "-qam", "tweak R1")
     assert co.run_gate() == 1
+
+
+# ---------------------------------------------------------------- Codex round 1 regressions
+
+def test_compact_dates_rejected_and_shortening_compares_dates():
+    assert any("YYYY-MM-DD" in e for e in co.validate_schema(
+        state(quarantine={"start": "2026-12-01", "until": "20261231"})))
+    base = state(quarantine={"start": "2026-12-01", "until": "2026-12-31"})
+    head = state(quarantine={"start": "2026-12-01", "until": "20261215"})
+    assert co.check_transition(base, head, D("2026-12-05"))
+
+
+def _repo(tmp_path, monkeypatch, registrations, quarantine=None):
+    repo = tmp_path
+    _git(repo, "init", "-q", "-b", "main")
+    (repo / "docs/framework").mkdir(parents=True)
+    (repo / "research").mkdir()
+    (repo / "research/R1.md").write_bytes(REG_BYTES)
+    (repo / co.STATE_PATH).write_text(json.dumps(state(registrations=registrations, quarantine=quarantine)))
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "base")
+    _git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+    _git(repo, "checkout", "-qb", "pr")
+    monkeypatch.setattr(co, "REPO_ROOT", repo)
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request")
+    monkeypatch.setenv("GITHUB_BASE_REF", "main")
+    monkeypatch.setenv("ORDER_TODAY", "2026-12-05")
+    return repo
+
+
+def _synthetic_checkout(repo, monkeypatch, tmp_path):
+    """What actions/checkout gives a pull_request run: a merge of the PR head into base."""
+    head = subprocess.run(["git", "rev-parse", "pr"], cwd=repo, capture_output=True, text=True).stdout.strip()
+    event = tmp_path / "event.json"
+    event.write_text(json.dumps({"pull_request": {"head": {"sha": head}}}))
+    monkeypatch.setenv("GITHUB_EVENT_PATH", str(event))
+    _git(repo, "checkout", "-q", "--detach", "main")
+    _git(repo, "merge", "-q", "--no-ff", "-m", "Merge pr into main", head)
+
+
+def _write_state(repo, **kw):
+    (repo / co.STATE_PATH).write_text(json.dumps(state(**kw)))
+
+
+def test_start_then_rewrite_within_one_pr_fails(tmp_path, monkeypatch):
+    repo = _repo(tmp_path, monkeypatch, [reg()])
+    _write_state(repo, registrations=[reg(started="2026-12-05")])
+    _git(repo, "commit", "-qam", "start R1")
+    assert co.run_gate() == 0
+    new = b"H: moved the threshold\n"
+    (repo / "research/R1.md").write_bytes(new)
+    _write_state(repo, registrations=[reg(started="2026-12-05", sha=hashlib.sha256(new).hexdigest())])
+    _git(repo, "commit", "-qam", "rewrite R1")
+    assert co.run_gate() == 1
+
+
+def test_symlinked_registration_rejected(tmp_path, monkeypatch):
+    repo = _repo(tmp_path, monkeypatch, [])
+    (repo / "research/R2.md").symlink_to("R1.md")
+    link_sha = hashlib.sha256(b"R1.md").hexdigest()
+    _write_state(repo, registrations=[reg(rid="R2", path="research/R2.md", sha=link_sha)])
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "register via symlink")
+    assert co.run_gate() == 1
+
+
+def test_authored_merge_in_quarantine_needs_closure_prefix(tmp_path, monkeypatch):
+    repo = _repo(tmp_path, monkeypatch, [], quarantine=Q)
+    _git(repo, "checkout", "-qb", "side")
+    (repo / "research/notes.md").write_text("results\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "closure: record results")
+    _git(repo, "checkout", "-q", "pr")
+    (repo / "research/impl.py").write_text("x = 1\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "closure: tidy")
+    _git(repo, "merge", "-q", "--no-ff", "-m", "feat: continue programme", "side")
+    _synthetic_checkout(repo, monkeypatch, tmp_path)
+    assert co.run_gate() == 1
+
+
+def test_synthetic_pr_merge_is_exempt(tmp_path, monkeypatch):
+    repo = _repo(tmp_path, monkeypatch, [], quarantine=Q)
+    (repo / "research/notes.md").write_text("results\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "closure: record results")
+    _synthetic_checkout(repo, monkeypatch, tmp_path)
+    assert co.run_gate() == 0
