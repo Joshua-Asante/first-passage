@@ -16,4 +16,4 @@
 
 **Binding.** Any change to the rule after the first forward session ends this rule's record. A successor needs Joshua's authorization and a new registration, and its evidence starts again from zero.
 
-**Addenda.** [Addendum 1 (ORB horizon edition)](2026-10-31-tradeify-forward-stop-rule-registration-addendum-1.md), registered 2026-10-31.
+**Addenda.** [Addendum 1 (ORB horizon edition)](2026-10-31-tradeify-forward-stop-rule-registration-addendum-1.md), registered 2026-10-31. [Addendum 2 (the coda's end conditions)](2026-10-31-tradeify-forward-stop-rule-registration-addendum-2.md), registered 2026-11-09.
