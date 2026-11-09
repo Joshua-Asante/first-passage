@@ -5,7 +5,7 @@ Select 100K attempt. Joshua chose option B, the coda, in the
 [continue-or-stop note](../../notes/audits/programme-audit/2026-11-09-continue-or-stop.md) §4 step 4
 (#1176), relayed by the research coordinator on 2026-11-09. He confirmed it directly to the Tradeify
 deployment coordinator on 2026-11-09, "Yes, as written", to the question "Confirm option B with its terms
-as written, registered by a PR before 11-16?"
+as written, registered by a PR before 11-16?" The 11-09 rulings record retired this rule with the eval (R3); [R12](../../notes/2026-11-09-rulings.md) replaces R3 for the owned eval, so the rule and this addendum stand.
 
 **Scope.** These terms add end conditions to the [forward stop rule](2026-10-31-tradeify-forward-stop-rule-registration.md)
 for the owned Select 100K attempt (Aegis A-0 and ORB O-0). They change nothing in the rule's test, its
