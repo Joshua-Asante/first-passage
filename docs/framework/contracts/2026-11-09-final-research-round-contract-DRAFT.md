@@ -2,7 +2,7 @@
 
 **Status:** draft. It binds nothing until Joshua approves it, its hash is recorded by scheduled
 self-email, and `order-state.json` names it. In witness mode it cannot be amended after that.
-**It cannot be adopted while the open decision below is unsettled.**
+**It cannot be adopted while the open term in §4 is unsettled.**
 **Under:** [The Order](../the-order.md) (itself a draft), step 1, Aim.
 **Source:** the [continue-or-stop note](../../notes/audits/programme-audit/2026-11-09-continue-or-stop.md)
 §4 step 2, and Joshua's words to the research coordinator on 2026-11-09: "I'll let you draft it".
@@ -48,7 +48,7 @@ a partial null. The expected result of this round is no confirmed card.
   the round: the started card runs to its verdict.
 - **(added)** DYN-SURVEY-1 is not part of this round. Joshua dropped its rerun on 2026-11-09
   ("Drop the rerun"); it stays closed at run 1's partial null and advances no card.
-- **(note, tightened; proposed as option (a) in §8)** Deadline: 2026-11-30, not the note's
+- **(note, tightened; ruled by Joshua as option (a), §8)** Deadline: 2026-11-30, not the note's
   2026-12-31, so that the eval run can follow.
 
 ## 4. Outside answers (added)
@@ -112,15 +112,17 @@ remaining activity until that date.
 No holder: witness mode (scheduled self-email plus an OpenTimestamps proof). No stake. Review on
 the later of 2027-01-16 and the quarantine's end.
 
-## 8. Rulings and the open decision
+## 8. Rulings
 
 **Ruled by Joshua, 2026-11-09:**
 1. **TradingView:** "let's not wait for a human response. let's draft the email and see what
    they say". Logged as an OVERRIDE of Ask (§4).
 2. **Order against the eval run:** "research first". The Order allows one active hypothesis,
    so the eval run starts only after this round ends.
+3. **The quarantine against the eval run:** "(a) research to 11-30". The options as put to
+   him, kept for the record:
 
-**Open decision: the quarantine against the eval run.** The quarantine starts the day the round
+**The quarantine against the eval run.** The quarantine starts the day the round
 ends and lasts 14 days. The Order allows only closure work in it, and `order-gates` refuses to
 start any registration until it ends. So the eval run starts only after the quarantine. Its own
 terms (note §4 step 4, option B) end it on 2026-12-31, and also end it if Tradeify gives no
