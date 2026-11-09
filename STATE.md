@@ -57,6 +57,12 @@ then scale within Tradeify. The candidate is the ORB MNQ v7 + Aegis pair.
   are drafts that the 11-05 path does not wait on.
 - **Known risk:** no configuration has an evidence case for this evaluation yet, and
   no strategy-signal fill has ever occurred on the account.
+- **Coda (Joshua, 11-09):** option B of the
+  [continue-or-stop note](docs/notes/audits/programme-audit/2026-11-09-continue-or-stop.md) §4 step 4.
+  Its end conditions are
+  [Addendum 2](docs/briefs/pre-registration/2026-10-31-tradeify-forward-stop-rule-registration-addendum-2.md)
+  to the forward stop rule: at most 20 attended sessions or to 12-31, no resets or purchases.
+  The ORB successor is held, so ORB runs on the frozen build.
 - **Ruled out:** the multi-firm program is research-only (its falsifier fired). The
   external Python rail (decommissioned; code removed in #1122 and #1152) and the
   personal account lane are closed.
