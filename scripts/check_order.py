@@ -153,10 +153,11 @@ def check_transition(base: dict, head: dict, on: dt.date) -> list[str]:
         if not hq or hq.get("start") != bq["start"] or head_until is None \
                 or head_until < dt.date.fromisoformat(bq["until"]):
             errors.append(f"quarantine: active until {bq['until']}; it may not be removed, moved or shortened")
-        base_ids = {r["id"] for r in base.get("registrations", [])}
-        added = sorted(set(head_regs) - base_ids)
-        if added:
-            errors.append(f"quarantine: no registrations may be added until {bq['until']} (added: {', '.join(added)})")
+        base_regs = {r["id"]: r for r in base.get("registrations", [])}
+        changed = sorted(i for i in set(base_regs) | set(head_regs) if base_regs.get(i) != head_regs.get(i))
+        if changed:
+            errors.append(f"quarantine: no registration may be added, changed or started until {bq['until']} "
+                          f"(changed: {', '.join(changed)})")
         if head.get("contract") != base.get("contract"):
             errors.append(f"quarantine: the contract may not change until {bq['until']}")
     return errors
@@ -226,6 +227,14 @@ def _state_at(prefix: str) -> dict:
     return _load(_git_bytes(f"{prefix}{STATE_PATH}"))
 
 
+def _target_rev() -> str | None:
+    """The current tip of the branch a pull_request merges into."""
+    if os.environ.get("GITHUB_EVENT_NAME") != "pull_request":
+        return None
+    ref = os.environ.get("GITHUB_BASE_REF", "main")
+    return (_git("rev-parse", "--verify", "-q", f"origin/{ref}") or "").strip() or None
+
+
 def resolve_context() -> tuple[str | None, str, str | None]:
     """(base rev or None, head prefix for `git show`, tip of the commits under review).
 
@@ -269,8 +278,10 @@ def check_range(base: str, tip: str, on: dt.date) -> list[str]:
         short = commit[:8]
         try:
             head = _state_at(f"{commit}:")
-            if validate_schema(head):
-                continue  # the final state is schema-checked; an intermediate draft may not be
+            invalid = validate_schema(head)
+            if invalid:  # an invalid draft would break the freeze history: reject it
+                errors += [f"{short}: {e}" for e in invalid]
+                continue
             errors += [f"{short}: {e}" for e in check_hashes(
                 head, lambda p, c=commit: _git_bytes(f"{c}:{p}"),
                 lambda p, c=commit: _is_regular(f"{c}:", p), started_only=True)]
@@ -281,8 +292,8 @@ def check_range(base: str, tip: str, on: dt.date) -> list[str]:
                 errors += [f"{short}: {e}" for e in check_transition(parent_state, head, on)]
                 subject = (_git("log", "-1", "--format=%s", commit) or "").strip()
                 errors += [f"{short}: {e}" for e in check_commit_subjects([subject], parent_state, on)]
-        except json.JSONDecodeError:
-            continue
+        except json.JSONDecodeError as exc:
+            errors.append(f"{short}: {STATE_PATH} is not valid JSON: {exc}")
     return sorted(set(errors), key=errors.index)
 
 
@@ -300,6 +311,19 @@ def run_gate() -> int:
         errors += check_hashes(head, lambda p: _git_bytes(f"{head_prefix}{p}"),
                                lambda p: _is_regular(head_prefix, p))
         errors += check_transition(base, head, on)
+        target = _target_rev()
+        if target and target != base_rev:
+            # main may have frozen a registration or started a quarantine after the PR
+            # branched: the merged state must also respect the target as it is now.
+            try:
+                target_state = _state_at(f"{target}:")
+            except json.JSONDecodeError:
+                target_state = dict(EMPTY_STATE)
+            if not validate_schema(target_state):
+                errors += check_transition(target_state, head, on)
+                if base_rev and tip and quarantine_active(target_state, on):
+                    out = _git("log", "--format=%s", f"{base_rev}..{tip}") or ""
+                    errors += check_commit_subjects([x for x in out.splitlines() if x.strip()], target_state, on)
         if base_rev and tip:
             errors += check_range(base_rev, tip, on)
             if quarantine_active(base, on):

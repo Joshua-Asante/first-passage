@@ -105,7 +105,7 @@ def test_quarantine_may_be_extended_and_lapses():
 def test_no_new_registration_or_contract_change_in_quarantine():
     base = state(quarantine=Q)
     errs = co.check_transition(base, state(quarantine=Q, registrations=[reg()]), D("2026-12-05"))
-    assert any("no registrations may be added" in e for e in errs)
+    assert any("added, changed or started" in e for e in errs)
     contract = {"path": "c.md", "sha256": "0" * 64, "end_date": "2027-01-31"}
     errs = co.check_transition(base, state(quarantine=Q, contract=contract), D("2026-12-05"))
     assert any("contract may not change" in e for e in errs)
@@ -182,7 +182,7 @@ def _repo(tmp_path, monkeypatch, registrations, quarantine=None):
     (repo / "docs/framework").mkdir(parents=True)
     (repo / "research").mkdir()
     (repo / "research/R1.md").write_bytes(REG_BYTES)
-    (repo / co.STATE_PATH).write_text(json.dumps(state(registrations=registrations, quarantine=quarantine)))
+    (repo / co.STATE_PATH).write_text(json.dumps(state(registrations=registrations, quarantine=quarantine), indent=2))
     _git(repo, "add", "-A")
     _git(repo, "commit", "-qm", "base")
     _git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
@@ -205,7 +205,7 @@ def _synthetic_checkout(repo, monkeypatch, tmp_path):
 
 
 def _write_state(repo, **kw):
-    (repo / co.STATE_PATH).write_text(json.dumps(state(**kw)))
+    (repo / co.STATE_PATH).write_text(json.dumps(state(**kw), indent=2))
 
 
 def test_start_then_rewrite_within_one_pr_fails(tmp_path, monkeypatch):
@@ -252,3 +252,49 @@ def test_synthetic_pr_merge_is_exempt(tmp_path, monkeypatch):
     _git(repo, "commit", "-qm", "closure: record results")
     _synthetic_checkout(repo, monkeypatch, tmp_path)
     assert co.run_gate() == 0
+
+
+# ---------------------------------------------------------------- Codex round 2 regressions
+
+def test_target_branch_freeze_after_fork_binds_the_merge(tmp_path, monkeypatch):
+    repo = _repo(tmp_path, monkeypatch, [reg()])
+    new = b"H: moved the threshold\n"
+    (repo / "research/R1.md").write_bytes(new)
+    _write_state(repo, registrations=[reg(sha=hashlib.sha256(new).hexdigest())])
+    _git(repo, "commit", "-qam", "edit unstarted R1")
+    _git(repo, "checkout", "-q", "main")
+    _write_state(repo, registrations=[reg(started="2026-12-04")])
+    _git(repo, "commit", "-qam", "start R1 on main")
+    _git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+    head_sha = subprocess.run(["git", "rev-parse", "pr"], cwd=repo, capture_output=True, text=True).stdout.strip()
+    event = tmp_path / "event.json"
+    event.write_text(json.dumps({"pull_request": {"head": {"sha": head_sha}}}))
+    monkeypatch.setenv("GITHUB_EVENT_PATH", str(event))
+    _git(repo, "checkout", "-q", "--detach", "main")
+    # Adjacent JSON lines conflict here; Codex's case merged cleanly. Record the same
+    # merged result: main's start date with the PR's rewritten file and hash.
+    subprocess.run(["git", "merge", "--no-ff", "--no-commit", head_sha], cwd=repo, capture_output=True)
+    _write_state(repo, registrations=[reg(started="2026-12-04", sha=hashlib.sha256(new).hexdigest())])
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "Merge pr into main")
+    assert co.run_gate() == 1
+
+
+def test_invalid_intermediate_state_is_rejected(tmp_path, monkeypatch):
+    repo = _repo(tmp_path, monkeypatch, [])
+    _write_state(repo, registrations=[reg(started="2026-12-05")])
+    _git(repo, "commit", "-qam", "start R1")
+    new = b"H: moved the threshold\n"
+    (repo / "research/R1.md").write_bytes(new)
+    _write_state(repo, version=2, registrations=[reg(started="2026-12-05", sha=hashlib.sha256(new).hexdigest())])
+    _git(repo, "commit", "-qam", "rewrite under an invalid state")
+    _write_state(repo, registrations=[reg(started="2026-12-05", sha=hashlib.sha256(new).hexdigest())])
+    _git(repo, "commit", "-qam", "restore version")
+    assert co.run_gate() == 1
+
+
+def test_unstarted_registration_cannot_be_repurposed_in_quarantine():
+    base = state(quarantine=Q, registrations=[reg()])
+    head = state(quarantine=Q, registrations=[reg(path="research/successor.md", sha="0" * 64, started="2026-12-05")])
+    errs = co.check_transition(base, head, D("2026-12-05"))
+    assert any("added, changed or started" in e for e in errs)
