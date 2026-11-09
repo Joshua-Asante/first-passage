@@ -5,9 +5,9 @@ strategy have a real edge after costs? The prop operation is closed.
 [Rulings](docs/notes/2026-11-09-rulings.md), [STATE](STATE.md),
 [REPO_MAP](REPO_MAP.md).
 
-**Method:** [The Order](docs/framework/the-order.md) (adoption pending; see STATE). Its
+**Method:** [The Order](docs/framework/the-order.md), adopted 2026-11-09 in witness mode. Its
 state, [`order-state.json`](docs/framework/order-state.json), is shown at every session
-start, and the `order-gates` check enforces it now. Name each request's step and check
+start, and the `order-gates` check enforces it. Name each request's step and check
 its gate. Without a hashed contract there is no programme work; stopping or shrinking
 needs none.
 

@@ -13,10 +13,12 @@ deployment decision under its own contract.
 
 ## Method
 
-[The Order](docs/framework/the-order.md), witness mode, **adoption pending** (R10): it is
-adopted when Joshua's scheduled self-email records its hash (see obligations). Its
+[The Order](docs/framework/the-order.md), witness mode, adopted 2026-11-09 when the
+self-email recorded its hash (R10). Its
 machine state, [`order-state.json`](docs/framework/order-state.json), is already shown at
-every session start and enforced by the `order-gates` check.
+every session start and enforced by the `order-gates` check. The enforcement files are
+code-owned ([CODEOWNERS](.github/CODEOWNERS)); the `order-enforcement-files` ruleset
+makes changing them a deliberate, logged admin bypass.
 
 - **Step:** aim. **No contract yet,** so there is no programme work. Stopping and
   shrinking (closure records, deletions) need none.
@@ -31,17 +33,15 @@ every session start and enforced by the `order-gates` check.
 |---|---|---|
 | Tradeify eval | — | Lapses (R3). No more preservation trades; agents place nothing. |
 | Subscription reconfirm | 11-21 | Joshua reconfirms the [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md) and cuts spend to the data line (R7). |
-| Witness record | After merging #1176 | Joshua self-emails The Order's hashes with an OpenTimestamps proof (R10). |
+| Witness record | Sent 2026-11-09 | Hashes emailed to Joshua's second account with an OpenTimestamps proof (R10). Joshua runs `ots upgrade` on the proof once Bitcoin confirms it. |
 
 ## Open decisions (Joshua)
 
 1. **The round's contract** (Order step 1): objective, limiting input, budgets, outside
    questions, kill rule, caps. Agents may not draft items 1 and 2.
-2. **Protect the enforcement files:** a GitHub ruleset requiring Joshua's approval for
-   `scripts/check_order.py`, `scripts/gates.yml` and `.claude/settings.json`.
-3. **The eight technical recommendations** at the end of the
+2. **The eight technical recommendations** at the end of the
    [2026-11-09 rulings](docs/notes/2026-11-09-rulings.md). They gate the later
    narrowing PRs (tooling, lab, ops and core removals).
-4. **Data rights:** research still rests on TradingView CME exports under accepted
+3. **Data rights:** research still rests on TradingView CME exports under accepted
    terms-of-service risk (D16). A licensed data path is the long-horizon requirement to
    question.

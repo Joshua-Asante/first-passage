@@ -1,0 +1,11 @@
+# The Order's enforcement files (STATE.md; ruleset order-enforcement-files).
+# A change to any of these needs a code-owner review, which the ruleset makes a
+# deliberate, logged admin bypass. Weakening, removing or bypassing a check counts as
+# an amendment of The Order's protected rules.
+/.github/CODEOWNERS                  @Joshua-Asante
+/scripts/check_order.py              @Joshua-Asante
+/tests/scripts/test_check_order.py   @Joshua-Asante
+/scripts/gates.yml                   @Joshua-Asante
+/scripts/gate_manifest.py            @Joshua-Asante
+/.github/workflows/gate-manifest.yml @Joshua-Asante
+/.claude/settings.json               @Joshua-Asante
