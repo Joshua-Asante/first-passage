@@ -1,8 +1,12 @@
 {
   "version": 1,
   "mode": "witness",
-  "step": "aim",
-  "contract": null,
+  "step": "ask",
+  "contract": {
+    "path": "docs/framework/contracts/2026-11-09-final-research-round-contract-DRAFT.md",
+    "sha256": "d6add0784d847da00a3c553b06e6e71c8dce6bd214fdbb6c23eb5d9a8e5017f0",
+    "end_date": "2026-11-30"
+  },
   "quarantine": null,
   "registrations": []
 }
