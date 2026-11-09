@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import fnmatch
 import hashlib
 import json
 import os
@@ -37,6 +38,11 @@ STATE_PATH = "docs/framework/order-state.json"
 CLOSURE_PREFIX = "closure:"
 STEPS = ("aim", "ask", "subtract", "choose", "register", "run", "rule", "stop")
 MODES = ("witness", "holder")
+# Paths a commit may touch during quarantine when the state sets no ``closure_paths``:
+# results, ledger verdicts, retrospectives and the state file. fnmatch globs, where
+# ``*`` also matches ``/``.
+DEFAULT_CLOSURE_PATHS = (STATE_PATH, "*RESULTS*.md", "docs/notes/*", "docs/framework/ledger/*",
+                         "docs/framework/retrospectives/*")
 EMPTY_STATE: dict = {"version": 1, "mode": "witness", "step": "aim", "contract": None,
                      "quarantine": None, "registrations": []}
 
@@ -85,6 +91,9 @@ def validate_schema(state: dict) -> list[str]:
             until = _date(q["until"], "quarantine.until", errors)
             if start and until and (until - start).days < 14:
                 errors.append("quarantine: must last at least 14 days")
+    cp = state.get("closure_paths")
+    if cp is not None and (not isinstance(cp, list) or not all(isinstance(x, str) and x for x in cp)):
+        errors.append("closure_paths: must be a list of non-empty glob strings")
     regs = state.get("registrations")
     if not isinstance(regs, list):
         errors.append("registrations: must be a list")
@@ -160,6 +169,8 @@ def check_transition(base: dict, head: dict, on: dt.date) -> list[str]:
                           f"(changed: {', '.join(changed)})")
         if head.get("contract") != base.get("contract"):
             errors.append(f"quarantine: the contract may not change until {bq['until']}")
+        if head.get("closure_paths") != base.get("closure_paths"):
+            errors.append(f"quarantine: closure_paths may not change until {bq['until']}")
     return errors
 
 
@@ -172,6 +183,23 @@ def check_commit_subjects(subjects: list[str], base: dict, on: dt.date) -> list[
     until = base["quarantine"]["until"]
     return [f"quarantine: active until {until}; only `{CLOSURE_PREFIX}` commits are allowed. "
             f"Offending: {'; '.join(bad[:5])}"]
+
+
+def closure_paths(state: dict) -> tuple[str, ...]:
+    return tuple(state.get("closure_paths") or DEFAULT_CLOSURE_PATHS)
+
+
+def check_quarantine_paths(paths: list[str], base: dict, on: dt.date) -> list[str]:
+    """During a quarantine active on ``base``, every changed path must be closure work:
+    a ``closure:`` subject alone does not make a change closure-only."""
+    if not quarantine_active(base, on):
+        return []
+    allow = closure_paths(base)
+    bad = sorted(p for p in paths if not any(fnmatch.fnmatchcase(p, g) for g in allow))
+    if not bad:
+        return []
+    return [f"quarantine: active until {base['quarantine']['until']}; only closure paths may change "
+            f"({', '.join(allow)}). Outside them: {', '.join(bad[:10])}"]
 
 
 def status_text(state: dict, on: dt.date) -> str:
@@ -319,6 +347,9 @@ def run_gate() -> int:
         print(f"order-gates: {exc}", file=sys.stderr)
         return 1
     errors = validate_schema(head)
+    if not errors and head_prefix == ":" and base_rev:  # pre-commit: what is staged
+        staged = (_git("diff", "--cached", "--no-renames", "--name-only", base_rev) or "").splitlines()
+        errors += check_quarantine_paths([x for x in staged if x], base, on)
     if not errors:
         errors += check_hashes(head, lambda p: _git_bytes(f"{head_prefix}{p}"),
                                lambda p: _is_regular(head_prefix, p))
@@ -348,6 +379,10 @@ def run_gate() -> int:
                 pass  # check_range reports an unreadable PR head
         if base_rev and tip:
             errors += check_range(base_rev, tip, on)
+            changed = [x for x in (_git("diff", "--no-renames", "--name-only", base_rev, tip) or "").splitlines() if x]
+            errors += check_quarantine_paths(changed, base, on)
+            if target and target != base_rev and not validate_schema(target_state):
+                errors += check_quarantine_paths(changed, target_state, on)
             if quarantine_active(base, on):
                 out = _git("log", "--format=%s", f"{base_rev}..{tip}") or ""
                 errors += check_commit_subjects([x for x in out.splitlines() if x.strip()], base, on)

@@ -247,7 +247,8 @@ def test_authored_merge_in_quarantine_needs_closure_prefix(tmp_path, monkeypatch
 
 def test_synthetic_pr_merge_is_exempt(tmp_path, monkeypatch):
     repo = _repo(tmp_path, monkeypatch, [], quarantine=Q)
-    (repo / "research/notes.md").write_text("results\n")
+    (repo / "docs/notes").mkdir(parents=True)
+    (repo / "docs/notes/retro.md").write_text("results\n")
     _git(repo, "add", "-A")
     _git(repo, "commit", "-qm", "closure: record results")
     _synthetic_checkout(repo, monkeypatch, tmp_path)
@@ -343,3 +344,31 @@ def test_symlinked_state_file_is_rejected(tmp_path, monkeypatch):
     assert co.run_gate() == 1
     with pytest.raises(co.StateError):
         co._working_state()
+
+
+# ---------------------------------------------------------------- Codex round 5 regression
+
+def test_quarantine_paths_pure():
+    base = state(quarantine=Q)
+    on = D("2026-12-05")
+    assert co.check_quarantine_paths(["docs/notes/retro.md", "lab/x/RESULTS_W1.md", co.STATE_PATH], base, on) == []
+    assert co.check_quarantine_paths(["research/impl.py"], base, on)
+    assert co.check_quarantine_paths(["research/impl.py"], base, D("2026-12-16")) == []
+    custom = state(quarantine=Q, closure_paths=["research/closure/*"])
+    assert co.check_quarantine_paths(["research/closure/a.md"], custom, on) == []
+    assert co.check_quarantine_paths(["docs/notes/retro.md"], custom, on)
+
+
+def test_closure_paths_frozen_during_quarantine():
+    base = state(quarantine=Q)
+    head = state(quarantine=Q, closure_paths=["*"])
+    assert any("closure_paths may not change" in e for e in co.check_transition(base, head, D("2026-12-05")))
+
+
+def test_closure_subject_does_not_admit_implementation(tmp_path, monkeypatch):
+    repo = _repo(tmp_path, monkeypatch, [], quarantine=Q)
+    (repo / "research/impl.py").write_text("x = 1\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "closure: definitely closure work")
+    _synthetic_checkout(repo, monkeypatch, tmp_path)
+    assert co.run_gate() == 1

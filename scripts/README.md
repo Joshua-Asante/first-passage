@@ -108,7 +108,10 @@ always-tier gate (so inside the required `skills (3.12)` job) it fails when a
 registration's file no longer matches its recorded sha256, when a started
 registration is changed or removed, when an active quarantine is removed, moved or
 shortened, and, during a quarantine active on the base, when a change adds a
-registration, alters the contract or carries a commit not prefixed `closure:`.
+registration, alters the contract, carries a commit not prefixed `closure:`, or
+changes a path outside the closure allowlist (`closure_paths` in the state, else results,
+`docs/notes/`, the ledger, retrospectives and the state file; fixed while the quarantine
+runs).
 Hashes are of the committed blob: `git show HEAD:<path> | sha256sum`.
 
 To register a test, add `{"id", "path", "sha256", "started": null}`; set `started`
