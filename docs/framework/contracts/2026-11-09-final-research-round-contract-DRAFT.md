@@ -2,7 +2,7 @@
 
 **Status:** draft. It binds nothing until Joshua approves it, its hash is recorded by scheduled
 self-email, and `order-state.json` names it. In witness mode it cannot be amended after that.
-**It cannot be adopted while the open terms in §4 and §8 are unsettled.**
+**It cannot be adopted while the open terms in §4 and §5 are unsettled.**
 **Under:** [The Order](../the-order.md) (itself a draft), step 1, Aim.
 **Source:** the [continue-or-stop note](../../notes/audits/programme-audit/2026-11-09-continue-or-stop.md)
 §4 step 2, and Joshua's words to the research coordinator on 2026-11-09: "I'll let you draft it".
@@ -95,11 +95,22 @@ only the paths in `closure_paths`. If the round ends on 11-30, the quarantine ru
 No second round is drafted.
 
 **(added, proposed; Joshua accepts or strikes)** Because the eval run keeps going through the
-quarantine, the same PR sets `closure_paths` to the default closure paths plus the eval run's
-public records: `STATE.md` and the forward stop rule's registration folder,
-`docs/briefs/pre-registration/*`. The check fixes `closure_paths` for the whole quarantine, so
-they must be named when it starts. Otherwise the eval run's public updates from 12-01 to 12-14
-fail the check. This changes neither The Order nor `check_order.py`.
+quarantine, the same PR sets `closure_paths` to the default closure paths (which already include
+`docs/notes/*`) plus the eval run's public records, as the Tradeify deployment coordinator listed
+them:
+
+- `STATE.md`;
+- `docs/briefs/pre-registration/2026-10-31-tradeify-forward-stop-rule-registration*` (the stop
+  rule and the addenda it allows), not the whole folder, so no research registration draft can
+  change;
+- `docs/spec/*` (the build spec and the attended-session procedure, between sessions only);
+- `AGENTS.md` (the D8 text in money control 1, when Joshua re-rules after Q5);
+- `docs/evidence/PRIVATE_EVIDENCE.sha256` (the hash index, if session records are registered).
+
+The check fixes `closure_paths` for the whole quarantine, so they must be named when it starts;
+otherwise the eval run's public updates from 12-01 to 12-14 fail it. The check does not read
+content: during the quarantine these paths could change for any reason, research included, and
+only review stops that. This changes neither The Order nor `check_order.py`.
 
 **(note)** Without a Codex-verified CONFIRMED card, the programme closes on 2027-01-02. The
 closing record is written in the quarantine.
