@@ -513,3 +513,32 @@ def test_quarantine_binds_unstarted_registration_documents(tmp_path, monkeypatch
     _git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
     _synthetic_checkout(repo, monkeypatch, tmp_path)
     assert co.run_gate() == 1
+
+
+# ---------------------------------------------------------------- Codex round 11 regression
+
+def test_target_registered_document_is_hashed_at_pr_commits(tmp_path, monkeypatch):
+    repo = tmp_path
+    _git(repo, "init", "-q", "-b", "main")
+    (repo / "docs/framework").mkdir(parents=True)
+    (repo / "docs/notes").mkdir(parents=True)
+    (repo / "docs/notes/R1.md").write_bytes(REG_BYTES)
+    _write_state(repo)
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "base")
+    _git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+    _git(repo, "checkout", "-qb", "pr")
+    monkeypatch.setattr(co, "REPO_ROOT", repo)
+    monkeypatch.setenv("GITHUB_EVENT_NAME", "pull_request")
+    monkeypatch.setenv("GITHUB_BASE_REF", "main")
+    monkeypatch.setenv("ORDER_TODAY", "2026-12-05")
+    (repo / "docs/notes/R1.md").write_bytes(b"H: rewritten\n")
+    _git(repo, "commit", "-qam", "closure: rewrite")
+    (repo / "docs/notes/R1.md").write_bytes(REG_BYTES)
+    _git(repo, "commit", "-qam", "closure: restore")
+    _git(repo, "checkout", "-q", "main")
+    _write_state(repo, quarantine=Q, registrations=[reg(path="docs/notes/R1.md")])
+    _git(repo, "commit", "-qam", "closure: register R1 and STOP")
+    _git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+    _synthetic_checkout(repo, monkeypatch, tmp_path)
+    assert co.run_gate() == 1

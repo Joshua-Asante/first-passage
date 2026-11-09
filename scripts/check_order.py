@@ -362,9 +362,13 @@ def check_range(base: str, tip: str, on: dt.date, also_quarantined: tuple = ()) 
                                    check_quarantine_commit(parent_state, head, paths, subject, st, on)]
                     # Under any binding quarantine every referenced document, not just the
                     # started ones, must match its recorded hash at this commit.
-                    errors += [f"{short}: {e}" for e in check_hashes(
-                        head, lambda p, c=commit: _git_bytes(f"{c}:{p}"),
-                        lambda p, c=commit: _is_regular(f"{c}:", p))]
+                    # Documents referenced by this commit's registry and by every binding
+                    # quarantine's registry (main's may register files the PR never lists).
+                    hashed = [head] + ([parent_state] if quarantine_active(parent_state, on) else []) + binding_extra
+                    for st in hashed:
+                        errors += [f"{short}: {e}" for e in check_hashes(
+                            st, lambda p, c=commit: _git_bytes(f"{c}:{p}"),
+                            lambda p, c=commit: _is_regular(f"{c}:", p))]
         except StateError as exc:
             errors.append(f"{short}: {exc}")
     return sorted(set(errors), key=errors.index)
