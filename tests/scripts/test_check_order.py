@@ -409,3 +409,29 @@ def test_merge_cannot_import_main_work_into_pr_quarantine(tmp_path, monkeypatch)
     _git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
     _synthetic_checkout(repo, monkeypatch, tmp_path)
     assert co.run_gate() == 1
+
+
+# ---------------------------------------------------------------- Codex round 7 regression
+
+def test_rename_on_main_cannot_carry_pr_edit_out_of_closure_paths(tmp_path, monkeypatch):
+    repo = _repo(tmp_path, monkeypatch, [])
+    _git(repo, "checkout", "-q", "main")
+    (repo / "docs/notes").mkdir(parents=True)
+    body = "".join(f"line {i}\n" for i in range(40))
+    (repo / "docs/notes/impl.py").write_text(body)
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "seed")
+    _git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+    _git(repo, "branch", "-qf", "pr", "main")
+    _git(repo, "checkout", "-q", "pr")
+    (repo / "docs/notes/impl.py").write_text(body + "x = 1\n")
+    _git(repo, "commit", "-qam", "closure: note")
+    _git(repo, "checkout", "-q", "main")
+    _git(repo, "mv", "docs/notes/impl.py", "research/impl.py")
+    _write_state(repo, quarantine=Q)
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "closure: STOP and move")
+    _git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+    _synthetic_checkout(repo, monkeypatch, tmp_path)
+    assert "x = 1" in (repo / "research/impl.py").read_text()  # git carried the edit across the rename
+    assert co.run_gate() == 1

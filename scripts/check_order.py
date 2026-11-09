@@ -388,7 +388,9 @@ def run_gate() -> int:
             changed = [x for x in (_git("diff", "--no-renames", "--name-only", base_rev, tip) or "").splitlines() if x]
             errors += check_quarantine_paths(changed, base, on)
             if target and target != base_rev and not validate_schema(target_state):
-                errors += check_quarantine_paths(changed, target_state, on)
+                # What the merge changes relative to main as it is now (renames included).
+                into_target = [x for x in (_git("diff", "--no-renames", "--name-only", target, "HEAD") or "").splitlines() if x]
+                errors += check_quarantine_paths(into_target, target_state, on)
             if quarantine_active(base, on):
                 out = _git("log", "--format=%s", f"{base_rev}..{tip}") or ""
                 errors += check_commit_subjects([x for x in out.splitlines() if x.strip()], base, on)
