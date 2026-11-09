@@ -2,12 +2,12 @@
 
 **Status:** draft. It binds nothing until Joshua approves it, its hash is recorded by scheduled
 self-email, and `order-state.json` names it. In witness mode it cannot be amended after that.
-**It cannot be adopted while the open term in §4 is unsettled.**
+**It cannot be adopted while the open terms in §4 and §8 are unsettled.**
 **Under:** [The Order](../the-order.md) (itself a draft), step 1, Aim.
 **Source:** the [continue-or-stop note](../../notes/audits/programme-audit/2026-11-09-continue-or-stop.md)
 §4 step 2, and Joshua's words to the research coordinator on 2026-11-09: "I'll let you draft it".
 **Scope:** research only. The capped eval run Joshua selected the same day (the note's option B)
-is not covered here; Joshua ruled research first (§8).
+runs alongside it under its own registration (#1178), from Mon 11-16 (§8).
 
 Terms marked **(note)** are the note's §4 step 2, unchanged. Terms marked **(added)** come from
 The Order or from this draft, and are Joshua's to accept or strike. Items 1 and 2 are his to
@@ -48,8 +48,7 @@ a partial null. The expected result of this round is no confirmed card.
   the round: the started card runs to its verdict.
 - **(added)** DYN-SURVEY-1 is not part of this round. Joshua dropped its rerun on 2026-11-09
   ("Drop the rerun"); it stays closed at run 1's partial null and advances no card.
-- **(note, tightened; ruled by Joshua as option (a), §8)** Deadline: 2026-11-30, not the note's
-  2026-12-31, so that the eval run can follow.
+- **(note, tightened; ruled by Joshua, §8)** Deadline: 2026-11-30, not the note's 2026-12-31.
 
 ## 4. Outside answers (added)
 
@@ -88,16 +87,11 @@ ends the round. The note sets this term for the eval run, not for research.
 - Each registration states the chance of a false CONFIRMED at zero edge, and Codex re-derives
   it before the run.
 
-**(added)** Who acts. The research coordinator records each spent slot and, on the day the
-round ends, opens a `closure:` PR that sets a 14-day quarantine in `order-state.json`. Joshua
-merges it. From then the `order-gates` check enforces the quarantine. The quarantine covers the
-whole repository: the `order-gates` check blocks new registrations, contract changes and
-non-closure paths until it ends. If the round ends on 11-30, the quarantine runs to 12-14.
-No second round is drafted.
+**(added)** Who acts. The research coordinator records each spent slot and the day the round
+ends, in a PR Joshua merges. The round's end starts no quarantine by itself (§8).
 
-**(note)** Without a Codex-verified CONFIRMED card, the programme closes on 2027-01-02. The
-closing record is written in the quarantine; the eval run (§8) is the programme's only
-remaining activity until that date.
+**(note)** Without a Codex-verified CONFIRMED card, the programme closes on 2027-01-02. No
+second round is drafted.
 
 ## 6. Operator hours, rounds, end date
 
@@ -112,35 +106,31 @@ remaining activity until that date.
 No holder: witness mode (scheduled self-email plus an OpenTimestamps proof). No stake. Review on
 the later of 2027-01-16 and the quarantine's end.
 
-## 8. Rulings
+## 8. Rulings and the open term
 
 **Ruled by Joshua, 2026-11-09:**
 1. **TradingView:** "let's not wait for a human response. let's draft the email and see what
    they say". Logged as an OVERRIDE of Ask (§4).
-2. **Order against the eval run:** "research first". The Order allows one active hypothesis,
-   so the eval run starts only after this round ends.
-3. **The quarantine against the eval run:** "(a) research to 11-30". The options as put to
-   him, kept for the record:
+2. **Research deadline:** "(a) research to 11-30".
+3. **The eval run alongside research:** "keep 11-16", to the research coordinator, and "Mon
+   11-16" to the Tradeify deployment coordinator, choosing "Keep Mon 11-16. The eval runs
+   alongside research". This supersedes his earlier "research first". Two hypotheses are
+   active at once, the research round and the eval run; The Order allows one, and this is his
+   explicit exception, logged as an OVERRIDE under step 7. Neither result may be used to
+   continue, extend or rescue the other (The Order, Aim).
 
-**The quarantine against the eval run.** The quarantine starts the day the round
-ends and lasts 14 days. The Order allows only closure work in it, and `order-gates` refuses to
-start any registration until it ends. So the eval run starts only after the quarantine. Its own
-terms (note §4 step 4, option B) end it on 2026-12-31, and also end it if Tradeify gives no
-human answer on Q5, T1 or T2 by 2026-12-01. Q5 has not been sent. Joshua rules one of:
+**Open term (proposed; Joshua accepts or rewrites): one quarantine, at the programme stop.** The
+Order starts its 14-day quarantine at a *programme* STOP, and `order-gates` blocks new
+registrations, registration starts and non-`closure:` commits repo-wide while it runs. If the
+research round's end started it, it would block the eval run's records from 12-01. So:
 
-- **(a) Strict, research to 11-30 (recommended).** If research ends by 11-30, the quarantine
-  clears by 12-14 and eval sessions may start on 12-15, leaving 11 to 12 weekdays to 12-31
-  (12-25 closed, 12-24 shortened). The eval run's contract and registration merge before
-  research ends, so nothing new is registered in the quarantine. Sessions still depend on the
-  eval run's other terms, above all a Tradeify answer by 12-01.
-- **(b) Strict, the note's 12-31.** Research may still end early, on its fourth verdict, but no
-  eval window is guaranteed, and none remains if research runs to its deadline.
-- **(c) Change the framework.** Let eval sessions run in the quarantine. This is not a scope
-  choice: `order-gates` refuses to start a registration in quarantine whatever the paths, the
-  commits must carry `closure:`, and The Order's protected rule E3 (closure-only quarantine)
-  cannot be changed in witness mode. It needs an explicit change to The Order and to
-  `check_order.py`, decided before the outcome it affects.
+- The research round's end is recorded (§5) but starts no quarantine.
+- The quarantine starts once both the research round and the eval run have ended: at the later
+  of the two, and no later than 2026-12-31. It runs 14 days, and the programme closes inside
+  it on 2027-01-02 unless a Codex-verified CONFIRMED card exists.
+- Between the research round's end and the quarantine, no research work happens: no new card,
+  look or registration. The research coordinator only writes the round's results.
 
-(a) is recommended because four offline cards take days, not weeks, and it keeps the Order
-intact. The 12-01 Tradeify condition binds under every option: unless Joshua sends Q5 and gets
-a human answer by then, the eval run ends before any option lets it start.
+This needs no change to The Order or to `check_order.py`. The eval run's registration (#1178)
+sits in the forward stop rule, not in `order-state.json`, so the gate's registration checks do
+not touch it.
