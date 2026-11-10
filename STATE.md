@@ -26,12 +26,13 @@ every session start and enforced by the `order-gates` check. The enforcement fil
 code-owned ([CODEOWNERS](.github/CODEOWNERS)); the `order-enforcement-files` ruleset
 makes changing them a deliberate, logged admin bypass.
 
-- **Step:** aim. **No contract yet,** so there is no programme work. Stopping and
-  shrinking (closure records, deletions) need none.
-- **Round inputs Joshua has accepted (R2, R7),** for him to put in the contract: one
-  round of at most 4 cards, ending at 4 or on 2026-12-31; 2-3 index-micro cards from
-  different mechanism families, at most 1 MGC, no 6J/M6E breakout cards; banked K still
-  counts; about 1 hour a week of his time; spend limited to the data line.
+- **Step:** subtract (step 3). The round's
+  [contract](docs/framework/contracts/2026-11-09-final-research-round-contract-DRAFT.md) is
+  approved and its hash is recorded in `order-state.json`. No card is registered yet.
+- **Round terms (contract §3):** at most 4 cards, ending at the fourth consumed card's
+  verdict or on 2026-11-30; 2-3 index-micro cards from different mechanism families, at
+  most 1 MGC, no 6J/M6E breakout cards; banked K still counts; about 1 hour a week of
+  Joshua's time; spend limited to the data line.
 
 ## Live obligations
 
@@ -43,11 +44,10 @@ makes changing them a deliberate, logged admin bypass.
 
 ## Open decisions (Joshua)
 
-1. **The round's contract** (Order step 1): objective, limiting input, budgets, outside
-   questions, kill rule, caps. Agents may not draft items 1 and 2.
-2. **The eight technical recommendations** at the end of the
-   [2026-11-09 rulings](docs/notes/2026-11-09-rulings.md). They gate the later
-   narrowing PRs (tooling, lab, ops and core removals).
+1. **Recommendations 2, 3 and 4** at the end of the
+   [2026-11-09 rulings](docs/notes/2026-11-09-rulings.md). Joshua confirmed 1 and 5-8 on
+   2026-11-10 (addendum there).
+2. **Weekly preservation trade and D8** for the coda (R12).
 3. **Data rights:** research still rests on TradingView CME exports under accepted
    terms-of-service risk (D16). A licensed data path is the long-horizon requirement to
    question.
