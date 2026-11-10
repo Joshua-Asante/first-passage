@@ -17,7 +17,7 @@ are simulated, and each writes ``out/<card id>.holdout.json``. After a holdout p
 no new data is read, and sets ``placement: clear | fail`` in the holdout file, or
 ``not_evaluated`` when run.yaml declares ``book: null``, with ``placement_book_sha256`` (the
 pinned book, inside the same ``dev_binding_sha256``); the look's verdict is unchanged
-(``gates.holdout_look``). Gate 5h (``venue.py``) would attach at this stage; it is not wired.
+(``gates.holdout_look``). Gate 5h (venue MC) was removed on 2026-11-10; it was never wired.
 """
 from __future__ import annotations
 
