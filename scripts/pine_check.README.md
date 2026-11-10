@@ -51,3 +51,10 @@ oracle regression. Oracle paths are read from
 `core/strategies/MANIFEST.sha256` (strategy `.pine` rows only; `_indicator.pine`
 excluded) — do not hard-code paths in the audit scripts. **LOCAL / MANUAL only** (live network + locked `.pine`) — not
 a CI gate. Fixtures: `tests/pine_check_fixtures/{good,bad}.pine`.
+
+_Addendum 2026-11-10: `pine_check.py`, `pine_check_audit.{sh,ps1}` and the fixtures in
+`tests/pine_check_fixtures/` were removed by Subtract on Joshua's ruling, because the checker
+uploads Pine source to TradingView's compile service and an agent running it on Private Pine
+would send Private source off-host. This README stays as the record of which files were
+validated with it. `scripts/pine_lint.py` (offline) stays until 2026-11-30. Last present at
+`c7e0d44`._
