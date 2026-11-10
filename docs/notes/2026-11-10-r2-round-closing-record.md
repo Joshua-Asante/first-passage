@@ -36,7 +36,7 @@ resolved; it did not show that the time left was useless.
 |---|---|---|
 | GAPFAIL-1 (MNQ cash-open gap failure) | Closed on trade count, with no return-based test: 56 trades in 2020–2024, floor 200. Its returns were displayed and partly viewed; the exposure is recorded with the closure | `ops/instruments/MNQ.md:448` |
 | Q-HARV-THR-1 (threshold rebalancing, MES) | FAILED-COUNT, zero returns read: sparse expressions 57 and 142 events; the daily one declined as not sparse | `ops/instruments/ES.md:68` |
-| ANNPREM-1 (CPI and jobs-report days, ES/MES) | Withdrawn by its author, zero returns read: it re-cites the announcement-day class that Q-INVENTORY-1 closed | `docs/rejected_candidates.md:765` |
+| ANNPREM-1 (scheduled macro-announcement premium, ES/MES) | Withdrawn by its author, zero returns read: it re-cites the announcement-day class that Q-INVENTORY-1 closed | `docs/rejected_candidates.md:765` |
 
 **What bound the round as it was run:**
 - **Count.** Owned daily history starts 2010-06. June 2010 to June 2026 holds 193 monthly
@@ -86,14 +86,14 @@ that are unresolved are marked so.
 
 | Field | GAPFAIL-1 | Q-HARV-THR-1 | ANNPREM-1 |
 |---|---|---|---|
-| Wording | The 2026-11-05 MNQ cash-open gap-failure rule has an edge after costs | Next-day MES returns move against the stock-versus-bond winner on predicted threshold-rebalance days | ES/MES earns a premium from the prior close to the close on CPI and jobs-report days, FOMC days excluded |
+| Wording | The 2026-11-05 MNQ cash-open gap-failure rule has an edge after costs | Next-day MES returns move against the stock-versus-bond winner on predicted threshold-rebalance days | ES/MES earns a premium around scheduled macro announcements (the exact formulation is kept outside the repo) |
 | Disposition (not a verdict) | Closed on trade count | Stopped, FAILED-COUNT | Withdrawn before registration |
 | Date | 2026-11-10 | 2026-11-10 | 2026-11-10 |
 | Evidence | `1a16212:ops/instruments/MNQ.md:448` | `1a16212:ops/instruments/ES.md:68` | `1a16212:docs/rejected_candidates.md:765`; the shortlist and its addendum are outside the repo |
 | Failed criterion | 56 trades against the 200 floor | 57 and 142 events against the 200 floor; the 3,579-event expression declined as not sparse | Re-cites a closed class; reopening bar not met |
 | K | Recorded as 0 in its closure; no registration | Unresolved: three expressions screened on dates only, left to a successor's reconciliation | Unresolved: one proposed expression; ancestry not reconciled |
 | Parents | The 2026-11-05 proposal in `MNQ.md` | HARV-2026-001 (K = 1) | Q-INVENTORY-1's announcement-day class; HARV-2026-001's ES exposure overlaps mid-month dates |
-| Prohibited reinterpretations | A count failure says nothing about returns, in either direction | Moving the band or window does not qualify; a count failure is not FALSIFIED | Dropping FOMC days is not new evidence; a later out-of-sample start is not allowed |
+| Prohibited reinterpretations | A count failure says nothing about returns, in either direction | Moving the band or window does not qualify; a count failure is not FALSIFIED | Narrowing the set of announcement days is not new evidence; a later out-of-sample start is not allowed |
 | Reopening condition | None recorded in its closure: unresolved | `ES.md:92`: a sparse expression with an independent event source clearing 200 on owned data, or an operator ruling that a daily-turnover card fits | `rejected_candidates.md:772`: new external mechanism evidence, as Q-INVENTORY-1 states it |
 | Data exposure | 2020–2024 displayed, 2025–2026 partly viewed; MNQ 2026-01-01 to 11-09 burned | Zero returns read | Zero returns read |
 
@@ -137,11 +137,11 @@ one; the rest happened without a ruling and are logged here after the fact.
 | 1 | **Ask.** The round ran without TradingView's answer on exported bars | OVERRIDE, ruled by Joshua and logged in the contract (§4, lines 81–85) |
 | 2 | **Work in the quarantine that was not closure work.** The quarantine began at step 2. After it: three Subtract merges with non-`closure:` subjects on paths outside the allowlist (#1193, all 4 paths; #1190, 6 of 7; #1191, all 8); a spec draft and Codex's review of it; one ruling on that spec; direction to the research session and its data inventory. Enforcement began only when #1194 merged, which does not remove the obligation | OVERRIDE of E3, unruled |
 | 3 | **The stop was withdrawn and acted on for about 30 minutes** (steps 5–9). Codex notes a same-day reversal is not automatically The Order's same-day-ruling breach, which concerns ruling on the day results appear | OVERRIDE of E3, unruled; ended by Joshua's "The stop stands" |
-| 4 | **Closure merge.** The contract says Joshua merges the closure PR. The coordinator merged #1194 on his word "continue", which did not name it | Departure from contract §5 |
-| 5 | **Security review.** #1190 and #1191 changed ignore rules and the boundary layer map and merged with no `@codex security review` comment (none on either PR as of this record) | Departure from AGENTS.md |
-| 6 | **Checker read boundary.** Codex's shortlist and end-round reviews each disclosed that prose it read surfaced historical performance figures and settings, against its names-and-counts-only brief | Disclosed by Codex |
-| 7 | **Measurement.** Operator hours and the share of agent work on a disconfirming test were not measured (§9) | Departure from The Order's weekly review |
-| 8 | **Coordinator's error.** It should have presented the withdrawal as an override decision and sought Codex's review before acting on it | Coordinator |
+| 4 | **Closure merge.** The contract says Joshua merges the closure PR. The coordinator merged #1194 on his word "continue", which did not name it | OVERRIDE of contract §5, unruled |
+| 5 | **Security review.** #1190 and #1191 changed ignore rules and the boundary layer map and merged with no `@codex security review` comment (none on either PR as of this record) | OVERRIDE of AGENTS.md's review rule, unruled |
+| 6 | **Checker read boundary.** Codex's shortlist and end-round reviews each disclosed that prose it read surfaced historical performance figures and settings, against its names-and-counts-only brief | OVERRIDE of the data rules' read boundary, unruled; disclosed by Codex |
+| 7 | **Measurement.** Operator hours and the share of agent work on a disconfirming test were not measured (§9) | OVERRIDE of The Order's weekly review, unruled |
+| 8 | **Coordinator's error.** It should have presented the withdrawal as an override decision and sought Codex's review before acting on it | OVERRIDE of E3 and The Order's Rule step, unruled; the coordinator's |
 
 The spec and its review were never committed and are set aside. The ruling in step 6 has no
 effect, because the round it applied to is closed.
