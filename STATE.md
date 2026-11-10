@@ -26,9 +26,10 @@ every session start and enforced by the `order-gates` check. The enforcement fil
 code-owned ([CODEOWNERS](.github/CODEOWNERS)); the `order-enforcement-files` ruleset
 makes changing them a deliberate, logged admin bypass.
 
-- **Step:** subtract (step 3). The round's
-  [contract](docs/framework/contracts/2026-11-09-final-research-round-contract-DRAFT.md) is
-  approved and its hash is recorded in `order-state.json`. No card is registered yet.
+- **Step:** stop. Joshua ended the research round on 2026-11-10 ("Stop the round"), a
+  discretionary stop with zero registered cards. Quarantine runs 2026-11-10 to 2026-11-24:
+  only `closure:` commits on the closure paths in `order-state.json`. The closing record is
+  written in the quarantine.
 - **Round terms (contract §3):** at most 4 cards, ending at the fourth consumed card's
   verdict or on 2026-11-30; 2-3 index-micro cards from different mechanism families, at
   most 1 MGC, no 6J/M6E breakout cards; banked K still counts; about 1 hour a week of
