@@ -25,9 +25,8 @@ verifies its own work, and a subagent's review doesn't count as the other agent'
 ## Money controls (hard rules)
 
 1. **No orders, arming, deployment or venue action of any kind.** Reopening needs a new
-   ruling after a Codex-verified CONFIRMED result, under its own contract. One
-   exception ([R12](docs/notes/2026-11-09-rulings.md)): the coda's attended sessions on
-   the owned Tradeify eval, each under its own GO from Joshua, who enables them.
+   ruling after a Codex-verified CONFIRMED result, under its own contract. The coda's
+   exception ended before any session ([R13](docs/notes/2026-11-09-rulings.md)).
    Agents place, change, cancel or exit no eval order.
 2. **Frozen parameters.** `DD_TRIGGER` (1.5%) and `DD_SCALE` (0.40×) in
    `core/dd_protection.py`, the locked allocations in `core/firm_rules.py`, and locked

@@ -27,3 +27,6 @@ Labels only: no figures, parameters or account data.
 The terms bind from the first forward session. Like the rule itself, they are not changed after that
 session; any change ends the attempt's record. The rest of the note (§4 steps 1–3 and 5) is not
 registered here.
+
+**Addendum 2026-11-10.** The coda ended before its first forward session
+([R13](../../notes/2026-11-09-rulings.md)), so these terms never bound a session.

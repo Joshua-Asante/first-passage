@@ -1,6 +1,6 @@
 # STATE — First Passage
 
-**Updated:** 2026-11-09. One page: goal, method, obligations, open decisions. Replace
+**Updated:** 2026-11-10. One page: goal, method, obligations, open decisions. Replace
 stale lines instead of appending history.
 
 ## Goal
@@ -11,11 +11,9 @@ after costs. The prop operation is closed. No order, venue, deployment or moneti
 work until a Codex-verified CONFIRMED result exists, and that opens only a separate
 deployment decision under its own contract.
 
-One exception ([R12](docs/notes/2026-11-09-rulings.md)): the coda on the owned Tradeify
-Select 100K eval, outside The Order, from Mon 11-16 under stop-rule
-[Addendum 2](docs/briefs/pre-registration/2026-10-31-tradeify-forward-stop-rule-registration-addendum-2.md):
-at most 20 attended sessions or to 12-31, no resets or purchases, each session with its
-own GO. ORB runs on the frozen build.
+The coda on the owned Tradeify eval ended on 2026-11-10 before any session
+([R13](docs/notes/2026-11-09-rulings.md)); the eval lapses. Joshua does not plan to reopen
+the strategy or operations paths after the quarantine.
 
 ## Method
 
@@ -39,7 +37,6 @@ makes changing them a deliberate, logged admin bypass.
 
 | Obligation | Next due | Notes |
 |---|---|---|
-| Tradeify eval (coda) | Session 1 Mon 11-16 | R12 replaces R3 for this eval. Joshua enables and attends; agents place nothing. The weekly preservation trade is open: Joshua to rule. |
 | Subscription reconfirm | 11-21 | Joshua reconfirms the [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md) and cuts spend to the data line (R7). |
 | Witness record | Sent 2026-11-09 | Hashes emailed to Joshua's second account with an OpenTimestamps proof (R10). Joshua runs `ots upgrade` on the proof once Bitcoin confirms it. |
 
@@ -48,7 +45,6 @@ makes changing them a deliberate, logged admin bypass.
 1. **Recommendations 2, 3 and 4** at the end of the
    [2026-11-09 rulings](docs/notes/2026-11-09-rulings.md). Joshua confirmed 1 and 5-8 on
    2026-11-10 (addendum there).
-2. **Weekly preservation trade and D8** for the coda (R12).
-3. **Data rights:** research still rests on TradingView CME exports under accepted
+2. **Data rights:** research still rests on TradingView CME exports under accepted
    terms-of-service risk (D16). A licensed data path is the long-horizon requirement to
    question.
