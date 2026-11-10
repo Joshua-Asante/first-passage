@@ -1,7 +1,8 @@
 # ORB + Aegis attended session: operator procedure
 
 **Status:** `ACCEPTED 2026-11-07` by Joshua ("accept the procedure"), with the §9
-decisions. Claude drafted it; Codex reviewed it. Changes need Joshua's ruling. It grants no
+decisions; amended 2026-11-10 by his ruling on the hard trigger (§10). Claude drafted it;
+Codex reviewed it. Changes need Joshua's ruling. It grants no
 GO, order, session or spend. It is the operator's half of the
 [eval build design spec](2026-11-06-orb-aegis-eval-build-design.md): the spec says what
 the build does, and this page says what the attending operator does. Where they
@@ -80,11 +81,11 @@ connection is set not to connect on startup before it reconnects
      one cycle a stop gets to appear before the operator acts (§4, C3);
    - the freshness limit: how long the Tradovate account view may go without updating
      before the operator treats account evidence as lost (§4, card 8);
-   - the hard latest trigger: the time by which F starts on any leg still open,
-     derived under C2 from a rehearsed worst-case F duration plus margin.
+   - the hard latest trigger: 16:10 ET, the time by which F starts on any leg still
+     open (C2, §10).
 3. Plan the attended window. It must cover the session from enable until verified
    flat. If it cannot, do not start.
-4. Do not start until the hard latest trigger has been derived from a rehearsal (C2).
+4. Confirm the hard latest trigger is 16:10 ET and falls after both tested exits (C2).
 5. Confirm the watcher is the version on the signed page, and check directly that each
    instance's refusal folder exists: the watcher does not flag a missing one.
 
@@ -168,12 +169,10 @@ when flat (§4). The operator watches broker activity, not instance halts (§4, 
 - **C2. Exit backstop: two triggers.**
   1. *Normal:* each strategy gets its tested scheduled exit, including the bar close
      Aegis's exit needs (D2).
-  2. *Hard latest:* whether or not that exit has fired, F starts early enough that a
-     full F, measured at its worst case in a rehearsal (submission, fills,
-     cancellation, verification and an adverse-path allowance), finishes before
-     16:45 ET, plus an explicit margin. The time is derived backwards from 16:45 ET,
-     not chosen as a round number, and is checked against both tested exits
-     *(signed page)*.
+  2. *Hard latest:* whether or not that exit has fired, F starts at 16:10 ET on any
+     leg still open (§10). That leaves 35 minutes before 16:45 ET for a full F
+     (submission, fills, cancellation, verification and an adverse-path allowance).
+     It is checked against both tested exits *(signed page)*.
 
   If no time both gives the tested exits a real chance and leaves that recovery time,
   either the signed page records that the hard trigger pre-empts the tested exit and
@@ -188,61 +187,23 @@ when flat (§4). The operator watches broker activity, not instance halts (§4, 
   bound may be relaxed later only by a ruling Joshua registers in advance, set from the
   slow tail of firm observations plus margin, never the average.
 
-## 10. Rehearsal of F
+## 10. Hard trigger, fixed by ruling
 
-Added 2026-11-07 on Joshua's direction. It produces the worst-case F time that C2's
-hard latest trigger is derived from (§3 item 4), using the weekly preservation trade.
+**Ruled by Joshua, 2026-11-10:** "drop it with a fixed trigger", to the proposal of a
+fixed 16:10 ET trigger in place of the timed rehearsal. This replaces the rehearsal of
+F that this section required from 2026-11-07; §3 item 4 no longer waits on it.
 
-**What is measured where.**
+**Why a fixed time is enough.** The strategies' own flat deadline is 16:00 ET and the
+venue's is 16:45 ET (session calendar). A 16:10 ET trigger leaves 35 minutes for a full
+F, which takes minutes even on a slow path. A measured sample would move the trigger by
+a minute or two inside that margin, so it would not change the decision. The one
+untimed 2026-11-10 run (recorded privately) flattened both positions in one action.
 
-| Part of F | Rehearsed on | Why |
-|---|---|---|
-| Step 1, disable an enabled instance | Sim101 | Enabling a strategy on the eval needs a session GO; disable time is local to NinjaTrader |
-| Step 2, flatten and cancel in Tradovate web | The preservation trade, on the eval | The unproven part on the firm connection |
-| Step 3, verify against B11 | The preservation trade | The operator's time to read both views to flat, no working orders, nothing unresolved |
+**What still covers the unmeasured parts.** Whether a flatten in Tradovate web also
+cancels a working stop is caught by F step 3: both views must show no working orders,
+and anything left is cancelled before the leg counts as flat (B11). The 6J leg, F on
+both legs at once and partial fills stay unmeasured; Joshua accepted them by ruling on
+2026-11-07, and the fixed margin now carries them. The signed page records the trigger.
 
-**The rehearsal, inside the one weekly round trip.**
-
-0. **Scope gate.** The added resting stop and the flatten-and-cancel exit change the
-   weekly round trip. Do not place this modified trade until Joshua has ruled that the
-   standing GO covers it, or has given a specific GO. Until then the ordinary
-   preservation trade runs as usual under its existing authorization.
-1. On a `PERMITTED` day, starting about 16:15 ET: near the hard trigger's liquidity,
-   with room before the 16:45 ET force-flat.
-2. Both instances disabled and the account flat in both views (B13).
-3. Enter one MNQ micro as the preservation trade is usually entered.
-4. Place a resting protective stop well away from the market, so step 2 also cancels
-   a working order. Before going on, take a fresh broker read: the stop must show
-   working for the filled quantity. If it is rejected, unknown or missing, run F as an
-   incident and record that outcome; it is not the planned timing sample.
-5. Run F steps 2 and 3 as §2 says: flatten and cancel in Tradovate web, then verify.
-6. Record privately: the click, the exit fill with the stop cancelled, and verification
-   complete. No prices or account data in the record (B15).
-
-**Deriving the hard trigger.** One sample is not a worst case. The MNQ rehearsal
-measures only what it exercises: one contract, one leg, on MNQ. From it, the trigger
-is the observed step 2 and 3 time plus the Sim101 step 1 time, plus a slow-fill
-allowance and a large explicit margin, counted back from 16:45 ET *(signed page)*.
-Each later preservation trade adds a sample. The trigger tightens only by a ruling
-Joshua registers in advance, from the slow tail of the samples, never the average.
-
-**Paths the MNQ rehearsal does not measure.** These are the 6J leg (where Aegis's exit
-has no clock backstop), F on both legs at once, and partial fills. §3 item 4 is met
-for them only by one of:
-
-- a supported envelope: for example a 6J rehearsal round trip, which is outside the
-  standing GO and needs Joshua's direction, and a Sim101 timing of F on both legs
-  for the sequencing; or
-- an explicit ruling by Joshua, recorded on the signed page, accepting the
-  unmeasured assumptions and the margin chosen for them.
-
-A margin alone does not satisfy the gate for paths nobody has measured.
-
-**Decided by Joshua, 2026-11-07.**
-
-- The modified trade (added resting stop, flatten-and-cancel exit) is within the
-  standing GO for the weekly preservation trade. Step 0 is met.
-- Joshua performs the rehearsal himself.
-- For the unmeasured paths (6J, F on both legs, partial fills), Joshua accepts the
-  assumptions by ruling. The signed page records the ruling and the margin chosen for
-  them.
+Any later change to the trigger needs Joshua's ruling, registered before the session it
+applies to.
