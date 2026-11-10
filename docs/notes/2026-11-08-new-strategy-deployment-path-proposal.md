@@ -65,3 +65,11 @@ happened, or a rule that requires it. The coordinator checked Codex's citations.
 
 Codex reported the 0.25 target as having no owner. It has one: Joshua's 11-02 ruling, "Yes, in-sample
 0.25", in the private addendum 3 to the 10-30 scaling ruling.
+
+## Addendum 2026-11-10: superseded
+
+Closed without a ruling on its items. On 2026-11-10 Joshua accepted the coordinator's and
+Codex's combined Subtract recommendation that this proposal is superseded. R1 closed the prop
+operation; R12 authorises only the ORB + Aegis coda on the owned eval, not new legs. A card that
+reaches CONFIRMED in the research round opens a separate deployment decision under its own
+contract (round contract §5). This file stays as the record of the proposal.
