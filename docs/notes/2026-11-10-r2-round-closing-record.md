@@ -145,7 +145,15 @@ the fact.
 | 7 | **Measurement.** Operator hours and the share of agent work on a disconfirming test were not measured (§9) | OVERRIDE of The Order's weekly review, unruled |
 | 8 | **Coordinator's error.** It should have presented the withdrawal as an override decision and sought Codex's review before acting on it | OVERRIDE of E3 and The Order's Rule step, unruled; the coordinator's |
 | 9 | **One answer in the quarantine.** Later on 2026-11-10 Joshua asked the research session what gaps in an existing design would need fixing for it to produce strategies. The session told him that is a successor idea the quarantine bars, and offered waiting until 11-25 or an override. He typed "answer now", and confirmed it to the coordinator ("yes i did"). Scope, as the session reported it: one opinion in chat; no files, searches, counts, specs, data reads or repo changes | OVERRIDE of E3, ruled by Joshua |
-| 10 | **The whole quarantine.** Later on 2026-11-10 Joshua ruled to the coordinator: "Override the whole quarantine, it was not my intention to close the strategy research for two weeks". The coordinator had recommended twice that the stop stand, and said that undoing it is an override of protected rule E3, which witness mode says cannot be changed. Codex's position on continuing after the stop is quoted in step 7. What the override does not change: the R2 round stays closed with zero cards; no new contract exists; and `order-gates` still enforces the quarantine on `main` through 2026-11-24, because the checker refuses to remove or shorten it and agents may not weaken that check | OVERRIDE of E3, ruled by Joshua |
+| 10 | **The whole quarantine.** Later on 2026-11-10 Joshua ruled to the coordinator: "Override the whole quarantine, it was not my intention to close the strategy research for two weeks". The coordinator had recommended twice that the stop stand, and said that undoing it is an override of protected rule E3, which witness mode says cannot be changed. Codex's position is quoted below the table. What the override does not change: the R2 round stays closed with zero cards; no new contract exists; and `order-gates` still enforces the quarantine on `main` through 2026-11-24, because the checker refuses to remove or shorten it and agents may not weaken that check | OVERRIDE of E3, ruled by Joshua |
+
+**Both agents on departure 10, verbatim.**
+- **Codex:** "I recommend retaining the quarantine. Joshua has explicitly ruled otherwise;
+  under The Order that must be recorded as an OVERRIDE of protected rule E3, because witness
+  mode supplies no compliant mechanism for lifting this obligation. The ruling does not reopen
+  R2, establish a new contract, or authorise weakening or bypassing order-gates."
+- **Coordinator (Claude), to Joshua:** "Your override is on record. It's your framework and
+  your ruling, so I've logged it and won't argue the point a third time."
 
 The spec and its review were never committed and are set aside. The ruling in step 6 has no
 effect, because the round it applied to is closed.
