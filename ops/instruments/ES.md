@@ -64,3 +64,32 @@ None yet. (HARV-2026-001 closed AMBIGUOUS, not FALSIFIED — see E3 for its re-o
 
 - **2026-08-09** — **MES ledger opened** ([`MES.md`](MES.md)) under instrument-lane SPEC — K-void re-screen; disposition on the child ledger. No ES cell change.
 - **2026-07-12** — Ledger created (Q-HARV-0 Phase-0 §0.8 found ES.md ABSENT). Seeded W1/W2 + E1–E4 from the HARV-2026-001 study (closed AMBIGUOUS same day). No core/lock/allocation/dd_protection change; no live strategy on this instrument.
+
+### 2026-11-10 — Q-HARV-THR-1 (threshold rebalancing, MES): STOPPED FAILED-COUNT, zero returns read
+
+Joshua's ruling, 2026-11-10: "Stop the card", confirmed directly to the coordinator the same
+day. The card was a new claim with HARV-2026-001 as disclosed ancestry. It asked whether next-day
+MES returns move against the stock-versus-bond winner on days a 60/40 threshold rebalancer is
+predicted to trade. Phase 1 counted event dates only, from closing prices (Databento GLBX.MDP3
+`ohlcv-1d`, `ES.c.0` and `ZN.c.0`, 2010-06-07 to 2026-06-30, W1 and W2 applied), after
+excluding HARV-0's window days:
+
+| Expression | Events | Meets 200 (`gates.py` `5a_min_trades`) |
+|---|---|---|
+| E1, band 2.0% | 57 | no |
+| E2, band 1.1% | 142 | no |
+| E3, averaged daily signal | 3,579 | yes |
+
+The pre-set selection rule picks the first expression with 200 events, which is E3. E3 trades
+almost every session, so it falls outside R2's "sparse, low-turnover" wording, and Joshua
+declined it rather than loosen the round's terms. Verdict: **FAILED-COUNT**. No return was
+read, nothing was registered, and Phase 2 (reachability) and Phase 3 did not run, so there is
+no clause-by-clause result or prediction to compare. No K is spent beyond HARV-2026-001's.
+No window was viewed on returns, so nothing goes to the burn register.
+
+**Re-proposal bar:** a sparse expression with an independent event source that clears 200 on
+owned data, or an operator ruling that a daily-turnover rebalancing card fits R2. Moving the
+E1/E2 band or window does not qualify.
+
+**Round slot:** Joshua ruled 2026-11-10 that another card takes this card's index-micro slot in
+the R2 round.
