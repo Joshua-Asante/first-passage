@@ -64,8 +64,26 @@ def test_is_window_burned_true_for_overlap_not_just_exact_match():
     assert is_window_burned("MNQ", "2025-10-01", "2025-11-01") is True
 
 
-def test_is_window_burned_false_for_adjacent_non_overlapping_window():
-    assert is_window_burned("MNQ", "2026-08-06", "2026-09-01") is False
+def _seed_only_ledger(tmp_path):
+    # The live ledger grows as windows are spent (e.g. the 2026-11-10 GAPFAIL-1
+    # entry covers 2026-08-06), so logic tests that assume a lone seed segment
+    # run against a copy holding just that segment.
+    seed = [
+        s
+        for s in load_burned_segments()
+        if s["instrument"] == "MNQ"
+        and s["window_start"] == "2025-09-01"
+        and s["window_end"] == "2026-08-05"
+    ]
+    assert len(seed) == 1
+    ledger = tmp_path / "burned_segments.json"
+    ledger.write_text(json.dumps(seed), encoding="utf-8")
+    return ledger
+
+
+def test_is_window_burned_false_for_adjacent_non_overlapping_window(tmp_path):
+    ledger = _seed_only_ledger(tmp_path)
+    assert is_window_burned("MNQ", "2026-08-06", "2026-09-01", path=ledger) is False
 
 
 def test_path_is_repo_relative_and_committed_location():
@@ -78,8 +96,9 @@ def test_consultation_count_zero_for_unlisted_window():
     assert consultation_history("MGC", "2010-01-01", "2011-01-01") == []
 
 
-def test_consultation_count_one_for_the_seeded_entry():
-    assert consultation_count("MNQ", "2025-09-01", "2026-08-05") == 1
+def test_consultation_count_one_for_the_seeded_entry(tmp_path):
+    ledger = _seed_only_ledger(tmp_path)
+    assert consultation_count("MNQ", "2025-09-01", "2026-08-05", path=ledger) == 1
 
 
 def test_consultation_count_is_channel_agnostic_and_sums_across_overlapping_segments(
