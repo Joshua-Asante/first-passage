@@ -835,3 +835,5 @@ consistency rule); **nothing here measures the funded phase.** (4) No K consumed
 nothing armed, no gate moved.
 
 <!-- GROWTH-SECTION-END -->
+
+_Addendum 2026-11-10: the shape-map code (`shape_generator.py`, `run_region_sweep.py`, `analyze_region.py`, `analyze_growth.py`, `gen_growth_section.py`, `insert_section13.py` and tests) was removed by Subtract; the results and committed data here stay. Last present at `456452c`._

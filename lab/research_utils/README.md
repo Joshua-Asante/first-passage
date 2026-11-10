@@ -6,3 +6,5 @@ Owner: [`docs/adr/2026-08-07-w4-minimal-gate-set-dormancy.md`](../../docs/adr/20
 
 Import root is `lab/` (`from research_utils.repo_root import repo_root`).
 Camp-local siblings: [`camp_import.py`](camp_import.py).
+
+_Addendum 2026-11-10: `mechanism_prior*.py`, `wilson_interval.py` and `event_study.py` (and `scripts/certification_power.py`) were removed by Subtract; no reader remained. Last present at `456452c`._

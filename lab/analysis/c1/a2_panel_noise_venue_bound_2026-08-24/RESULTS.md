@@ -561,3 +561,5 @@ grep -n "max_dd_pct" core/firm_rules.py | sed -n '1,20p'
 | Date | Change | By |
 |---|---|---|
 | 2026-08-24 | Initial authoring — panel-draw noise diagnosis + 10× re-score, size-invariant venue bound + validation, integer-granularity test of `pol_cushion`, tier-geometry table, R2 check | Claude Code |
+
+_Addendum 2026-11-10: `shape_feasibility_map_2026-08/shape_generator.py` and `run_region_sweep.py`, cited above, were removed by Subtract. Last present at `456452c`._

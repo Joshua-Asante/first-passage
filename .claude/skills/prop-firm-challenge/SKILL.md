@@ -68,7 +68,7 @@ Single-tier internal drawdown overlay: [`core/dd_protection.py`](../../../core/d
 CFD lot sizing is retired. DXTrade/TradingView `contractValue` defaults to 1 when unset; set it explicitly on CFD exports.
 
 - Size = `floor(target_risk_$ / (stop_distance × tick_value))`, capped by `micro_contract_cap`: an integer count.
-- **Granularity floor:** the balance below which intended risk rounds to 0 contracts. Guardian (single-position) tolerates it; in pyramided Striker DJ30/NAS100 a leg rounding to 0 breaks the edge. Derive floors first: `lab/analysis/legacy/futures_conversion_2026-07-01/derive_floors.py`.
+- **Granularity floor:** the balance below which intended risk rounds to 0 contracts. Guardian (single-position) tolerates it; in pyramided Striker DJ30/NAS100 a leg rounding to 0 breaks the edge. Derive floors first (the old `derive_floors.py` helper was removed by Subtract; last present at `456452c`).
 - **RESERVE cap:** base size ≤ `floor(account_cap / (1 + pyramid_pct))`, keeping pyramid headroom. `account_cap` is **this leg's share** when legs share an account-aggregate cap (Tradeify); the whole cap per leg over-counts. A missing per-leg allocation must **HALT**, never fall back to the account cap.
 - Re-derive tick value and commission per instrument from the venue's contract specs; never reuse CFD numbers.
 

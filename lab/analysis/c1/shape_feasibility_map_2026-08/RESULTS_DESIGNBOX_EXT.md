@@ -490,3 +490,5 @@ print(len(rows), sum(1 for r in rows if r['verdict']=='INFEASIBLE'))
 | Date | Change | By |
 |---|---|---|
 | 2026-08-24 | Initial authoring — harness (`design_box_shape.py`, `test_design_box_shape.py`, `run_designbox_sweep.py`), frontier-R computation, grid pre-registration, full 80-cell sweep at full frozen N, results, one-page reading, conjunct (iii) reconciliation | Claude Code (Sonnet 5) |
+
+_Addendum 2026-11-10: the shape-map code (`design_box_shape.py`, `run_designbox_sweep.py`, `shape_generator.py`, `run_region_sweep.py`, `analyze_region.py` and tests) was removed by Subtract; the results and committed data here stay. Last present at `456452c`._
