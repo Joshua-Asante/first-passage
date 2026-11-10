@@ -129,8 +129,9 @@ All on 2026-11-10.
 10. 20:42 and 20:43 Joshua merged #1190 and #1191 and told the coordinator: "I merged 1191
     and 1192, continue" (GitHub shows #1190 and #1191). 20:50 the coordinator merged #1194.
 
-**Departures.** The Order asks that each be logged as OVERRIDE. Only the first was ruled as
-one; the rest happened without a ruling and are logged here after the fact.
+**Departures.** The Order asks that each be logged as OVERRIDE. Departures 1 and 9 were
+ruled as overrides by Joshua; the rest happened without a ruling and are logged here after
+the fact.
 
 | # | Departure | Kind |
 |---|---|---|
@@ -142,12 +143,14 @@ one; the rest happened without a ruling and are logged here after the fact.
 | 6 | **Checker read boundary.** Codex's shortlist and end-round reviews each disclosed that prose it read surfaced historical performance figures and settings, against its names-and-counts-only brief | OVERRIDE of the data rules' read boundary, unruled; disclosed by Codex |
 | 7 | **Measurement.** Operator hours and the share of agent work on a disconfirming test were not measured (§9) | OVERRIDE of The Order's weekly review, unruled |
 | 8 | **Coordinator's error.** It should have presented the withdrawal as an override decision and sought Codex's review before acting on it | OVERRIDE of E3 and The Order's Rule step, unruled; the coordinator's |
+| 9 | **One answer in the quarantine.** Later on 2026-11-10 Joshua asked the research session what gaps in an existing design would need fixing for it to produce strategies. The session told him that is a successor idea the quarantine bars, and offered waiting until 11-25 or an override. He typed "answer now", and confirmed it to the coordinator ("yes i did"). Scope, as the session reported it: one opinion in chat; no files, searches, counts, specs, data reads or repo changes | OVERRIDE of E3, ruled by Joshua |
 
 The spec and its review were never committed and are set aside. The ruling in step 6 has no
 effect, because the round it applied to is closed.
 
-After those departures, Joshua was offered a logged override to continue the round and
-declined it ("The stop stands"). That refusal is recorded here on the day it was made. It
+After departures 1 to 8, Joshua was offered a logged override to continue the round and
+declined it ("The stop stands"). That refusal is recorded here on the day it was made.
+Departure 9 came after it and is narrower: one answer, not a resumed round. The refusal
 does not make the stop clean or the framework's first test a success; the framework's own
 review decides that.
 
