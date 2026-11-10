@@ -444,3 +444,24 @@ that local record is not included in this change. No clean confirmation sample i
 certified. Revisit only with the data gaps resolved and a fixed, authorized test
 proposal; no return test, optimization or new trial registration occurred.
 M6E, MCL ORB R1 and the parked EIA work remain separate.
+
+### 2026-11-10 — GAPFAIL-1 (the 2026-11-05 gap-failure rule): CLOSED on trade count, no return test
+
+Joshua's ruling, 2026-11-10: "close the card, the coordinator records it." The rule above,
+implemented as a TradingView strategy (GAPFAIL-1; source and settings kept outside the repo),
+takes **56 closed trades over 2020–2024** (2020 9, 2021 11, 2022 8,
+2023 15, 2024 13). That is below the 200-trade floor (`lab/builder/gates.py`, gate `5a_min_trades`),
+so it fails before any return test. Detecting it half the time at n = 56 would need about
+0.26 sigma per trade. Codex counted from a TradingView export using only trade number, type and
+timestamp; Joshua confirmed the export covers the full history. K stays 0; no registration.
+
+**Exposure (rule-specific).** The export ran with trades on over the whole history:
+- **2020–2024:** this rule's returns were displayed but not used for the count. Already-exposed
+  exploration data; recorded here and not added to the burn register.
+- **2025–2026:** the export holds 28 more trades (Codex's count report), not used for the count.
+  The side session that ran the test reported, without a dated record, that the 2026 trades
+  were viewed in TradingView. Treat 2025 as exposed for this rule; its September–December part is
+  already in the burn register's shared confirm segment.
+- **2026-01-01 to 2026-11-09:** held out by the proposal above and run with trades on, so it is
+  recorded in [`burned_segments.json`](../../discovery_manifests/burned_segments.json). It
+  overlaps the reserved confirm window from 2026-11-02.
