@@ -26,7 +26,6 @@ scripts_layer:
   check_pine_manifest: governance
   check_skill_refs: governance
   check_path_liveness: governance
-  pine_check: governance
   # parse_bar_export imports core/bar_export_loader only (governance->core legal)
   parse_bar_export: governance
   check_skills_no_constants: governance
