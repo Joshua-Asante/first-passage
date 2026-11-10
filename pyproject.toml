@@ -47,7 +47,7 @@ testpaths = ["tests"]
 # (`from portfolio_mc import ...`) need an
 # explicit pythonpath. Post-restructure the layer roots are on the path so the
 # relocated flat modules (core/portfolio_mc.py, …) + core/lib resolve.
-# ops/accounts.py was retired in substrate Phase 2 (tearsheet CLI remains).
+# ops/accounts.py was retired in substrate Phase 2; the tearsheet CLI was removed by Subtract (2026-11-10).
 # No "governance" entry: that layer is root-resident by design and has no
 # directory (REPO_MAP.md §1) — the token was a no-op and was dropped 2026-07-31.
 pythonpath = ["core", "lab", "ops", "ops/c1_signal_daemon", "."]

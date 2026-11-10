@@ -8,7 +8,7 @@ Pytest import roots are owned by [`pyproject.toml`](../pyproject.toml)
 | Path | Mirrors |
 |---|---|
 | [`core/`](core/) | `core/` modules |
-| [`ops/`](ops/) | rail / daemon / tearsheet |
+| [`ops/`](ops/) | ops modules and offline replay |
 | [`lab/`](lab/) | research primitives (also many root `test_*.py`) |
 | [`governance/`](governance/) · [`scripts/`](scripts/) | gate / discipline scripts |
 | [`fixtures/`](fixtures/) | committed fixtures (vendor CSVs skip-if-missing) |

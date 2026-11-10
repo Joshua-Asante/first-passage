@@ -11,7 +11,6 @@ restated here.
 | [`contract_roll.py`](contract_roll.py) | 6J and MGC roll calendar and G4 checks |
 | [`instruments/`](instruments/) | Per-symbol ledgers + mechanism index |
 | [`sentinel/`](sentinel/) | Hygiene / preregistration scans |
-| [`cli.py`](cli.py) | Tearsheet-only historical CLI |
 | [`nt_readonly_mcp.py`](nt_readonly_mcp.py) | Read-only NinjaTrader 8 MCP server: logs, trace, journals, exports. Places nothing; see below |
 | [`nt_install_check.py`](nt_install_check.py) | Read-only install checks: installed NinjaScript vs a frozen manifest, and NT safety settings. See below |
 | [`prop_envelope_default.md`](prop_envelope_default.md) | Prop-envelope v1 pointer |
