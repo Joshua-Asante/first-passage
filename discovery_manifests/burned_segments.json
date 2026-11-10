@@ -17,7 +17,7 @@
     "instrument": "MNQ",
     "window_start": "2026-01-01",
     "window_end": "2026-11-09",
-    "reason": "GAPFAIL-1 (MNQ cash-open gap-failure fade) was run with trades on in TradingView over 2026-01-01..2026-11-09 and all 12 trades' returns were read on 2026-11-10, although the 2026-11-05 proposal held 2025-2026 out. Overlaps the reserved confirm window from 2026-11-02 (no trades in 2-9 November). Card closed on trade count; see ops/instruments/MNQ.md 2026-11-10.",
+    "reason": "GAPFAIL-1 (MNQ cash-open gap-failure fade) was run with trades on in TradingView over 2026-01-01..2026-11-09, a window the 2026-11-05 proposal held out; the side session reported the 2026 trades were viewed. Overlaps the reserved confirm window from 2026-11-02. Card closed on trade count; see ops/instruments/MNQ.md 2026-11-10.",
     "consultations": [
       {
         "source": "ops/instruments/MNQ.md 2026-11-10 GAPFAIL-1 closure",
