@@ -26,10 +26,10 @@ every session start and enforced by the `order-gates` check. The enforcement fil
 code-owned ([CODEOWNERS](.github/CODEOWNERS)); the `order-enforcement-files` ruleset
 makes changing them a deliberate, logged admin bypass.
 
-- **Step:** stop. Joshua ended the research round on 2026-11-10 ("Stop the round"), a
-  discretionary stop with zero registered cards. Quarantine runs 2026-11-10 to 2026-11-24:
-  only `closure:` commits on the closure paths in `order-state.json`. The closing record is
-  written in the quarantine.
+- **Step:** stop. Joshua ended the research round on 2026-11-10 with zero cards, and ruled
+  "this objective should not continue". Quarantine runs to 2026-11-24 (`closure:` commits on
+  the closure paths only). He does not plan to reopen the strategy or operations paths after
+  it. Closing record: `docs/notes/2026-11-10-r2-round-closing-record.md`.
 - **Round terms (contract §3):** at most 4 cards, ending at the fourth consumed card's
   verdict or on 2026-11-30; 2-3 index-micro cards from different mechanism families, at
   most 1 MGC, no 6J/M6E breakout cards; banked K still counts; about 1 hour a week of
@@ -39,7 +39,7 @@ makes changing them a deliberate, logged admin bypass.
 
 | Obligation | Next due | Notes |
 |---|---|---|
-| Tradeify eval (coda) | Session 1 Mon 11-16 | R12 replaces R3 for this eval. Joshua enables and attends; agents place nothing. The weekly preservation trade is open: Joshua to rule. |
+| Tradeify eval (coda) | Ended 2026-11-10 | Joshua: "we may as well end the coda as well". No session from 11-16. Agents place nothing on the eval account. |
 | Subscription reconfirm | 11-21 | Joshua reconfirms the [ledger](docs/pursuits/SUBSCRIPTION_LEDGER.md) and cuts spend to the data line (R7). |
 | Witness record | Sent 2026-11-09 | Hashes emailed to Joshua's second account with an OpenTimestamps proof (R10). Joshua runs `ots upgrade` on the proof once Bitcoin confirms it. |
 
@@ -48,7 +48,6 @@ makes changing them a deliberate, logged admin bypass.
 1. **Recommendations 2, 3 and 4** at the end of the
    [2026-11-09 rulings](docs/notes/2026-11-09-rulings.md). Joshua confirmed 1 and 5-8 on
    2026-11-10 (addendum there).
-2. **Weekly preservation trade and D8** for the coda (R12).
 3. **Data rights:** research still rests on TradingView CME exports under accepted
    terms-of-service risk (D16). A licensed data path is the long-horizon requirement to
    question.

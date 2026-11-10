@@ -2,11 +2,11 @@
 
 **Status:** closed. Zero cards registered, zero consumed. Quarantine 2026-11-10 to 2026-11-24
 (`docs/framework/order-state.json` at `1a16212`). This is not a clean STOP: §6 lists
-departures, and Joshua overrode the quarantine itself the same day (departure 10). The round
-stays closed, and the quarantine entry in `order-state.json` is unchanged.
+departures. Joshua overrode the quarantine the same day (departure 10), then withdrew that
+override and kept the quarantine. The round stays closed, the quarantine stands to
+2026-11-24, and Joshua ruled that the objective ends here (§7).
 **Written by:** the research coordinator (Claude), in the quarantine, as contract §5 requires.
-Codex reviews it. Joshua's paragraph in §7 is his, by hand; until it is written, step 8 of The
-Order is not complete.
+Codex reviews it. §7 holds Joshua's answer in his own words, typed to the coordinator.
 **Contract:** [`2026-11-09-final-research-round-contract-DRAFT.md`](../framework/contracts/2026-11-09-final-research-round-contract-DRAFT.md),
 sha256 `d6add078…5017f0`, merged 2026-11-10 at `456452c`.
 **Sources.** Repo references are pinned to `1a16212`. Times are UTC from GitHub's PR and
@@ -166,12 +166,29 @@ longer counts as a continuation declined. Whether this is the framework failing 
 test is for the framework's own review (The Order, "Test the framework itself"): work during
 quarantine is one of its audit triggers.
 
+**Final rulings, 2026-11-10, by Joshua to the coordinator, verbatim:**
+- "we'll maintain the quarantine and stop here". This withdraws the override in departure 10:
+  the quarantine stands to 2026-11-24. All research work stopped, and the Codex review of the
+  off-repo design was cancelled.
+- "no need to purge the private wording". Earlier commits on the public branches of #1182,
+  #1184 and #1195 held strategy settings that were later removed. The branches were deleted
+  on his word, and the commits stay reachable through those PRs. He accepts that exposure.
+- "no need for the security reviews". Departure 5 stands as his decision, not an open item.
+
 ## 7. Joshua's paragraph
 
 *By hand, in the quarantine: should this objective continue at all, and what else could these
 hours buy?*
 
-> _(to be written by Joshua)_
+> "this objective should not continue"
+>
+> "For now I don't plan on reopening the strategy or operations paths after the quarantine"
+>
+> "we should decommission the goals in the research and operations lanes, we are clearing a
+> clean slate for new goals"
+
+Typed by Joshua to the coordinator on 2026-11-10. The research and operations goals in the
+goals tracker (`book-sharpe`, `tradeify-deploy`) were archived the same day on his word.
 
 ## 8. Work done under the contract (Subtract)
 
@@ -215,7 +232,9 @@ and 4 of the 2026-11-09 rulings stay open.
 | Share of agent work on the next test that could disprove the claim | Not measured. No test was registered, so none of the work was on a registered test |
 | Spend | No purchase was made by an agent in this round. Joshua's existing subscriptions were not audited for this record |
 
-## 10. Not affected
+## 10. The eval coda
 
-The eval coda (R12) starts Mon 2026-11-16 outside The Order, each session under its own GO.
-Its public records are on the quarantine's closure paths.
+Joshua ended it on 2026-11-10: "we may as well end the coda as well". The R12 coda on the owned
+Tradeify eval, planned from Mon 2026-11-16, will not run. This record changes nothing on the
+eval account. Agents place, change, cancel or exit no eval order; the account is Joshua's. The
+Tradeify deployment coordinator was told and asked to confirm with him directly.
