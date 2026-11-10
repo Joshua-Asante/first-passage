@@ -427,8 +427,3 @@ This adds no production strategy authorization or live venue disposition.
 
 Databento retirement (operator report 2026-09-10) leaves this test without an approved
 source; emission and item-5 acceptance remain blocked. No replay substitution is approved.
-
-- **2026-11-10** — `c24_joint_frame.csv` (named in the 2026-08-29 entry above) was removed from
-  the tree as a per-day series derived from licensed vendor bars (data-rule fix D2, Joshua's
-  ruling). It is now a git-ignored local file; `c24_joint_results.json` and the scripts stay.
-  Last tracked at `c7e0d44`. No cell or finding changes.

@@ -145,9 +145,3 @@ print(r['L2']['ci'], r['presence_pass'])
 # Expected (post-2026-08-31 correction): [-0.092948..., 0.114652...] False
 # (pre-correction value was [-0.008144..., 0.180413...] -- see the headline correction banner)
 ```
-
-_Addendum 2026-11-10: the two cached joint frames named above (`candidate24_joint_frame.csv`,
-`c24_joint_frame.csv`) were removed from the tree because they are per-day series derived
-from licensed vendor bars (data-rule fix D2, on Joshua's ruling). They are now git-ignored
-local files; re-running this battery needs the local copies or the vendor bars. Last tracked at
-`c7e0d44`. No finding here changes._
