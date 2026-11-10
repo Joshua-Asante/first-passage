@@ -2,7 +2,8 @@
 
 **Status:** closed. Zero cards registered, zero consumed. Quarantine 2026-11-10 to 2026-11-24
 (`docs/framework/order-state.json` at `1a16212`). This is not a clean STOP: §6 lists
-departures.
+departures, and Joshua overrode the quarantine itself the same day (departure 10). The round
+stays closed, and the quarantine entry in `order-state.json` is unchanged.
 **Written by:** the research coordinator (Claude), in the quarantine, as contract §5 requires.
 Codex reviews it. Joshua's paragraph in §7 is his, by hand; until it is written, step 8 of The
 Order is not complete.
@@ -129,7 +130,7 @@ All on 2026-11-10.
 10. 20:42 and 20:43 Joshua merged #1190 and #1191 and told the coordinator: "I merged 1191
     and 1192, continue" (GitHub shows #1190 and #1191). 20:50 the coordinator merged #1194.
 
-**Departures.** The Order asks that each be logged as OVERRIDE. Departures 1 and 9 were
+**Departures.** The Order asks that each be logged as OVERRIDE. Departures 1, 9 and 10 were
 ruled as overrides by Joshua; the rest happened without a ruling and are logged here after
 the fact.
 
@@ -144,15 +145,18 @@ the fact.
 | 7 | **Measurement.** Operator hours and the share of agent work on a disconfirming test were not measured (§9) | OVERRIDE of The Order's weekly review, unruled |
 | 8 | **Coordinator's error.** It should have presented the withdrawal as an override decision and sought Codex's review before acting on it | OVERRIDE of E3 and The Order's Rule step, unruled; the coordinator's |
 | 9 | **One answer in the quarantine.** Later on 2026-11-10 Joshua asked the research session what gaps in an existing design would need fixing for it to produce strategies. The session told him that is a successor idea the quarantine bars, and offered waiting until 11-25 or an override. He typed "answer now", and confirmed it to the coordinator ("yes i did"). Scope, as the session reported it: one opinion in chat; no files, searches, counts, specs, data reads or repo changes | OVERRIDE of E3, ruled by Joshua |
+| 10 | **The whole quarantine.** Later on 2026-11-10 Joshua ruled to the coordinator: "Override the whole quarantine, it was not my intention to close the strategy research for two weeks". The coordinator had recommended twice that the stop stand, and said that undoing it is an override of protected rule E3, which witness mode says cannot be changed. Codex's position on continuing after the stop is quoted in step 7. What the override does not change: the R2 round stays closed with zero cards; no new contract exists; and `order-gates` still enforces the quarantine on `main` through 2026-11-24, because the checker refuses to remove or shorten it and agents may not weaken that check | OVERRIDE of E3, ruled by Joshua |
 
 The spec and its review were never committed and are set aside. The ruling in step 6 has no
 effect, because the round it applied to is closed.
 
 After departures 1 to 8, Joshua was offered a logged override to continue the round and
 declined it ("The stop stands"). That refusal is recorded here on the day it was made.
-Departure 9 came after it and is narrower: one answer, not a resumed round. The refusal
-does not make the stop clean or the framework's first test a success; the framework's own
-review decides that.
+Departure 9 came after it and is narrower: one answer, not a resumed round. Departure 10
+came after that and reverses the refusal for the quarantine as a whole, so the refusal no
+longer counts as a continuation declined. Whether this is the framework failing its first
+test is for the framework's own review (The Order, "Test the framework itself"): work during
+quarantine is one of its audit triggers.
 
 ## 7. Joshua's paragraph
 
