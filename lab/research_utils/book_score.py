@@ -14,7 +14,7 @@ is named, also score book-without-that-leg and emit the step-3 comparison lines
 bust was being described with the opposite verdict at this API surface. Callers may
 still pass an explicit ``thresholds=`` to reproduce a historical run against its own
 frozen ceiling. Never authorizes capital either way.
-Sibling of ``cov_prekill.py`` (step 2) and reshaped successor to the single-series
+Sibling of ``cov_prekill.py`` (step 2; removed by Subtract 2026-11-10) and reshaped successor to the single-series
 ``nsurv_channel`` P2 idea — Q-TXG-1 already scores SINGLE cells via that channel;
 this module owns the COMPOSED book case.
 

@@ -109,7 +109,7 @@ GUARDIAN_V56_CSV = PEPPERSTONE_DIR / "Guardian_Gold_v5.6_PEPPERSTONE_XAUUSD_2026
 # a 2-leg baseline scoped to the two AUTHORIZED futures legs only (Striker DJ30/MYM,
 # Striker NAS100/MNQ). Guardian (MGC, SUBTRACT/DEAD) and Aegis (6J, PARK) are
 # deliberately excluded from this panel, not merely unpopulated — see that ADR §2.
-# Consumed by lab/research_utils/breadth.py's Stage-8 portfolio-breadth tool;
+# Its only consumer, lab/research_utils/breadth.py, was removed by Subtract (2026-11-10);
 # NOT wired into this module's own _load_all/MC-engine panel path, which is a
 # separate, currently-unexercised-for-"cme" consumer, out of that ADR's scope.
 PANELS_BY_BROKER: Dict[str, Dict[str, Path]] = {
@@ -133,7 +133,7 @@ EXPECTED_SYMBOLS_BY_BROKER: Dict[str, Dict[str, str]] = {
 }
 
 # Recorded for documentation parity with STRATEGY_FILENAME_TOKEN; the "cme"
-# loader path (breadth.py::load_baseline_panel) does not positionally parse a
+# loader path (breadth.py::load_baseline_panel, removed 2026-11-10) did not parse a
 # version token out of these filenames (CME TV-exports don't follow one
 # consistent 7-field pattern the way OANDA/Pepperstone's did — see that
 # function's docstring). "v1" for striker_nas100 is sourced from the locked
