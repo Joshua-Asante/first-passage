@@ -187,7 +187,8 @@ hours buy?*
 > "we should decommission the goals in the research and operations lanes, we are clearing a
 > clean slate for new goals"
 
-Typed by Joshua to the coordinator on 2026-11-10. The research and operations goals in the
+Typed by Joshua to the coordinator on 2026-11-10, not written by hand as The Order asks; Codex
+records that as a departure. They are his own words. The research and operations goals in the
 goals tracker (`book-sharpe`, `tradeify-deploy`) were archived the same day on his word.
 
 ## 8. Work done under the contract (Subtract)

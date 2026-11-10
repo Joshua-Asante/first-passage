@@ -1,21 +1,16 @@
 # STATE — First Passage
 
-**Updated:** 2026-11-09. One page: goal, method, obligations, open decisions. Replace
+**Updated:** 2026-11-10. One page: goal, method, obligations, open decisions. Replace
 stale lines instead of appending history.
 
 ## Goal
 
-Strategy research only ([rulings 2026-11-09](docs/notes/2026-11-09-rulings.md), R1):
-find out with honest evidence whether any systematic futures strategy has a real edge
-after costs. The prop operation is closed. No order, venue, deployment or monetisation
-work until a Codex-verified CONFIRMED result exists, and that opens only a separate
-deployment decision under its own contract.
-
-One exception ([R12](docs/notes/2026-11-09-rulings.md)): the coda on the owned Tradeify
-Select 100K eval, outside The Order, from Mon 11-16 under stop-rule
-[Addendum 2](docs/briefs/pre-registration/2026-10-31-tradeify-forward-stop-rule-registration-addendum-2.md):
-at most 20 attended sessions or to 12-31, no resets or purchases, each session with its
-own GO. ORB runs on the frozen build.
+None active. The strategy research objective ([rulings 2026-11-09](docs/notes/2026-11-09-rulings.md),
+R1) ended on 2026-11-10: the R2 round closed with zero cards, and Joshua ruled "this objective
+should not continue". He ended the R12 coda on the owned Tradeify eval the same day, and does not
+plan to reopen the strategy or operations paths after the quarantine. The prop operation stays
+closed. No order, venue, deployment or monetisation work. Record:
+[closing record](docs/notes/2026-11-10-r2-round-closing-record.md).
 
 ## Method
 
