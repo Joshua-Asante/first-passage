@@ -444,3 +444,26 @@ that local record is not included in this change. No clean confirmation sample i
 certified. Revisit only with the data gaps resolved and a fixed, authorized test
 proposal; no return test, optimization or new trial registration occurred.
 M6E, MCL ORB R1 and the parked EIA work remain separate.
+
+### 2026-11-10 — GAPFAIL-1 (the 2026-11-05 gap-failure rule): CLOSED on trade count, no return test
+
+Joshua's ruling, 2026-11-10: "close the card, the coordinator records it." The rule above,
+implemented as a Pine v6 strategy (GAPFAIL-1 v0.2, cfg02; MNQ1! 15m, ETH on, back-adjustment off;
+source kept outside the repo), takes **56 closed trades over 2020–2024** (2020 9, 2021 11, 2022 8,
+2023 15, 2024 13). That is below the 200-trade floor (`lab/builder/gates.py`, gate `5a_min_trades`),
+so it fails before any return test. Detecting it half the time at n = 56 would need about
+0.26 sigma per trade. Codex counted from a TradingView export using only trade number, type and
+timestamp; Joshua confirmed the export covers the full history. K stays 0; no registration.
+
+**Exposure (rule-specific).** The export ran with trades on over the whole history:
+- **2020–2024:** this rule's returns were displayed but not used for the count. Already-exposed
+  exploration data; recorded here and not added to the burn register.
+- **2025:** 16 trades are in the export; Codex did not read their returns, and whether they
+  were viewed is not recorded. Treat 2025 as exposed for this rule.
+- **2026-01-01 to 2026-11-09:** run with trades on, and Joshua read all 12 trades. This window
+  was held out by the proposal above. It is recorded in
+  [`burned_segments.json`](../../discovery_manifests/burned_segments.json). It overlaps the
+  reserved confirm window from 2026-11-02; no trade fell in 2–9 November.
+
+Implementation note for any new Pine strategy: v0.1 omitted `margin_long`/`margin_short`, so
+Pine v6's 100% default rejected entries once MNQ notional exceeded equity. v0.2 sets 10%.
