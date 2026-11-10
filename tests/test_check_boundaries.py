@@ -87,7 +87,7 @@ def test_build_index_has_no_collisions_and_maps_known_modules():
     assert collisions == [], collisions
     assert index.get("portfolio_mc") == ("core/portfolio_mc.py",)
     assert index.get("firm_rules") == ("core/firm_rules.py",)
-    assert index.get("cli") == ("ops/cli.py",)  # accounts.py retired substrate Phase 2
+    assert index.get("nt_install_check") == ("ops/nt_install_check.py",)
 
 
 # ── CLI: the real repo currently honours the contract ──────────────

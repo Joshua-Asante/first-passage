@@ -309,3 +309,5 @@ dates and repeated product clocks inside one halt argument. Every `--halts`
 date must bind to a `HOLIDAY` or `SHORTENED` denial; unused halt arguments are
 errors. These checks run before the output file is written, preserving any
 existing output when an input conflicts.
+
+_Addendum 2026-11-10: `core/calendar_evidence.py`, the capture-identity and halt-evidence helper described in the two sections above, was removed by Subtract (no remaining reader); last present at `456452c`._
