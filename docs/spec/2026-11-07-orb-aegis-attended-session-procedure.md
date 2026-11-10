@@ -193,11 +193,9 @@ when flat (§4). The operator watches broker activity, not instance halts (§4, 
 fixed 16:10 ET trigger in place of the timed rehearsal. This replaces the rehearsal of
 F that this section required from 2026-11-07; §3 item 4 no longer waits on it.
 
-**Why a fixed time is enough.** The strategies' own flat deadline is 16:00 ET and the
-venue's is 16:45 ET (session calendar). A 16:10 ET trigger leaves 35 minutes for a full
-F, which takes minutes even on a slow path. A measured sample would move the trigger by
-a minute or two inside that margin, so it would not change the decision. The one
-untimed 2026-11-10 run (recorded privately) flattened both positions in one action.
+**The assumption the ruling accepts.** The strategies' own flat deadline is 16:00 ET and
+the venue's is 16:45 ET (session calendar). A 16:10 ET trigger leaves 35 minutes, on the
+assumption, not measured, that a full F, slow paths included, fits well inside that.
 
 **What still covers the unmeasured parts.** Whether a flatten in Tradovate web also
 cancels a working stop is caught by F step 3: both views must show no working orders,
