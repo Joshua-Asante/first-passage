@@ -3,14 +3,17 @@
 **Status:** closure record, written in the quarantine. Drafted by Claude; Codex reviews it.
 It records findings and rules nothing.
 **Asked by:** Joshua, 2026-11-11: "record them as a retrospective. add any other frameworks
-that were useful".
+that were useful". Then, for §4: "I like to have frameworks associated with the person who
+invented or popularized them. let's dig deeper into the frameworks that did work and the
+figure they're associated with".
 **Scope:** what the record shows about the three roles (Joshua the operator, Claude the
 maker, Codex the checker), about enforcing The Order, and about the other frameworks in use.
 It proposes no rule change, successor or plan. It scores none of the criteria in The Order's
 "Test the framework itself"; that review is due on the later of 2027-01-16 and the
 quarantine's end.
 **Sources:** repo references are pinned to `cb9962b` and written `NAME:line`. §6 lists the
-command behind each count.
+command behind each count. The outside works named in §4 are not in the repo; their authors,
+titles and years were checked against public sources on 2026-11-11.
 
 | Name | File |
 |---|---|
@@ -75,22 +78,172 @@ on those three steps.
 | 14 | Steps with no mechanism behind them lapsed: the security-review comment on #1190 and #1191 (later ruled unnecessary), the measurement of operator hours, and the handwritten paragraph, which was typed. AGENTS.md stands at 1,002 words, against The Order's 800 and the 971 Joshua ruled on. The Order says its own caps are not gates. | CR:143, CR:145, CR:176, CR:190-191, ORD:118-120 |
 | 15 | Ten departures were logged for the round's one day. Joshua ruled three as overrides; seven were recorded after the fact. On Codex's reading, witness mode has no way to withdraw a stop, so an override was the only route. | CR:121-125, CR:133-148 |
 
-## 4. Other frameworks and conventions that did work
+## 4. The frameworks that did work, and whose they are
 
-| Framework | Where it was used | What it did | Evidence |
+Each framework is listed under the person who invented or popularised it. LIN:33-56 gives the
+source of every step of The Order; this section covers only the frameworks the record shows
+doing work in these four days. "Attributed by" says who named the figure: LIN, the code, or
+Claude. Where it says Claude, the repo's record names no figure. The match is Claude's judgment
+of the nearest published precedent, and it is not evidence that the practice was taken from
+that work.
+
+| § | Figure | Framework and work | Attributed by |
 |---|---|---|---|
-| Lakatos programme audit | The 11-08 audit: seven questions per layer, five verdicts | Gave each layer a verdict from git evidence, and showed that a falsifier's consequence had been rewritten after its verdict. Joshua closed the prop operation after it and the continue-or-stop case, and R1 restored that consequence. | AUD:6, AUD:29-46, AUD:339, RUL:10, RUL:30-33 |
-| Advocates, rebuttal and judge, then a checker challenge | The continue-or-stop case | Both advocates reached "stop". Codex's challenge then corrected the stop case's strongest research argument (finding 3). | COS:5-7, COS:11, COS:28-30 |
-| The Algorithm: delete before building | The Subtract step | Eight PRs deleted 13,528 lines and added 164. Codex reviewed each at an exact head. | LIN:41, CR:196-215, §6 |
-| A count floor and K accounting before any return is read (from Registered Reports and severe testing) | The Choose step | Three proposals closed before any registration, two of them with zero returns read. | LIN:43, RUL:35-51, CR:34-45 |
-| Constraint first (Goldratt) | The contract's item 2 | Named the limiting input as an after-cost edge, which agents cannot create, and paced agent work to it. | LIN:39, CON:28-32 |
-| Precommitment (Elster) | Witness mode and the quarantine | Finding 8. | LIN:47, ORD:86 |
-| Data classes by meaning: Secrets, Private, Licensed, Open | The 11-10 reviews | One figure was redacted, two vendor-derived files were removed, and a tool that uploaded private source to a vendor was removed. | `AGENTS.md:39-46`, RUL:166-167, CR:211, CR:214-215 |
-| Append-only rulings in Joshua's words | Every ruling | Let CR quote each ruling, and showed a mismatch between the PR numbers Joshua typed and the ones GitHub records. | RUL:3, CR:130-131 |
+| 4.1 | Imre Lakatos | Research programmes: "Falsification and the Methodology of Scientific Research Programmes" (1970) | AUD:6, LIN:47-49 |
+| 4.2 | Richard Mason; Geoffrey Irving, Paul Christiano and Dario Amodei | Dialectical inquiry: "A Dialectical Approach to Strategic Planning" (1969). Debate before a judge: "AI safety via debate" (2018) | Claude |
+| 4.3 | Elon Musk | "The algorithm", as Walter Isaacson's *Elon Musk* (2023) records it | LIN:40-41, LIN:51 |
+| 4.4 | Chris Chambers; Deborah Mayo; David Bailey and Marcos López de Prado | Registered Reports (*Cortex*, 2013). Severe testing: *Error and the Growth of Experimental Knowledge* (1996). "The Deflated Sharpe Ratio" (2014) | LIN:43; `lab/research_utils/deflated_sharpe.py:3` |
+| 4.5 | Eliyahu Goldratt; Daniel Kahneman and Dan Lovallo | Theory of Constraints: *The Goal* (1984). The outside view: "Timid Choices and Bold Forecasts" (1993) | LIN:39; Claude for Kahneman and Lovallo |
+| 4.6 | Jon Elster | Precommitment: *Ulysses and the Sirens* (1979) | LIN:47 |
+| 4.7 | Jerome Saltzer and Michael Schroeder; David Bell and Leonard LaPadula | Least privilege: "The Protection of Information in Computer Systems" (1975). Classification levels with flow rules: "Secure Computer Systems: Mathematical Foundations" (1973) | Claude |
+| 4.8 | Michael Nygard | Decision records that are superseded, never edited: "Documenting Architecture Decisions" (2011) | Claude |
+| 4.9 | John Knight and Nancy Leveson | The limit on independent checking: "An Experimental Evaluation of the Assumption of Independence in Multiversion Programming" (1986) | LIN:44 |
 
-Listed in LIN but not exercised in these days: the Rule step's five lines and its
-no-same-day rule (Stage-Gate, the pre-mortem, tripwires), and everything in Register and in
-Run and verify past the count floor (LIN:43-45).
+### 4.1 Imre Lakatos: research programmes
+
+- **The idea.** A research programme has a hard core that is not up for revision and a belt of
+  auxiliary hypotheses that is. The programme is progressive while changes to the belt predict
+  new facts that are then confirmed. It is degenerating when the changes only explain failures
+  after the event.
+- **Used here.** The 11-08 audit put seven questions to each layer and gave each layer one of
+  five verdicts (AUD:6, AUD:29-46). The Order's reopening rule uses the test Lakatos shares
+  with Elie Zahar: a closed claim reopens only on a fact predicted before it was observed
+  (LIN:48, ORD:56-62).
+- **What it did.** It gave each layer a verdict from git evidence, and it showed that a
+  falsifier's consequence had been rewritten after its verdict (AUD:339). Joshua closed the
+  prop operation after the audit and the continue-or-stop case (RUL:10), and R1 restored that
+  consequence (RUL:30-33).
+- **Limit or departure.** Lakatos set no point at which a degenerating programme must be
+  dropped; he called this the end of "instant rationality". The audit attached dates to its
+  re-tests (AUD:190, AUD:438). Its seven questions are the repo's own, from a skill since
+  deleted (AUD:399).
+
+### 4.2 Richard Mason, and Irving, Christiano and Amodei: opposition before a judge
+
+- **The idea.** Mason has the strongest plan and the strongest counter-plan argued from the
+  same data, so that the assumptions under each are exposed to whoever decides. Irving,
+  Christiano and Amodei propose the same shape for AI systems: two agents argue and a judge
+  decides.
+- **Used here.** The continue-or-stop case: seven evidence streams, a continue advocate, a stop
+  advocate, a round of rebuttal and a judge (COS:5-7).
+- **What it did.** Both advocates reached "stop" (COS:28), and the case sorted which arguments
+  on each side survived rebuttal (COS:102-117).
+- **Limit or departure.** The correction came from outside the format. The rebuttal round and
+  the judge did not catch the error in the stop case's data-depth premise. Codex did, on a
+  separate read, and that changed the research recommendation (COS:11, COS:28-30,
+  COS:114-115).
+
+### 4.3 Elon Musk: the algorithm
+
+- **The idea.** Five steps in a fixed order: question every requirement and attach a person's
+  name to it, delete every part or process you can, simplify, speed up, and automate last. The
+  order is the point: the common error is to optimise something that should not exist.
+- **Used here.** Step 1 became Ask, a dated answer from a named human (ORD:42, LIN:40). Step 2
+  became Subtract (ORD:43, LIN:41). LIN also ties Subtract to YAGNI, from Extreme Programming,
+  and to John Gall's law that a working complex system grows from a working simple one.
+- **What it did.** Eight Subtract PRs deleted 13,528 lines and added 164. Codex reviewed each at
+  an exact head (CR:196-215, §6).
+- **Limit or departure.** Musk expects over-deletion, with some parts added back. The Order
+  instead shields money, safety, legal, review, CI and frozen-parameter controls from deletion
+  (ORD:43), because agents had deleted controls before (LIN:13). It happened again in these
+  days (finding 2). Step 1 did not hold: the round ran without the outside answer Ask requires
+  (CR:139).
+
+### 4.4 Chris Chambers, Deborah Mayo, and Bailey and López de Prado: test before you look, and count your looks
+
+- **The idea.** In Chambers's Registered Reports the hypothesis and the analysis are reviewed
+  and accepted before data are collected, so the result cannot shape the test. Mayo's severity:
+  a result supports a claim only if the test would probably have exposed the claim had it been
+  false. Bailey and López de Prado: a Sharpe ratio must be deflated for the number of trials
+  behind it. That number is The Order's K.
+- **Used here.** The Order's Register step and its definition of K (ORD:45). R2 has each card
+  record its ancestry and reconciled K (RUL:41-42), and builder gate 5f applies the deflated
+  Sharpe at ledger K (`lab/builder/README.md:73`). In the round, only the screen ahead of
+  registration ran: a floor of 200 events and Codex's power arithmetic (CR:43-45, CR:50-53).
+- **What it did.** Three proposals closed before any registration. For two, the screen stopped
+  the work before any return was read. The third had its returns displayed before it closed on
+  count (CR:34-40, CR:99).
+- **Limit or departure.** No registration was written, so the Registered Reports mechanism
+  itself never ran (§1). K still rests on what Codex named the riskiest assumption: that the
+  recorded K is close to the true search history (RUL:84-86).
+
+### 4.5 Eliyahu Goldratt: the constraint; Kahneman and Lovallo: the outside view
+
+- **The idea.** Goldratt: one constraint sets a system's output. Find it, get the most from it,
+  subordinate everything else to it, and only then raise it. Kahneman and Lovallo: forecast
+  from the record of similar cases, not from the plan in hand.
+- **Used here.** The contract's item 2 (ORD:28, CON:26-47).
+- **What it did.** It named the constraint as an after-cost edge large enough to tell apart from
+  selection, said agents cannot create more of it, and paced agent work to it (CON:28-32). For
+  the outside view it listed five comparable cases and then recorded that "no numerical base
+  rate is defensible from these" (CON:34-47).
+- **Limit or departure.** Goldratt's fourth step, raising the constraint, was ruled out. The
+  contract bought no data (CON:65-66), and CR lists the event count in owned history among what
+  bound the round (CR:43-45).
+
+### 4.6 Jon Elster: precommitment
+
+- **The idea.** Ulysses has himself tied to the mast because he knows what he will want when he
+  hears the Sirens. A person binds a later self in advance, and the binding works only as far
+  as that later self cannot undo it.
+- **Used here.** Witness mode, the quarantine, and a check that refuses to remove or shorten it
+  (ORD:66-71, ORD:86).
+- **What it did.** Finding 8. Joshua asked twice to be released. The first release ended on
+  Joshua's own word after Codex's reading (CR:114-129). The second met the check (CR:148,
+  CR:170-172).
+- **Limit or departure.** Ulysses's crew could not hear him. Here there is no holder, so the
+  record proves "timing, not independent consent" (ORD:86), and Joshua keeps an admin bypass
+  over the enforcement files, though a logged one (`STATE.md:20-22`). The binding raised the
+  cost of release without removing the ability. The empty quarantine also departs on purpose
+  from Ryan Singer's Shape Up, whose cool-down is used to choose the next bets (LIN:56).
+
+### 4.7 Saltzer and Schroeder: least privilege; Bell and LaPadula: classes with flow rules
+
+- **The idea.** Saltzer and Schroeder: give each program and user the least privilege the job
+  needs, and deny by default. Bell and LaPadula: data carries a classification level, and fixed
+  rules say which way it may flow between levels.
+- **Used here.** AGENTS.md's four classes, each with a rule for what agents may hold and what
+  may reach the public repo (`AGENTS.md:39-46`), and a scoped token for each agent
+  (`AGENTS.md:48-50`).
+- **What it did.** Three fixes on 11-10: one figure redacted, two vendor-derived files removed,
+  and a tool that uploaded private source to a vendor removed (RUL:166-167, CR:211,
+  CR:214-215).
+- **Limit or departure.** In Bell and LaPadula the system enforces the levels. Here all agents
+  run as one user, so the guards are "accident guards, not boundaries" (`AGENTS.md:72-73`), and
+  classifying "by meaning" is something only a reader can do. Finding 7 is that weakness
+  showing: a boundary set by a brief broke on content.
+
+### 4.8 Michael Nygard: decisions recorded once and superseded, never edited
+
+- **The idea.** Record each significant decision in a short dated note with its context and
+  consequences. An accepted record is not changed; a later record supersedes it.
+- **Used here.** RUL is append-only and holds Joshua's words verbatim (RUL:3). R12 replaces R3
+  for the eval without editing it (RUL:132-151). Witness mode applies the same rule to
+  contracts: "Replacements apply only going forward" (ORD:86). The repo's `docs/adr/` directory
+  carries the format's name.
+- **What it did.** It let CR quote each ruling, and it showed a mismatch between the PR numbers
+  Joshua typed and the ones GitHub records (CR:130-131).
+- **Limit or departure.** Nygard's records hold the decision. These also hold the operator's
+  exact words, which is what made finding 4 checkable. The words come from transcripts outside
+  the repo (CR:12-15).
+
+### 4.9 Knight and Leveson: what an independent check can and cannot promise
+
+- **The idea.** Independent verification and validation has a second party check the work by its
+  own route. Knight and Leveson had 27 versions of one program written independently, and found
+  that they failed on the same inputs far more often than independence predicts. Separately
+  made things share blind spots.
+- **Used here.** The checker role: Codex checks original evidence by a separate method, and a
+  subagent's review does not count as the other agent's (ORD:19, `AGENTS.md:22-23`).
+- **What it did.** Findings 1 to 3, and the correction in §4.2.
+- **Limit or departure.** LIN calls the benefit here "an assumption to test" (LIN:44). This
+  record supports it for code and documents only. It holds no market claim checked by a separate
+  route, and no count of what both agents missed (§5).
+
+Named in LIN but not exercised in these days, so nothing is reported for them: the sources of
+the Rule step, which are Robert Cooper's Stage-Gate, Gary Klein's pre-mortem and the tripwires
+LIN credits to Annie Duke (LIN:45); and Duke's kill criteria as a stop (LIN:46). The contract's
+stop conditions never fired, and the stop was discretionary (CR:20-23).
 
 ## 5. What this record cannot show
 
