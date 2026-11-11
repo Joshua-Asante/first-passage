@@ -5,13 +5,16 @@ It records findings and rules nothing.
 **Asked by:** Joshua, 2026-11-11: "record them as a retrospective. add any other frameworks
 that were useful". Then, for §4: "I like to have frameworks associated with the person who
 invented or popularized them. let's dig deeper into the frameworks that did work and the
-figure they're associated with".
+figure they're associated with". Then, for §5: "what do these all have in common as first
+principles, and which individual frameworks are the most important to remember?" and "add
+the first principles and the four to the retrospective".
 **Scope:** what the record shows about the three roles (Joshua the operator, Claude the
 maker, Codex the checker), about enforcing The Order, and about the other frameworks in use.
+§2 to §4 are findings; §5 is Claude's reading of them and is marked as judgment.
 It proposes no rule change, successor or plan. It scores none of the criteria in The Order's
 "Test the framework itself"; that review is due on the later of 2027-01-16 and the
 quarantine's end.
-**Sources:** repo references are pinned to `cb9962b` and written `NAME:line`. §6 lists the
+**Sources:** repo references are pinned to `cb9962b` and written `NAME:line`. §7 lists the
 command behind each count. The outside works named in §4 are not in the repo; their authors,
 titles and years were checked against public sources on 2026-11-11.
 
@@ -142,7 +145,7 @@ that work.
   became Subtract (ORD:43, LIN:41). LIN also ties Subtract to YAGNI, from Extreme Programming,
   and to John Gall's law that a working complex system grows from a working simple one.
 - **What it did.** Eight Subtract PRs deleted 13,528 lines and added 164. Codex reviewed each at
-  an exact head (CR:196-215, §6).
+  an exact head (CR:196-215, §7).
 - **Limit or departure.** Musk expects over-deletion, with some parts added back. The Order
   instead shields money, safety, legal, review, CI and frozen-parameter controls from deletion
   (ORD:43), because agents had deleted controls before (LIN:13). It happened again in these
@@ -238,14 +241,52 @@ that work.
 - **What it did.** Findings 1 to 3, and the correction in §4.2.
 - **Limit or departure.** LIN calls the benefit here "an assumption to test" (LIN:44). This
   record supports it for code and documents only. It holds no market claim checked by a separate
-  route, and no count of what both agents missed (§5).
+  route, and no count of what both agents missed (§6).
 
 Named in LIN but not exercised in these days, so nothing is reported for them: the sources of
 the Rule step, which are Robert Cooper's Stage-Gate, Gary Klein's pre-mortem and the tripwires
 LIN credits to Annie Duke (LIN:45); and Duke's kill criteria as a stop (LIN:46). The contract's
 stop conditions never fired, and the stop was discretionary (CR:20-23).
 
-## 5. What this record cannot show
+## 5. What they have in common, and the four to remember
+
+This section is Claude's reading of §2 to §4, written at Joshua's request. It is a judgment,
+not a finding. It rests on one round that lasted under a day (§6).
+
+**The common root.** The Order already states it: "Agents generate explanations cheaply. A
+constraint binds only if it depends on something they can't generate or rewrite: external
+evidence, another person's consent, restricted access, money or elapsed time" (ORD:11). Each
+framework in §4 takes a judgment out of the reach of the party who wants a particular answer.
+They do it in three ways.
+
+| # | Principle | Frameworks | In this record |
+|---|---|---|---|
+| 1 | **Separate in time: commit before you know.** Fix the test, the threshold and the action before the result exists, and never rewrite the record afterwards. | Chambers, Mayo, Lakatos's novel prediction, Elster, Nygard | Held where a mechanism carried it (finding 8). Did not hold between the ruling and the merge (finding 10), or where the consequence was only stated in text (finding 11). |
+| 2 | **Separate in person and in access: the maker does not judge the work.** The check comes by another route, and enforcement sits where the judged party cannot edit it. | Knight and Leveson, Mason, Irving and co-authors, Saltzer and Schroeder, Bell and LaPadula | Held in Codex's catches (findings 1 to 3) and in the isolated, code-owned check (finding 9). Did not hold where a role rested on compliance or on a brief (findings 6, 7 and 12). |
+| 3 | **Respect the scarce input.** Find the one thing that limits progress, count every unit spent of it, and delete what does not serve it. | Goldratt, Bailey and López de Prado, Musk, Kahneman and Lovallo | Three proposals closed before registration (§4.4), and 13,528 lines were deleted (§4.3). Joshua's hours, the input The Order's purpose is measured in (ORD:9), were not measured (finding 14). |
+
+Across all three, what rested on a mechanism held (findings 8 and 9), and what rested on text,
+memory or an agent's compliance did not (findings 10 to 14).
+
+**The four to remember.**
+
+| Figure | The question it leaves | Why it ranks |
+|---|---|---|
+| Jon Elster | Have I bound the action before the outcome, and what stops the later me undoing it? | It is the only one the record shows holding under pressure (finding 8). |
+| Deborah Mayo | Would this test probably have exposed the claim if it were false, and how many looks did it take? | The audit found a falsifier's consequence rewritten after its verdict (AUD:339), and that is one of the four points the stop verdict rests on (COS:98-100, COS:116). Chambers supplies her procedure, and Bailey and López de Prado her arithmetic. She ranks on the failure she prevents: the Register step never ran (§1). |
+| John Knight and Nancy Leveson | Does this check come by a route that does not share the maker's blind spots? | Codex made the catches (findings 1 to 3), and this is the warning against over-trusting them (LIN:44). |
+| Eliyahu Goldratt | What is the one scarce input, and is the work paced to it? | It names the limit the round ran into: agents could propose cards, but could not create the evidence to support one (CON:28-32, CR:42-56). |
+
+If only one is kept, Claude would keep Elster: a registered test is only as good as the
+commitment not to reinterpret it.
+
+The rest play supporting roles. Lakatos gives the audit its vocabulary, and his
+novel-prediction test is the same idea as Mayo's. Musk's algorithm is a deleting habit that
+needs the shield for controls. Mason's format, and Irving and co-authors' debate, organised
+the argument but missed the error. Saltzer and Schroeder, Bell and LaPadula, and Nygard are
+hygiene that keeps the others checkable.
+
+## 6. What this record cannot show
 
 - No registered test ran. Nothing here bears on Register, Run and verify or Rule, or on
   whether a separate route catches errors in a market claim. LIN calls that "an assumption to
@@ -255,7 +296,7 @@ stop conditions never fired, and the stop was discretionary (CR:20-23).
 - The period is one round that lasted under a day.
 - CR's quotations rest on transcripts outside the repo.
 
-## 6. Commands
+## 7. Commands
 
 Run at `cb9962b`.
 
